@@ -1,0 +1,13 @@
+{
+  "agent": "code-review",
+  "lastRun": null,
+  "lastCommit": null,
+  "status": null,
+  "completedWork": [],
+  "metrics": {
+    "filesReviewed": 0,
+    "issuesFound": 0,
+    "criticalIssues": 0
+  },
+  "blockers": []
+}

@@ -1,0 +1,23 @@
+{
+  "lastUpdated": null,
+  "updatedBy": null,
+  "features": {
+    "health": {
+      "unit": { "status": "none", "count": 0, "lastRun": null },
+      "api": { "status": "none", "count": 0, "lastRun": null },
+      "e2e": { "status": "none", "count": 0, "lastRun": null }
+    },
+    "ui": {
+      "unit": { "status": "none", "count": 0, "lastRun": null },
+      "api": { "status": "none", "count": 0, "lastRun": null },
+      "e2e": { "status": "none", "count": 0, "lastRun": null }
+    }
+  },
+  "summary": {
+    "totalFeatures": 2,
+    "passing": 0,
+    "failing": 0,
+    "untested": 2,
+    "overallCoverage": 0
+  }
+}

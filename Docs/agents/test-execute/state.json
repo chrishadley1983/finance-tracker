@@ -1,0 +1,14 @@
+{
+  "agent": "test-execute",
+  "lastRun": null,
+  "lastCommit": null,
+  "status": null,
+  "completedWork": [],
+  "metrics": {
+    "testsRun": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0
+  },
+  "blockers": []
+}

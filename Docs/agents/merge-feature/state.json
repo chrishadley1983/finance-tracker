@@ -1,0 +1,12 @@
+{
+  "agent": "merge-feature",
+  "lastRun": null,
+  "lastCommit": null,
+  "status": null,
+  "completedWork": [],
+  "metrics": {
+    "branchesMerged": 0,
+    "conflictsResolved": 0
+  },
+  "blockers": []
+}

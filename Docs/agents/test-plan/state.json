@@ -1,0 +1,12 @@
+{
+  "agent": "test-plan",
+  "lastRun": null,
+  "lastCommit": null,
+  "status": null,
+  "completedWork": [],
+  "metrics": {
+    "featuresAnalysed": 0,
+    "gapsIdentified": 0
+  },
+  "blockers": []
+}

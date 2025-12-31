@@ -1,0 +1,12 @@
+{
+  "agent": "test-build",
+  "lastRun": null,
+  "lastCommit": null,
+  "status": null,
+  "completedWork": [],
+  "metrics": {
+    "testsCreated": 0,
+    "filesCreated": 0
+  },
+  "blockers": []
+}

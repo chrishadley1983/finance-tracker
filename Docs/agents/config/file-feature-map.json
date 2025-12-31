@@ -1,0 +1,9 @@
+{
+  "description": "Maps source files to features they affect. Used for invalidation detection.",
+  "patterns": [
+    { "glob": "app/api/health/**", "features": ["health"] },
+    { "glob": "components/Button.tsx", "features": ["ui"] },
+    { "glob": "lib/**", "features": ["*"] }
+  ],
+  "overrides": {}
+}
