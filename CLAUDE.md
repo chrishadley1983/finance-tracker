@@ -1,73 +1,156 @@
-# Personal Finance App - CLAUDE.md
+# Finance Tracker - CLAUDE.md
 
 ## Project Overview
 
-A personal finance application for tracking transactions, budgets, wealth, and FIRE projections.
+Personal finance application replacing "Life Planning V2" spreadsheet. Transaction tracking, budgeting, wealth monitoring, and FIRE projections.
 
-**Current Phase:** Phase 0 - Agent Framework Testing
+**Tech Stack:** Next.js 14 (App Router), Supabase, TypeScript, Tailwind CSS v4, Vitest
+
+**Current Phase:** Phase 0 - Agent Infrastructure Validation
 
 ---
 
 ## Critical Rules
 
-1. **ALWAYS execute the Standard Boot Sequence** before any agent work
-2. **NEVER claim work is complete** without updating state.json
-3. **ONLY Test Execution Agent** may write to feature-status.json
-4. **Read docs/agents/config/boot-sequence.md** at start of every agent run
+1. **ALWAYS execute the Standard Boot Sequence** before any agent work - see `docs/agents/config/boot-sequence.md`
+2. **NEVER claim work is complete** without updating the agent's `state.json`
+3. **ONLY Test Execution Agent** may write to `docs/agents/truth/feature-status.json`
+4. **Use PowerShell syntax** - this is a Windows development environment
+5. **Check for unmerged branches** before starting work: `git branch -a --no-merged main`
 
 ---
 
 ## Agent Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/test-plan` | Analyse test coverage gaps |
-| `/test-build` | Generate tests for gaps |
-| `/test-execute` | Run tests, update truth |
-| `/code-review` | Review code changes |
-| `/merge-feature` | Safe branch merge |
+| Command | Purpose | Type |
+|---------|---------|------|
+| `/test-plan` | Analyse codebase for test coverage gaps | Initializer |
+| `/test-build` | Generate test files to fill gaps | Actor |
+| `/test-execute` | Run tests, update truth file | Actor |
+| `/code-review` | Review code against standards | Initializer |
+| `/merge-feature` | Safe branch merge with verification | Actor |
 
 ---
 
 ## Directory Structure
 
 ```
-personal-finance/
-├── .claude/commands/     # Agent slash commands
+Finance-Tracker/
+├── .claude/commands/        # Agent slash commands
+├── app/                     # Next.js App Router
+│   └── api/health/          # Health check endpoint
+├── components/              # React components
 ├── docs/
-│   ├── agents/           # Agent state & config
-│   │   ├── config/       # Shared config
-│   │   ├── truth/        # feature-status.json
-│   │   └── <agent>/      # Per-agent state
-│   ├── knowledge/        # Project documentation
-│   ├── testing/          # Test analysis outputs
-│   ├── reviews/          # Code review reports
-│   └── merges/           # Merge reports
-├── app/                  # Next.js app router
-├── components/           # React components
-├── lib/                  # Shared utilities
-└── tests/                # Test files
+│   ├── agents/
+│   │   ├── config/          # boot-sequence.md, file-feature-map.json
+│   │   ├── truth/           # feature-status.json (THE source of truth)
+│   │   ├── test-plan/       # state.json
+│   │   ├── test-build/      # state.json
+│   │   ├── test-execute/    # state.json
+│   │   ├── code-review/     # state.json
+│   │   └── merge-feature/   # state.json
+│   └── knowledge/           # Project documentation (to be created)
+├── tests/
+│   ├── unit/
+│   ├── api/
+│   └── e2e/
+└── Docs/                    # PRD and specifications
 ```
 
 ---
 
 ## Development Workflow
 
-1. Before any work: Run agent boot sequence
-2. During development: `/test-execute quick`, `/code-review staged`
-3. Before merge: `/test-execute pre-merge`, `/code-review branch`
-4. To merge: `/merge-feature <branch>`
+### During Development
+```
+1. Write code on feature branch
+2. /code-review staged        → Review before commit
+3. Commit changes
+4. /test-execute quick        → Fast validation
+5. Repeat until feature complete
+```
+
+### Before Merge
+```
+1. /test-execute pre-merge    → Full test suite
+2. /code-review branch        → Complete review
+3. /merge-feature <branch>    → Safe merge
+```
+
+### Adding Test Coverage
+```
+1. /test-plan analyze         → Identify gaps
+2. /test-build critical       → Generate critical tests
+3. /test-execute quick        → Verify tests pass
+```
 
 ---
 
-## Knowledge Base
+## Key Documentation
 
-- Architecture: `docs/knowledge/architecture.md`
-- Patterns: `docs/knowledge/patterns.md`
-- Testing: `docs/knowledge/testing.md`
+| Document | Location | Purpose |
+|----------|----------|---------|
+| PRD | `Docs/personal-finance-prd.md` | Requirements, phases, schema |
+| Agent Spec | `Docs/agent-infrastructure-spec.md` | Full framework documentation |
+| Boot Sequence | `docs/agents/config/boot-sequence.md` | Required startup procedure |
+| Feature Truth | `docs/agents/truth/feature-status.json` | Test status source of truth |
 
 ---
 
 ## Current Focus
 
-Testing the agent framework with a minimal skeleton app.
+**Phase 0: Agent Infrastructure Validation**
+
+- [x] Project scaffold created
+- [x] Agent directory structure in place
+- [x] State files created for all 5 agents
+- [x] Truth file initialised
+- [x] Skeleton app (health endpoint, Button component)
+- [ ] Validate `/test-plan analyze` works
+- [ ] Validate `/test-build critical` generates tests
+- [ ] Validate `/test-execute quick` runs tests and updates truth
+- [ ] Validate `/code-review staged` produces report
+- [ ] Validate `/merge-feature` completes full cycle
+- [ ] Validate boot sequence detects changes correctly
+
+**Next:** Run each agent command to validate the framework works before starting Phase 1.
+
+---
+
+## Patterns
+
+### API Routes
+- Always wrap database operations in try/catch
+- Use Zod for input validation
+- Return consistent response shapes
+- Include proper HTTP status codes
+
+### Components
+- TypeScript interfaces for all props
+- Handle loading, error, and empty states
+- Use Tailwind for styling
+
+### Testing
+- Unit tests in `tests/unit/`
+- API tests in `tests/api/`
+- E2E tests in `tests/e2e/`
+- Run with: `npm test` (Vitest) or `npx playwright test` (E2E)
+
+---
+
+## Quick Commands
+
+```powershell
+# Development
+npm run dev                    # Start dev server (http://localhost:3000)
+npm run build                  # Production build
+npm run lint                   # Run ESLint
+
+# Testing
+npm test                       # Run Vitest
+npx playwright test            # Run E2E tests
+
+# Git
+git status                     # Check working tree
+git branch -a --no-merged main # Check unmerged branches
+```
