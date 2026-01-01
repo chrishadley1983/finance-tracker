@@ -6,7 +6,7 @@ Personal finance application replacing "Life Planning V2" spreadsheet. Transacti
 
 **Tech Stack:** Next.js 14 (App Router), Supabase, TypeScript, Tailwind CSS v4, Vitest
 
-**Current Phase:** Phase 0 - Agent Infrastructure Validation
+**Current Phase:** Phase 1 - Data Layer
 
 ---
 
@@ -99,21 +99,32 @@ Finance-Tracker/
 
 ## Current Focus
 
-**Phase 0: Agent Infrastructure Validation**
+**Phase 1: Data Layer**
+
+- [x] Set up Supabase project and connection
+- [ ] Create database schema (accounts, transactions, categories)
+- [ ] Implement Row Level Security (RLS) policies
+- [ ] Create API routes for CRUD operations
+- [ ] Add Zod validation schemas
+- [ ] Write tests for data layer
+
+**Completed Phases:**
+
+<details>
+<summary>Phase 0: Agent Infrastructure Validation ✅</summary>
 
 - [x] Project scaffold created
 - [x] Agent directory structure in place
 - [x] State files created for all 5 agents
 - [x] Truth file initialised
 - [x] Skeleton app (health endpoint, Button component)
-- [ ] Validate `/test-plan analyze` works
-- [ ] Validate `/test-build critical` generates tests
-- [ ] Validate `/test-execute quick` runs tests and updates truth
-- [ ] Validate `/code-review staged` produces report
-- [ ] Validate `/merge-feature` completes full cycle
-- [ ] Validate boot sequence detects changes correctly
+- [x] Validate `/test-plan analyze` works
+- [x] Validate `/test-build critical` generates tests
+- [x] Validate `/test-execute quick` runs tests and updates truth
+- [x] Validate `/code-review staged` produces report
+- [x] Validate `/merge-feature` completes full cycle
 
-**Next:** Run each agent command to validate the framework works before starting Phase 1.
+</details>
 
 ---
 
@@ -138,6 +149,26 @@ Finance-Tracker/
 
 ---
 
+## Supabase Connection
+
+```
+Project URL: https://vkezoyhjoufvsjopjbrr.supabase.co
+Project Ref: vkezoyhjoufvsjopjbrr
+```
+
+**Environment Variables** (in `.env.local` - DO NOT COMMIT):
+```
+NEXT_PUBLIC_SUPABASE_URL=https://vkezoyhjoufvsjopjbrr.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<see .env.local>
+SUPABASE_SERVICE_ROLE_KEY=<see .env.local>
+```
+
+**Client Files:**
+- `lib/supabase/client.ts` - Browser client (uses anon key)
+- `lib/supabase/server.ts` - Server client (uses service role key)
+
+---
+
 ## Quick Commands
 
 ```powershell
@@ -153,4 +184,9 @@ npx playwright test            # Run E2E tests
 # Git
 git status                     # Check working tree
 git branch -a --no-merged main # Check unmerged branches
+
+# Supabase
+npx supabase start             # Start local Supabase
+npx supabase db reset          # Reset database with migrations
+npx supabase gen types         # Generate TypeScript types
 ```
