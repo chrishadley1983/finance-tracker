@@ -1,12 +1,23 @@
 {
   "agent": "code-review",
-  "lastRun": null,
-  "lastCommit": null,
-  "status": null,
-  "completedWork": [],
+  "lastRun": "2026-01-01T06:29:20+00:00",
+  "lastCommit": "e05c0b0b39c63495fc22704f15fa2f151d765921",
+  "status": "success",
+  "completedWork": [
+    {
+      "type": "review",
+      "mode": "staged",
+      "timestamp": "2026-01-01T06:29:20+00:00",
+      "verdict": "APPROVED",
+      "report": "docs/reviews/2026-01-01_06-27_review.md",
+      "filesReviewed": 11,
+      "issuesFound": 1,
+      "issuesFixed": 1
+    }
+  ],
   "metrics": {
-    "filesReviewed": 0,
-    "issuesFound": 0,
+    "filesReviewed": 11,
+    "issuesFound": 1,
     "criticalIssues": 0
   },
   "blockers": []

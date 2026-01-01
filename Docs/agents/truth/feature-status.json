@@ -1,10 +1,10 @@
 {
-  "lastUpdated": null,
-  "updatedBy": null,
+  "lastUpdated": "2026-01-01T06:23:36+00:00",
+  "updatedBy": "test-execute",
   "features": {
     "health": {
       "unit": { "status": "none", "count": 0, "lastRun": null },
-      "api": { "status": "none", "count": 0, "lastRun": null },
+      "api": { "status": "pass", "count": 5, "lastRun": "2026-01-01T06:23:36+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "ui": {
@@ -15,9 +15,9 @@
   },
   "summary": {
     "totalFeatures": 2,
-    "passing": 0,
+    "passing": 1,
     "failing": 0,
-    "untested": 2,
-    "overallCoverage": 0
+    "untested": 1,
+    "overallCoverage": 50
   }
 }

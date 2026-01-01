@@ -9,7 +9,13 @@
       "Bash(npm run build:*)",
       "Bash(npm install:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: Update Tailwind CSS v4 configuration\n\n- Install @tailwindcss/postcss for Tailwind v4 compatibility\n- Update postcss.config.js to use new plugin\n- Update globals.css to use @import syntax\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: Update Tailwind CSS v4 configuration\n\n- Install @tailwindcss/postcss for Tailwind v4 compatibility\n- Update postcss.config.js to use new plugin\n- Update globals.css to use @import syntax\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(curl:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(npm run lint)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=true npm run lint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git branch:*)"
     ]
   }
 }

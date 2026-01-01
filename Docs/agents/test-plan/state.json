@@ -1,12 +1,21 @@
 {
   "agent": "test-plan",
-  "lastRun": null,
-  "lastCommit": null,
-  "status": null,
-  "completedWork": [],
+  "lastRun": "2026-01-01T06:12:36+00:00",
+  "lastCommit": "e05c0b0b39c63495fc22704f15fa2f151d765921",
+  "status": "success",
+  "completedWork": [
+    {
+      "type": "analysis",
+      "mode": "analyze",
+      "timestamp": "2026-01-01T06:12:36+00:00",
+      "output": "docs/testing/analysis/coverage-analysis.md",
+      "filesAnalysed": ["app/api/health/route.ts", "components/Button.tsx"],
+      "gapsFound": 2
+    }
+  ],
   "metrics": {
-    "featuresAnalysed": 0,
-    "gapsIdentified": 0
+    "featuresAnalysed": 2,
+    "gapsIdentified": 2
   },
   "blockers": []
 }
