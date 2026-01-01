@@ -16,6 +16,7 @@ export async function GET() {
 
     return NextResponse.json(data);
   } catch (error) {
+    console.error('GET /api/fire-parameters error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    console.error('POST /api/fire-parameters error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

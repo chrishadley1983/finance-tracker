@@ -1,7 +1,7 @@
 {
   "agent": "test-plan",
-  "lastRun": "2026-01-01T12:00:00+00:00",
-  "lastCommit": "239d88a678cc8c69040502b1d48df25d1f9cf146",
+  "lastRun": "2026-01-01T15:30:00+00:00",
+  "lastCommit": "00f97f29c810e4a0e887a578fbc0c4ff7160c63e",
   "status": "success",
   "completedWork": [
     {
@@ -41,12 +41,61 @@
         "medium": 7,
         "low": 1
       }
+    },
+    {
+      "type": "analysis",
+      "mode": "analyze",
+      "timestamp": "2026-01-01T15:30:00+00:00",
+      "output": "docs/testing/analysis/coverage-analysis.md",
+      "filesAnalysed": [
+        "app/api/health/route.ts",
+        "app/api/accounts/route.ts",
+        "app/api/accounts/[id]/route.ts",
+        "app/api/transactions/route.ts",
+        "app/api/transactions/[id]/route.ts",
+        "app/api/categories/route.ts",
+        "app/api/categories/[id]/route.ts",
+        "app/api/category-mappings/route.ts",
+        "app/api/category-mappings/[id]/route.ts",
+        "app/api/budgets/route.ts",
+        "app/api/budgets/[id]/route.ts",
+        "app/api/wealth-snapshots/route.ts",
+        "app/api/wealth-snapshots/[id]/route.ts",
+        "app/api/fire-parameters/route.ts",
+        "app/api/fire-parameters/[id]/route.ts",
+        "components/Button.tsx",
+        "components/layout/Sidebar.tsx",
+        "components/layout/Header.tsx",
+        "components/layout/AppLayout.tsx",
+        "app/page.tsx",
+        "app/transactions/page.tsx",
+        "app/categories/page.tsx",
+        "app/budgets/page.tsx",
+        "app/wealth/page.tsx",
+        "app/fire/page.tsx",
+        "app/settings/page.tsx",
+        "lib/validations/accounts.ts",
+        "lib/validations/categories.ts",
+        "lib/validations/transactions.ts",
+        "lib/validations/category-mappings.ts",
+        "lib/validations/budgets.ts",
+        "lib/validations/wealth-snapshots.ts",
+        "lib/validations/fire-parameters.ts"
+      ],
+      "gapsFound": 18,
+      "gapsByPriority": {
+        "critical": 0,
+        "high": 4,
+        "medium": 13,
+        "low": 1
+      },
+      "notes": "Phase 2 UI analysis - all API routes now have tests, new UI components identified"
     }
   ],
   "metrics": {
-    "featuresAnalysed": 27,
-    "gapsIdentified": 25,
-    "existingTests": 2
+    "featuresAnalysed": 37,
+    "gapsIdentified": 18,
+    "existingTests": 131
   },
   "blockers": []
 }

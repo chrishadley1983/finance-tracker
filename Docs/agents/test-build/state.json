@@ -1,7 +1,7 @@
 {
   "agent": "test-build",
-  "lastRun": "2026-01-01T08:55:00+00:00",
-  "lastCommit": "239d88a678cc8c69040502b1d48df25d1f9cf146",
+  "lastRun": "2026-01-01T15:36:00+00:00",
+  "lastCommit": "00f97f29c810e4a0e887a578fbc0c4ff7160c63e",
   "status": "success",
   "completedWork": [
     {
@@ -43,11 +43,50 @@
           "testType": "api"
         }
       ]
+    },
+    {
+      "type": "test-generation",
+      "mode": "all",
+      "timestamp": "2026-01-01T15:36:00+00:00",
+      "priority": "ALL",
+      "testsGenerated": [
+        {
+          "sourceFile": "components/layout/Sidebar.tsx",
+          "testFile": "tests/unit/Sidebar.test.tsx",
+          "testCount": 11,
+          "testType": "unit"
+        },
+        {
+          "sourceFile": "components/layout/Header.tsx",
+          "testFile": "tests/unit/Header.test.tsx",
+          "testCount": 9,
+          "testType": "unit"
+        },
+        {
+          "sourceFile": "components/layout/AppLayout.tsx",
+          "testFile": "tests/unit/AppLayout.test.tsx",
+          "testCount": 13,
+          "testType": "unit"
+        },
+        {
+          "sourceFile": "lib/validations/*.ts",
+          "testFile": "tests/unit/validations.test.ts",
+          "testCount": 39,
+          "testType": "unit"
+        },
+        {
+          "sourceFile": "components/Button.tsx",
+          "testFile": "tests/unit/Button.test.tsx",
+          "testCount": 19,
+          "testType": "unit"
+        }
+      ],
+      "notes": "Generated tests for Phase 2 UI components (Sidebar, Header, AppLayout), validation schemas (accounts, categories, transactions, budgets), and Button component"
     }
   ],
   "metrics": {
-    "testsCreated": 54,
-    "filesCreated": 4
+    "testsCreated": 145,
+    "filesCreated": 9
   },
   "blockers": []
 }

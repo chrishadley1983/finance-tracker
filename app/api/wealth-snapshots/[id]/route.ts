@@ -24,6 +24,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(data);
   } catch (error) {
+    console.error('GET /api/wealth-snapshots/[id] error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -59,6 +60,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         { status: 400 }
       );
     }
+    console.error('PUT /api/wealth-snapshots/[id] error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -81,6 +83,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
+    console.error('DELETE /api/wealth-snapshots/[id] error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

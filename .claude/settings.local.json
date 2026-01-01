@@ -24,7 +24,10 @@
       "Bash(node -e:*)",
       "Bash(powershell -Command:*)",
       "Bash(ESLINT_USE_FLAT_CONFIG=true npx eslint:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git push)",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\testing\\\\analysis\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\testing\\\\analysis\")",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\reviews\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\reviews\")"
     ]
   }
 }

@@ -1,6 +1,6 @@
 # Coverage Analysis
 
-**Generated:** 2026-01-01T12:00:00+00:00
+**Generated:** 2026-01-01T15:30:00+00:00
 **Agent:** test-plan
 **Mode:** analyze
 
@@ -8,23 +8,23 @@
 
 | Metric | Value |
 |--------|-------|
-| Files analysed | 27 |
-| Files with tests | 2 |
-| Coverage gaps | 25 |
+| Files analysed | 37 |
+| Files with tests | 15 |
+| Coverage gaps | 18 |
 
 ## Boot Status
 
-**Last run:** 0 days ago (2026-01-01)
-**Commits since:** 7
-**Files changed:** 22
+**Last run:** Today (2026-01-01T12:00:00+00:00)
+**Commits since:** 1 (Phase 1 Data Layer)
+**Files changed:** 44
 
 **Invalidations:**
-- Previous analysis invalidated due to new API routes added
+- Previous analysis invalidated - new UI components added in Phase 2
 
 **Effective backlog:**
-- All new API routes need tests
-- All validation schemas need tests
-- Button component needs tests
+- New layout components need unit tests
+- New page components need E2E tests
+- Validation schemas still need unit tests
 
 **Proceeding with mode:** analyze
 
@@ -37,33 +37,48 @@
 | File | Feature | Has Tests |
 |------|---------|-----------|
 | `app/api/health/route.ts` | health | Yes (5 tests) |
-| `app/api/accounts/route.ts` | accounts | No |
-| `app/api/accounts/[id]/route.ts` | accounts | No |
-| `app/api/transactions/route.ts` | transactions | No |
-| `app/api/transactions/[id]/route.ts` | transactions | No |
-| `app/api/categories/route.ts` | categories | No |
-| `app/api/categories/[id]/route.ts` | categories | No |
-| `app/api/category-mappings/route.ts` | category-mappings | No |
-| `app/api/category-mappings/[id]/route.ts` | category-mappings | No |
-| `app/api/budgets/route.ts` | budgets | No |
-| `app/api/budgets/[id]/route.ts` | budgets | No |
-| `app/api/wealth-snapshots/route.ts` | wealth-snapshots | No |
-| `app/api/wealth-snapshots/[id]/route.ts` | wealth-snapshots | No |
-| `app/api/fire-parameters/route.ts` | fire-parameters | No |
-| `app/api/fire-parameters/[id]/route.ts` | fire-parameters | No |
+| `app/api/accounts/route.ts` | accounts | Yes (13 tests) |
+| `app/api/accounts/[id]/route.ts` | accounts | Yes (included above) |
+| `app/api/transactions/route.ts` | transactions | Yes (22 tests) |
+| `app/api/transactions/[id]/route.ts` | transactions | Yes (included above) |
+| `app/api/categories/route.ts` | categories | Yes (14 tests) |
+| `app/api/categories/[id]/route.ts` | categories | Yes (included above) |
+| `app/api/category-mappings/route.ts` | category-mappings | Yes (19 tests) |
+| `app/api/category-mappings/[id]/route.ts` | category-mappings | Yes (included above) |
+| `app/api/budgets/route.ts` | budgets | Yes (18 tests) |
+| `app/api/budgets/[id]/route.ts` | budgets | Yes (included above) |
+| `app/api/wealth-snapshots/route.ts` | wealth-snapshots | Yes (18 tests) |
+| `app/api/wealth-snapshots/[id]/route.ts` | wealth-snapshots | Yes (included above) |
+| `app/api/fire-parameters/route.ts` | fire-parameters | Yes (19 tests) |
+| `app/api/fire-parameters/[id]/route.ts` | fire-parameters | Yes (included above) |
 
-### Components (1 file)
+### Components (4 files)
 
 | File | Feature | Has Tests |
 |------|---------|-----------|
 | `components/Button.tsx` | ui | No |
+| `components/layout/Sidebar.tsx` | layout | No |
+| `components/layout/Header.tsx` | layout | No |
+| `components/layout/AppLayout.tsx` | layout | No |
+
+### Pages (7 files)
+
+| File | Feature | Has Tests |
+|------|---------|-----------|
+| `app/page.tsx` | dashboard | No |
+| `app/transactions/page.tsx` | transactions-ui | No |
+| `app/categories/page.tsx` | categories-ui | No |
+| `app/budgets/page.tsx` | budgets-ui | No |
+| `app/wealth/page.tsx` | wealth-ui | No |
+| `app/fire/page.tsx` | fire-ui | No |
+| `app/settings/page.tsx` | settings-ui | No |
 
 ### Library Functions (11 files)
 
 | File | Feature | Has Tests |
 |------|---------|-----------|
 | `lib/supabase/client.ts` | database | No |
-| `lib/supabase/server.ts` | database | No |
+| `lib/supabase/server.ts` | database | Yes (3 tests - connection) |
 | `lib/supabase/database.types.ts` | database | N/A (types only) |
 | `lib/validations/accounts.ts` | validations | No |
 | `lib/validations/categories.ts` | validations | No |
@@ -80,38 +95,31 @@
 
 ### CRITICAL
 
-These are core data layer API routes that handle financial data - must be tested before production use.
-
-| File | Type | Reason |
-|------|------|--------|
-| `app/api/accounts/route.ts` | API | Accounts CRUD - handles financial account data |
-| `app/api/accounts/[id]/route.ts` | API | Single account operations |
-| `app/api/transactions/route.ts` | API | Transactions list/create - core financial data |
-| `app/api/transactions/[id]/route.ts` | API | Single transaction operations |
-| `app/api/categories/route.ts` | API | Category management for transactions |
-| `app/api/categories/[id]/route.ts` | API | Single category operations |
+No critical gaps - all API routes have comprehensive test coverage.
 
 ### HIGH
 
-These routes handle important but secondary features.
+New UI components that need tests before production.
 
 | File | Type | Reason |
 |------|------|--------|
-| `app/api/budgets/route.ts` | API | Budget tracking - financial planning |
-| `app/api/budgets/[id]/route.ts` | API | Single budget operations |
-| `app/api/wealth-snapshots/route.ts` | API | Wealth tracking data |
-| `app/api/wealth-snapshots/[id]/route.ts` | API | Single snapshot operations |
-| `app/api/category-mappings/route.ts` | API | Auto-categorization rules |
-| `app/api/category-mappings/[id]/route.ts` | API | Single mapping operations |
-| `app/api/fire-parameters/route.ts` | API | FIRE calculation parameters |
-| `app/api/fire-parameters/[id]/route.ts` | API | Single FIRE parameter operations |
+| `components/layout/Sidebar.tsx` | Component | Main navigation - critical for UX |
+| `components/layout/Header.tsx` | Component | Page header - mobile menu interaction |
+| `components/layout/AppLayout.tsx` | Component | Layout wrapper - affects all pages |
+| `app/page.tsx` | Page | Dashboard - main landing page |
 
 ### MEDIUM
 
-Validation schemas and shared utilities.
+Pages and validation schemas.
 
 | File | Type | Reason |
 |------|------|--------|
+| `app/transactions/page.tsx` | Page | Transaction list UI |
+| `app/categories/page.tsx` | Page | Category management UI |
+| `app/budgets/page.tsx` | Page | Budget dashboard UI |
+| `app/wealth/page.tsx` | Page | Wealth tracker UI |
+| `app/fire/page.tsx` | Page | FIRE calculator UI |
+| `app/settings/page.tsx` | Page | Settings page |
 | `lib/validations/accounts.ts` | Lib | Account validation schemas |
 | `lib/validations/transactions.ts` | Lib | Transaction validation schemas |
 | `lib/validations/categories.ts` | Lib | Category validation schemas |
@@ -122,7 +130,7 @@ Validation schemas and shared utilities.
 
 ### LOW
 
-UI components and utility files.
+Basic UI components with minimal logic.
 
 | File | Type | Reason |
 |------|------|--------|
@@ -135,40 +143,52 @@ UI components and utility files.
 | Test File | Tests | Status |
 |-----------|-------|--------|
 | `tests/api/health.test.ts` | 5 | Pass |
-| `tests/api/supabase-connection.test.ts` | 1+ | Pass |
+| `tests/api/supabase-connection.test.ts` | 3 | Pass |
+| `tests/api/accounts.test.ts` | 13 | Pass |
+| `tests/api/transactions.test.ts` | 22 | Pass |
+| `tests/api/categories.test.ts` | 14 | Pass |
+| `tests/api/category-mappings.test.ts` | 19 | Pass |
+| `tests/api/budgets.test.ts` | 18 | Pass |
+| `tests/api/wealth-snapshots.test.ts` | 18 | Pass |
+| `tests/api/fire-parameters.test.ts` | 19 | Pass |
+| **Total** | **131** | **All Pass** |
 
 ---
 
 ## Recommended Test Plan
 
-### Phase 1: Critical API Tests (Priority: CRITICAL)
+### Phase 1: Layout Component Tests (Priority: HIGH)
 
-1. **accounts.test.ts** - Test CRUD operations for accounts
-   - GET /api/accounts - list all accounts
-   - POST /api/accounts - create account with validation
-   - GET /api/accounts/[id] - get single account
-   - PUT /api/accounts/[id] - update account
-   - DELETE /api/accounts/[id] - delete account
-   - Error cases: invalid ID, validation errors, not found
+1. **Sidebar.test.tsx** - Navigation component tests
+   - Renders all 7 navigation items
+   - Highlights active route
+   - Responsive behavior (collapse on mobile)
+   - Navigation links work correctly
 
-2. **transactions.test.ts** - Test CRUD operations for transactions
-   - GET with filters (account_id, category_id, date range)
-   - POST with validation
-   - Single transaction operations
-   - Foreign key validation (account_id, category_id)
+2. **Header.test.tsx** - Header component tests
+   - Displays page title
+   - Mobile menu button triggers sidebar
+   - Responsive layout
 
-3. **categories.test.ts** - Test CRUD operations for categories
+3. **AppLayout.test.tsx** - Layout wrapper tests
+   - Renders children correctly
+   - Sidebar/Header integration
 
-### Phase 2: High Priority API Tests
+### Phase 2: Page E2E Tests (Priority: MEDIUM)
 
-4. **budgets.test.ts**
-5. **wealth-snapshots.test.ts**
-6. **category-mappings.test.ts**
-7. **fire-parameters.test.ts**
+4. **dashboard.spec.ts** - E2E tests for dashboard
+   - Page loads correctly
+   - Summary cards display
+   - Navigation works
 
-### Phase 3: Validation Schema Tests
+5. **navigation.spec.ts** - E2E tests for app navigation
+   - All routes accessible
+   - Active state tracking
+   - Mobile menu functionality
 
-8. **validations.test.ts** - Unit tests for all Zod schemas
+### Phase 3: Validation Schema Tests (Priority: MEDIUM)
+
+6. **validations.test.ts** - Unit tests for all Zod schemas
    - Valid input passes
    - Invalid input fails with correct errors
    - Edge cases (null, undefined, empty strings)
@@ -179,25 +199,33 @@ UI components and utility files.
 
 | Priority | File | Test Type | Suggested Test File |
 |----------|------|-----------|---------------------|
-| CRITICAL | `app/api/accounts/route.ts` | API | `tests/api/accounts.test.ts` |
-| CRITICAL | `app/api/accounts/[id]/route.ts` | API | `tests/api/accounts.test.ts` |
-| CRITICAL | `app/api/transactions/route.ts` | API | `tests/api/transactions.test.ts` |
-| CRITICAL | `app/api/transactions/[id]/route.ts` | API | `tests/api/transactions.test.ts` |
-| CRITICAL | `app/api/categories/route.ts` | API | `tests/api/categories.test.ts` |
-| CRITICAL | `app/api/categories/[id]/route.ts` | API | `tests/api/categories.test.ts` |
-| HIGH | `app/api/budgets/route.ts` | API | `tests/api/budgets.test.ts` |
-| HIGH | `app/api/budgets/[id]/route.ts` | API | `tests/api/budgets.test.ts` |
-| HIGH | `app/api/wealth-snapshots/route.ts` | API | `tests/api/wealth-snapshots.test.ts` |
-| HIGH | `app/api/wealth-snapshots/[id]/route.ts` | API | `tests/api/wealth-snapshots.test.ts` |
-| HIGH | `app/api/category-mappings/route.ts` | API | `tests/api/category-mappings.test.ts` |
-| HIGH | `app/api/category-mappings/[id]/route.ts` | API | `tests/api/category-mappings.test.ts` |
-| HIGH | `app/api/fire-parameters/route.ts` | API | `tests/api/fire-parameters.test.ts` |
-| HIGH | `app/api/fire-parameters/[id]/route.ts` | API | `tests/api/fire-parameters.test.ts` |
+| HIGH | `components/layout/Sidebar.tsx` | Unit | `tests/unit/Sidebar.test.tsx` |
+| HIGH | `components/layout/Header.tsx` | Unit | `tests/unit/Header.test.tsx` |
+| HIGH | `components/layout/AppLayout.tsx` | Unit | `tests/unit/AppLayout.test.tsx` |
+| HIGH | `app/page.tsx` | E2E | `tests/e2e/dashboard.spec.ts` |
+| MEDIUM | `app/transactions/page.tsx` | E2E | `tests/e2e/transactions.spec.ts` |
+| MEDIUM | `app/categories/page.tsx` | E2E | `tests/e2e/categories.spec.ts` |
+| MEDIUM | `app/budgets/page.tsx` | E2E | `tests/e2e/budgets.spec.ts` |
+| MEDIUM | `app/wealth/page.tsx` | E2E | `tests/e2e/wealth.spec.ts` |
+| MEDIUM | `app/fire/page.tsx` | E2E | `tests/e2e/fire.spec.ts` |
+| MEDIUM | `app/settings/page.tsx` | E2E | `tests/e2e/settings.spec.ts` |
 | MEDIUM | `lib/validations/*.ts` | Unit | `tests/unit/validations.test.ts` |
 | LOW | `components/Button.tsx` | Unit | `tests/unit/Button.test.tsx` |
 
 ---
 
+## Coverage Summary
+
+| Category | Total Files | With Tests | Coverage |
+|----------|-------------|------------|----------|
+| API Routes | 15 | 15 | 100% |
+| Components | 4 | 0 | 0% |
+| Pages | 7 | 0 | 0% |
+| Validations | 7 | 0 | 0% |
+| **Overall** | **33** | **15** | **45%** |
+
+---
+
 ## Next Steps
 
-Run `/test-build critical` to generate tests for CRITICAL priority gaps.
+Run `/test-build high` to generate tests for HIGH priority gaps (layout components).
