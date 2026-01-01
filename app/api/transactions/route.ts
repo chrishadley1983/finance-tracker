@@ -11,37 +11,64 @@ export async function GET(request: NextRequest) {
       category_id: searchParams.get('category_id') || undefined,
       start_date: searchParams.get('start_date') || undefined,
       end_date: searchParams.get('end_date') || undefined,
+      search: searchParams.get('search') || undefined,
       limit: searchParams.get('limit') || undefined,
       offset: searchParams.get('offset') || undefined,
     });
 
+    // Build base query for count
+    let countBuilder = supabaseAdmin
+      .from('transactions')
+      .select('*', { count: 'exact', head: true });
+
+    // Build query for data
     let queryBuilder = supabaseAdmin
       .from('transactions')
       .select('*, account:accounts(name), category:categories(name, group_name)')
       .order('date', { ascending: false });
 
+    // Apply filters to both queries
     if (query.account_id) {
+      countBuilder = countBuilder.eq('account_id', query.account_id);
       queryBuilder = queryBuilder.eq('account_id', query.account_id);
     }
     if (query.category_id) {
+      countBuilder = countBuilder.eq('category_id', query.category_id);
       queryBuilder = queryBuilder.eq('category_id', query.category_id);
     }
     if (query.start_date) {
+      countBuilder = countBuilder.gte('date', query.start_date);
       queryBuilder = queryBuilder.gte('date', query.start_date);
     }
     if (query.end_date) {
+      countBuilder = countBuilder.lte('date', query.end_date);
       queryBuilder = queryBuilder.lte('date', query.end_date);
     }
-
-    queryBuilder = queryBuilder.range(query.offset, query.offset + query.limit - 1);
-
-    const { data, error } = await queryBuilder;
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (query.search) {
+      countBuilder = countBuilder.ilike('description', `%${query.search}%`);
+      queryBuilder = queryBuilder.ilike('description', `%${query.search}%`);
     }
 
-    return NextResponse.json(data);
+    // Apply pagination only to data query
+    queryBuilder = queryBuilder.range(query.offset, query.offset + query.limit - 1);
+
+    // Execute both queries
+    const [countResult, dataResult] = await Promise.all([
+      countBuilder,
+      queryBuilder,
+    ]);
+
+    if (countResult.error) {
+      return NextResponse.json({ error: countResult.error.message }, { status: 500 });
+    }
+    if (dataResult.error) {
+      return NextResponse.json({ error: dataResult.error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      data: dataResult.data,
+      total: countResult.count ?? 0,
+    });
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(

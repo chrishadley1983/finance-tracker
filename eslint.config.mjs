@@ -20,8 +20,10 @@ export default [
         jsxPragma: null,
       },
       globals: {
+        ...globals.browser,
         React: "readonly",
         console: "readonly",
+        NodeJS: "readonly",
       },
     },
     plugins: {

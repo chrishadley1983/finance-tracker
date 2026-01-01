@@ -39,6 +39,7 @@ export const transactionQuerySchema = z.object({
   category_id: z.string().uuid().optional(),
   start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  search: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(1000).optional().default(100),
   offset: z.coerce.number().int().min(0).optional().default(0),
 });

@@ -27,7 +27,9 @@
       "Bash(cat:*)",
       "Bash(git push)",
       "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\testing\\\\analysis\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\testing\\\\analysis\")",
-      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\reviews\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\reviews\")"
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\reviews\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\reviews\")",
+      "Skill(merge-feature)",
+      "Skill(merge-feature:*)"
     ]
   }
 }

@@ -18,8 +18,12 @@ const mockOrder = vi.fn();
 const mockEq = vi.fn();
 const mockGte = vi.fn();
 const mockLte = vi.fn();
+const mockIlike = vi.fn();
 const mockRange = vi.fn();
 const mockSingle = vi.fn();
+
+// Mock for count query
+const mockCountResult = { count: 0, error: null };
 
 const mockFrom = vi.fn().mockReturnValue({
   select: mockSelect,
@@ -44,16 +48,38 @@ describe('Transactions API', () => {
       eq: mockEq,
       gte: mockGte,
       lte: mockLte,
+      ilike: mockIlike,
       range: mockRange,
       single: mockSingle,
       select: mockSelect,
     };
 
-    mockSelect.mockReturnValue(chainMock);
+    // Handle count query (select with { count: 'exact', head: true })
+    mockSelect.mockImplementation((selectArg: string, options?: { count?: string; head?: boolean }) => {
+      if (options?.count === 'exact' && options?.head === true) {
+        // Return a chain that resolves to count result
+        const countChainMock = {
+          order: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          gte: vi.fn().mockReturnThis(),
+          lte: vi.fn().mockReturnThis(),
+          ilike: vi.fn().mockResolvedValue(mockCountResult),
+        };
+        countChainMock.order.mockReturnValue(countChainMock);
+        countChainMock.eq.mockReturnValue(countChainMock);
+        countChainMock.gte.mockReturnValue(countChainMock);
+        countChainMock.lte.mockReturnValue(countChainMock);
+        // If no ilike is called, resolve directly
+        Object.assign(countChainMock, { then: (resolve: (value: typeof mockCountResult) => void) => resolve(mockCountResult) });
+        return countChainMock;
+      }
+      return chainMock;
+    });
     mockOrder.mockReturnValue(chainMock);
     mockEq.mockReturnValue(chainMock);
     mockGte.mockReturnValue(chainMock);
     mockLte.mockReturnValue(chainMock);
+    mockIlike.mockReturnValue(chainMock);
     mockRange.mockResolvedValue({ data: [], error: null });
     mockSingle.mockResolvedValue({ data: null, error: null });
     mockInsert.mockReturnValue({ select: () => ({ single: mockSingle }) });
@@ -66,7 +92,7 @@ describe('Transactions API', () => {
   });
 
   describe('GET /api/transactions', () => {
-    it('returns a list of transactions', async () => {
+    it('returns a list of transactions with total count', async () => {
       const mockTransactions = [
         {
           id: TEST_TRANSACTION_ID,
@@ -80,13 +106,15 @@ describe('Transactions API', () => {
         },
       ];
       mockRange.mockResolvedValue({ data: mockTransactions, error: null });
+      mockCountResult.count = 1;
 
       const request = new NextRequest('http://localhost/api/transactions');
       const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toEqual(mockTransactions);
+      expect(data.data).toEqual(mockTransactions);
+      expect(data.total).toBe(1);
       expect(mockFrom).toHaveBeenCalledWith('transactions');
     });
 
