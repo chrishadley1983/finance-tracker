@@ -15,7 +15,16 @@
       "Bash(npm run lint)",
       "Bash(ESLINT_USE_FLAT_CONFIG=true npm run lint:*)",
       "Bash(npx eslint:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Add test infrastructure and validate agent framework\n\n- Add API tests for health endpoint \\(5 tests, all passing\\)\n- Configure ESLint 9 with flat config for TypeScript/React\n- Fix Vitest setup for jest-dom matchers compatibility\n- Run all 5 agents successfully \\(test-plan, test-build, test-execute, code-review, merge-feature\\)\n- Update truth file: health feature now at 50% coverage\n\nPhase 0 agent infrastructure validation complete.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(node -r ts-node/register scripts/import-spreadsheet.ts:*)",
+      "Bash(npx tsx:*)",
+      "Bash(node -e:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=true npx eslint:*)",
+      "Bash(cat:*)"
     ]
   }
 }

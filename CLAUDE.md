@@ -99,16 +99,28 @@ Finance-Tracker/
 
 ## Current Focus
 
-**Phase 1: Data Layer**
+**Phase 2: Core UI**
 
-- [x] Set up Supabase project and connection
-- [ ] Create database schema (accounts, transactions, categories)
-- [ ] Implement Row Level Security (RLS) policies
-- [ ] Create API routes for CRUD operations
-- [ ] Add Zod validation schemas
-- [ ] Write tests for data layer
+- [ ] Transaction list view with filtering
+- [ ] Category management UI
+- [ ] Budget dashboard
+- [ ] Basic navigation/layout
 
 **Completed Phases:**
+
+<details>
+<summary>Phase 1: Data Layer ✅</summary>
+
+- [x] Set up Supabase project and connection
+- [x] Create database schema (7 tables, enums, indexes, triggers)
+- [x] Generate TypeScript types from schema
+- [x] Implement Row Level Security (RLS) policies
+- [x] Create API routes for CRUD operations (7 endpoints)
+- [x] Add Zod validation schemas
+- [x] Write tests for data layer (131 tests)
+- [x] Import spreadsheet data (6,848 transactions)
+
+</details>
 
 <details>
 <summary>Phase 0: Agent Infrastructure Validation ✅</summary>

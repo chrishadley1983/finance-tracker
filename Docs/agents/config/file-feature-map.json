@@ -2,8 +2,18 @@
   "description": "Maps source files to features they affect. Used for invalidation detection.",
   "patterns": [
     { "glob": "app/api/health/**", "features": ["health"] },
+    { "glob": "app/api/accounts/**", "features": ["accounts", "api"] },
+    { "glob": "app/api/transactions/**", "features": ["transactions", "api"] },
+    { "glob": "app/api/categories/**", "features": ["categories", "api"] },
+    { "glob": "app/api/category-mappings/**", "features": ["category-mappings", "api"] },
+    { "glob": "app/api/budgets/**", "features": ["budgets", "api"] },
+    { "glob": "app/api/wealth-snapshots/**", "features": ["wealth-snapshots", "api"] },
+    { "glob": "app/api/fire-parameters/**", "features": ["fire-parameters", "api"] },
     { "glob": "components/Button.tsx", "features": ["ui"] },
-    { "glob": "lib/**", "features": ["*"] }
+    { "glob": "lib/**", "features": ["*"] },
+    { "glob": "lib/supabase/**", "features": ["database", "supabase"] },
+    { "glob": "lib/validations/**", "features": ["validations", "api"] },
+    { "glob": "supabase/migrations/**", "features": ["database", "schema"] }
   ],
   "overrides": {}
 }
