@@ -6,7 +6,7 @@ Personal finance application replacing "Life Planning V2" spreadsheet. Transacti
 
 **Tech Stack:** Next.js 14 (App Router), Supabase, TypeScript, Tailwind CSS v4, Vitest
 
-**Current Phase:** Phase 1 - Data Layer
+**Current Phase:** Phase 3 - HSBC Integration
 
 ---
 
@@ -38,18 +38,33 @@ Personal finance application replacing "Life Planning V2" spreadsheet. Transacti
 Finance-Tracker/
 ├── .claude/commands/        # Agent slash commands
 ├── app/                     # Next.js App Router
-│   └── api/health/          # Health check endpoint
-├── components/              # React components
+│   ├── api/                 # API routes
+│   │   ├── accounts/
+│   │   ├── budgets/
+│   │   ├── categories/
+│   │   ├── fire-parameters/
+│   │   ├── transactions/
+│   │   │   ├── summary/
+│   │   │   ├── by-category/
+│   │   │   └── monthly-trend/
+│   │   └── wealth-snapshots/
+│   ├── transactions/        # Transaction list page
+│   └── page.tsx             # Dashboard
+├── components/
+│   ├── layout/              # Sidebar, Header
+│   ├── dashboard/           # SummaryCards, RecentTransactions, etc.
+│   └── transactions/        # TransactionTable, Filters, Pagination
+├── lib/
+│   ├── hooks/               # useTransactions, useDashboardData
+│   ├── supabase/            # Database client
+│   └── validations/         # Zod schemas
 ├── docs/
 │   ├── agents/
 │   │   ├── config/          # boot-sequence.md, file-feature-map.json
 │   │   ├── truth/           # feature-status.json (THE source of truth)
-│   │   ├── test-plan/       # state.json
-│   │   ├── test-build/      # state.json
-│   │   ├── test-execute/    # state.json
-│   │   ├── code-review/     # state.json
-│   │   └── merge-feature/   # state.json
-│   └── knowledge/           # Project documentation (to be created)
+│   │   └── [agent-name]/    # state.json per agent
+│   └── knowledge/           # Project documentation
+├── scripts/                 # Import scripts
 ├── tests/
 │   ├── unit/
 │   ├── api/
@@ -99,14 +114,27 @@ Finance-Tracker/
 
 ## Current Focus
 
-**Phase 2: Core UI**
+**Phase 3: HSBC Integration**
 
-- [ ] Transaction list view with filtering
-- [ ] Category management UI
-- [ ] Budget dashboard
-- [ ] Basic navigation/layout
+- [ ] HSBC Open Banking auth flow
+- [ ] Account linking & storage
+- [ ] Transaction sync service
+- [ ] Duplicate detection (imported vs synced)
 
 **Completed Phases:**
+
+<details>
+<summary>Phase 2: Core UI ✅</summary>
+
+- [x] Layout structure (Sidebar, Header)
+- [x] Transaction list with filtering, sorting, pagination
+- [x] Dashboard with summary cards
+- [x] Recent transactions widget
+- [x] Spending by category chart
+- [x] Monthly trend chart
+- [x] Dashboard API routes (summary, by-category, monthly-trend)
+
+</details>
 
 <details>
 <summary>Phase 1: Data Layer ✅</summary>
