@@ -25,7 +25,7 @@ describe('TransactionFilters', () => {
       if (url === '/api/accounts') {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve(mockAccounts),
+          json: () => Promise.resolve({ accounts: mockAccounts }),
         });
       }
       if (url === '/api/categories') {

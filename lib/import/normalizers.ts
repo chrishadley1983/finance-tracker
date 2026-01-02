@@ -65,6 +65,21 @@ const DATE_PATTERNS: { regex: RegExp; format: string; parse: (m: RegExpMatchArra
       return createDate(parseInt(m[3]), monthMap[m[2].toLowerCase()], parseInt(m[1]));
     },
   },
+  // Text format: DD MMM YY (e.g., "02 Aug 25" for HSBC statements)
+  {
+    regex: /^(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{2})$/i,
+    format: 'DD MMM YY',
+    parse: (m) => {
+      const monthMap: Record<string, number> = {
+        jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
+        jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+      };
+      // Convert 2-digit year to 4-digit (assume 2000s for 00-99)
+      const year2digit = parseInt(m[3]);
+      const year = year2digit >= 0 && year2digit <= 99 ? 2000 + year2digit : year2digit;
+      return createDate(year, monthMap[m[2].toLowerCase()], parseInt(m[1]));
+    },
+  },
   // Full month name: DD Month YYYY (e.g., "15 January 2025")
   {
     regex: /^(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})$/i,

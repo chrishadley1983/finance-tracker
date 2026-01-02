@@ -21,15 +21,18 @@ describe('UploadStep', () => {
     it('renders upload dropzone', () => {
       render(<UploadStep onComplete={mockOnComplete} />);
 
-      expect(screen.getByText('Upload CSV File')).toBeInTheDocument();
-      expect(screen.getByText(/drag & drop your csv file/i)).toBeInTheDocument();
+      expect(screen.getByText('Upload Bank Statement')).toBeInTheDocument();
+      expect(screen.getByText(/drag & drop your csv or pdf file/i)).toBeInTheDocument();
     });
 
-    it('renders supported banks list', () => {
+    it('renders supported formats list', () => {
       render(<UploadStep onComplete={mockOnComplete} />);
 
-      expect(screen.getByText('Supported Banks')).toBeInTheDocument();
-      expect(screen.getByText('HSBC Current')).toBeInTheDocument();
+      expect(screen.getByText('Supported Formats')).toBeInTheDocument();
+      expect(screen.getByText('CSV')).toBeInTheDocument();
+      expect(screen.getByText('PDF Statements')).toBeInTheDocument();
+      // HSBC Current appears twice (once for CSV, once for PDF)
+      expect(screen.getAllByText('HSBC Current')).toHaveLength(2);
       expect(screen.getByText('HSBC Credit Card')).toBeInTheDocument();
       expect(screen.getByText('Monzo')).toBeInTheDocument();
       expect(screen.getByText('American Express UK')).toBeInTheDocument();
@@ -146,6 +149,46 @@ describe('UploadStep', () => {
 
       await waitFor(() => {
         expect(mockOnComplete).toHaveBeenCalledWith(uploadResult);
+      });
+    });
+
+    it('calls PDF API on PDF file drop', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            sessionId: 'pdf-session',
+            filename: 'statement.pdf',
+            headers: ['Date', 'Payment Type', 'Description', 'Paid Out', 'Paid In', 'Balance'],
+            sampleRows: [['01 Dec 25', 'DD', 'Netflix', '15.99', '', '1234.56']],
+            totalRows: 10,
+            detectedFormat: { id: 'pdf_hsbc_current', name: 'HSBC PDF Statement', confidence: 0.95 },
+            suggestedMapping: { date: 'Date', description: 'Description', debit: 'Paid Out', credit: 'Paid In' },
+            sourceType: 'pdf',
+            pdfMetadata: { totalPages: 2, processedPages: 2, visionConfidence: 0.95 },
+          }),
+      });
+
+      render(<UploadStep onComplete={mockOnComplete} />);
+
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const file = new File(['%PDF-1.4'], 'statement.pdf', {
+        type: 'application/pdf',
+      });
+
+      Object.defineProperty(input, 'files', {
+        value: [file],
+      });
+
+      fireEvent.drop(input, {
+        dataTransfer: {
+          files: [file],
+          types: ['Files'],
+        },
+      });
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith('/api/import/upload-pdf', expect.any(Object));
       });
     });
   });

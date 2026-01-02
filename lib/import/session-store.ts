@@ -5,12 +5,30 @@
  * Data is stored temporarily until import is completed or session expires.
  */
 
-interface SessionData {
+export interface PdfMetadata {
+  totalPages: number;
+  processedPages: number;
+  visionConfidence: number;
+  originalFilename: string;
+  statementPeriod?: {
+    start: string;
+    end: string;
+  };
+  accountInfo?: {
+    accountNumber?: string;
+    sortCode?: string;
+    accountName?: string;
+  };
+}
+
+export interface SessionData {
   headers: string[];
   rows: string[][];
   encoding: string;
   delimiter: string;
   createdAt: Date;
+  sourceType: 'csv' | 'pdf';
+  pdfMetadata?: PdfMetadata;
 }
 
 // In-memory store for session data
@@ -20,7 +38,7 @@ const sessionStore = new Map<string, SessionData>();
 const SESSION_EXPIRY_MS = 60 * 60 * 1000;
 
 /**
- * Store parsed CSV data for a session.
+ * Store parsed data for a session.
  */
 export function storeSessionData(
   sessionId: string,
@@ -29,10 +47,13 @@ export function storeSessionData(
     rows: string[][];
     encoding: string;
     delimiter: string;
+    sourceType?: 'csv' | 'pdf';
+    pdfMetadata?: PdfMetadata;
   }
 ): void {
   sessionStore.set(sessionId, {
     ...data,
+    sourceType: data.sourceType || 'csv',
     createdAt: new Date(),
   });
 }

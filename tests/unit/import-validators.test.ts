@@ -405,5 +405,60 @@ describe('Import Validation', () => {
       // Row 1 in data = row 4 in original file (2 skipped + 1 header + 1 data)
       expect(result.transactions[0].rowNumber).toBe(4);
     });
+
+    it('carries forward date for PDF imports when date is empty', () => {
+      const headers = ['Date', 'Description', 'Paid Out', 'Paid In'];
+      const rows = [
+        ['02 Aug 25', 'First transaction', '100', ''],
+        ['', 'Second transaction same day', '50', ''],
+        ['', 'Third transaction same day', '', '200'],
+        ['03 Aug 25', 'Next day transaction', '75', ''],
+        ['', 'Another same day', '25', ''],
+      ];
+      const mapping = {
+        date: 'Date',
+        description: 'Description',
+        debit: 'Paid Out',
+        credit: 'Paid In',
+      };
+
+      const result = validateRows(rows, headers, mapping, {
+        carryForwardDate: true,
+        amountInSingleColumn: false,
+      });
+
+      // All 5 transactions should be valid
+      expect(result.transactions).toHaveLength(5);
+      expect(result.errors).toHaveLength(0);
+
+      // Check dates are carried forward correctly
+      expect(result.transactions[0].date).toBe('2025-08-02');
+      expect(result.transactions[1].date).toBe('2025-08-02');
+      expect(result.transactions[2].date).toBe('2025-08-02');
+      expect(result.transactions[3].date).toBe('2025-08-03');
+      expect(result.transactions[4].date).toBe('2025-08-03');
+    });
+
+    it('does not carry forward date when option is disabled', () => {
+      const headers = ['Date', 'Description', 'Amount'];
+      const rows = [
+        ['02 Aug 25', 'First transaction', '100'],
+        ['', 'Second transaction no date', '50'],
+      ];
+      const mapping = {
+        date: 'Date',
+        description: 'Description',
+        amount: 'Amount',
+      };
+
+      const result = validateRows(rows, headers, mapping, {
+        carryForwardDate: false,
+      });
+
+      // Only first transaction should be valid
+      expect(result.transactions).toHaveLength(1);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].message).toContain('Date is required');
+    });
   });
 });

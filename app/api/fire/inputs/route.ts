@@ -8,14 +8,14 @@ type InputsRow = Database['public']['Tables']['fire_inputs']['Row'];
 function mapInputsRow(row: InputsRow): FireInputs {
   return {
     id: row.id,
-    currentAge: row.current_age,
+    currentAge: row.current_age ?? 35,
     targetRetirementAge: row.target_retirement_age,
     currentPortfolioValue: row.current_portfolio_value,
     annualIncome: row.annual_income,
     annualSavings: row.annual_savings,
-    includeStatePension: row.include_state_pension,
-    partnerStatePension: row.partner_state_pension,
-    updatedAt: row.updated_at,
+    includeStatePension: row.include_state_pension ?? true,
+    partnerStatePension: row.partner_state_pension ?? false,
+    updatedAt: row.updated_at ?? new Date().toISOString(),
   };
 }
 

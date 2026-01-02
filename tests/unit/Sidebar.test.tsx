@@ -32,6 +32,7 @@ describe('Sidebar', () => {
       render(<Sidebar isOpen={true} onClose={mockOnClose} />);
 
       expect(screen.getByText('Dashboard')).toBeInTheDocument();
+      expect(screen.getByText('Accounts')).toBeInTheDocument();
       expect(screen.getByText('Transactions')).toBeInTheDocument();
       expect(screen.getByText('Import')).toBeInTheDocument();
       expect(screen.getByText('Categories')).toBeInTheDocument();
@@ -51,10 +52,11 @@ describe('Sidebar', () => {
       render(<Sidebar isOpen={true} onClose={mockOnClose} />);
 
       const links = screen.getAllByRole('link');
-      expect(links.length).toBe(10);
+      expect(links.length).toBe(11);
 
       const hrefs = links.map(link => link.getAttribute('href'));
       expect(hrefs).toContain('/');
+      expect(hrefs).toContain('/accounts');
       expect(hrefs).toContain('/transactions');
       expect(hrefs).toContain('/import');
       expect(hrefs).toContain('/review');

@@ -36,6 +36,19 @@ describe('Date Normalization', () => {
       expect(formatDateToISO(result.date!)).toBe('2024-01-15');
     });
 
+    it('parses HSBC format DD MMM YY (2-digit year)', () => {
+      const result = normalizeDate('02 Aug 25');
+      expect(result.date).not.toBeNull();
+      expect(result.format).toBe('DD MMM YY');
+      expect(formatDateToISO(result.date!)).toBe('2025-08-02');
+    });
+
+    it('parses HSBC format with various months', () => {
+      expect(formatDateToISO(normalizeDate('01 Dec 25').date!)).toBe('2025-12-01');
+      expect(formatDateToISO(normalizeDate('15 Jan 24').date!)).toBe('2024-01-15');
+      expect(formatDateToISO(normalizeDate('3 Mar 23').date!)).toBe('2023-03-03');
+    });
+
     it('parses full month name DD MMMM YYYY', () => {
       const result = normalizeDate('15 January 2024');
       expect(result.date).not.toBeNull();

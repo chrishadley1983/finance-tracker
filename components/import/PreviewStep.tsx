@@ -77,9 +77,9 @@ export function PreviewStep({
 
         if (accountsResponse.ok) {
           const accountData = await accountsResponse.json();
-          setAccounts(accountData.data || []);
-          if (accountData.data?.length === 1) {
-            setSelectedAccountId(accountData.data[0].id);
+          setAccounts(accountData.accounts || []);
+          if (accountData.accounts?.length === 1) {
+            setSelectedAccountId(accountData.accounts[0].id);
           }
         }
       } catch (err) {

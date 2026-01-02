@@ -17,31 +17,31 @@ function mapScenarioRow(row: ScenarioRow): FireScenario {
     id: row.id,
     name: row.name,
     description: row.description,
-    annualSpend: row.annual_spend,
-    withdrawalRate: row.withdrawal_rate,
-    expectedReturn: row.expected_return,
-    inflationRate: row.inflation_rate,
+    annualSpend: row.annual_spend ?? 0,
+    withdrawalRate: row.withdrawal_rate ?? 4,
+    expectedReturn: row.expected_return ?? 7,
+    inflationRate: row.inflation_rate ?? 2.5,
     retirementAge: row.retirement_age,
-    statePensionAge: row.state_pension_age,
-    statePensionAnnual: row.state_pension_annual,
-    isDefault: row.is_default,
-    sortOrder: row.sort_order,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    statePensionAge: row.state_pension_age ?? 67,
+    statePensionAnnual: row.state_pension_annual ?? 11500,
+    isDefault: row.is_default ?? false,
+    sortOrder: row.sort_order ?? 0,
+    createdAt: row.created_at ?? new Date().toISOString(),
+    updatedAt: row.updated_at ?? new Date().toISOString(),
   };
 }
 
 function mapInputsRow(row: InputsRow): FireInputs {
   return {
     id: row.id,
-    currentAge: row.current_age,
+    currentAge: row.current_age ?? 35,
     targetRetirementAge: row.target_retirement_age,
     currentPortfolioValue: row.current_portfolio_value,
     annualIncome: row.annual_income,
     annualSavings: row.annual_savings,
-    includeStatePension: row.include_state_pension,
-    partnerStatePension: row.partner_state_pension,
-    updatedAt: row.updated_at,
+    includeStatePension: row.include_state_pension ?? true,
+    partnerStatePension: row.partner_state_pension ?? false,
+    updatedAt: row.updated_at ?? new Date().toISOString(),
   };
 }
 
