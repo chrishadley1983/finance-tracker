@@ -15,22 +15,39 @@ interface UploadResult {
     confidence: number;
   } | null;
   suggestedMapping: Record<string, string> | null;
+  sourceType?: 'csv' | 'pdf';
+  pdfMetadata?: {
+    totalPages: number;
+    processedPages: number;
+    visionConfidence: number;
+    statementPeriod?: { start: string; end: string };
+    accountInfo?: { accountNumber?: string; sortCode?: string; accountName?: string };
+  };
 }
 
 interface UploadStepProps {
   onComplete: (result: UploadResult) => void;
 }
 
+function isPdfFile(file: File): boolean {
+  return (
+    file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+  );
+}
+
 export function UploadStep({ onComplete }: UploadStepProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [fileType, setFileType] = useState<'csv' | 'pdf' | null>(null);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
       if (!file) return;
 
+      const isPdf = isPdfFile(file);
+      setFileType(isPdf ? 'pdf' : 'csv');
       setIsUploading(true);
       setError(null);
       setUploadProgress(0);
@@ -39,12 +56,16 @@ export function UploadStep({ onComplete }: UploadStepProps) {
         const formData = new FormData();
         formData.append('file', file);
 
-        // Simulate progress for better UX
-        const progressInterval = setInterval(() => {
-          setUploadProgress((prev) => Math.min(prev + 10, 90));
-        }, 100);
+        // Determine endpoint based on file type
+        const endpoint = isPdf ? '/api/import/upload-pdf' : '/api/import/upload';
 
-        const response = await fetch('/api/import/upload', {
+        // PDF processing takes longer - use slower progress for PDFs
+        const progressIncrement = isPdf ? 3 : 10;
+        const progressInterval = setInterval(() => {
+          setUploadProgress((prev) => Math.min(prev + progressIncrement, 90));
+        }, isPdf ? 500 : 100);
+
+        const response = await fetch(endpoint, {
           method: 'POST',
           body: formData,
         });
@@ -63,6 +84,7 @@ export function UploadStep({ onComplete }: UploadStepProps) {
         setError(err instanceof Error ? err.message : 'Failed to upload file');
       } finally {
         setIsUploading(false);
+        setFileType(null);
       }
     },
     [onComplete]
@@ -74,6 +96,7 @@ export function UploadStep({ onComplete }: UploadStepProps) {
       'text/csv': ['.csv'],
       'application/vnd.ms-excel': ['.csv'],
       'text/plain': ['.csv'],
+      'application/pdf': ['.pdf'],
     },
     maxFiles: 1,
     disabled: isUploading,
@@ -82,9 +105,9 @@ export function UploadStep({ onComplete }: UploadStepProps) {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-slate-900 mb-2">Upload CSV File</h2>
+        <h2 className="text-xl font-semibold text-slate-900 mb-2">Upload Bank Statement</h2>
         <p className="text-slate-600">
-          Upload a CSV file exported from your bank. We support most major UK banks.
+          Upload a CSV export or PDF statement from your bank. We support most major UK banks.
         </p>
       </div>
 
@@ -131,7 +154,11 @@ export function UploadStep({ onComplete }: UploadStepProps) {
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
-              <p className="text-sm text-slate-600 mt-2">Processing file...</p>
+              <p className="text-sm text-slate-600 mt-2">
+                {fileType === 'pdf'
+                  ? 'Extracting transactions from PDF... This may take a minute.'
+                  : 'Processing file...'}
+              </p>
             </div>
           </div>
         ) : (
@@ -151,13 +178,13 @@ export function UploadStep({ onComplete }: UploadStepProps) {
             )}
             {isDragReject && (
               <p className="text-lg font-medium text-red-600">
-                Only CSV files are accepted
+                Only CSV and PDF files are accepted
               </p>
             )}
             {!isDragActive && (
               <>
                 <p className="text-lg font-medium text-slate-700 mb-1">
-                  Drag & drop your CSV file here
+                  Drag & drop your CSV or PDF file here
                 </p>
                 <p className="text-slate-500">or click to browse</p>
               </>
@@ -189,15 +216,26 @@ export function UploadStep({ onComplete }: UploadStepProps) {
       )}
 
       <div className="bg-slate-50 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-slate-900 mb-2">Supported Banks</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm text-slate-600">
-          <span>HSBC Current</span>
-          <span>HSBC Credit Card</span>
-          <span>Monzo</span>
-          <span>American Express UK</span>
+        <h3 className="text-sm font-medium text-slate-900 mb-2">Supported Formats</h3>
+        <div className="space-y-2">
+          <div>
+            <span className="text-xs font-medium text-slate-700 uppercase tracking-wide">CSV</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm text-slate-600 mt-1">
+              <span>HSBC Current</span>
+              <span>HSBC Credit Card</span>
+              <span>Monzo</span>
+              <span>American Express UK</span>
+            </div>
+          </div>
+          <div>
+            <span className="text-xs font-medium text-slate-700 uppercase tracking-wide">PDF Statements</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm text-slate-600 mt-1">
+              <span>HSBC Current</span>
+            </div>
+          </div>
         </div>
         <p className="text-xs text-slate-500 mt-3">
-          Don&apos;t see your bank? You can manually map columns in the next step.
+          Don&apos;t see your bank? CSV files can be manually mapped in the next step.
         </p>
       </div>
     </div>

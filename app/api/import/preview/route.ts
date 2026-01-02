@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { previewRequestSchema } from '@/lib/validations/import';
-import { getSessionData, validateRows, validateImport } from '@/lib/import';
+import { getSessionData, storeSessionData, validateRows, validateImport } from '@/lib/import';
 import type { ColumnMapping } from '@/lib/validations/import';
 import type { ImportFormat } from '@/lib/types/import';
 import { ZodError } from 'zod';
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const validated = previewRequestSchema.parse(body);
 
     // Get session data from memory store
-    const sessionData = getSessionData(validated.sessionId);
+    let sessionData = getSessionData(validated.sessionId);
 
     if (!sessionData) {
       // Try to load from database
@@ -29,12 +29,49 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Session exists in DB but not in memory - would need to re-upload
-      // This is a limitation of in-memory storage
-      return NextResponse.json(
-        { error: 'Session data expired. Please upload the file again.' },
-        { status: 410 }
-      );
+      // Restore session data from database if rows are stored
+      const rawData = session.raw_data as {
+        headers?: string[];
+        rows?: string[][];
+        encoding?: string;
+        delimiter?: string;
+        sourceType?: 'csv' | 'pdf';
+        pdfMetadata?: {
+          totalPages: number;
+          processedPages: number;
+          visionConfidence: number;
+          statementPeriod?: { start: string; end: string };
+          accountInfo?: { accountNumber?: string; sortCode?: string; accountName?: string };
+        };
+      };
+
+      if (!rawData.rows || !rawData.headers) {
+        return NextResponse.json(
+          { error: 'Session data expired. Please upload the file again.' },
+          { status: 410 }
+        );
+      }
+
+      // Restore to memory store
+      storeSessionData(validated.sessionId, {
+        headers: rawData.headers,
+        rows: rawData.rows,
+        encoding: rawData.encoding || 'utf-8',
+        delimiter: rawData.delimiter || ',',
+        sourceType: rawData.sourceType,
+        pdfMetadata: rawData.pdfMetadata ? {
+          ...rawData.pdfMetadata,
+          originalFilename: '', // Not stored in DB
+        } : undefined,
+      });
+
+      sessionData = getSessionData(validated.sessionId);
+      if (!sessionData) {
+        return NextResponse.json(
+          { error: 'Failed to restore session data' },
+          { status: 500 }
+        );
+      }
     }
 
     // Get column mapping
@@ -94,6 +131,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate rows
+    // Enable carryForwardDate for PDF imports (date only shown on first tx of each day)
     const { transactions, errors, warnings } = validateRows(
       sessionData.rows,
       sessionData.headers,
@@ -103,6 +141,7 @@ export async function POST(request: NextRequest) {
         decimalSeparator: formatOptions.decimalSeparator,
         amountInSingleColumn: formatOptions.amountInSingleColumn,
         skipRows: formatOptions.skipRows,
+        carryForwardDate: sessionData.sourceType === 'pdf',
       }
     );
 
@@ -120,15 +159,34 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Transform errors to format expected by frontend: { row: number; errors: string[] }
+    const errorsByRow = new Map<number, string[]>();
+    for (const err of errors) {
+      const existing = errorsByRow.get(err.rowNumber) || [];
+      existing.push(err.message);
+      errorsByRow.set(err.rowNumber, existing);
+    }
+    const transformedErrors = Array.from(errorsByRow.entries()).map(([row, errs]) => ({
+      row,
+      errors: errs,
+    }));
+
+    // Transform warnings to string[]
+    const transformedWarnings = [...warnings, ...validation.warnings].map(w =>
+      w.rowNumber ? `Row ${w.rowNumber}: ${w.message}` : w.message
+    );
+
     return NextResponse.json({
       transactions,
       validation: {
         totalRows: sessionData.rows.length,
         validRows: transactions.length,
-        invalidRows: errors.length,
-        errors,
-        warnings: [...warnings, ...validation.warnings],
-        dateRange: validation.dateRange,
+        invalidRows: transformedErrors.length,
+        errors: transformedErrors,
+        warnings: transformedWarnings,
+        dateRange: validation.dateRange
+          ? { earliest: validation.dateRange.min, latest: validation.dateRange.max }
+          : null,
         totalCredits: Math.round(totalCredits * 100) / 100,
         totalDebits: Math.round(totalDebits * 100) / 100,
       },

@@ -16,38 +16,59 @@ export type Database = {
     Tables: {
       accounts: {
         Row: {
+          color: string | null
           created_at: string
           hsbc_account_id: string | null
+          icon: string | null
           id: string
+          include_in_net_worth: boolean | null
           investment_provider: string | null
           investment_type: string | null
           is_active: boolean
+          is_archived: boolean | null
+          last_import_at: string | null
           name: string
+          notes: string | null
           provider: string
+          sort_order: number | null
           type: Database["public"]["Enums"]["account_type"]
           updated_at: string
         }
         Insert: {
+          color?: string | null
           created_at?: string
           hsbc_account_id?: string | null
+          icon?: string | null
           id?: string
+          include_in_net_worth?: boolean | null
           investment_provider?: string | null
           investment_type?: string | null
           is_active?: boolean
+          is_archived?: boolean | null
+          last_import_at?: string | null
           name: string
+          notes?: string | null
           provider: string
+          sort_order?: number | null
           type: Database["public"]["Enums"]["account_type"]
           updated_at?: string
         }
         Update: {
+          color?: string | null
           created_at?: string
           hsbc_account_id?: string | null
+          icon?: string | null
           id?: string
+          include_in_net_worth?: boolean | null
           investment_provider?: string | null
           investment_type?: string | null
           is_active?: boolean
+          is_archived?: boolean | null
+          last_import_at?: string | null
           name?: string
+          notes?: string | null
           provider?: string
+          sort_order?: number | null
           type?: Database["public"]["Enums"]["account_type"]
           updated_at?: string
         }
@@ -104,93 +125,6 @@ export type Database = {
           date?: string
           id?: string
           usage_type?: string
-        }
-        Relationships: []
-      }
-      fire_inputs: {
-        Row: {
-          id: string
-          current_age: number
-          target_retirement_age: number | null
-          current_portfolio_value: number | null
-          annual_income: number | null
-          annual_savings: number | null
-          include_state_pension: boolean
-          partner_state_pension: boolean
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          current_age: number
-          target_retirement_age?: number | null
-          current_portfolio_value?: number | null
-          annual_income?: number | null
-          annual_savings?: number | null
-          include_state_pension?: boolean
-          partner_state_pension?: boolean
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          current_age?: number
-          target_retirement_age?: number | null
-          current_portfolio_value?: number | null
-          annual_income?: number | null
-          annual_savings?: number | null
-          include_state_pension?: boolean
-          partner_state_pension?: boolean
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      fire_scenarios: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          annual_spend: number
-          withdrawal_rate: number
-          expected_return: number
-          inflation_rate: number
-          retirement_age: number | null
-          state_pension_age: number
-          state_pension_annual: number
-          is_default: boolean
-          sort_order: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          annual_spend: number
-          withdrawal_rate?: number
-          expected_return?: number
-          inflation_rate?: number
-          retirement_age?: number | null
-          state_pension_age?: number
-          state_pension_annual?: number
-          is_default?: boolean
-          sort_order?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          annual_spend?: number
-          withdrawal_rate?: number
-          expected_return?: number
-          inflation_rate?: number
-          retirement_age?: number | null
-          state_pension_age?: number
-          state_pension_annual?: number
-          is_default?: boolean
-          sort_order?: number
-          created_at?: string
-          updated_at?: string
         }
         Relationships: []
       }
@@ -359,6 +293,42 @@ export type Database = {
           },
         ]
       }
+      fire_inputs: {
+        Row: {
+          annual_income: number | null
+          annual_savings: number | null
+          current_age: number
+          current_portfolio_value: number | null
+          id: string
+          include_state_pension: boolean | null
+          partner_state_pension: boolean | null
+          target_retirement_age: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          annual_income?: number | null
+          annual_savings?: number | null
+          current_age: number
+          current_portfolio_value?: number | null
+          id?: string
+          include_state_pension?: boolean | null
+          partner_state_pension?: boolean | null
+          target_retirement_age?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          annual_income?: number | null
+          annual_savings?: number | null
+          current_age?: number
+          current_portfolio_value?: number | null
+          id?: string
+          include_state_pension?: boolean | null
+          partner_state_pension?: boolean | null
+          target_retirement_age?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       fire_parameters: {
         Row: {
           annual_spend: number
@@ -392,6 +362,57 @@ export type Database = {
           state_pension_age?: number
           state_pension_amount?: number
           withdrawal_rate?: number
+        }
+        Relationships: []
+      }
+      fire_scenarios: {
+        Row: {
+          annual_spend: number
+          created_at: string | null
+          description: string | null
+          expected_return: number | null
+          id: string
+          inflation_rate: number | null
+          is_default: boolean | null
+          name: string
+          retirement_age: number | null
+          sort_order: number | null
+          state_pension_age: number | null
+          state_pension_annual: number | null
+          updated_at: string | null
+          withdrawal_rate: number | null
+        }
+        Insert: {
+          annual_spend: number
+          created_at?: string | null
+          description?: string | null
+          expected_return?: number | null
+          id?: string
+          inflation_rate?: number | null
+          is_default?: boolean | null
+          name: string
+          retirement_age?: number | null
+          sort_order?: number | null
+          state_pension_age?: number | null
+          state_pension_annual?: number | null
+          updated_at?: string | null
+          withdrawal_rate?: number | null
+        }
+        Update: {
+          annual_spend?: number
+          created_at?: string | null
+          description?: string | null
+          expected_return?: number | null
+          id?: string
+          inflation_rate?: number | null
+          is_default?: boolean | null
+          name?: string
+          retirement_age?: number | null
+          sort_order?: number | null
+          state_pension_age?: number | null
+          state_pension_annual?: number | null
+          updated_at?: string | null
+          withdrawal_rate?: number | null
         }
         Relationships: []
       }
@@ -618,7 +639,7 @@ export type Database = {
           description: string
           hsbc_transaction_id: string | null
           id: string
-          needs_review: boolean
+          needs_review: boolean | null
         }
         Insert: {
           account_id: string
@@ -630,7 +651,7 @@ export type Database = {
           description: string
           hsbc_transaction_id?: string | null
           id?: string
-          needs_review?: boolean
+          needs_review?: boolean | null
         }
         Update: {
           account_id?: string
@@ -642,7 +663,7 @@ export type Database = {
           description?: string
           hsbc_transaction_id?: string | null
           id?: string
-          needs_review?: boolean
+          needs_review?: boolean | null
         }
         Relationships: [
           {
@@ -716,6 +737,16 @@ export type Database = {
           similarity: number
         }[]
       }
+      get_account_transaction_stats: {
+        Args: { account_ids: string[] }
+        Returns: {
+          account_id: string
+          balance: number
+          earliest_date: string
+          latest_date: string
+          tx_count: number
+        }[]
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
@@ -727,6 +758,8 @@ export type Database = {
         | "isa"
         | "investment"
         | "property"
+        | "credit"
+        | "other"
       categorisation_source: "manual" | "rule" | "ai" | "import"
       import_status: "pending" | "processing" | "completed" | "failed"
       match_type: "exact" | "contains" | "regex"
@@ -864,6 +897,8 @@ export const Constants = {
         "isa",
         "investment",
         "property",
+        "credit",
+        "other",
       ],
       categorisation_source: ["manual", "rule", "ai", "import"],
       import_status: ["pending", "processing", "completed", "failed"],

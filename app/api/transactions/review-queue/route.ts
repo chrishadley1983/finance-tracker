@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
       categoryName: t.categories?.name || null,
       accountId: t.account_id,
       accountName: t.accounts?.name || 'Unknown',
-      needsReview: t.needs_review,
+      needsReview: t.needs_review ?? false,
       createdAt: t.created_at || '',
     }));
 

@@ -32,7 +32,7 @@ export function TransactionFilters({ filters, onChange }: TransactionFiltersProp
         const response = await fetch('/api/accounts');
         if (response.ok) {
           const data = await response.json();
-          setAccounts(data);
+          setAccounts(data.accounts || []);
         }
       } catch (error) {
         console.error('Failed to fetch accounts:', error);

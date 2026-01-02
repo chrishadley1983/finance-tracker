@@ -291,6 +291,7 @@ export function validateRows(
     decimalSeparator?: '.' | ',';
     amountInSingleColumn?: boolean;
     skipRows?: number;
+    carryForwardDate?: boolean; // For PDF imports where date only shown on first tx of day
   } = {}
 ): {
   transactions: ParsedTransaction[];
@@ -300,6 +301,9 @@ export function validateRows(
   const transactions: ParsedTransaction[] = [];
   const allErrors: ValidationError[] = [];
   const allWarnings: ValidationWarning[] = [];
+
+  // Track last valid date for carry-forward feature (PDF imports)
+  let lastValidDate: string | null = null;
 
   // Convert rows to objects using headers
   for (let i = 0; i < rows.length; i++) {
@@ -312,10 +316,33 @@ export function validateRows(
       rowData[headers[j]] = row[j] || '';
     }
 
+    // For PDF imports: if date is empty and we have a last valid date, carry it forward
+    if (options.carryForwardDate && lastValidDate) {
+      const dateCol = mapping.date;
+      if (!rowData[dateCol] || rowData[dateCol].trim() === '') {
+        rowData[dateCol] = lastValidDate;
+      }
+    }
+
     const result = validateRow(rowData, mapping, rowNumber, options);
 
     if (result.isValid && result.transaction) {
       transactions.push(result.transaction);
+      // Update last valid date from the raw input (not the ISO formatted one)
+      const rawDate = rowData[mapping.date];
+      if (rawDate && rawDate.trim() !== '') {
+        lastValidDate = rawDate;
+      }
+    } else if (options.carryForwardDate) {
+      // Even if validation failed, try to capture the date for carry-forward
+      const rawDate = rowData[mapping.date];
+      if (rawDate && rawDate.trim() !== '') {
+        // Try to parse to see if it's valid
+        const dateResult = normalizeDate(rawDate, options.dateFormat);
+        if (dateResult.date) {
+          lastValidDate = rawDate;
+        }
+      }
     }
 
     allErrors.push(...result.errors);

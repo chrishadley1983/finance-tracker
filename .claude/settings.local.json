@@ -33,7 +33,23 @@
       "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\import\\\\categorise\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\import\\\\categorise\")",
       "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\tests\\\\unit\\\\import\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\tests\\\\unit\\\\import\")",
       "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\import\\\\templates\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\import\\\\templates\")",
-      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\transactions\\\\review-queue\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\transactions\\\\review-queue\")"
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\transactions\\\\review-queue\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\transactions\\\\review-queue\")",
+      "Bash(git push:*)",
+      "Bash(git -C \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\" rev-parse HEAD)",
+      "Bash(Select-String -Pattern \"tests/\")",
+      "Bash(Select-Object -First 70)",
+      "Bash(findstr:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx vitest:*)",
+      "Bash(Select-String \"pdf-statement\")",
+      "Bash(npx tsc:*)",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\accounts\\\\[id]\\\\reallocate\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\accounts\\\\[id]\\\\reallocate\")",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\accounts\\\\reorder\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\accounts\\\\reorder\")",
+      "Bash(timeout 10 npm run dev)",
+      "Bash(Select-String \"FAIL\")",
+      "Bash(git stash:*)",
+      "Bash(git fetch:*)"
     ]
   }
 }

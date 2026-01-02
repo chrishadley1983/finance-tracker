@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       formats as unknown as ImportFormat[]
     );
 
-    // Create import session
+    // Create import session - store ALL rows for recovery after server restart
     const { data: session, error: sessionError } = await supabaseAdmin
       .from('import_sessions')
       .insert({
@@ -77,9 +77,11 @@ export async function POST(request: NextRequest) {
         total_rows: parseResult.totalRows,
         raw_data: {
           headers: parseResult.headers,
+          rows: parseResult.rows, // Store ALL rows, not just sample
           sampleRows: sampleRows,
           encoding: parseResult.encoding,
           delimiter: parseResult.delimiter,
+          sourceType: 'csv',
         },
       })
       .select()

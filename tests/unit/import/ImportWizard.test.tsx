@@ -44,8 +44,8 @@ describe('ImportWizard', () => {
       render(<ImportWizard />);
 
       // Upload step content should be visible
-      expect(screen.getByText('Upload CSV File')).toBeInTheDocument();
-      expect(screen.getByText(/drag & drop your csv file/i)).toBeInTheDocument();
+      expect(screen.getByText('Upload Bank Statement')).toBeInTheDocument();
+      expect(screen.getByText(/drag & drop your csv or pdf file/i)).toBeInTheDocument();
     });
   });
 
