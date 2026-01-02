@@ -1,7 +1,7 @@
 {
   "agent": "merge-feature",
-  "lastRun": "2026-01-01T17:37:00+00:00",
-  "lastCommit": "34675fc",
+  "lastRun": "2026-01-02T14:00:00+00:00",
+  "lastCommit": "adc36bc",
   "status": "success",
   "completedWork": [
     {
@@ -48,12 +48,26 @@
         "eslint": "pass"
       },
       "report": "docs/merges/2026-01-01_phase2-tasks2-3.md"
+    },
+    {
+      "type": "commit",
+      "mode": "direct-to-main",
+      "timestamp": "2026-01-02T14:00:00+00:00",
+      "description": "Phases 3-6 - CSV Import, Investments, Review Queue, Wealth & FIRE",
+      "commit": "adc36bc",
+      "filesChanged": 131,
+      "verification": {
+        "typescript": "pass",
+        "tests": "pass",
+        "build": "pass"
+      },
+      "report": "docs/merges/2026-01-02_phases3-6.md"
     }
   ],
   "metrics": {
     "branchesMerged": 0,
     "conflictsResolved": 0,
-    "directCommits": 3
+    "directCommits": 4
   },
   "blockers": []
 }

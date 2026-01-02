@@ -1,76 +1,101 @@
 {
-  "lastUpdated": "2026-01-01T17:20:00+00:00",
+  "lastUpdated": "2026-01-02T14:35:00+00:00",
   "updatedBy": "test-execute",
   "features": {
     "health": {
       "unit": { "status": "none", "count": 0, "lastRun": null },
-      "api": { "status": "pass", "count": 5, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "api": { "status": "pass", "count": 5, "lastRun": "2026-01-02T14:35:00+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "supabase": {
       "unit": { "status": "none", "count": 0, "lastRun": null },
-      "api": { "status": "pass", "count": 3, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "api": { "status": "pass", "count": 3, "lastRun": "2026-01-02T14:35:00+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "accounts": {
       "unit": { "status": "none", "count": 0, "lastRun": null },
-      "api": { "status": "pass", "count": 13, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "api": { "status": "pass", "count": 13, "lastRun": "2026-01-02T14:35:00+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "categories": {
       "unit": { "status": "none", "count": 0, "lastRun": null },
-      "api": { "status": "pass", "count": 14, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "api": { "status": "pass", "count": 14, "lastRun": "2026-01-02T14:35:00+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "transactions": {
-      "unit": { "status": "pass", "count": 55, "lastRun": "2026-01-01T17:20:00+00:00" },
-      "api": { "status": "pass", "count": 22, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "unit": { "status": "pass", "count": 55, "lastRun": "2026-01-02T14:35:00+00:00" },
+      "api": { "status": "pass", "count": 33, "lastRun": "2026-01-02T14:35:00+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "dashboard": {
-      "unit": { "status": "pass", "count": 76, "lastRun": "2026-01-01T17:20:00+00:00" },
-      "api": { "status": "pass", "count": 39, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "unit": { "status": "pass", "count": 76, "lastRun": "2026-01-02T14:35:00+00:00" },
+      "api": { "status": "pass", "count": 39, "lastRun": "2026-01-02T14:35:00+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "layout": {
-      "unit": { "status": "pass", "count": 33, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "unit": { "status": "pass", "count": 33, "lastRun": "2026-01-02T14:35:00+00:00" },
       "api": { "status": "none", "count": 0, "lastRun": null },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "ui": {
-      "unit": { "status": "pass", "count": 19, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "unit": { "status": "pass", "count": 19, "lastRun": "2026-01-02T14:35:00+00:00" },
       "api": { "status": "none", "count": 0, "lastRun": null },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "validations": {
-      "unit": { "status": "pass", "count": 39, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "unit": { "status": "pass", "count": 39, "lastRun": "2026-01-02T14:35:00+00:00" },
       "api": { "status": "none", "count": 0, "lastRun": null },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "budgets": {
       "unit": { "status": "none", "count": 0, "lastRun": null },
-      "api": { "status": "pass", "count": 18, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "api": { "status": "pass", "count": 18, "lastRun": "2026-01-02T14:35:00+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "wealth-snapshots": {
       "unit": { "status": "none", "count": 0, "lastRun": null },
-      "api": { "status": "pass", "count": 18, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "api": { "status": "pass", "count": 18, "lastRun": "2026-01-02T14:35:00+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "category-mappings": {
       "unit": { "status": "none", "count": 0, "lastRun": null },
-      "api": { "status": "pass", "count": 19, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "api": { "status": "pass", "count": 19, "lastRun": "2026-01-02T14:35:00+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     },
     "fire-parameters": {
       "unit": { "status": "none", "count": 0, "lastRun": null },
-      "api": { "status": "pass", "count": 19, "lastRun": "2026-01-01T17:20:00+00:00" },
+      "api": { "status": "pass", "count": 19, "lastRun": "2026-01-02T14:35:00+00:00" },
+      "e2e": { "status": "none", "count": 0, "lastRun": null }
+    },
+    "fire": {
+      "unit": { "status": "pass", "count": 42, "lastRun": "2026-01-02T14:35:00+00:00" },
+      "api": { "status": "pass", "count": 4, "lastRun": "2026-01-02T14:35:00+00:00" },
+      "e2e": { "status": "none", "count": 0, "lastRun": null }
+    },
+    "wealth": {
+      "unit": { "status": "none", "count": 0, "lastRun": null },
+      "api": { "status": "pass", "count": 13, "lastRun": "2026-01-02T14:35:00+00:00" },
+      "e2e": { "status": "none", "count": 0, "lastRun": null }
+    },
+    "import": {
+      "unit": { "status": "pass", "count": 298, "lastRun": "2026-01-02T14:35:00+00:00" },
+      "api": { "status": "pass", "count": 21, "lastRun": "2026-01-02T14:35:00+00:00" },
+      "e2e": { "status": "none", "count": 0, "lastRun": null }
+    },
+    "categorisation": {
+      "unit": { "status": "pass", "count": 94, "lastRun": "2026-01-02T14:35:00+00:00" },
+      "api": { "status": "none", "count": 0, "lastRun": null },
+      "e2e": { "status": "none", "count": 0, "lastRun": null }
+    },
+    "review-queue": {
+      "unit": { "status": "none", "count": 0, "lastRun": null },
+      "api": { "status": "pass", "count": 11, "lastRun": "2026-01-02T14:35:00+00:00" },
       "e2e": { "status": "none", "count": 0, "lastRun": null }
     }
   },
   "summary": {
-    "totalFeatures": 13,
-    "passing": 13,
+    "totalFeatures": 18,
+    "passing": 18,
     "failing": 0,
     "untested": 0,
     "overallCoverage": 100
