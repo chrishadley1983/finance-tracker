@@ -555,6 +555,44 @@ export function BulkEditMode({
     });
   }, [transactions, saveUndoState]);
 
+  const handleAddTransaction = useCallback(() => {
+    // Create a new empty transaction
+    const today = new Date().toISOString().split('T')[0];
+    const maxRowNumber = transactions.reduce((max, tx) => Math.max(max, tx.rowNumber), 0);
+
+    const newTransaction: ParsedTransaction = {
+      rowNumber: maxRowNumber + 1,
+      date: today,
+      description: 'New Transaction',
+      amount: 0,
+      rawData: { manual: 'true' },
+    };
+
+    saveUndoState('edit', [transactions.length]);
+
+    setTransactions((prev) => [...prev, newTransaction]);
+
+    // Mark as modified
+    setModifications((prev) => {
+      const next = new Map(prev);
+      const fields = new Set(['date', 'description', 'amount']);
+      next.set(transactions.length, fields);
+      return next;
+    });
+
+    // Select the new row and scroll to it
+    const newIndex = transactions.length;
+    setSelectedRows(new Set([newIndex]));
+
+    // Scroll to the new row after render
+    setTimeout(() => {
+      const container = tableContainerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 50);
+  }, [transactions, saveUndoState]);
+
   const handleSplitTransaction = useCallback((rowIndex: number) => {
     setSplittingTransaction({ index: rowIndex, transaction: transactions[rowIndex] });
   }, [transactions]);
@@ -648,6 +686,7 @@ export function BulkEditMode({
         onUndo={handleUndo}
         onRedo={handleRedo}
         onResetAll={handleResetAll}
+        onAddTransaction={handleAddTransaction}
         canUndo={undoStack.length > 0}
         canRedo={redoStack.length > 0}
       />

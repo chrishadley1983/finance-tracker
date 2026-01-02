@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { UploadStep } from './UploadStep';
 import { MappingStep } from './MappingStep';
-import { PreviewStep } from './PreviewStep';
+import { CategorisedPreview } from './CategorisedPreview';
 import { ImportStep } from './ImportStep';
 import type { ParsedTransaction, ImportFormat } from '@/lib/types/import';
 import type { ColumnMapping } from '@/lib/validations/import';
@@ -55,6 +55,7 @@ export interface ImportWizardState {
   previewResult: PreviewResult | null;
   importResult: ImportResult | null;
   selectedAccountId: string | null;
+  categoryOverrides: Map<number, { categoryId: string; categoryName: string }>;
 }
 
 const STEP_ORDER: WizardStep[] = ['upload', 'mapping', 'preview', 'import', 'done'];
@@ -76,6 +77,7 @@ export function ImportWizard() {
     previewResult: null,
     importResult: null,
     selectedAccountId: null,
+    categoryOverrides: new Map(),
   });
 
   const currentStepIndex = STEP_ORDER.indexOf(state.step);
@@ -105,11 +107,12 @@ export function ImportWizard() {
   );
 
   const handlePreviewComplete = useCallback(
-    (result: PreviewResult, accountId: string) => {
+    (result: PreviewResult, accountId: string, categoryOverrides: Map<number, { categoryId: string; categoryName: string }>) => {
       setState((prev) => ({
         ...prev,
         previewResult: result,
         selectedAccountId: accountId,
+        categoryOverrides,
         step: 'import',
       }));
     },
@@ -133,6 +136,7 @@ export function ImportWizard() {
       previewResult: null,
       importResult: null,
       selectedAccountId: null,
+      categoryOverrides: new Map(),
     });
   }, []);
 
@@ -213,7 +217,7 @@ export function ImportWizard() {
         )}
 
         {state.step === 'preview' && state.uploadResult && state.columnMapping && (
-          <PreviewStep
+          <CategorisedPreview
             sessionId={state.uploadResult.sessionId}
             columnMapping={state.columnMapping}
             selectedFormat={state.selectedFormat}

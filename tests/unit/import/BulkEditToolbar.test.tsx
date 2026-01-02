@@ -29,6 +29,7 @@ describe('BulkEditToolbar', () => {
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onResetAll: vi.fn(),
+    onAddTransaction: vi.fn(),
     canUndo: false,
     canRedo: false,
     ...overrides,

@@ -10,6 +10,28 @@ interface ImportError {
   error: string;
 }
 
+type DbCategorisationSource = 'manual' | 'rule' | 'ai' | 'import';
+
+/**
+ * Map detailed categorisation source to database enum value.
+ */
+function mapCategorisationSource(source: string | undefined): DbCategorisationSource {
+  if (!source) return 'import';
+
+  switch (source) {
+    case 'manual':
+      return 'manual';
+    case 'rule_exact':
+    case 'rule_pattern':
+    case 'similar':
+      return 'rule';
+    case 'ai':
+      return 'ai';
+    default:
+      return 'import';
+  }
+}
+
 /**
  * Generate a hash for duplicate detection.
  */
@@ -108,7 +130,8 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        // Insert transaction - flag for review since no category assigned
+        // Insert transaction with category if provided
+        const hasCategory = tx.categoryId && tx.categoryId !== null;
         const { data: newTransaction, error: insertError } = await supabaseAdmin
           .from('transactions')
           .insert({
@@ -116,8 +139,9 @@ export async function POST(request: NextRequest) {
             date: tx.date,
             amount: tx.amount,
             description: tx.description,
-            categorisation_source: 'import',
-            needs_review: true,
+            category_id: hasCategory ? tx.categoryId : null,
+            categorisation_source: mapCategorisationSource(tx.categorisationSource),
+            needs_review: !hasCategory, // Only flag for review if no category assigned
           })
           .select('id')
           .single();

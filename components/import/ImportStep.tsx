@@ -94,6 +94,7 @@ export function ImportStep({
         setImportProgress((prev) => Math.min(prev + 5, 90));
       }, 100);
 
+      // Transactions already have category data merged from CategorisedPreview
       const response = await fetch('/api/import/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -122,6 +122,11 @@ export const parsedTransactionSchema = z.object({
   reference: z.string().optional(),
   balance: z.number().optional(),
   rawData: z.record(z.string(), z.string()),
+  // Category assignment from categorisation step
+  categoryId: z.string().uuid().optional().nullable(),
+  categoryName: z.string().optional().nullable(),
+  categorisationSource: z.enum(['rule_exact', 'rule_pattern', 'similar', 'ai', 'manual', 'none']).optional(),
+  categorisationConfidence: z.number().min(0).max(1).optional(),
 });
 
 export type ParsedTransaction = z.infer<typeof parsedTransactionSchema>;

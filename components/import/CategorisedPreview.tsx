@@ -384,8 +384,43 @@ export function CategorisedPreview({
       setError('Please select an account');
       return;
     }
-    onComplete(previewData, selectedAccountId, categoryOverrides);
-  }, [previewData, selectedAccountId, categoryOverrides, onComplete]);
+
+    // Merge categorisation data into transactions before completing
+    const transactionsWithCategories = previewData.transactions.map((tx, index) => {
+      // Check for manual override first
+      const override = categoryOverrides.get(index);
+      if (override) {
+        return {
+          ...tx,
+          categoryId: override.categoryId,
+          categoryName: override.categoryName,
+          categorisationSource: 'manual' as const,
+          categorisationConfidence: 1.0,
+        };
+      }
+
+      // Check for auto-categorisation result
+      const result = categorisationResults.get(index);
+      if (result?.categoryId) {
+        return {
+          ...tx,
+          categoryId: result.categoryId,
+          categoryName: result.categoryName,
+          categorisationSource: result.source,
+          categorisationConfidence: result.confidence,
+        };
+      }
+
+      return tx;
+    });
+
+    const updatedPreviewData = {
+      ...previewData,
+      transactions: transactionsWithCategories,
+    };
+
+    onComplete(updatedPreviewData, selectedAccountId, categoryOverrides);
+  }, [previewData, selectedAccountId, categoryOverrides, categorisationResults, onComplete]);
 
   // Edit mode handlers
   const handleTransactionsChange = useCallback((newTransactions: ParsedTransaction[]) => {

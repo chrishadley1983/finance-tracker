@@ -29,6 +29,7 @@ export interface BulkEditToolbarProps {
   onUndo: () => void;
   onRedo: () => void;
   onResetAll: () => void;
+  onAddTransaction: () => void;
   canUndo: boolean;
   canRedo: boolean;
 }
@@ -56,6 +57,7 @@ export function BulkEditToolbar({
   onUndo,
   onRedo,
   onResetAll,
+  onAddTransaction,
   canUndo,
   canRedo,
 }: BulkEditToolbarProps) {
@@ -292,6 +294,16 @@ export function BulkEditToolbar({
 
         {/* Row Actions */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={onAddTransaction}
+            className="text-sm px-3 py-1.5 text-green-600 border border-green-300 rounded hover:bg-green-50 flex items-center gap-1"
+            title="Add a new transaction manually"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add
+          </button>
           <button
             onClick={onBulkSkip}
             disabled={!hasSelection}
