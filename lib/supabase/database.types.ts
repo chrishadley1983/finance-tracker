@@ -19,6 +19,8 @@ export type Database = {
           created_at: string
           hsbc_account_id: string | null
           id: string
+          investment_provider: string | null
+          investment_type: string | null
           is_active: boolean
           name: string
           provider: string
@@ -29,6 +31,8 @@ export type Database = {
           created_at?: string
           hsbc_account_id?: string | null
           id?: string
+          investment_provider?: string | null
+          investment_type?: string | null
           is_active?: boolean
           name: string
           provider: string
@@ -39,10 +43,153 @@ export type Database = {
           created_at?: string
           hsbc_account_id?: string | null
           id?: string
+          investment_provider?: string | null
+          investment_type?: string | null
           is_active?: boolean
           name?: string
           provider?: string
           type?: Database["public"]["Enums"]["account_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_mapping_cache: {
+        Row: {
+          confidence: number
+          created_at: string | null
+          headers: Json
+          headers_hash: string
+          hits: number | null
+          id: string
+          last_used_at: string | null
+          result: Json
+        }
+        Insert: {
+          confidence: number
+          created_at?: string | null
+          headers: Json
+          headers_hash: string
+          hits?: number | null
+          id?: string
+          last_used_at?: string | null
+          result: Json
+        }
+        Update: {
+          confidence?: number
+          created_at?: string | null
+          headers?: Json
+          headers_hash?: string
+          hits?: number | null
+          id?: string
+          last_used_at?: string | null
+          result?: Json
+        }
+        Relationships: []
+      }
+      ai_usage_tracking: {
+        Row: {
+          count: number | null
+          date: string
+          id: string
+          usage_type: string
+        }
+        Insert: {
+          count?: number | null
+          date?: string
+          id?: string
+          usage_type: string
+        }
+        Update: {
+          count?: number | null
+          date?: string
+          id?: string
+          usage_type?: string
+        }
+        Relationships: []
+      }
+      fire_inputs: {
+        Row: {
+          id: string
+          current_age: number
+          target_retirement_age: number | null
+          current_portfolio_value: number | null
+          annual_income: number | null
+          annual_savings: number | null
+          include_state_pension: boolean
+          partner_state_pension: boolean
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          current_age: number
+          target_retirement_age?: number | null
+          current_portfolio_value?: number | null
+          annual_income?: number | null
+          annual_savings?: number | null
+          include_state_pension?: boolean
+          partner_state_pension?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          current_age?: number
+          target_retirement_age?: number | null
+          current_portfolio_value?: number | null
+          annual_income?: number | null
+          annual_savings?: number | null
+          include_state_pension?: boolean
+          partner_state_pension?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fire_scenarios: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          annual_spend: number
+          withdrawal_rate: number
+          expected_return: number
+          inflation_rate: number
+          retirement_age: number | null
+          state_pension_age: number
+          state_pension_annual: number
+          is_default: boolean
+          sort_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          annual_spend: number
+          withdrawal_rate?: number
+          expected_return?: number
+          inflation_rate?: number
+          retirement_age?: number | null
+          state_pension_age?: number
+          state_pension_annual?: number
+          is_default?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          annual_spend?: number
+          withdrawal_rate?: number
+          expected_return?: number
+          inflation_rate?: number
+          retirement_age?: number | null
+          state_pension_age?: number
+          state_pension_annual?: number
+          is_default?: boolean
+          sort_order?: number
+          created_at?: string
           updated_at?: string
         }
         Relationships: []
@@ -109,13 +256,77 @@ export type Database = {
         }
         Relationships: []
       }
+      category_corrections: {
+        Row: {
+          corrected_category_id: string
+          created_at: string | null
+          created_rule_id: string | null
+          description: string
+          id: string
+          import_session_id: string | null
+          original_category_id: string | null
+          original_source: string | null
+        }
+        Insert: {
+          corrected_category_id: string
+          created_at?: string | null
+          created_rule_id?: string | null
+          description: string
+          id?: string
+          import_session_id?: string | null
+          original_category_id?: string | null
+          original_source?: string | null
+        }
+        Update: {
+          corrected_category_id?: string
+          created_at?: string | null
+          created_rule_id?: string | null
+          description?: string
+          id?: string
+          import_session_id?: string | null
+          original_category_id?: string | null
+          original_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_corrections_corrected_category_id_fkey"
+            columns: ["corrected_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_corrections_created_rule_id_fkey"
+            columns: ["created_rule_id"]
+            isOneToOne: false
+            referencedRelation: "category_mappings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_corrections_import_session_id_fkey"
+            columns: ["import_session_id"]
+            isOneToOne: false
+            referencedRelation: "import_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_corrections_original_category_id_fkey"
+            columns: ["original_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_mappings: {
         Row: {
           category_id: string
           confidence: number
           created_at: string
           id: string
+          is_system: boolean | null
           match_type: Database["public"]["Enums"]["match_type"]
+          notes: string | null
           pattern: string
         }
         Insert: {
@@ -123,7 +334,9 @@ export type Database = {
           confidence?: number
           created_at?: string
           id?: string
+          is_system?: boolean | null
           match_type?: Database["public"]["Enums"]["match_type"]
+          notes?: string | null
           pattern: string
         }
         Update: {
@@ -131,7 +344,9 @@ export type Database = {
           confidence?: number
           created_at?: string
           id?: string
+          is_system?: boolean | null
           match_type?: Database["public"]["Enums"]["match_type"]
+          notes?: string | null
           pattern?: string
         }
         Relationships: [
@@ -180,6 +395,218 @@ export type Database = {
         }
         Relationships: []
       }
+      import_formats: {
+        Row: {
+          amount_column: string | null
+          amount_in_single_column: boolean
+          column_mapping: Json
+          created_at: string
+          credit_column: string | null
+          date_format: string
+          debit_column: string | null
+          decimal_separator: string
+          has_header: boolean
+          id: string
+          is_system: boolean
+          last_used_at: string | null
+          name: string
+          notes: string | null
+          provider: string
+          sample_headers: Json | null
+          skip_rows: number
+          updated_at: string
+          use_count: number | null
+        }
+        Insert: {
+          amount_column?: string | null
+          amount_in_single_column?: boolean
+          column_mapping: Json
+          created_at?: string
+          credit_column?: string | null
+          date_format?: string
+          debit_column?: string | null
+          decimal_separator?: string
+          has_header?: boolean
+          id?: string
+          is_system?: boolean
+          last_used_at?: string | null
+          name: string
+          notes?: string | null
+          provider: string
+          sample_headers?: Json | null
+          skip_rows?: number
+          updated_at?: string
+          use_count?: number | null
+        }
+        Update: {
+          amount_column?: string | null
+          amount_in_single_column?: boolean
+          column_mapping?: Json
+          created_at?: string
+          credit_column?: string | null
+          date_format?: string
+          debit_column?: string | null
+          decimal_separator?: string
+          has_header?: boolean
+          id?: string
+          is_system?: boolean
+          last_used_at?: string | null
+          name?: string
+          notes?: string | null
+          provider?: string
+          sample_headers?: Json | null
+          skip_rows?: number
+          updated_at?: string
+          use_count?: number | null
+        }
+        Relationships: []
+      }
+      import_sessions: {
+        Row: {
+          account_id: string | null
+          completed_at: string | null
+          created_at: string
+          duplicate_count: number
+          error_count: number
+          error_details: Json | null
+          filename: string
+          format_id: string | null
+          id: string
+          imported_count: number
+          raw_data: Json | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["import_status"]
+          total_rows: number
+        }
+        Insert: {
+          account_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          duplicate_count?: number
+          error_count?: number
+          error_details?: Json | null
+          filename: string
+          format_id?: string | null
+          id?: string
+          imported_count?: number
+          raw_data?: Json | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["import_status"]
+          total_rows?: number
+        }
+        Update: {
+          account_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          duplicate_count?: number
+          error_count?: number
+          error_details?: Json | null
+          filename?: string
+          format_id?: string | null
+          id?: string
+          imported_count?: number
+          raw_data?: Json | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["import_status"]
+          total_rows?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_sessions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_sessions_format_id_fkey"
+            columns: ["format_id"]
+            isOneToOne: false
+            referencedRelation: "import_formats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      imported_transaction_hashes: {
+        Row: {
+          created_at: string
+          hash: string
+          id: string
+          import_session_id: string | null
+          source_row: Json | null
+          transaction_id: string
+        }
+        Insert: {
+          created_at?: string
+          hash: string
+          id?: string
+          import_session_id?: string | null
+          source_row?: Json | null
+          transaction_id: string
+        }
+        Update: {
+          created_at?: string
+          hash?: string
+          id?: string
+          import_session_id?: string | null
+          source_row?: Json | null
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imported_transaction_hashes_import_session_id_fkey"
+            columns: ["import_session_id"]
+            isOneToOne: false
+            referencedRelation: "import_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imported_transaction_hashes_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_valuations: {
+        Row: {
+          account_id: string
+          created_at: string | null
+          date: string
+          id: string
+          notes: string | null
+          updated_at: string | null
+          value: number
+        }
+        Insert: {
+          account_id: string
+          created_at?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          updated_at?: string | null
+          value: number
+        }
+        Update: {
+          account_id?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_valuations_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           account_id: string
@@ -191,6 +618,7 @@ export type Database = {
           description: string
           hsbc_transaction_id: string | null
           id: string
+          needs_review: boolean
         }
         Insert: {
           account_id: string
@@ -202,6 +630,7 @@ export type Database = {
           description: string
           hsbc_transaction_id?: string | null
           id?: string
+          needs_review?: boolean
         }
         Update: {
           account_id?: string
@@ -213,6 +642,7 @@ export type Database = {
           description?: string
           hsbc_transaction_id?: string | null
           id?: string
+          needs_review?: boolean
         }
         Relationships: [
           {
@@ -271,7 +701,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      find_similar_transactions: {
+        Args: {
+          max_results?: number
+          min_similarity?: number
+          search_description: string
+        }
+        Returns: {
+          category_id: string
+          category_name: string
+          date: string
+          description: string
+          id: string
+          similarity: number
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       account_type:
@@ -282,6 +728,7 @@ export type Database = {
         | "investment"
         | "property"
       categorisation_source: "manual" | "rule" | "ai" | "import"
+      import_status: "pending" | "processing" | "completed" | "failed"
       match_type: "exact" | "contains" | "regex"
     }
     CompositeTypes: {
@@ -419,6 +866,7 @@ export const Constants = {
         "property",
       ],
       categorisation_source: ["manual", "rule", "ai", "import"],
+      import_status: ["pending", "processing", "completed", "failed"],
       match_type: ["exact", "contains", "regex"],
     },
   },

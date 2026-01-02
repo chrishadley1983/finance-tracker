@@ -29,7 +29,11 @@
       "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\testing\\\\analysis\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\testing\\\\analysis\")",
       "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\reviews\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\docs\\\\reviews\")",
       "Skill(merge-feature)",
-      "Skill(merge-feature:*)"
+      "Skill(merge-feature:*)",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\import\\\\categorise\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\import\\\\categorise\")",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\tests\\\\unit\\\\import\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\tests\\\\unit\\\\import\")",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\import\\\\templates\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\import\\\\templates\")",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\transactions\\\\review-queue\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\transactions\\\\review-queue\")"
     ]
   }
 }

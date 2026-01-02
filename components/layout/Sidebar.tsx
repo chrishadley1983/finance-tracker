@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -7,6 +8,7 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ReactNode;
+  showBadge?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -25,6 +27,34 @@ const navItems: NavItem[] = [
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+      </svg>
+    ),
+  },
+  {
+    href: '/import',
+    label: 'Import',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+      </svg>
+    ),
+  },
+  {
+    href: '/review',
+    label: 'Review',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+      </svg>
+    ),
+    showBadge: true,
+  },
+  {
+    href: '/investments',
+    label: 'Investments',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     ),
   },
@@ -84,6 +114,25 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const [reviewCount, setReviewCount] = useState<number>(0);
+
+  useEffect(() => {
+    async function fetchReviewCount() {
+      try {
+        const response = await fetch('/api/transactions/review-queue?limit=1');
+        if (response.ok) {
+          const data = await response.json();
+          setReviewCount(data.stats?.total || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch review count:', error);
+      }
+    }
+    fetchReviewCount();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchReviewCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
@@ -132,7 +181,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     `}
                   >
                     {item.icon}
-                    <span className="font-medium">{item.label}</span>
+                    <span className="font-medium flex-1">{item.label}</span>
+                    {item.showBadge && reviewCount > 0 && (
+                      <span className="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[1.5rem] text-center">
+                        {reviewCount > 99 ? '99+' : reviewCount}
+                      </span>
+                    )}
                   </Link>
                 </li>
               );
