@@ -14,6 +14,8 @@ const mockTransactions: TransactionWithRelations[] = [
     categorisation_source: 'manual',
     hsbc_transaction_id: null,
     created_at: '2025-01-15T10:00:00Z',
+    is_validated: false,
+    needs_review: false,
     account: { name: 'HSBC Current' },
     category: { name: 'Groceries', group_name: 'Food' },
   },
@@ -27,6 +29,8 @@ const mockTransactions: TransactionWithRelations[] = [
     categorisation_source: 'manual',
     hsbc_transaction_id: null,
     created_at: '2025-01-14T09:00:00Z',
+    is_validated: true,
+    needs_review: false,
     account: { name: 'HSBC Current' },
     category: { name: 'Salary', group_name: 'Income' },
   },
@@ -40,6 +44,8 @@ const mockTransactions: TransactionWithRelations[] = [
     categorisation_source: 'import',
     hsbc_transaction_id: 'hsbc-123',
     created_at: '2025-01-13T15:30:00Z',
+    is_validated: false,
+    needs_review: true,
     account: null,
     category: null,
   },
@@ -142,16 +148,22 @@ describe('TransactionTable', () => {
     });
   });
 
-  describe('row hover', () => {
-    it('applies hover class to data rows', () => {
+  describe('row styling', () => {
+    it('applies correct styling based on validation status', () => {
       const { container } = render(<TransactionTable {...defaultProps} />);
 
       const tbody = container.querySelector('tbody');
       const rows = tbody?.querySelectorAll('tr');
       expect(rows?.length).toBe(3);
-      rows?.forEach((row) => {
-        expect(row).toHaveClass('hover:bg-slate-50');
-      });
+
+      // First row (unvalidated) should have hover:bg-slate-50
+      expect(rows?.[0]).toHaveClass('hover:bg-slate-50');
+
+      // Second row (validated) should have green styling
+      expect(rows?.[1]).toHaveClass('bg-green-100');
+
+      // Third row (unvalidated) should have hover:bg-slate-50
+      expect(rows?.[2]).toHaveClass('hover:bg-slate-50');
     });
   });
 });
