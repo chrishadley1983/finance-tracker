@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GET } from '@/app/api/transactions/summary/route';
+import { NextRequest } from 'next/server';
+
+// Track call count for transactions table
+let transactionsCallCount = 0;
 
 // Mock Supabase
-const mockSelect = vi.fn();
-const mockGte = vi.fn();
-const mockLte = vi.fn();
-
 const mockFrom = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -14,258 +14,483 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }));
 
+function createRequest(period = 'this_month', customStart?: string, customEnd?: string): NextRequest {
+  const params = new URLSearchParams();
+  params.set('period', period);
+  if (customStart) params.set('start', customStart);
+  if (customEnd) params.set('end', customEnd);
+  return new NextRequest(`http://localhost/api/transactions/summary?${params.toString()}`);
+}
+
 describe('Dashboard Summary API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Setup chain mocks
-    const chainMock = {
-      select: mockSelect,
-      gte: mockGte,
-      lte: mockLte,
-    };
-
-    mockFrom.mockReturnValue(chainMock);
-    mockSelect.mockReturnValue(chainMock);
-    mockGte.mockReturnValue(chainMock);
-    mockLte.mockResolvedValue({ data: [], error: null });
+    transactionsCallCount = 0;
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
+  /**
+   * Helper to set up all the mocks for a successful query flow.
+   * The summary route makes 5 queries:
+   * 1. accounts (with or filters)
+   * 2. transactions by account (with in filter)
+   * 3. wealth_snapshots (with in and order)
+   * 4. investment_valuations (with in and order)
+   * 5. transactions for period (with gte/lte)
+   */
+  function setupSuccessMocks(options: {
+    accounts?: { id: string; type: string; include_in_net_worth: boolean }[];
+    txByAccount?: { account_id: string; amount: number }[];
+    snapshots?: { account_id: string; balance: number }[];
+    valuations?: { account_id: string; value: number }[];
+    periodTransactions?: { amount: number }[];
+  } = {}) {
+    const {
+      accounts = [],
+      txByAccount = [],
+      snapshots = [],
+      valuations = [],
+      periodTransactions = [],
+    } = options;
+
+    // Set up mockFrom to return appropriate chain based on table name
+    mockFrom.mockImplementation((table: string) => {
+      switch (table) {
+        case 'accounts':
+          return {
+            select: vi.fn().mockReturnValue({
+              or: vi.fn().mockReturnValue({
+                or: vi.fn().mockResolvedValue({ data: accounts, error: null }),
+              }),
+            }),
+          };
+        case 'transactions':
+          // Track calls to handle first (txByAccount) vs second (period) call
+          transactionsCallCount++;
+          if (transactionsCallCount === 1) {
+            // First call: txByAccount
+            return {
+              select: vi.fn().mockReturnValue({
+                in: vi.fn().mockResolvedValue({ data: txByAccount, error: null }),
+              }),
+            };
+          } else {
+            // Second call: period transactions
+            return {
+              select: vi.fn().mockReturnValue({
+                gte: vi.fn().mockReturnValue({
+                  lte: vi.fn().mockResolvedValue({ data: periodTransactions, error: null }),
+                }),
+              }),
+            };
+          }
+        case 'wealth_snapshots':
+          return {
+            select: vi.fn().mockReturnValue({
+              in: vi.fn().mockReturnValue({
+                order: vi.fn().mockResolvedValue({ data: snapshots, error: null }),
+              }),
+            }),
+          };
+        case 'investment_valuations':
+          return {
+            select: vi.fn().mockReturnValue({
+              in: vi.fn().mockReturnValue({
+                order: vi.fn().mockResolvedValue({ data: valuations, error: null }),
+              }),
+            }),
+          };
+        default:
+          return { select: vi.fn() };
+      }
+    });
+  }
+
   describe('GET /api/transactions/summary', () => {
     it('returns correct response shape', async () => {
-      // Mock balance data (all transactions)
-      mockSelect.mockReturnValueOnce(Promise.resolve({
-        data: [
-          { amount: 1000 },
-          { amount: -500 },
-          { amount: 2000 },
-        ],
-        error: null,
-      }));
+      setupSuccessMocks({
+        accounts: [{ id: 'acc1', type: 'current', include_in_net_worth: true }],
+        txByAccount: [{ account_id: 'acc1', amount: 1000 }],
+        periodTransactions: [{ amount: 500 }, { amount: -200 }],
+      });
 
-      // Mock month data (current month transactions)
-      const monthChain = {
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockResolvedValue({
-          data: [
-            { amount: 500 },
-            { amount: -200 },
-          ],
-          error: null,
-        }),
-      };
-      mockSelect.mockReturnValueOnce(monthChain);
-
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data).toHaveProperty('totalBalance');
-      expect(data).toHaveProperty('monthIncome');
-      expect(data).toHaveProperty('monthExpenses');
-      expect(data).toHaveProperty('monthNet');
+      expect(data).toHaveProperty('periodIncome');
+      expect(data).toHaveProperty('periodExpenses');
+      expect(data).toHaveProperty('periodNet');
+      expect(data).toHaveProperty('period');
+      expect(data).toHaveProperty('startDate');
+      expect(data).toHaveProperty('endDate');
     });
 
-    it('calculates totalBalance from all transactions', async () => {
-      mockSelect.mockReturnValueOnce(Promise.resolve({
-        data: [
-          { amount: 1000 },
-          { amount: -300 },
-          { amount: 500 },
-          { amount: -100 },
+    it('calculates totalBalance from transactions for non-investment accounts', async () => {
+      setupSuccessMocks({
+        accounts: [
+          { id: 'acc1', type: 'current', include_in_net_worth: true },
+          { id: 'acc2', type: 'savings', include_in_net_worth: true },
         ],
-        error: null,
-      }));
+        txByAccount: [
+          { account_id: 'acc1', amount: 1000 },
+          { account_id: 'acc1', amount: -300 },
+          { account_id: 'acc2', amount: 500 },
+        ],
+        periodTransactions: [],
+      });
 
-      const monthChain = {
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockResolvedValue({ data: [], error: null }),
-      };
-      mockSelect.mockReturnValueOnce(monthChain);
-
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.totalBalance).toBe(1100); // 1000 - 300 + 500 - 100 = 1100
+      // acc1: 1000 - 300 = 700, acc2: 500, total = 1200
+      expect(data.totalBalance).toBe(1200);
     });
 
-    it('calculates monthly income correctly', async () => {
-      mockSelect.mockReturnValueOnce(Promise.resolve({ data: [], error: null }));
+    it('uses wealth snapshots for accounts without transactions', async () => {
+      setupSuccessMocks({
+        accounts: [
+          { id: 'acc1', type: 'current', include_in_net_worth: true },
+          { id: 'acc2', type: 'savings', include_in_net_worth: true },
+        ],
+        txByAccount: [
+          { account_id: 'acc1', amount: 1000 },
+        ],
+        snapshots: [
+          { account_id: 'acc2', balance: 5000 },
+        ],
+        periodTransactions: [],
+      });
 
-      const monthChain = {
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockResolvedValue({
-          data: [
-            { amount: 3000 }, // Income
-            { amount: 500 },  // Income
-            { amount: -1000 }, // Expense
-          ],
-          error: null,
-        }),
-      };
-      mockSelect.mockReturnValueOnce(monthChain);
-
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.monthIncome).toBe(3500); // 3000 + 500
+      // acc1: 1000 from tx, acc2: 5000 from snapshot, total = 6000
+      expect(data.totalBalance).toBe(6000);
     });
 
-    it('calculates monthly expenses as positive value', async () => {
-      mockSelect.mockReturnValueOnce(Promise.resolve({ data: [], error: null }));
+    it('prefers snapshots over transactions for non-investment accounts', async () => {
+      setupSuccessMocks({
+        accounts: [
+          { id: 'acc1', type: 'current', include_in_net_worth: true },
+        ],
+        txByAccount: [
+          { account_id: 'acc1', amount: 1000 },
+        ],
+        snapshots: [
+          { account_id: 'acc1', balance: 2000 },
+        ],
+        periodTransactions: [],
+      });
 
-      const monthChain = {
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockResolvedValue({
-          data: [
-            { amount: 1000 }, // Income
-            { amount: -500 }, // Expense
-            { amount: -300 }, // Expense
-          ],
-          error: null,
-        }),
-      };
-      mockSelect.mockReturnValueOnce(monthChain);
-
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.monthExpenses).toBe(800); // |-500| + |-300| = 800
+      // Snapshot takes precedence: 2000 (not 1000 from tx)
+      expect(data.totalBalance).toBe(2000);
     });
 
-    it('calculates monthNet as income minus expenses', async () => {
-      mockSelect.mockReturnValueOnce(Promise.resolve({ data: [], error: null }));
+    it('uses investment valuations for investment accounts', async () => {
+      setupSuccessMocks({
+        accounts: [
+          { id: 'inv1', type: 'investment', include_in_net_worth: true },
+          { id: 'isa1', type: 'isa', include_in_net_worth: true },
+        ],
+        txByAccount: [],
+        valuations: [
+          { account_id: 'inv1', value: 50000 },
+          { account_id: 'isa1', value: 20000 },
+        ],
+        periodTransactions: [],
+      });
 
-      const monthChain = {
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockResolvedValue({
-          data: [
-            { amount: 3000 }, // Income
-            { amount: -1200 }, // Expense
-          ],
-          error: null,
-        }),
-      };
-      mockSelect.mockReturnValueOnce(monthChain);
-
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.monthNet).toBe(1800); // 3000 - 1200 = 1800
+      expect(data.totalBalance).toBe(70000);
+    });
+
+    it('calculates period income correctly', async () => {
+      setupSuccessMocks({
+        accounts: [],
+        periodTransactions: [
+          { amount: 3000 }, // Income
+          { amount: 500 },  // Income
+          { amount: -1000 }, // Expense
+        ],
+      });
+
+      const response = await GET(createRequest());
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.periodIncome).toBe(3500); // 3000 + 500
+    });
+
+    it('calculates period expenses as positive value', async () => {
+      setupSuccessMocks({
+        accounts: [],
+        periodTransactions: [
+          { amount: 1000 }, // Income
+          { amount: -500 }, // Expense
+          { amount: -300 }, // Expense
+        ],
+      });
+
+      const response = await GET(createRequest());
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.periodExpenses).toBe(800); // |-500| + |-300| = 800
+    });
+
+    it('calculates periodNet as income minus expenses', async () => {
+      setupSuccessMocks({
+        accounts: [],
+        periodTransactions: [
+          { amount: 3000 }, // Income
+          { amount: -1200 }, // Expense
+        ],
+      });
+
+      const response = await GET(createRequest());
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.periodNet).toBe(1800); // 3000 - 1200 = 1800
     });
 
     it('handles empty database returning zeros', async () => {
-      mockSelect.mockReturnValueOnce(Promise.resolve({ data: [], error: null }));
+      setupSuccessMocks({
+        accounts: [],
+        txByAccount: [],
+        snapshots: [],
+        valuations: [],
+        periodTransactions: [],
+      });
 
-      const monthChain = {
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockResolvedValue({ data: [], error: null }),
-      };
-      mockSelect.mockReturnValueOnce(monthChain);
-
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data.totalBalance).toBe(0);
-      expect(data.monthIncome).toBe(0);
-      expect(data.monthExpenses).toBe(0);
-      expect(data.monthNet).toBe(0);
+      expect(data.periodIncome).toBe(0);
+      expect(data.periodExpenses).toBe(0);
+      expect(data.periodNet).toBe(0);
     });
 
     it('handles null data returning zeros', async () => {
-      mockSelect.mockReturnValueOnce(Promise.resolve({ data: null, error: null }));
+      // Set up mocks to return null data
+      mockFrom.mockImplementation((table: string) => {
+        const nullResolve = { data: null, error: null };
+        transactionsCallCount++;
+        switch (table) {
+          case 'accounts':
+            return {
+              select: vi.fn().mockReturnValue({
+                or: vi.fn().mockReturnValue({
+                  or: vi.fn().mockResolvedValue(nullResolve),
+                }),
+              }),
+            };
+          case 'transactions':
+            if (transactionsCallCount <= 2) {
+              return {
+                select: vi.fn().mockReturnValue({
+                  in: vi.fn().mockResolvedValue(nullResolve),
+                }),
+              };
+            }
+            return {
+              select: vi.fn().mockReturnValue({
+                gte: vi.fn().mockReturnValue({
+                  lte: vi.fn().mockResolvedValue(nullResolve),
+                }),
+              }),
+            };
+          case 'wealth_snapshots':
+            return {
+              select: vi.fn().mockReturnValue({
+                in: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue(nullResolve),
+                }),
+              }),
+            };
+          case 'investment_valuations':
+            return {
+              select: vi.fn().mockReturnValue({
+                in: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue(nullResolve),
+                }),
+              }),
+            };
+          default:
+            return { select: vi.fn() };
+        }
+      });
 
-      const monthChain = {
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockResolvedValue({ data: null, error: null }),
-      };
-      mockSelect.mockReturnValueOnce(monthChain);
-
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data.totalBalance).toBe(0);
-      expect(data.monthIncome).toBe(0);
-      expect(data.monthExpenses).toBe(0);
-      expect(data.monthNet).toBe(0);
+      expect(data.periodIncome).toBe(0);
+      expect(data.periodExpenses).toBe(0);
+      expect(data.periodNet).toBe(0);
     });
 
-    it('returns 500 on balance query error', async () => {
-      mockSelect.mockReturnValueOnce(Promise.resolve({
-        data: null,
-        error: { message: 'Database connection failed' },
-      }));
+    it('returns 500 on accounts query error', async () => {
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'accounts') {
+          return {
+            select: vi.fn().mockReturnValue({
+              or: vi.fn().mockReturnValue({
+                or: vi.fn().mockResolvedValue({ data: null, error: { message: 'Database connection failed' } }),
+              }),
+            }),
+          };
+        }
+        return { select: vi.fn() };
+      });
 
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(500);
       expect(data.error).toBe('Database connection failed');
     });
 
-    it('returns 500 on month query error', async () => {
-      mockSelect.mockReturnValueOnce(Promise.resolve({ data: [], error: null }));
+    it('returns 500 on period query error', async () => {
+      let txCallCount = 0;
+      mockFrom.mockImplementation((table: string) => {
+        switch (table) {
+          case 'accounts':
+            return {
+              select: vi.fn().mockReturnValue({
+                or: vi.fn().mockReturnValue({
+                  or: vi.fn().mockResolvedValue({ data: [], error: null }),
+                }),
+              }),
+            };
+          case 'transactions':
+            txCallCount++;
+            if (txCallCount === 1) {
+              return {
+                select: vi.fn().mockReturnValue({
+                  in: vi.fn().mockResolvedValue({ data: [], error: null }),
+                }),
+              };
+            }
+            return {
+              select: vi.fn().mockReturnValue({
+                gte: vi.fn().mockReturnValue({
+                  lte: vi.fn().mockResolvedValue({ data: null, error: { message: 'Period query failed' } }),
+                }),
+              }),
+            };
+          case 'wealth_snapshots':
+            return {
+              select: vi.fn().mockReturnValue({
+                in: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue({ data: [], error: null }),
+                }),
+              }),
+            };
+          case 'investment_valuations':
+            return {
+              select: vi.fn().mockReturnValue({
+                in: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue({ data: [], error: null }),
+                }),
+              }),
+            };
+          default:
+            return { select: vi.fn() };
+        }
+      });
 
-      const monthChain = {
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockResolvedValue({
-          data: null,
-          error: { message: 'Month query failed' },
-        }),
-      };
-      mockSelect.mockReturnValueOnce(monthChain);
-
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(500);
-      expect(data.error).toBe('Month query failed');
+      expect(data.error).toBe('Period query failed');
     });
 
-    it('queries transactions table for balance', async () => {
-      mockSelect.mockReturnValueOnce(Promise.resolve({ data: [], error: null }));
+    it('queries accounts table first', async () => {
+      setupSuccessMocks({
+        accounts: [],
+        periodTransactions: [],
+      });
 
-      const monthChain = {
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockResolvedValue({ data: [], error: null }),
-      };
-      mockSelect.mockReturnValueOnce(monthChain);
+      await GET(createRequest());
 
-      await GET();
-
-      expect(mockFrom).toHaveBeenCalledWith('transactions');
+      expect(mockFrom).toHaveBeenCalledWith('accounts');
     });
 
     it('handles negative net when expenses exceed income', async () => {
-      mockSelect.mockReturnValueOnce(Promise.resolve({ data: [], error: null }));
+      setupSuccessMocks({
+        accounts: [],
+        periodTransactions: [
+          { amount: 1000 }, // Income
+          { amount: -2500 }, // Expense
+        ],
+      });
 
-      const monthChain = {
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockResolvedValue({
-          data: [
-            { amount: 1000 }, // Income
-            { amount: -2500 }, // Expense
-          ],
-          error: null,
-        }),
-      };
-      mockSelect.mockReturnValueOnce(monthChain);
-
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.monthNet).toBe(-1500); // 1000 - 2500 = -1500
+      expect(data.periodNet).toBe(-1500); // 1000 - 2500 = -1500
+    });
+
+    it('supports different timeframe periods', async () => {
+      setupSuccessMocks({
+        accounts: [],
+        periodTransactions: [],
+      });
+
+      const response = await GET(createRequest('last_year'));
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.period).toBe('last_year');
+    });
+
+    it('combines multiple balance sources correctly', async () => {
+      setupSuccessMocks({
+        accounts: [
+          { id: 'current1', type: 'current', include_in_net_worth: true },
+          { id: 'savings1', type: 'savings', include_in_net_worth: true },
+          { id: 'invest1', type: 'investment', include_in_net_worth: true },
+          { id: 'pension1', type: 'pension', include_in_net_worth: true },
+        ],
+        txByAccount: [
+          { account_id: 'current1', amount: 5000 },
+        ],
+        snapshots: [
+          { account_id: 'savings1', balance: 10000 },
+        ],
+        valuations: [
+          { account_id: 'invest1', value: 50000 },
+          { account_id: 'pension1', value: 100000 },
+        ],
+        periodTransactions: [],
+      });
+
+      const response = await GET(createRequest());
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      // current1: 5000 (tx), savings1: 10000 (snapshot), invest1: 50000 (val), pension1: 100000 (val)
+      expect(data.totalBalance).toBe(165000);
     });
   });
 });

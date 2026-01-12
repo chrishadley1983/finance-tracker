@@ -1,6 +1,6 @@
 # Coverage Analysis
 
-**Generated:** 2026-01-02T14:30:00+00:00
+**Generated:** 2026-01-04T12:00:00+00:00
 **Agent:** test-plan
 **Mode:** analyze
 
@@ -8,34 +8,34 @@
 
 | Metric | Value |
 |--------|-------|
-| API routes | 45 |
-| API routes with tests | 18 |
-| Components | 47 |
-| Components with tests | 23 |
-| Lib functions | 35 |
-| Lib functions with tests | 18 |
-| **Total files analysed** | 127 |
-| **Files with tests** | 59 |
-| **Coverage gaps** | 68 |
-| **Coverage percentage** | 46% |
+| API routes | 61 |
+| API routes with tests | 23 |
+| Components | 80 |
+| Components with tests | 30 |
+| Lib functions | 43 |
+| Lib functions with tests | 25 |
+| **Total files analysed** | 184 |
+| **Files with tests** | 78 |
+| **Coverage gaps** | 106 |
+| **Coverage percentage** | 42% |
 
 ## Boot Status
 
-**Last run:** 2026-01-02T14:00:00+00:00
-**Commits since:** 5 (adc36bc)
-**Files changed:** 131 (Phases 3-6)
+**Last run:** 2026-01-02T14:30:00+00:00
+**Current run:** 2026-01-04T12:00:00+00:00
+**Commits since:** 6 (d5c18fc0)
+**Files changed:** 72
 
 **Invalidations:**
-- Major feature additions in Phases 3-6
-- New CSV import system (Phase 3)
-- New investment accounts (Phase 4)
-- New review queue (Phase 5)
-- New wealth & FIRE features (Phase 6)
+- Monthly snapshot entry changes (exclude_from_snapshots feature)
+- Account card display logic changes (investment vs transactional accounts)
+- Monthly trend API period parameter support
+- Dashboard hook timeframe handling
 
 **Effective backlog:**
-- 27 new API routes need tests
-- 24 new components need tests
-- 17 new lib functions need tests
+- 38 new/untested API routes
+- 50 new/untested components
+- 18 new/untested lib functions
 
 **Proceeding with mode:** analyze
 
@@ -43,20 +43,20 @@
 
 ## Gaps by Priority
 
-### CRITICAL
+### CRITICAL (6 gaps)
 
-Core business logic and new features from Phases 3-6 that need immediate test coverage:
+Core business logic and user-facing features that need immediate test coverage:
 
 | File | Type | Reason |
 |------|------|--------|
-| `lib/fire/calculator.ts` | lib | Core FIRE projection logic - no tests |
-| `app/api/fire/calculate/route.ts` | API | FIRE calculation endpoint - user-facing |
+| `app/api/fire/calculate/route.ts` | API | FIRE calculation endpoint - user-facing projections |
+| `app/api/fire/coast/route.ts` | API | Coast FIRE calculations - new feature |
 | `app/api/wealth/net-worth/route.ts` | API | Net worth aggregation - core wealth feature |
 | `app/api/wealth/history/route.ts` | API | Historical net worth data - charts depend on this |
-| `app/api/import/execute/route.ts` | API | Import execution - data integrity critical |
-| `app/api/transactions/review-queue/route.ts` | API | Review queue - categorisation workflow |
+| `app/api/investments/route.ts` | API | Investment account CRUD - core data management |
+| `app/api/transactions/bulk/route.ts` | API | Bulk transaction operations - data integrity |
 
-### HIGH
+### HIGH (21 gaps)
 
 Important features that support core functionality:
 
@@ -65,26 +65,26 @@ Important features that support core functionality:
 | `app/api/fire/scenarios/route.ts` | API | FIRE scenario CRUD |
 | `app/api/fire/scenarios/[id]/route.ts` | API | Individual scenario operations |
 | `app/api/fire/inputs/route.ts` | API | User FIRE inputs |
-| `app/api/investments/route.ts` | API | Investment account CRUD |
 | `app/api/investments/[id]/route.ts` | API | Individual investment operations |
 | `app/api/investments/[id]/valuations/route.ts` | API | Valuation management |
 | `app/api/investments/[id]/valuations/bulk/route.ts` | API | Bulk valuation import |
 | `app/api/investments/summary/route.ts` | API | Investment portfolio summary |
-| `app/api/transactions/[id]/flag/route.ts` | API | Transaction flagging for review |
-| `app/api/import/upload/route.ts` | API | CSV file upload |
-| `app/api/import/preview/route.ts` | API | Import preview with parsed data |
-| `app/api/import/duplicates/route.ts` | API | Duplicate detection |
-| `app/api/categories/rules/route.ts` | API | Category rule management |
-| `app/api/categories/rules/[id]/route.ts` | API | Individual rule operations |
-| `app/api/categories/corrections/route.ts` | API | Category corrections |
+| `app/api/accounts/summary/route.ts` | API | Account type balances for dashboard |
+| `app/api/accounts/reorder/route.ts` | API | Account display order |
+| `app/api/accounts/[id]/reallocate/route.ts` | API | Move transactions between accounts |
+| `app/api/budgets/bulk/route.ts` | API | Bulk budget operations |
+| `app/api/budgets/comparison/route.ts` | API | Budget vs actual comparison |
+| `app/api/budgets/copy-year/route.ts` | API | Copy budget year |
+| `app/api/budgets/savings-rate/route.ts` | API | Savings rate calculation |
+| `app/api/category-groups/route.ts` | API | Category group CRUD |
+| `app/api/category-groups/[id]/route.ts` | API | Individual group operations |
+| `app/api/categories/[id]/reassign/route.ts` | API | Reassign category transactions |
+| `app/api/transactions/income-by-category/route.ts` | API | Income breakdown by category |
 | `components/fire/FireInputsForm.tsx` | component | Core FIRE input form |
 | `components/fire/ProjectionChart.tsx` | component | FIRE projection visualisation |
-| `components/fire/ScenarioCards.tsx` | component | Scenario selection UI |
 | `components/wealth/NetWorthChart.tsx` | component | Net worth visualisation |
-| `components/investments/InvestmentAccountList.tsx` | component | Investment management UI |
-| `components/review/ReviewQueue.tsx` | component | Transaction review workflow |
 
-### MEDIUM
+### MEDIUM (24 gaps)
 
 Supporting components and utilities:
 
@@ -94,281 +94,395 @@ Supporting components and utilities:
 | `app/api/import/templates/route.ts` | API | Template listing |
 | `app/api/import/templates/[id]/route.ts` | API | Template CRUD |
 | `app/api/import/templates/[id]/use/route.ts` | API | Apply template |
-| `app/api/investments/[id]/valuations/[valuationId]/route.ts` | API | Individual valuation ops |
+| `app/api/import/preview/route.ts` | API | Import preview |
+| `app/api/import/duplicates/route.ts` | API | Duplicate detection |
+| `app/api/budgets/sync/route.ts` | API | Budget synchronisation |
+| `app/api/category-groups/reorder/route.ts` | API | Group ordering |
+| `app/api/categories/rules/route.ts` | API | Category rules CRUD |
+| `app/api/categories/rules/[id]/route.ts` | API | Individual rule operations |
+| `app/api/categories/corrections/route.ts` | API | Category corrections |
 | `components/fire/FireSummary.tsx` | component | FIRE result summary display |
 | `components/fire/ProjectionTable.tsx` | component | Year-by-year projection table |
+| `components/fire/ScenarioCards.tsx` | component | Scenario selection UI |
 | `components/wealth/NetWorthSummary.tsx` | component | Net worth summary cards |
 | `components/wealth/AccountBalances.tsx` | component | Account breakdown display |
-| `components/investments/InvestmentAccountCard.tsx` | component | Single investment display |
-| `components/investments/AddAccountDialog.tsx` | component | Add investment dialog |
-| `components/investments/AddValuationDialog.tsx` | component | Add valuation dialog |
-| `components/investments/ValuationHistory.tsx` | component | Valuation history table |
-| `components/investments/BulkImportDialog.tsx` | component | Bulk import UI |
-| `components/investments/InvestmentSummaryCard.tsx` | component | Portfolio summary |
-| `components/review/ReviewStats.tsx` | component | Review queue statistics |
-| `components/review/ReviewToolbar.tsx` | component | Bulk review actions |
-| `components/import/PreviewStep.tsx` | component | Import preview step |
-| `components/import/ImportStep.tsx` | component | Final import step |
-| `components/import/CategoryCell.tsx` | component | Category display in preview |
-| `components/import/BulkEditMode.tsx` | component | Bulk edit mode UI |
-| `components/import/CategorisedPreview.tsx` | component | Categorised transaction preview |
-| `lib/import/session-store.ts` | lib | Import session management |
-| `lib/import/prompts/column-mapping.ts` | lib | AI column mapping prompts |
+| `components/wealth/MonthlySnapshotForm.tsx` | component | Snapshot entry form |
+| `components/wealth/SnapshotHistoryTable.tsx` | component | Snapshot history |
+| `components/wealth/CoastFireCard.tsx` | component | Coast FIRE display |
+| `components/wealth/CoastFireSettings.tsx` | component | Coast FIRE settings |
+| `components/dashboard/IncomeByCategory.tsx` | component | Income breakdown chart |
+| `components/dashboard/NetWorthSummary.tsx` | component | Dashboard net worth |
+| `components/dashboard/TimeframeSelector.tsx` | component | Timeframe selection |
+| `lib/hooks/useBudgets.ts` | lib | Budget data hook |
 
-### LOW
+### LOW (6 gaps)
 
 Type definitions and integration code (lower priority):
 
 | File | Type | Reason |
 |------|------|--------|
 | `lib/types/fire.ts` | lib | Type definitions only |
-| `lib/types/import.ts` | lib | Type definitions only |
-| `lib/types/investment.ts` | lib | Type definitions only |
-| `lib/types/index.ts` | lib | Type re-exports |
-| `lib/supabase/client.ts` | lib | Browser client setup |
-| `lib/supabase/server.ts` | lib | Server client setup |
+| `lib/types/budget.ts` | lib | Type definitions only |
+| `lib/types/category.ts` | lib | Type definitions only |
+| `lib/utils/budget-export.ts` | lib | Budget export utilities |
+| `lib/validations/category-groups.ts` | lib | Validation schemas |
+| `lib/import/session-store.ts` | lib | Import session management |
 
 ---
 
 ## Source Files Discovered
 
-### API Routes (45 files) - 40% Coverage
+### API Routes (61 files) - 38% Coverage
 
-| File | Feature | Has Tests |
-|------|---------|-----------|
-| `app/api/health/route.ts` | health | Yes (5 tests) |
-| `app/api/accounts/route.ts` | accounts | Yes (13 tests) |
-| `app/api/accounts/[id]/route.ts` | accounts | Yes (included above) |
-| `app/api/transactions/route.ts` | transactions | Yes (22 tests) |
-| `app/api/transactions/[id]/route.ts` | transactions | Yes (included above) |
-| `app/api/transactions/summary/route.ts` | dashboard | Yes (8 tests) |
-| `app/api/transactions/by-category/route.ts` | dashboard | Yes (10 tests) |
-| `app/api/transactions/monthly-trend/route.ts` | dashboard | Yes (9 tests) |
-| `app/api/transactions/[id]/flag/route.ts` | review | **No** |
-| `app/api/transactions/review-queue/route.ts` | review | **No** |
-| `app/api/categories/route.ts` | categories | Yes (14 tests) |
-| `app/api/categories/[id]/route.ts` | categories | Yes (included above) |
-| `app/api/categories/rules/route.ts` | categorisation | **No** |
-| `app/api/categories/rules/[id]/route.ts` | categorisation | **No** |
-| `app/api/categories/corrections/route.ts` | categorisation | **No** |
-| `app/api/category-mappings/route.ts` | category-mappings | Yes (19 tests) |
-| `app/api/category-mappings/[id]/route.ts` | category-mappings | Yes (included above) |
-| `app/api/budgets/route.ts` | budgets | Yes (18 tests) |
-| `app/api/budgets/[id]/route.ts` | budgets | Yes (included above) |
-| `app/api/wealth-snapshots/route.ts` | wealth-snapshots | Yes (18 tests) |
-| `app/api/wealth-snapshots/[id]/route.ts` | wealth-snapshots | Yes (included above) |
-| `app/api/fire-parameters/route.ts` | fire-parameters | Yes (19 tests) |
-| `app/api/fire-parameters/[id]/route.ts` | fire-parameters | Yes (included above) |
-| `app/api/import/upload/route.ts` | import | **No** |
-| `app/api/import/formats/route.ts` | import | **No** |
-| `app/api/import/preview/route.ts` | import | **No** |
-| `app/api/import/duplicates/route.ts` | import | **No** |
-| `app/api/import/ai-suggest/route.ts` | import | Yes (tests exist) |
-| `app/api/import/categorise/route.ts` | import | Yes (tests exist) |
-| `app/api/import/execute/route.ts` | import | **No** |
-| `app/api/import/templates/route.ts` | import | **No** |
-| `app/api/import/templates/[id]/route.ts` | import | **No** |
-| `app/api/import/templates/[id]/use/route.ts` | import | **No** |
-| `app/api/investments/route.ts` | investments | **No** |
-| `app/api/investments/[id]/route.ts` | investments | **No** |
-| `app/api/investments/summary/route.ts` | investments | **No** |
-| `app/api/investments/[id]/valuations/route.ts` | investments | **No** |
-| `app/api/investments/[id]/valuations/[valuationId]/route.ts` | investments | **No** |
-| `app/api/investments/[id]/valuations/bulk/route.ts` | investments | **No** |
-| `app/api/wealth/net-worth/route.ts` | wealth | **No** |
-| `app/api/wealth/history/route.ts` | wealth | **No** |
-| `app/api/fire/scenarios/route.ts` | fire | **No** |
-| `app/api/fire/scenarios/[id]/route.ts` | fire | **No** |
-| `app/api/fire/inputs/route.ts` | fire | **No** |
-| `app/api/fire/calculate/route.ts` | fire | **No** |
+#### accounts/ (5 routes)
+| File | Has Tests | Notes |
+|------|-----------|-------|
+| `app/api/accounts/route.ts` | ✅ Yes | 13 tests in accounts.test.ts |
+| `app/api/accounts/[id]/route.ts` | ✅ Yes | Included above |
+| `app/api/accounts/summary/route.ts` | ❌ No | Account type balances |
+| `app/api/accounts/reorder/route.ts` | ❌ No | Display order |
+| `app/api/accounts/[id]/reallocate/route.ts` | ❌ No | Move transactions |
 
-### Components (47 files) - 49% Coverage
+#### budgets/ (7 routes)
+| File | Has Tests | Notes |
+|------|-----------|-------|
+| `app/api/budgets/route.ts` | ✅ Yes | 18 tests in budgets.test.ts |
+| `app/api/budgets/[id]/route.ts` | ✅ Yes | Included above |
+| `app/api/budgets/bulk/route.ts` | ❌ No | Bulk operations |
+| `app/api/budgets/comparison/route.ts` | ❌ No | Budget vs actual |
+| `app/api/budgets/copy-year/route.ts` | ❌ No | Year copy |
+| `app/api/budgets/savings-rate/route.ts` | ❌ No | Savings rate |
+| `app/api/budgets/sync/route.ts` | ❌ No | Synchronisation |
 
-| File | Feature | Has Tests |
-|------|---------|-----------|
-| `components/Button.tsx` | ui | Yes (19 tests) |
-| `components/layout/Sidebar.tsx` | layout | Yes (11 tests) |
-| `components/layout/Header.tsx` | layout | Yes (9 tests) |
-| `components/layout/AppLayout.tsx` | layout | Yes (13 tests) |
-| `components/transactions/TransactionFilters.tsx` | transactions-ui | Yes (10 tests) |
-| `components/transactions/TransactionTable.tsx` | transactions-ui | Yes (8 tests) |
-| `components/transactions/TransactionPagination.tsx` | transactions-ui | Yes (15 tests) |
-| `components/dashboard/SummaryCards.tsx` | dashboard | Yes (tests exist) |
-| `components/dashboard/RecentTransactions.tsx` | dashboard | Yes (tests exist) |
-| `components/dashboard/SpendingByCategory.tsx` | dashboard | Yes (tests exist) |
-| `components/dashboard/MonthlyTrend.tsx` | dashboard | Yes (tests exist) |
-| `components/import/ImportWizard.tsx` | import | Yes (tests exist) |
-| `components/import/UploadStep.tsx` | import | Yes (tests exist) |
-| `components/import/PreviewStep.tsx` | import | **No** |
-| `components/import/ImportStep.tsx` | import | **No** |
-| `components/import/MappingStep.tsx` | import | Yes (tests exist) |
-| `components/import/CategoryConfidence.tsx` | import | Yes (tests exist) |
-| `components/import/CategoryCell.tsx` | import | **No** |
-| `components/import/BulkCategorise.tsx` | import | Yes (tests exist) |
-| `components/import/EditableCell.tsx` | import | Yes (tests exist) |
-| `components/import/BulkEditToolbar.tsx` | import | Yes (tests exist) |
-| `components/import/TransactionSplitter.tsx` | import | Yes (tests exist) |
-| `components/import/BulkEditMode.tsx` | import | **No** |
-| `components/import/SaveTemplateDialog.tsx` | import | Yes (tests exist) |
-| `components/import/TemplateSelector.tsx` | import | Yes (tests exist) |
-| `components/import/TemplateManager.tsx` | import | Yes (tests exist) |
-| `components/import/CategorisedPreview.tsx` | import | **No** |
-| `components/import/RuleSuggestion.tsx` | import | Yes (tests exist) |
-| `components/investments/InvestmentAccountCard.tsx` | investments | **No** |
-| `components/investments/InvestmentAccountList.tsx` | investments | **No** |
-| `components/investments/AddAccountDialog.tsx` | investments | **No** |
-| `components/investments/AddValuationDialog.tsx` | investments | **No** |
-| `components/investments/ValuationHistory.tsx` | investments | **No** |
-| `components/investments/BulkImportDialog.tsx` | investments | **No** |
-| `components/investments/InvestmentSummaryCard.tsx` | investments | **No** |
-| `components/review/ReviewStats.tsx` | review | **No** |
-| `components/review/ReviewToolbar.tsx` | review | **No** |
-| `components/review/ReviewQueue.tsx` | review | **No** |
-| `components/wealth/NetWorthSummary.tsx` | wealth | **No** |
-| `components/wealth/AccountBalances.tsx` | wealth | **No** |
-| `components/wealth/NetWorthChart.tsx` | wealth | **No** |
-| `components/fire/FireInputsForm.tsx` | fire | **No** |
-| `components/fire/ScenarioCards.tsx` | fire | **No** |
-| `components/fire/FireSummary.tsx` | fire | **No** |
-| `components/fire/ProjectionChart.tsx` | fire | **No** |
-| `components/fire/ProjectionTable.tsx` | fire | **No** |
+#### categories/ (6 routes)
+| File | Has Tests | Notes |
+|------|-----------|-------|
+| `app/api/categories/route.ts` | ✅ Yes | 14 tests in categories.test.ts |
+| `app/api/categories/[id]/route.ts` | ✅ Yes | Included above |
+| `app/api/categories/corrections/route.ts` | ❌ No | Corrections |
+| `app/api/categories/rules/route.ts` | ❌ No | Rules CRUD |
+| `app/api/categories/rules/[id]/route.ts` | ❌ No | Individual rules |
+| `app/api/categories/[id]/reassign/route.ts` | ❌ No | Reassign transactions |
 
-### Library Functions (35 files) - 51% Coverage
+#### category-groups/ (3 routes) - NEW
+| File | Has Tests | Notes |
+|------|-----------|-------|
+| `app/api/category-groups/route.ts` | ❌ No | Group CRUD |
+| `app/api/category-groups/[id]/route.ts` | ❌ No | Individual group |
+| `app/api/category-groups/reorder/route.ts` | ❌ No | Group ordering |
 
-| File | Feature | Has Tests |
-|------|---------|-----------|
-| `lib/supabase/client.ts` | database | No (browser client) |
-| `lib/supabase/server.ts` | database | Yes (3 tests - connection) |
-| `lib/supabase/database.types.ts` | database | N/A (types only) |
-| `lib/hooks/useTransactions.ts` | transactions-ui | Yes (22 tests) |
-| `lib/hooks/useDashboardData.ts` | dashboard | Yes (tests exist) |
-| `lib/validations/*.ts` | validations | Yes (39 tests) |
-| `lib/types/*.ts` | types | N/A (types only) |
-| `lib/import/parser.ts` | import | Yes (tests exist) |
-| `lib/import/validators.ts` | import | Yes (tests exist) |
-| `lib/import/format-detector.ts` | import | Yes (tests exist) |
-| `lib/import/normalizers.ts` | import | Yes (tests exist) |
-| `lib/import/ai-mapper.ts` | import | Yes (tests exist) |
-| `lib/import/session-store.ts` | import | **No** |
-| `lib/import/prompts/column-mapping.ts` | import | **No** |
-| `lib/categorisation/rule-matcher.ts` | categorisation | Yes (tests exist) |
-| `lib/categorisation/similar-lookup.ts` | categorisation | Yes (tests exist) |
-| `lib/categorisation/ai-categoriser.ts` | categorisation | Yes (tests exist) |
-| `lib/categorisation/engine.ts` | categorisation | Yes (tests exist) |
-| `lib/categorisation/learning.ts` | categorisation | Yes (tests exist) |
-| `lib/categorisation/rules-manager.ts` | categorisation | Yes (tests exist) |
-| `lib/categorisation/prompts/categorise.ts` | categorisation | Yes (tests exist) |
-| `lib/fire/calculator.ts` | fire | **No** |
+#### fire/ (5 routes)
+| File | Has Tests | Notes |
+|------|-----------|-------|
+| `app/api/fire/calculate/route.ts` | ✅ Yes | 4 tests |
+| `app/api/fire/coast/route.ts` | ❌ No | Coast FIRE calcs |
+| `app/api/fire/inputs/route.ts` | ❌ No | FIRE inputs |
+| `app/api/fire/scenarios/route.ts` | ❌ No | Scenarios CRUD |
+| `app/api/fire/scenarios/[id]/route.ts` | ❌ No | Individual scenario |
+
+#### import/ (11 routes)
+| File | Has Tests | Notes |
+|------|-----------|-------|
+| `app/api/import/upload/route.ts` | ❌ No | File upload |
+| `app/api/import/upload-pdf/route.ts` | ✅ Yes | PDF upload tests |
+| `app/api/import/formats/route.ts` | ❌ No | Format detection |
+| `app/api/import/preview/route.ts` | ❌ No | Preview |
+| `app/api/import/duplicates/route.ts` | ❌ No | Duplicates |
+| `app/api/import/ai-suggest/route.ts` | ✅ Yes | AI suggest tests |
+| `app/api/import/categorise/route.ts` | ✅ Yes | Categorise tests |
+| `app/api/import/execute/route.ts` | ✅ Yes | Execute tests |
+| `app/api/import/templates/route.ts` | ❌ No | Templates |
+| `app/api/import/templates/[id]/route.ts` | ❌ No | Individual template |
+| `app/api/import/templates/[id]/use/route.ts` | ❌ No | Use template |
+
+#### investments/ (6 routes) - ALL UNTESTED
+| File | Has Tests | Notes |
+|------|-----------|-------|
+| `app/api/investments/route.ts` | ❌ No | Account CRUD |
+| `app/api/investments/[id]/route.ts` | ❌ No | Individual account |
+| `app/api/investments/summary/route.ts` | ❌ No | Portfolio summary |
+| `app/api/investments/[id]/valuations/route.ts` | ❌ No | Valuations |
+| `app/api/investments/[id]/valuations/bulk/route.ts` | ❌ No | Bulk import |
+| `app/api/investments/[id]/valuations/[valuationId]/route.ts` | ❌ No | Individual valuation |
+
+#### transactions/ (8 routes)
+| File | Has Tests | Notes |
+|------|-----------|-------|
+| `app/api/transactions/route.ts` | ✅ Yes | 22 tests |
+| `app/api/transactions/[id]/route.ts` | ✅ Yes | Included above |
+| `app/api/transactions/summary/route.ts` | ✅ Yes | 8 tests |
+| `app/api/transactions/by-category/route.ts` | ✅ Yes | 10 tests |
+| `app/api/transactions/monthly-trend/route.ts` | ✅ Yes | 9 tests |
+| `app/api/transactions/bulk/route.ts` | ❌ No | Bulk operations |
+| `app/api/transactions/income-by-category/route.ts` | ❌ No | Income breakdown |
+| `app/api/transactions/review-queue/route.ts` | ✅ Yes | 11 tests |
+| `app/api/transactions/[id]/flag/route.ts` | ❌ No | Flagging |
+
+#### wealth/ (2 routes)
+| File | Has Tests | Notes |
+|------|-----------|-------|
+| `app/api/wealth/net-worth/route.ts` | ✅ Yes | Net worth tests |
+| `app/api/wealth/history/route.ts` | ✅ Yes | History tests |
 
 ---
 
-## Existing Tests
+### Components (80 files) - 38% Coverage
 
-| Test File | Tests | Status |
-|-----------|-------|--------|
-| `tests/api/health.test.ts` | 5 | Pass |
-| `tests/api/supabase-connection.test.ts` | 3 | Pass |
-| `tests/api/accounts.test.ts` | 13 | Pass |
-| `tests/api/transactions.test.ts` | 22 | Pass |
-| `tests/api/categories.test.ts` | 14 | Pass |
-| `tests/api/category-mappings.test.ts` | 19 | Pass |
-| `tests/api/budgets.test.ts` | 18 | Pass |
-| `tests/api/wealth-snapshots.test.ts` | 18 | Pass |
-| `tests/api/fire-parameters.test.ts` | 19 | Pass |
-| `tests/api/dashboard-summary.test.ts` | 8 | Pass |
-| `tests/api/dashboard-by-category.test.ts` | 10 | Pass |
-| `tests/api/dashboard-monthly-trend.test.ts` | 9 | Pass |
-| `tests/api/import/ai-suggest.test.ts` | ~15 | Pass |
-| `tests/api/import/categorise.test.ts` | ~20 | Pass |
-| `tests/unit/Button.test.tsx` | 19 | Pass |
-| `tests/unit/Sidebar.test.tsx` | 11 | Pass |
-| `tests/unit/Header.test.tsx` | 9 | Pass |
-| `tests/unit/AppLayout.test.tsx` | 13 | Pass |
-| `tests/unit/TransactionFilters.test.tsx` | 10 | Pass |
-| `tests/unit/TransactionTable.test.tsx` | 8 | Pass |
-| `tests/unit/TransactionPagination.test.tsx` | 15 | Pass |
-| `tests/unit/SummaryCards.test.tsx` | ~10 | Pass |
-| `tests/unit/RecentTransactions.test.tsx` | ~8 | Pass |
-| `tests/unit/SpendingByCategory.test.tsx` | ~8 | Pass |
-| `tests/unit/MonthlyTrend.test.tsx` | ~10 | Pass |
-| `tests/unit/useTransactions.test.ts` | 22 | Pass |
-| `tests/unit/useDashboardData.test.ts` | ~15 | Pass |
-| `tests/unit/validations.test.ts` | 39 | Pass |
-| `tests/unit/import-parser.test.ts` | ~30 | Pass |
-| `tests/unit/import-validators.test.ts` | ~25 | Pass |
-| `tests/unit/import-format-detector.test.ts` | ~20 | Pass |
-| `tests/unit/import-normalizers.test.ts` | ~15 | Pass |
-| `tests/unit/import/*.test.tsx` | ~100 | Pass |
-| `tests/unit/categorisation/*.test.ts` | ~150 | Pass |
-| **Total** | **~852** | **All Pass** |
+#### accounts/ (6 components) - 0% COVERAGE
+| File | Has Tests |
+|------|-----------|
+| `components/accounts/AccountCard.tsx` | ❌ No |
+| `components/accounts/AccountDialog.tsx` | ❌ No |
+| `components/accounts/AccountFilters.tsx` | ❌ No |
+| `components/accounts/AccountList.tsx` | ❌ No |
+| `components/accounts/DeleteAccountDialog.tsx` | ❌ No |
+| `components/accounts/ReallocateDialog.tsx` | ❌ No |
+
+#### budgets/ (7 components) - 0% COVERAGE
+| File | Has Tests |
+|------|-----------|
+| `components/budgets/BudgetBulkEditDialog.tsx` | ❌ No |
+| `components/budgets/BudgetEditDialog.tsx` | ❌ No |
+| `components/budgets/BudgetGroupTable.tsx` | ❌ No |
+| `components/budgets/BudgetSummaryCards.tsx` | ❌ No |
+| `components/budgets/CopyBudgetDialog.tsx` | ❌ No |
+| `components/budgets/ExportMenu.tsx` | ❌ No |
+| `components/budgets/MonthSelector.tsx` | ❌ No |
+| `components/budgets/ViewToggle.tsx` | ❌ No |
+
+#### categories/ (10 components) - 0% COVERAGE
+| File | Has Tests |
+|------|-----------|
+| `components/categories/CategoryCard.tsx` | ❌ No |
+| `components/categories/CategoryDialog.tsx` | ❌ No |
+| `components/categories/CategoryFilters.tsx` | ❌ No |
+| `components/categories/CategoryGroupList.tsx` | ❌ No |
+| `components/categories/ColourPicker.tsx` | ❌ No |
+| `components/categories/DeleteCategoryDialog.tsx` | ❌ No |
+| `components/categories/GroupDialog.tsx` | ❌ No |
+| `components/categories/ReassignCategoryDialog.tsx` | ❌ No |
+| `components/categories/RuleCard.tsx` | ❌ No |
+| `components/categories/RuleDialog.tsx` | ❌ No |
+| `components/categories/RulesPanel.tsx` | ❌ No |
+
+#### dashboard/ (7 components) - 71% Coverage
+| File | Has Tests |
+|------|-----------|
+| `components/dashboard/SummaryCards.tsx` | ✅ Yes |
+| `components/dashboard/RecentTransactions.tsx` | ✅ Yes |
+| `components/dashboard/SpendingByCategory.tsx` | ✅ Yes |
+| `components/dashboard/MonthlyTrend.tsx` | ✅ Yes |
+| `components/dashboard/IncomeByCategory.tsx` | ❌ No |
+| `components/dashboard/NetWorthSummary.tsx` | ❌ No |
+| `components/dashboard/TimeframeSelector.tsx` | ❌ No |
+
+#### fire/ (5 components) - 0% COVERAGE
+| File | Has Tests |
+|------|-----------|
+| `components/fire/FireInputsForm.tsx` | ❌ No |
+| `components/fire/FireSummary.tsx` | ❌ No |
+| `components/fire/ProjectionChart.tsx` | ❌ No |
+| `components/fire/ProjectionTable.tsx` | ❌ No |
+| `components/fire/ScenarioCards.tsx` | ❌ No |
+
+#### import/ (16 components) - 75% Coverage
+| File | Has Tests |
+|------|-----------|
+| `components/import/ImportWizard.tsx` | ✅ Yes |
+| `components/import/UploadStep.tsx` | ✅ Yes |
+| `components/import/MappingStep.tsx` | ✅ Yes |
+| `components/import/PreviewStep.tsx` | ❌ No |
+| `components/import/BulkCategorise.tsx` | ✅ Yes |
+| `components/import/BulkEditMode.tsx` | ❌ No |
+| `components/import/BulkEditToolbar.tsx` | ✅ Yes |
+| `components/import/CategorisedPreview.tsx` | ❌ No |
+| `components/import/CategoryCell.tsx` | ❌ No |
+| `components/import/CategoryConfidence.tsx` | ✅ Yes |
+| `components/import/EditableCell.tsx` | ✅ Yes |
+| `components/import/ImportStep.tsx` | ❌ No |
+| `components/import/RuleSuggestion.tsx` | ✅ Yes |
+| `components/import/SaveTemplateDialog.tsx` | ✅ Yes |
+| `components/import/TemplateManager.tsx` | ✅ Yes |
+| `components/import/TemplateSelector.tsx` | ✅ Yes |
+| `components/import/TransactionSplitter.tsx` | ✅ Yes |
+
+#### investments/ (7 components) - 0% COVERAGE
+| File | Has Tests |
+|------|-----------|
+| `components/investments/AddAccountDialog.tsx` | ❌ No |
+| `components/investments/AddValuationDialog.tsx` | ❌ No |
+| `components/investments/BulkImportDialog.tsx` | ❌ No |
+| `components/investments/InvestmentAccountCard.tsx` | ❌ No |
+| `components/investments/InvestmentAccountList.tsx` | ❌ No |
+| `components/investments/InvestmentSummaryCard.tsx` | ❌ No |
+| `components/investments/ValuationHistory.tsx` | ❌ No |
+
+#### layout/ (3 components) - 100% Coverage
+| File | Has Tests |
+|------|-----------|
+| `components/layout/AppLayout.tsx` | ✅ Yes |
+| `components/layout/Header.tsx` | ✅ Yes |
+| `components/layout/Sidebar.tsx` | ✅ Yes |
+
+#### review/ (3 components) - 0% COVERAGE
+| File | Has Tests |
+|------|-----------|
+| `components/review/ReviewQueue.tsx` | ❌ No |
+| `components/review/ReviewStats.tsx` | ❌ No |
+| `components/review/ReviewToolbar.tsx` | ❌ No |
+
+#### transactions/ (5 components) - 60% Coverage
+| File | Has Tests |
+|------|-----------|
+| `components/transactions/TransactionFilters.tsx` | ✅ Yes |
+| `components/transactions/TransactionTable.tsx` | ✅ Yes |
+| `components/transactions/TransactionPagination.tsx` | ✅ Yes |
+| `components/transactions/TransactionEditModal.tsx` | ❌ No |
+| `components/transactions/TransactionToolbar.tsx` | ❌ No |
+
+#### ui/ (1 component)
+| File | Has Tests |
+|------|-----------|
+| `components/ui/ConfirmDialog.tsx` | ❌ No |
+
+#### wealth/ (6 components) - 0% COVERAGE
+| File | Has Tests |
+|------|-----------|
+| `components/wealth/AccountBalances.tsx` | ❌ No |
+| `components/wealth/CoastFireCard.tsx` | ❌ No |
+| `components/wealth/CoastFireSettings.tsx` | ❌ No |
+| `components/wealth/MonthlySnapshotForm.tsx` | ❌ No |
+| `components/wealth/NetWorthChart.tsx` | ❌ No |
+| `components/wealth/NetWorthSummary.tsx` | ❌ No |
+| `components/wealth/SnapshotHistoryTable.tsx` | ❌ No |
+
+---
+
+### Library Functions (43 files) - 58% Coverage
+
+#### categorisation/ (7 files) - 100% Coverage
+| File | Has Tests |
+|------|-----------|
+| `lib/categorisation/ai-categoriser.ts` | ✅ Yes |
+| `lib/categorisation/engine.ts` | ✅ Yes |
+| `lib/categorisation/index.ts` | ✅ Yes |
+| `lib/categorisation/learning.ts` | ✅ Yes |
+| `lib/categorisation/rule-matcher.ts` | ✅ Yes |
+| `lib/categorisation/rules-manager.ts` | ✅ Yes |
+| `lib/categorisation/similar-lookup.ts` | ✅ Yes |
+| `lib/categorisation/prompts/categorise.ts` | ✅ Yes |
+
+#### fire/ (1 file)
+| File | Has Tests |
+|------|-----------|
+| `lib/fire/calculator.ts` | ✅ Yes (42 tests) |
+
+#### hooks/ (3 files) - 67% Coverage
+| File | Has Tests |
+|------|-----------|
+| `lib/hooks/useDashboardData.ts` | ✅ Yes |
+| `lib/hooks/useTransactions.ts` | ✅ Yes |
+| `lib/hooks/useBudgets.ts` | ❌ No |
+
+#### import/ (10 files) - 80% Coverage
+| File | Has Tests |
+|------|-----------|
+| `lib/import/ai-mapper.ts` | ✅ Yes |
+| `lib/import/format-detector.ts` | ✅ Yes |
+| `lib/import/index.ts` | ✅ Yes |
+| `lib/import/normalizers.ts` | ✅ Yes |
+| `lib/import/parser.ts` | ✅ Yes |
+| `lib/import/pdf-extractor.ts` | ✅ Yes |
+| `lib/import/pdf-vision-parser.ts` | ✅ Yes |
+| `lib/import/session-store.ts` | ❌ No |
+| `lib/import/validators.ts` | ✅ Yes |
+| `lib/import/prompts/column-mapping.ts` | ❌ No |
+| `lib/import/prompts/pdf-statement.ts` | ✅ Yes |
+
+#### utils/ (1 file) - 0% COVERAGE
+| File | Has Tests |
+|------|-----------|
+| `lib/utils/budget-export.ts` | ❌ No |
+
+#### validations/ (9 files) - Partial Coverage
+| File | Has Tests |
+|------|-----------|
+| `lib/validations/accounts.ts` | ✅ Partial |
+| `lib/validations/budgets.ts` | ✅ Partial |
+| `lib/validations/categories.ts` | ✅ Partial |
+| `lib/validations/category-groups.ts` | ❌ No |
+| `lib/validations/category-mappings.ts` | ✅ Partial |
+| `lib/validations/fire-parameters.ts` | ✅ Partial |
+| `lib/validations/import.ts` | ✅ Partial |
+| `lib/validations/transactions.ts` | ✅ Partial |
+| `lib/validations/wealth-snapshots.ts` | ✅ Partial |
+
+---
+
+## Existing Tests Summary
+
+| Category | Test Files | Test Count | Status |
+|----------|------------|------------|--------|
+| API tests | 20 | ~220 | ✅ Pass |
+| Unit tests - components | 25 | ~180 | ✅ Pass |
+| Unit tests - lib | 20 | ~450 | ✅ Pass |
+| **Total** | **65** | **~850** | **All Pass** |
 
 ---
 
 ## Recommendations
 
-### Immediate Actions (Phase 3-6 Coverage)
+### Immediate Actions
 
-1. **FIRE Calculator Tests** - `lib/fire/calculator.ts`
-   - Test `calculateFireProjection()` with various scenarios
-   - Test `calculateCoastFi()` edge cases
-   - Test inflation adjustments
-   - Test FI status transitions
+1. **Investment API Tests** (CRITICAL)
+   - Create `tests/api/investments.test.ts`
+   - Cover CRUD operations, valuations, bulk import
+   - Estimated: 25-30 tests
 
-2. **Wealth API Tests**
-   - `app/api/wealth/net-worth/route.ts` - aggregation logic
-   - `app/api/wealth/history/route.ts` - period filtering
+2. **Budget Extended API Tests** (HIGH)
+   - Create tests for bulk, comparison, copy-year, savings-rate, sync
+   - Estimated: 20-25 tests
 
-3. **Investment API Tests**
-   - CRUD operations for accounts
-   - Valuation management
-   - Bulk import validation
+3. **Category Groups API Tests** (HIGH)
+   - Create `tests/api/category-groups.test.ts`
+   - Cover CRUD and reorder
+   - Estimated: 15-20 tests
 
-4. **Review Queue Tests**
-   - `app/api/transactions/review-queue/route.ts`
-   - `app/api/transactions/[id]/flag/route.ts`
+4. **FIRE Extended Tests** (HIGH)
+   - Add tests for coast, inputs, scenarios endpoints
+   - Estimated: 20-25 tests
+
+### Component Test Priorities
+
+1. **Fire components** - Critical user-facing features
+2. **Wealth components** - Core wealth tracking UI
+3. **Accounts components** - Account management UI
+4. **Budget components** - Budget management UI
 
 ### Test Generation Priority Order
-
-1. `lib/fire/calculator.ts` (unit tests)
-2. `app/api/fire/calculate/route.ts` (API tests)
-3. `app/api/wealth/net-worth/route.ts` (API tests)
-4. `app/api/investments/route.ts` (API tests)
-5. `app/api/transactions/review-queue/route.ts` (API tests)
-6. `components/fire/*` (component tests)
-7. `components/wealth/*` (component tests)
-8. `components/investments/*` (component tests)
-
----
-
-## Test Generation Backlog
 
 ```json
 {
   "critical": [
-    "lib/fire/calculator.ts",
-    "app/api/fire/calculate/route.ts",
-    "app/api/wealth/net-worth/route.ts",
-    "app/api/wealth/history/route.ts",
-    "app/api/import/execute/route.ts",
-    "app/api/transactions/review-queue/route.ts"
+    "app/api/investments/route.ts",
+    "app/api/fire/coast/route.ts",
+    "app/api/transactions/bulk/route.ts"
   ],
   "high": [
-    "app/api/fire/scenarios/route.ts",
+    "app/api/budgets/bulk/route.ts",
+    "app/api/budgets/comparison/route.ts",
+    "app/api/category-groups/route.ts",
+    "app/api/accounts/summary/route.ts",
     "app/api/fire/inputs/route.ts",
-    "app/api/investments/route.ts",
-    "app/api/investments/summary/route.ts",
-    "app/api/transactions/[id]/flag/route.ts",
-    "app/api/import/upload/route.ts",
-    "app/api/import/preview/route.ts",
-    "app/api/categories/rules/route.ts",
-    "components/fire/FireInputsForm.tsx",
-    "components/fire/ProjectionChart.tsx",
-    "components/wealth/NetWorthChart.tsx",
-    "components/investments/InvestmentAccountList.tsx",
-    "components/review/ReviewQueue.tsx"
+    "app/api/fire/scenarios/route.ts"
   ],
-  "medium": 24,
-  "low": 6
+  "component_priority": [
+    "components/fire/*",
+    "components/wealth/*",
+    "components/accounts/*",
+    "components/budgets/*",
+    "components/categories/*"
+  ]
 }
 ```
 
@@ -376,6 +490,6 @@ Type definitions and integration code (lower priority):
 
 ## Next Steps
 
-Run `/test-build critical` to generate tests for CRITICAL priority gaps (FIRE calculator, wealth API, review queue).
-
-Then run `/test-build high` to generate tests for HIGH priority gaps (investments, FIRE scenarios, import routes).
+1. Run `/test-build critical` to generate tests for CRITICAL priority gaps
+2. Run `/test-build high` to generate tests for HIGH priority gaps
+3. Run `/test-execute quick` to validate new tests pass

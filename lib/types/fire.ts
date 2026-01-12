@@ -28,8 +28,12 @@ export interface FireInputs {
   currentPortfolioValue: number | null;
   annualIncome: number | null;
   annualSavings: number | null;
+  annualSpend: number;
+  withdrawalRate: number;
+  expectedReturn: number;
   includeStatePension: boolean;
   partnerStatePension: boolean;
+  excludePropertyFromFire: boolean;
   updatedAt: string;
 }
 
@@ -132,8 +136,12 @@ export const fireInputsSchema = z.object({
   currentPortfolioValue: z.number().min(0).optional().nullable(),
   annualIncome: z.number().min(0).optional().nullable(),
   annualSavings: z.number().optional().nullable(),
+  annualSpend: z.number().positive().default(50000),
+  withdrawalRate: z.number().min(1).max(10).default(4),
+  expectedReturn: z.number().min(0).max(20).default(7),
   includeStatePension: z.boolean().default(true),
   partnerStatePension: z.boolean().default(false),
+  excludePropertyFromFire: z.boolean().default(true),
 });
 
 export const calculateFireRequestSchema = z.object({

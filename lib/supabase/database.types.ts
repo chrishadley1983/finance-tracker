@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           color: string | null
           created_at: string
+          exclude_from_snapshots: boolean | null
           hsbc_account_id: string | null
           icon: string | null
           id: string
@@ -37,6 +38,7 @@ export type Database = {
         Insert: {
           color?: string | null
           created_at?: string
+          exclude_from_snapshots?: boolean | null
           hsbc_account_id?: string | null
           icon?: string | null
           id?: string
@@ -56,6 +58,7 @@ export type Database = {
         Update: {
           color?: string | null
           created_at?: string
+          exclude_from_snapshots?: boolean | null
           hsbc_account_id?: string | null
           icon?: string | null
           id?: string
@@ -165,30 +168,47 @@ export type Database = {
       }
       categories: {
         Row: {
+          colour: string | null
           created_at: string
           display_order: number
+          exclude_from_totals: boolean
+          group_id: string | null
           group_name: string
           id: string
           is_income: boolean
           name: string
         }
         Insert: {
+          colour?: string | null
           created_at?: string
           display_order?: number
+          exclude_from_totals?: boolean
+          group_id?: string | null
           group_name: string
           id?: string
           is_income?: boolean
           name: string
         }
         Update: {
+          colour?: string | null
           created_at?: string
           display_order?: number
+          exclude_from_totals?: boolean
+          group_id?: string | null
           group_name?: string
           id?: string
           is_income?: boolean
           name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "category_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       category_corrections: {
         Row: {
@@ -252,6 +272,33 @@ export type Database = {
           },
         ]
       }
+      category_groups: {
+        Row: {
+          colour: string | null
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          colour?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          colour?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       category_mappings: {
         Row: {
           category_id: string
@@ -297,35 +344,47 @@ export type Database = {
         Row: {
           annual_income: number | null
           annual_savings: number | null
+          annual_spend: number | null
           current_age: number
           current_portfolio_value: number | null
+          exclude_property_from_fire: boolean | null
+          expected_return: number | null
           id: string
           include_state_pension: boolean | null
           partner_state_pension: boolean | null
           target_retirement_age: number | null
           updated_at: string | null
+          withdrawal_rate: number | null
         }
         Insert: {
           annual_income?: number | null
           annual_savings?: number | null
+          annual_spend?: number | null
           current_age: number
           current_portfolio_value?: number | null
+          exclude_property_from_fire?: boolean | null
+          expected_return?: number | null
           id?: string
           include_state_pension?: boolean | null
           partner_state_pension?: boolean | null
           target_retirement_age?: number | null
           updated_at?: string | null
+          withdrawal_rate?: number | null
         }
         Update: {
           annual_income?: number | null
           annual_savings?: number | null
+          annual_spend?: number | null
           current_age?: number
           current_portfolio_value?: number | null
+          exclude_property_from_fire?: boolean | null
+          expected_return?: number | null
           id?: string
           include_state_pension?: boolean | null
           partner_state_pension?: boolean | null
           target_retirement_age?: number | null
           updated_at?: string | null
+          withdrawal_rate?: number | null
         }
         Relationships: []
       }
@@ -639,6 +698,7 @@ export type Database = {
           description: string
           hsbc_transaction_id: string | null
           id: string
+          is_validated: boolean
           needs_review: boolean | null
         }
         Insert: {
@@ -651,6 +711,7 @@ export type Database = {
           description: string
           hsbc_transaction_id?: string | null
           id?: string
+          is_validated?: boolean
           needs_review?: boolean | null
         }
         Update: {
@@ -663,6 +724,7 @@ export type Database = {
           description?: string
           hsbc_transaction_id?: string | null
           id?: string
+          is_validated?: boolean
           needs_review?: boolean | null
         }
         Relationships: [
@@ -745,6 +807,79 @@ export type Database = {
           earliest_date: string
           latest_date: string
           tx_count: number
+        }[]
+      }
+      get_account_balances_with_snapshots: {
+        Args: { account_ids: string[] }
+        Returns: {
+          account_id: string
+          snapshot_date: string
+          snapshot_balance: number
+          transactions_sum: number
+          current_balance: number
+        }[]
+      }
+      get_category_transaction_stats: {
+        Args: { category_ids: string[] }
+        Returns: {
+          category_id: string
+          total_amount: number
+          tx_count: number
+        }[]
+      }
+      get_spending_by_category: {
+        Args: {
+          start_date: string
+          end_date: string
+          excluded_ids: string[]
+        }
+        Returns: {
+          category_id: string
+          category_name: string
+          total_amount: number
+        }[]
+      }
+      get_income_by_category: {
+        Args: {
+          start_date: string
+          end_date: string
+          excluded_ids: string[]
+        }
+        Returns: {
+          category_id: string
+          category_name: string
+          total_amount: number
+        }[]
+      }
+      get_budget_vs_actual: {
+        Args: {
+          p_year: number
+          p_month?: number | null
+        }
+        Returns: {
+          category_id: string
+          category_name: string
+          group_name: string
+          is_income: boolean
+          budget_amount: number
+          actual_amount: number
+          variance: number
+        }[]
+      }
+      get_savings_rate: {
+        Args: {
+          p_year: number
+          p_month?: number | null
+        }
+        Returns: {
+          total_income_budget: number
+          total_income_actual: number
+          total_expense_budget: number
+          total_expense_actual: number
+          savings_budget: number
+          savings_actual: number
+          savings_rate_budget: number
+          savings_rate_actual: number
         }[]
       }
       show_limit: { Args: never; Returns: number }

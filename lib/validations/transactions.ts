@@ -42,6 +42,25 @@ export const transactionQuerySchema = z.object({
   search: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(1000).optional().default(100),
   offset: z.coerce.number().int().min(0).optional().default(0),
+  sort_column: z.enum(['date', 'description', 'account', 'category', 'amount']).optional(),
+  sort_direction: z.enum(['asc', 'desc']).optional(),
+});
+
+// Bulk operation schemas
+export const bulkUpdateTransactionsSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1, 'At least one transaction ID required'),
+  update: z.object({
+    category_id: z.string().uuid().nullable().optional(),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    categorisation_source: categorisationSourceSchema.optional(),
+  }).refine(
+    (data) => Object.values(data).some(v => v !== undefined),
+    { message: 'At least one field to update is required' }
+  ),
+});
+
+export const bulkDeleteTransactionsSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1, 'At least one transaction ID required'),
 });
 
 export type Transaction = z.infer<typeof transactionSchema>;
@@ -49,3 +68,5 @@ export type CreateTransaction = z.infer<typeof createTransactionSchema>;
 export type UpdateTransaction = z.infer<typeof updateTransactionSchema>;
 export type TransactionQuery = z.infer<typeof transactionQuerySchema>;
 export type CategorisationSource = z.infer<typeof categorisationSourceSchema>;
+export type BulkUpdateTransactions = z.infer<typeof bulkUpdateTransactionsSchema>;
+export type BulkDeleteTransactions = z.infer<typeof bulkDeleteTransactionsSchema>;

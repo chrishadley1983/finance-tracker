@@ -53,12 +53,13 @@ The statement has a table with these columns:
 Important instructions:
 1. Extract ALL transactions visible in the table
 2. Combine multi-line descriptions into a single string (e.g., "LIDL GB TONBRIDGE 0577 LIDL GB" becomes "LIDL GB TONBRIDGE 0577 LIDL GB")
-3. SKIP the "BALANCE BROUGHT FORWARD" row - this is not a transaction
+3. SKIP rows containing "BALANCE BROUGHT FORWARD" or "BALANCE CARRIED FORWARD" - these are not transactions
 4. For amounts, extract numeric value only (remove £ symbol, handle commas)
 5. If a cell is empty or shows no amount, use null
 6. Convert date format: "01 Dec 25" should become "01 Dec 25" (keep as-is, will be parsed later)
-7. Payment type abbreviations should be preserved (DD, VIS, etc.)
+7. Payment type abbreviations should be preserved exactly as shown: DD, VIS, ))), CR, FPI, FPO, CHQ, DR (not )))))))
 8. On continuation pages, dates may not be shown for each transaction - use null for the date field in these cases
+9. The contactless payment symbol looks like ))) (three curved lines) - always use exactly ))) for this
 
 Also extract if visible:
 - Statement period (start and end dates)
@@ -221,8 +222,9 @@ function validateTransaction(tx: unknown): tx is ExtractedTransaction {
     return false;
   }
 
-  // Must have at least one amount
-  if (t.paidOut === null && t.paidIn === null) {
+  // Must have at least one amount OR be a balance-only entry
+  // (balance-only entries like "BALANCE CARRIED FORWARD" are filtered out later)
+  if (t.paidOut === null && t.paidIn === null && t.balance === null) {
     return false;
   }
 

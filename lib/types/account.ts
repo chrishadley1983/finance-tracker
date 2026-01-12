@@ -29,16 +29,22 @@ export interface Account {
   is_active: boolean | null;
   is_archived: boolean | null;
   include_in_net_worth: boolean | null;
+  exclude_from_snapshots: boolean | null;
   last_import_at: string | null;
   created_at: string;
   updated_at: string;
 }
+
+export type BalanceSource = 'transactions' | 'snapshot' | 'valuation' | 'none';
 
 export interface AccountWithStats extends Account {
   transactionCount: number;
   earliestTransaction: string | null;
   latestTransaction: string | null;
   currentBalance: number;
+  // Balance source tracking
+  balanceSource: BalanceSource;
+  snapshotDate: string | null; // Date of the snapshot if balanceSource is 'snapshot'
   // For investment accounts
   valuationCount?: number;
   latestValuation?: string | null;
@@ -63,6 +69,7 @@ export interface UpdateAccountInput {
   sort_order?: number;
   is_archived?: boolean;
   include_in_net_worth?: boolean;
+  exclude_from_snapshots?: boolean;
 }
 
 // Account type display configuration

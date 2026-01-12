@@ -1,8 +1,8 @@
 {
   "agent": "test-build",
-  "lastRun": "2026-01-02T14:24:00+00:00",
-  "lastCommit": "c3383848502b6e357a4725753bbbb9ea596348d8",
-  "status": "success",
+  "lastRun": "2026-01-04T12:00:00+00:00",
+  "lastCommit": "d5c18fc0253d34828870b972cd2655236ab93e75",
+  "status": "partial",
   "completedWork": [
     {
       "type": "test-generation",
@@ -217,11 +217,47 @@
         }
       ],
       "notes": "Generated tests for Phase 3-6 CRITICAL gaps: FIRE calculator unit tests (42 tests covering all calculation functions), and API tests for fire/calculate, wealth/net-worth, wealth/history, import/execute, and review-queue endpoints. API tests focus on request/response structure validation."
+    },
+    {
+      "type": "test-generation",
+      "mode": "critical",
+      "timestamp": "2026-01-04T12:00:00+00:00",
+      "priority": "CRITICAL",
+      "testsGenerated": [
+        {
+          "sourceFile": "app/api/investments/route.ts",
+          "testFile": "tests/api/investments.test.ts",
+          "testCount": 10,
+          "testType": "api"
+        },
+        {
+          "sourceFile": "app/api/fire/coast/route.ts",
+          "testFile": "tests/api/fire-coast.test.ts",
+          "testCount": 8,
+          "testType": "api"
+        },
+        {
+          "sourceFile": "app/api/transactions/bulk/route.ts",
+          "testFile": "tests/api/transactions-bulk.test.ts",
+          "testCount": 17,
+          "testType": "api",
+          "status": "partial",
+          "notes": "8 validation tests pass, 9 mock-related tests need fix"
+        }
+      ],
+      "notes": "Generated tests for CRITICAL gaps: investments API (10 tests, all pass), fire/coast API (8 tests, all pass), transactions/bulk API (17 tests, 8 pass). Total 26 new passing tests. Bulk API tests have mock hoisting issues to resolve."
     }
   ],
   "metrics": {
-    "testsCreated": 391,
-    "filesCreated": 27
+    "testsCreated": 426,
+    "filesCreated": 30,
+    "testsPassingNew": 26
   },
-  "blockers": []
+  "blockers": [
+    {
+      "issue": "transactions-bulk.test.ts mock hoisting",
+      "description": "9 tests fail due to vi.mock hoisting - mocks not available when module imports validation schema",
+      "workaround": "Need to restructure mocks or use dynamic imports"
+    }
+  ]
 }

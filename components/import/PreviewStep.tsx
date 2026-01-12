@@ -21,8 +21,11 @@ interface PreviewResult {
 interface Account {
   id: string;
   name: string;
-  account_type: string;
+  type: string;
 }
+
+// Account types that can have transactions
+const TRANSACTION_ACCOUNT_TYPES = ['current', 'savings', 'credit'];
 
 interface PreviewStepProps {
   sessionId: string;
@@ -77,9 +80,13 @@ export function PreviewStep({
 
         if (accountsResponse.ok) {
           const accountData = await accountsResponse.json();
-          setAccounts(accountData.accounts || []);
-          if (accountData.accounts?.length === 1) {
-            setSelectedAccountId(accountData.accounts[0].id);
+          // Only show accounts that can have transactions
+          const transactionAccounts = (accountData.accounts || []).filter(
+            (account: Account) => TRANSACTION_ACCOUNT_TYPES.includes(account.type)
+          );
+          setAccounts(transactionAccounts);
+          if (transactionAccounts.length === 1) {
+            setSelectedAccountId(transactionAccounts[0].id);
           }
         }
       } catch (err) {
@@ -279,7 +286,7 @@ export function PreviewStep({
           <option value="">-- Select account --</option>
           {accounts.map((account) => (
             <option key={account.id} value={account.id}>
-              {account.name} ({account.account_type})
+              {account.name} ({account.type})
             </option>
           ))}
         </select>

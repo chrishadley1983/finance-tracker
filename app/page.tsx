@@ -1,21 +1,57 @@
 'use client';
 
+import { useState } from 'react';
 import { AppLayout } from '@/components/layout';
 import {
   SummaryCards,
   RecentTransactions,
   SpendingByCategory,
+  IncomeByCategory,
   MonthlyTrend,
+  TimeframeSelector,
+  NetWorthSummary,
+  TimeframePeriod,
 } from '@/components/dashboard';
 import { useDashboardData } from '@/lib/hooks/useDashboardData';
 
 export default function DashboardPage() {
-  const { summary, recentTransactions, categorySpend, monthlyTrend, isLoading, error } =
-    useDashboardData();
+  const [period, setPeriod] = useState<TimeframePeriod>('last_month');
+  const [customStart, setCustomStart] = useState<string | undefined>();
+  const [customEnd, setCustomEnd] = useState<string | undefined>();
+
+  const { summary, accountSummary, recentTransactions, categorySpend, incomeByCategory, monthlyTrend, isLoading, error } =
+    useDashboardData({ period, customStart, customEnd });
+
+  const handleTimeframeChange = (
+    newPeriod: TimeframePeriod,
+    newCustomStart?: string,
+    newCustomEnd?: string
+  ) => {
+    setPeriod(newPeriod);
+    setCustomStart(newCustomStart);
+    setCustomEnd(newCustomEnd);
+  };
 
   return (
     <AppLayout title="Dashboard">
       <div className="space-y-6">
+        {/* Net Worth Summary - Above timeframe selector */}
+        <NetWorthSummary
+          netWorth={accountSummary?.netWorth ?? 0}
+          accountTypeBalances={accountSummary?.accountTypeBalances ?? []}
+          isLoading={isLoading}
+        />
+
+        {/* Timeframe Selector */}
+        <div className="flex items-center justify-between">
+          <TimeframeSelector
+            value={period}
+            onChange={handleTimeframeChange}
+            customStart={customStart}
+            customEnd={customEnd}
+          />
+        </div>
+
         {/* Error state */}
         {error && (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4">
@@ -51,7 +87,18 @@ export default function DashboardPage() {
 
           {/* Right column */}
           <div className="space-y-6">
-            <SpendingByCategory data={categorySpend} isLoading={isLoading} />
+            <SpendingByCategory
+              data={categorySpend}
+              isLoading={isLoading}
+              dateFrom={summary?.startDate}
+              dateTo={summary?.endDate}
+            />
+            <IncomeByCategory
+              data={incomeByCategory}
+              isLoading={isLoading}
+              dateFrom={summary?.startDate}
+              dateTo={summary?.endDate}
+            />
           </div>
         </div>
       </div>

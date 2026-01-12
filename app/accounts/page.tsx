@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { AppLayout } from '@/components/layout';
 import type { AccountWithStats, Account, AccountType, CreateAccountInput, UpdateAccountInput } from '@/lib/types/account';
 import {
   AccountFilters,
@@ -215,12 +216,12 @@ export default function AccountsPage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Accounts</h1>
-        <p className="text-gray-600 mt-1">Manage your financial accounts</p>
-      </div>
+    <AppLayout title="Accounts">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <p className="text-gray-600 mt-1">Manage your financial accounts</p>
+        </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -332,6 +333,7 @@ export default function AccountsPage() {
           isLoading={isSaving}
         />
       )}
-    </div>
+      </div>
+    </AppLayout>
   );
 }

@@ -39,8 +39,12 @@ function mapInputsRow(row: InputsRow): FireInputs {
     currentPortfolioValue: row.current_portfolio_value,
     annualIncome: row.annual_income,
     annualSavings: row.annual_savings,
+    annualSpend: row.annual_spend ?? 50000,
+    withdrawalRate: row.withdrawal_rate ?? 4,
+    expectedReturn: row.expected_return ?? 7,
     includeStatePension: row.include_state_pension ?? true,
     partnerStatePension: row.partner_state_pension ?? false,
+    excludePropertyFromFire: row.exclude_property_from_fire ?? true,
     updatedAt: row.updated_at ?? new Date().toISOString(),
   };
 }
@@ -120,8 +124,12 @@ export async function POST(request: NextRequest) {
         currentPortfolioValue: null,
         annualIncome: null,
         annualSavings: null,
+        annualSpend: 50000,
+        withdrawalRate: 4,
+        expectedReturn: 7,
         includeStatePension: true,
         partnerStatePension: false,
+        excludePropertyFromFire: true,
         updatedAt: new Date().toISOString(),
       };
     }

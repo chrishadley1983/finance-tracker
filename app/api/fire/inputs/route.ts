@@ -13,8 +13,12 @@ function mapInputsRow(row: InputsRow): FireInputs {
     currentPortfolioValue: row.current_portfolio_value,
     annualIncome: row.annual_income,
     annualSavings: row.annual_savings,
+    annualSpend: row.annual_spend ?? 50000,
+    withdrawalRate: row.withdrawal_rate ?? 4,
+    expectedReturn: row.expected_return ?? 7,
     includeStatePension: row.include_state_pension ?? true,
     partnerStatePension: row.partner_state_pension ?? false,
+    excludePropertyFromFire: row.exclude_property_from_fire ?? true,
     updatedAt: row.updated_at ?? new Date().toISOString(),
   };
 }
@@ -48,8 +52,12 @@ export async function GET() {
         currentPortfolioValue: null,
         annualIncome: null,
         annualSavings: null,
+        annualSpend: 50000,
+        withdrawalRate: 4,
+        expectedReturn: 7,
         includeStatePension: true,
         partnerStatePension: false,
+        excludePropertyFromFire: true,
       };
       return NextResponse.json({ inputs: defaults, isNew: true });
     }
@@ -101,8 +109,12 @@ export async function PUT(request: NextRequest) {
           current_portfolio_value: data.currentPortfolioValue || null,
           annual_income: data.annualIncome || null,
           annual_savings: data.annualSavings || null,
+          annual_spend: data.annualSpend,
+          withdrawal_rate: data.withdrawalRate,
+          expected_return: data.expectedReturn,
           include_state_pension: data.includeStatePension,
           partner_state_pension: data.partnerStatePension,
+          exclude_property_from_fire: data.excludePropertyFromFire,
         })
         .eq('id', existing.id)
         .select()
@@ -127,8 +139,12 @@ export async function PUT(request: NextRequest) {
           current_portfolio_value: data.currentPortfolioValue || null,
           annual_income: data.annualIncome || null,
           annual_savings: data.annualSavings || null,
+          annual_spend: data.annualSpend,
+          withdrawal_rate: data.withdrawalRate,
+          expected_return: data.expectedReturn,
           include_state_pension: data.includeStatePension,
           partner_state_pension: data.partnerStatePension,
+          exclude_property_from_fire: data.excludePropertyFromFire,
         })
         .select()
         .single();

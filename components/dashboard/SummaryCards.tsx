@@ -1,6 +1,7 @@
 'use client';
 
 import { SummaryData } from '@/lib/hooks/useDashboardData';
+import type { TimeframePeriod } from './TimeframeSelector';
 
 interface SummaryCardsProps {
   data: SummaryData | null;
@@ -16,6 +17,29 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+function getPeriodLabel(period: TimeframePeriod): string {
+  switch (period) {
+    case 'this_month':
+      return 'This Month';
+    case 'last_month':
+      return 'Last Month';
+    case 'this_quarter':
+      return 'This Quarter';
+    case 'last_quarter':
+      return 'Last Quarter';
+    case 'this_year':
+      return 'This Year';
+    case 'last_year':
+      return 'Last Year';
+    case 'all_time':
+      return 'All Time';
+    case 'custom':
+      return 'Selected Period';
+    default:
+      return 'Period';
+  }
+}
+
 function SkeletonCard() {
   return (
     <div className="bg-slate-800 rounded-lg p-4 animate-pulse">
@@ -28,8 +52,7 @@ function SkeletonCard() {
 export function SummaryCards({ data, isLoading }: SummaryCardsProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SkeletonCard />
+      <div className="grid grid-cols-3 gap-4">
         <SkeletonCard />
         <SkeletonCard />
         <SkeletonCard />
@@ -37,31 +60,28 @@ export function SummaryCards({ data, isLoading }: SummaryCardsProps) {
     );
   }
 
+  const periodLabel = data?.period ? getPeriodLabel(data.period) : 'This Month';
+
   const cards = [
     {
-      label: 'Total Balance',
-      value: data?.totalBalance ?? 0,
-      colorClass: 'text-white',
-    },
-    {
-      label: 'Income (This Month)',
-      value: data?.monthIncome ?? 0,
+      label: `Income (${periodLabel})`,
+      value: data?.periodIncome ?? 0,
       colorClass: 'text-green-400',
     },
     {
-      label: 'Expenses (This Month)',
-      value: data?.monthExpenses ?? 0,
+      label: `Expenses (${periodLabel})`,
+      value: data?.periodExpenses ?? 0,
       colorClass: 'text-red-400',
     },
     {
-      label: 'Net (This Month)',
-      value: data?.monthNet ?? 0,
-      colorClass: (data?.monthNet ?? 0) >= 0 ? 'text-green-400' : 'text-red-400',
+      label: `Net (${periodLabel})`,
+      value: data?.periodNet ?? 0,
+      colorClass: (data?.periodNet ?? 0) >= 0 ? 'text-green-400' : 'text-red-400',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-3 gap-4">
       {cards.map((card) => (
         <div key={card.label} className="bg-slate-800 rounded-lg p-4">
           <p className="text-slate-400 text-sm">{card.label}</p>

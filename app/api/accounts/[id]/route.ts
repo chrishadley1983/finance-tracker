@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { updateAccountSchema } from '@/lib/validations/accounts';
 import { ZodError } from 'zod';
-import type { AccountWithStats } from '@/lib/types/account';
+import type { AccountWithStats, BalanceSource } from '@/lib/types/account';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -33,12 +33,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     let transactionCount = 0;
     let earliestTransaction: string | null = null;
     let latestTransaction: string | null = null;
-    let currentBalance = 0;
+    let txBalance = 0;
 
     if (txStats) {
       transactionCount = txStats.length;
       for (const tx of txStats) {
-        currentBalance += Number(tx.amount);
+        txBalance += Number(tx.amount);
         if (!earliestTransaction || tx.date < earliestTransaction) {
           earliestTransaction = tx.date;
         }
@@ -47,6 +47,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         }
       }
     }
+
+    // Get latest wealth snapshot for this account
+    const { data: snapshots } = await supabaseAdmin
+      .from('wealth_snapshots')
+      .select('date, balance')
+      .eq('account_id', id)
+      .order('date', { ascending: false })
+      .limit(1);
+
+    const snapshot = snapshots && snapshots.length > 0 ? snapshots[0] : null;
 
     // For investment accounts, get valuation data
     let valuationCount: number | undefined;
@@ -64,7 +74,39 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         valuationCount = valuations.length;
         latestValuation = valuations[0].date;
         latestValuationAmount = valuations[0].value;
-        currentBalance = valuations[0].value;
+      }
+    }
+
+    // Determine balance source and current balance
+    let currentBalance = 0;
+    let balanceSource: BalanceSource = 'none';
+    let snapshotDate: string | null = null;
+
+    const isInvestmentType = ['investment', 'pension', 'isa'].includes(account.type);
+
+    if (isInvestmentType) {
+      // Investment accounts: valuation > snapshot > transactions
+      if (latestValuationAmount !== undefined && latestValuationAmount !== null) {
+        currentBalance = latestValuationAmount;
+        balanceSource = 'valuation';
+        snapshotDate = latestValuation || null;
+      } else if (snapshot) {
+        currentBalance = snapshot.balance;
+        balanceSource = 'snapshot';
+        snapshotDate = snapshot.date;
+      } else if (transactionCount > 0) {
+        currentBalance = txBalance;
+        balanceSource = 'transactions';
+      }
+    } else {
+      // Non-investment accounts: snapshot > transactions
+      if (snapshot) {
+        currentBalance = snapshot.balance;
+        balanceSource = 'snapshot';
+        snapshotDate = snapshot.date;
+      } else if (transactionCount > 0) {
+        currentBalance = txBalance;
+        balanceSource = 'transactions';
       }
     }
 
@@ -74,6 +116,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       earliestTransaction,
       latestTransaction,
       currentBalance: Math.round(currentBalance * 100) / 100,
+      balanceSource,
+      snapshotDate,
       valuationCount,
       latestValuation,
       latestValuationAmount,

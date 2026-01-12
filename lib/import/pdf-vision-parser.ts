@@ -28,6 +28,32 @@ const VISION_CONFIG = {
 };
 
 // =============================================================================
+// HELPERS
+// =============================================================================
+
+/**
+ * Normalize payment type strings to fix OCR issues.
+ * E.g., "))))" becomes ")))" for contactless payments.
+ */
+function normalizePaymentType(paymentType: string): string {
+  const trimmed = paymentType.trim();
+
+  // Fix contactless symbol variations (OCR often adds extra parentheses)
+  if (trimmed.match(/^\)+$/)) {
+    return ')))'; // Standardize to )))
+  }
+
+  // Known payment types - return as-is
+  const knownTypes = ['DD', 'VIS', 'CR', 'FPI', 'FPO', 'CHQ', 'DR', 'SO', 'TFR', 'ATM'];
+  const upper = trimmed.toUpperCase();
+  if (knownTypes.includes(upper)) {
+    return upper;
+  }
+
+  return trimmed;
+}
+
+// =============================================================================
 // ERROR HANDLING
 // =============================================================================
 
@@ -182,9 +208,32 @@ export async function parseStatementPage(
         );
       }
 
+      // Filter out balance forward/carried entries that may have slipped through
+      const filteredTransactions = parsed.transactions.filter((tx) => {
+        const descUpper = tx.description.toUpperCase();
+        // Skip balance brought/carried forward entries
+        if (
+          descUpper.includes('BALANCE BROUGHT FORWARD') ||
+          descUpper.includes('BALANCE CARRIED FORWARD')
+        ) {
+          return false;
+        }
+        // Skip entries with no actual transaction amount
+        if (tx.paidOut === null && tx.paidIn === null) {
+          return false;
+        }
+        return true;
+      });
+
+      // Normalize payment types (fix OCR issues like "))))" -> ")))"))
+      const normalizedTransactions = filteredTransactions.map((tx) => ({
+        ...tx,
+        paymentType: tx.paymentType ? normalizePaymentType(tx.paymentType) : null,
+      }));
+
       return {
         pageNumber,
-        transactions: parsed.transactions,
+        transactions: normalizedTransactions,
         confidence: parsed.confidence,
         warnings: parsed.warnings,
         statementPeriod: parsed.statementPeriod,

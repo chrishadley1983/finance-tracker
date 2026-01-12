@@ -16,6 +16,13 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+function formatCompactCurrency(amount: number): string {
+  if (amount >= 1000) {
+    return `£${(amount / 1000).toFixed(0)}k`;
+  }
+  return `£${amount.toFixed(0)}`;
+}
+
 function SkeletonChart() {
   return (
     <div className="animate-pulse">
@@ -53,10 +60,17 @@ export function MonthlyTrend({ data, isLoading }: MonthlyTrendProps) {
   const barWidth = 16;
   const barGap = 4;
   const groupGap = 24;
+  const yAxisWidth = 45; // Space for Y-axis labels
 
   // Calculate total width needed
   const groupWidth = barWidth * 2 + barGap;
   const totalWidth = data.length * groupWidth + (data.length - 1) * groupGap;
+
+  // Calculate Y-axis tick values (0, 25%, 50%, 75%, 100% of max)
+  const yAxisTicks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => ({
+    ratio,
+    value: maxValue * ratio,
+  }));
 
   return (
     <div className="bg-slate-800 rounded-lg p-4">
@@ -71,26 +85,38 @@ export function MonthlyTrend({ data, isLoading }: MonthlyTrendProps) {
           <div className="min-w-[300px]">
             {/* Chart */}
             <svg
-              viewBox={`0 0 ${Math.max(totalWidth + 40, 300)} ${chartHeight + 40}`}
+              viewBox={`0 0 ${Math.max(totalWidth + yAxisWidth + 20, 300)} ${chartHeight + 40}`}
               className="w-full h-auto"
               preserveAspectRatio="xMidYMid meet"
             >
-              {/* Grid lines */}
-              {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
-                <line
-                  key={ratio}
-                  x1="20"
-                  y1={chartHeight - ratio * chartHeight + 10}
-                  x2={totalWidth + 30}
-                  y2={chartHeight - ratio * chartHeight + 10}
-                  stroke="#334155"
-                  strokeDasharray="4,4"
-                />
+              {/* Y-axis labels and grid lines */}
+              {yAxisTicks.map(({ ratio, value }) => (
+                <g key={ratio}>
+                  {/* Y-axis label */}
+                  <text
+                    x={yAxisWidth - 5}
+                    y={chartHeight - ratio * chartHeight + 14}
+                    textAnchor="end"
+                    className="fill-slate-400"
+                    fontSize="10"
+                  >
+                    {formatCompactCurrency(value)}
+                  </text>
+                  {/* Grid line */}
+                  <line
+                    x1={yAxisWidth}
+                    y1={chartHeight - ratio * chartHeight + 10}
+                    x2={yAxisWidth + totalWidth + 10}
+                    y2={chartHeight - ratio * chartHeight + 10}
+                    stroke="#334155"
+                    strokeDasharray="4,4"
+                  />
+                </g>
               ))}
 
               {/* Bars */}
               {data.map((month, index) => {
-                const x = 20 + index * (groupWidth + groupGap);
+                const x = yAxisWidth + index * (groupWidth + groupGap);
                 const incomeHeight = (month.income / maxValue) * chartHeight;
                 const expenseHeight = (month.expenses / maxValue) * chartHeight;
 

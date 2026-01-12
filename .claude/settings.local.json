@@ -49,7 +49,18 @@
       "Bash(timeout 10 npm run dev)",
       "Bash(Select-String \"FAIL\")",
       "Bash(git stash:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(taskkill:*)",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\transactions\\\\bulk\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\transactions\\\\bulk\")",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\category-groups\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\category-groups\")",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\category-groups\\\\[id]\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\category-groups\\\\[id]\")",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\category-groups\\\\reorder\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\category-groups\\\\reorder\")",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\categories\\\\[id]\\\\reassign\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\categories\\\\[id]\\\\reassign\")",
+      "Bash(Select-Object -Last 30)",
+      "Bash(npm run dev:*)",
+      "Bash(if not exist \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\fire\\\\coast\" mkdir \"c:\\\\Users\\\\chris\\\\Projects\\\\Finance-Tracker\\\\app\\\\api\\\\fire\\\\coast\")",
+      "mcp__supabase__apply_migration"
     ]
   }
 }

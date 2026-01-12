@@ -57,6 +57,30 @@ export function AccountCard({
   const typeLabel = getAccountTypeLabel(account.type);
   const isInvestmentType = ['investment', 'pension', 'isa'].includes(account.type);
 
+  // Check if snapshot is stale (> 30 days old)
+  const isSnapshotStale = () => {
+    if (account.balanceSource !== 'snapshot' || !account.snapshotDate) return false;
+    const snapshotDate = new Date(account.snapshotDate);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - snapshotDate.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDays > 30;
+  };
+
+  // Get balance source label
+  const getBalanceSourceLabel = () => {
+    switch (account.balanceSource) {
+      case 'valuation':
+        return `as of ${formatDate(account.snapshotDate)}`;
+      case 'snapshot':
+        return `as of ${formatDate(account.snapshotDate)}`;
+      case 'transactions':
+        return 'calculated from transactions';
+      case 'none':
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
       className={`bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow ${
@@ -155,16 +179,19 @@ export function AccountCard({
         >
           {formatCurrency(account.currentBalance)}
         </p>
-        {isInvestmentType && account.latestValuation ? (
-          <p className="text-sm text-gray-500">
-            as of {formatDate(account.latestValuation)}
-          </p>
-        ) : account.latestTransaction ? (
-          <p className="text-sm text-gray-500">
-            calculated from transactions
-          </p>
+        {account.balanceSource !== 'none' ? (
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-gray-500">
+              {getBalanceSourceLabel()}
+            </p>
+            {isSnapshotStale() && (
+              <span className="px-1.5 py-0.5 text-xs bg-amber-100 text-amber-700 rounded">
+                Stale
+              </span>
+            )}
+          </div>
         ) : (
-          <p className="text-sm text-gray-400 italic">No transactions</p>
+          <p className="text-sm text-gray-400 italic">No data</p>
         )}
       </div>
 
@@ -183,14 +210,18 @@ export function AccountCard({
               </span>
             </div>
           </>
-        ) : isInvestmentType && account.valuationCount ? (
-          <div className="flex justify-between">
-            <span>Valuations:</span>
-            <span className="font-medium">{account.valuationCount}</span>
-          </div>
-        ) : (
+        ) : isInvestmentType ? (
+          // Investment accounts - show valuations if available, otherwise nothing (they use snapshots)
+          account.valuationCount ? (
+            <div className="flex justify-between">
+              <span>Valuations:</span>
+              <span className="font-medium">{account.valuationCount}</span>
+            </div>
+          ) : null
+        ) : account.balanceSource === 'none' ? (
+          // Only show "No data recorded" for transactional accounts with no data
           <p className="text-gray-400 italic">No data recorded</p>
-        )}
+        ) : null}
 
         {account.last_import_at && (
           <div className="flex justify-between">

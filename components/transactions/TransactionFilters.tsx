@@ -6,12 +6,18 @@ import { FilterState } from '@/lib/hooks/useTransactions';
 interface Account {
   id: string;
   name: string;
+  type: string;
 }
 
 interface Category {
   id: string;
   name: string;
   group_name: string;
+  group_id: string | null;
+  category_groups?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 interface TransactionFiltersProps {
@@ -25,6 +31,9 @@ export function TransactionFilters({ filters, onChange }: TransactionFiltersProp
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
+  // Account types that can have transactions
+  const TRANSACTION_ACCOUNT_TYPES = ['current', 'savings', 'credit'];
+
   // Fetch accounts
   useEffect(() => {
     async function fetchAccounts() {
@@ -32,7 +41,11 @@ export function TransactionFilters({ filters, onChange }: TransactionFiltersProp
         const response = await fetch('/api/accounts');
         if (response.ok) {
           const data = await response.json();
-          setAccounts(data.accounts || []);
+          // Only show accounts that can have transactions
+          const transactionAccounts = (data.accounts || []).filter(
+            (account: Account) => TRANSACTION_ACCOUNT_TYPES.includes(account.type)
+          );
+          setAccounts(transactionAccounts);
         }
       } catch (error) {
         console.error('Failed to fetch accounts:', error);
@@ -81,18 +94,23 @@ export function TransactionFilters({ filters, onChange }: TransactionFiltersProp
     onChange({ ...filters, search: value || undefined });
   };
 
+  const handleValidatedChange = (value: string) => {
+    onChange({ ...filters, validated: (value || undefined) as FilterState['validated'] });
+  };
+
   const handleClearFilters = () => {
     onChange({});
   };
 
-  const hasFilters = filters.accountId || filters.categoryId || filters.dateFrom || filters.dateTo || filters.search;
+  const hasFilters = filters.accountId || filters.categoryId || filters.dateFrom || filters.dateTo || filters.search || (filters.validated && filters.validated !== 'all');
 
-  // Group categories by group_name
+  // Group categories by group name (prefer category_groups relationship over legacy group_name)
   const categoriesByGroup = categories.reduce((acc, category) => {
-    if (!acc[category.group_name]) {
-      acc[category.group_name] = [];
+    const groupName = category.category_groups?.name || category.group_name || 'Uncategorised';
+    if (!acc[groupName]) {
+      acc[groupName] = [];
     }
-    acc[category.group_name].push(category);
+    acc[groupName].push(category);
     return acc;
   }, {} as Record<string, Category[]>);
 
@@ -167,6 +185,19 @@ export function TransactionFilters({ filters, onChange }: TransactionFiltersProp
           className="w-full h-10 px-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           placeholder="To date"
         />
+      </div>
+
+      {/* Validation status filter */}
+      <div className="min-w-[140px]">
+        <select
+          value={filters.validated || 'all'}
+          onChange={(e) => handleValidatedChange(e.target.value)}
+          className="w-full h-10 px-3 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+        >
+          <option value="all">All Status</option>
+          <option value="validated">Validated</option>
+          <option value="unvalidated">Unvalidated</option>
+        </select>
       </div>
 
       {/* Clear filters button */}

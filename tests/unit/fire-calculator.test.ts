@@ -167,8 +167,12 @@ describe('FIRE Calculator', () => {
       currentPortfolioValue: 100000,
       annualIncome: 60000,
       annualSavings: 20000,
+      annualSpend: 40000,
+      withdrawalRate: 4,
+      expectedReturn: 7,
       includeStatePension: true,
       partnerStatePension: false,
+      excludePropertyFromFire: true,
       updatedAt: new Date().toISOString(),
     };
 
@@ -357,8 +361,12 @@ describe('FIRE Calculator', () => {
       currentPortfolioValue: 100000,
       annualIncome: 60000,
       annualSavings: 20000,
+      annualSpend: 40000,
+      withdrawalRate: 4,
+      expectedReturn: 7,
       includeStatePension: true,
       partnerStatePension: false,
+      excludePropertyFromFire: true,
       updatedAt: new Date().toISOString(),
     };
 

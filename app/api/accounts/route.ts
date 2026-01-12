@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { createAccountSchema } from '@/lib/validations/accounts';
 import { ZodError } from 'zod';
-import type { AccountWithStats } from '@/lib/types/account';
+import type { AccountWithStats, BalanceSource } from '@/lib/types/account';
 
 export async function GET(request: NextRequest) {
   try {
@@ -107,6 +107,34 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Get wealth snapshots and calculate balances (snapshot + transactions from snapshot date)
+    const snapshotsByAccount: Record<string, { date: string; balance: number; currentBalance: number }> = {};
+
+    if (accountIds.length > 0) {
+      type SnapshotBalanceRow = {
+        account_id: string;
+        snapshot_date: string;
+        snapshot_balance: number;
+        transactions_sum: number;
+        current_balance: number;
+      };
+
+      const { data: snapshotBalances, error: snapError } = await supabaseAdmin
+        .rpc('get_account_balances_with_snapshots', { account_ids: accountIds }) as { data: SnapshotBalanceRow[] | null; error: Error | null };
+
+      if (snapError) {
+        console.error('Error fetching snapshot balances:', snapError);
+      } else if (snapshotBalances) {
+        for (const s of snapshotBalances) {
+          snapshotsByAccount[s.account_id] = {
+            date: s.snapshot_date,
+            balance: s.snapshot_balance,
+            currentBalance: s.current_balance,
+          };
+        }
+      }
+    }
+
     // Build response with stats
     const accountsWithStats: AccountWithStats[] = accounts.map(account => {
       const stats = txStatsByAccount[account.id] || {
@@ -116,11 +144,39 @@ export async function GET(request: NextRequest) {
         balance: 0,
       };
       const valStats = valuationsByAccount[account.id];
+      const snapshot = snapshotsByAccount[account.id];
 
-      // For investment accounts, use valuation; for others, use transaction balance
-      let currentBalance = stats.balance;
-      if (['investment', 'pension', 'isa'].includes(account.type) && valStats && valStats.amount !== null) {
-        currentBalance = valStats.amount || 0;
+      // Determine balance and source based on account type and available data
+      let currentBalance = 0;
+      let balanceSource: BalanceSource = 'none';
+      let snapshotDate: string | null = null;
+
+      if (['investment', 'pension', 'isa'].includes(account.type)) {
+        // Investment accounts: use valuation first, then snapshot, then transactions
+        if (valStats && valStats.amount !== null) {
+          currentBalance = valStats.amount;
+          balanceSource = 'valuation';
+          snapshotDate = valStats.latest;
+        } else if (snapshot) {
+          // For investment accounts without valuations, use snapshot balance (not combined)
+          currentBalance = snapshot.balance;
+          balanceSource = 'snapshot';
+          snapshotDate = snapshot.date;
+        } else if (stats.count > 0) {
+          currentBalance = stats.balance;
+          balanceSource = 'transactions';
+        }
+      } else {
+        // Non-investment accounts: use snapshot + subsequent transactions, or just transactions
+        if (snapshot) {
+          // Use the calculated current balance (snapshot + transactions from snapshot date)
+          currentBalance = snapshot.currentBalance;
+          balanceSource = 'snapshot';
+          snapshotDate = snapshot.date;
+        } else if (stats.count > 0) {
+          currentBalance = stats.balance;
+          balanceSource = 'transactions';
+        }
       }
 
       return {
@@ -129,6 +185,8 @@ export async function GET(request: NextRequest) {
         earliestTransaction: stats.earliest,
         latestTransaction: stats.latest,
         currentBalance: Math.round(currentBalance * 100) / 100,
+        balanceSource,
+        snapshotDate,
         valuationCount: valStats?.count,
         latestValuation: valStats?.latest,
         latestValuationAmount: valStats?.amount,

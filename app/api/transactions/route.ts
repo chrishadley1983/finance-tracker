@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
       search: searchParams.get('search') || undefined,
       limit: searchParams.get('limit') || undefined,
       offset: searchParams.get('offset') || undefined,
+      sort_column: searchParams.get('sort_column') || undefined,
+      sort_direction: searchParams.get('sort_direction') || undefined,
     });
 
     // Build base query for count
@@ -21,11 +23,25 @@ export async function GET(request: NextRequest) {
       .from('transactions')
       .select('*', { count: 'exact', head: true });
 
+    // Map frontend column names to database columns
+    const sortColumnMap: Record<string, string> = {
+      date: 'date',
+      description: 'description',
+      amount: 'amount',
+      account: 'account_id',
+      category: 'category_id',
+    };
+
+    const sortColumn = query.sort_column && sortColumnMap[query.sort_column]
+      ? sortColumnMap[query.sort_column]
+      : 'date';
+    const sortAscending = query.sort_direction === 'asc';
+
     // Build query for data
     let queryBuilder = supabaseAdmin
       .from('transactions')
       .select('*, account:accounts(name), category:categories(name, group_name)')
-      .order('date', { ascending: false });
+      .order(sortColumn, { ascending: sortAscending });
 
     // Apply filters to both queries
     if (query.account_id) {
@@ -47,6 +63,16 @@ export async function GET(request: NextRequest) {
     if (query.search) {
       countBuilder = countBuilder.ilike('description', `%${query.search}%`);
       queryBuilder = queryBuilder.ilike('description', `%${query.search}%`);
+    }
+
+    // Filter by validation status
+    const validatedParam = searchParams.get('validated');
+    if (validatedParam === 'validated') {
+      countBuilder = countBuilder.eq('is_validated', true);
+      queryBuilder = queryBuilder.eq('is_validated', true);
+    } else if (validatedParam === 'unvalidated') {
+      countBuilder = countBuilder.eq('is_validated', false);
+      queryBuilder = queryBuilder.eq('is_validated', false);
     }
 
     // Apply pagination only to data query

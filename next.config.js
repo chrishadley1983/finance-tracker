@@ -2,6 +2,11 @@
 const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['pdf-to-img', 'pdfjs-dist'],
+    // Disable fetch caching in development for always-fresh API data
+    staleTimes: {
+      dynamic: 0,
+      static: 0,
+    },
   },
   webpack: (config, { isServer }) => {
     if (isServer) {

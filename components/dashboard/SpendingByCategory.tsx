@@ -1,10 +1,16 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { CategorySpend } from '@/lib/hooks/useDashboardData';
+
+const INITIAL_DISPLAY_COUNT = 8;
 
 interface SpendingByCategoryProps {
   data: CategorySpend[];
   isLoading: boolean;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 function formatCurrency(amount: number): string {
@@ -28,7 +34,22 @@ function SkeletonRow() {
   );
 }
 
-export function SpendingByCategory({ data, isLoading }: SpendingByCategoryProps) {
+export function SpendingByCategory({ data, isLoading, dateFrom, dateTo }: SpendingByCategoryProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter();
+
+  const hasMore = data.length > INITIAL_DISPLAY_COUNT;
+  const displayData = isExpanded ? data : data.slice(0, INITIAL_DISPLAY_COUNT);
+  const hiddenCount = data.length - INITIAL_DISPLAY_COUNT;
+
+  const handleCategoryClick = (categoryId: string) => {
+    const params = new URLSearchParams();
+    params.set('categoryId', categoryId);
+    if (dateFrom) params.set('dateFrom', dateFrom);
+    if (dateTo) params.set('dateTo', dateTo);
+    router.push(`/transactions?${params.toString()}`);
+  };
+
   return (
     <div className="bg-slate-800 rounded-lg p-4">
       <h2 className="text-lg font-semibold text-white mb-4">Spending by Category</h2>
@@ -45,22 +66,36 @@ export function SpendingByCategory({ data, isLoading }: SpendingByCategoryProps)
         ) : data.length === 0 ? (
           <p className="text-slate-400 text-sm py-4 text-center">No spending data available</p>
         ) : (
-          data.map((category) => (
-            <div key={category.categoryId}>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-slate-300">{category.categoryName}</span>
-                <span className="text-sm text-slate-400">
-                  {formatCurrency(category.amount)}
-                </span>
-              </div>
-              <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                  style={{ width: `${category.percentage}%` }}
-                />
-              </div>
-            </div>
-          ))
+          <>
+            {displayData.map((category) => (
+              <button
+                key={category.categoryId}
+                onClick={() => handleCategoryClick(category.categoryId)}
+                className="w-full text-left hover:bg-slate-700/50 rounded-lg p-2 -mx-2 transition-colors"
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm text-slate-300">{category.categoryName}</span>
+                  <span className="text-sm text-slate-400">
+                    {formatCurrency(category.amount)}
+                  </span>
+                </div>
+                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                    style={{ width: `${category.percentage}%` }}
+                  />
+                </div>
+              </button>
+            ))}
+            {hasMore && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="w-full text-center text-sm text-blue-400 hover:text-blue-300 py-2 transition-colors"
+              >
+                {isExpanded ? 'Show less' : `See ${hiddenCount} more`}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -39,68 +39,30 @@ export async function GET() {
 
     const accountIds = accounts.map((a: { id: string }) => a.id);
 
-    // Get latest valuations for investment accounts
-    const investmentAccounts = accounts.filter((a: { type: string }) => a.type === 'investment');
-    const investmentAccountIds = investmentAccounts.map((a: { id: string }) => a.id);
+    // Use the same RPC function as the Accounts API to get accurate balances
+    // This calculates: snapshot_balance + transactions_since_snapshot_date
+    type SnapshotBalanceRow = {
+      account_id: string;
+      snapshot_date: string;
+      snapshot_balance: number;
+      transactions_sum: number;
+      current_balance: number;
+    };
 
-    let investmentValuations = new Map<string, number>();
-    if (investmentAccountIds.length > 0) {
-      const { data: valuations } = await supabaseAdmin
-        .from('investment_valuations')
-        .select('account_id, value, date')
-        .in('account_id', investmentAccountIds)
-        .order('date', { ascending: false });
+    const snapshotBalances = new Map<string, number>();
+    if (accountIds.length > 0) {
+      const { data: balanceData, error: balanceError } = await supabaseAdmin
+        .rpc('get_account_balances_with_snapshots', { account_ids: accountIds }) as {
+          data: SnapshotBalanceRow[] | null;
+          error: Error | null
+        };
 
-      // Get latest per account
-      for (const v of valuations || []) {
-        if (!investmentValuations.has(v.account_id)) {
-          investmentValuations.set(v.account_id, v.value);
+      if (balanceError) {
+        console.error('Error fetching snapshot balances:', balanceError);
+      } else if (balanceData) {
+        for (const row of balanceData) {
+          snapshotBalances.set(row.account_id, row.current_balance);
         }
-      }
-    }
-
-    // Get latest wealth snapshots for other accounts
-    const otherAccountIds = accounts
-      .filter((a: { type: string }) => a.type !== 'investment')
-      .map((a: { id: string }) => a.id);
-
-    let wealthSnapshots = new Map<string, number>();
-    if (otherAccountIds.length > 0) {
-      const { data: snapshots } = await supabaseAdmin
-        .from('wealth_snapshots')
-        .select('account_id, balance, date')
-        .in('account_id', otherAccountIds)
-        .order('date', { ascending: false });
-
-      for (const s of snapshots || []) {
-        if (!wealthSnapshots.has(s.account_id)) {
-          wealthSnapshots.set(s.account_id, s.balance);
-        }
-      }
-    }
-
-    // Calculate balances for current accounts from transactions
-    const currentSavingsAccounts = accounts.filter(
-      (a: { type: string }) => a.type === 'current' || a.type === 'savings'
-    );
-    let transactionBalances = new Map<string, number>();
-
-    for (const account of currentSavingsAccounts) {
-      // Use wealth snapshot if available, otherwise calculate from transactions
-      if (wealthSnapshots.has(account.id)) {
-        transactionBalances.set(account.id, wealthSnapshots.get(account.id)!);
-      } else {
-        // Sum all transactions for this account
-        const { data: txSum } = await supabaseAdmin
-          .from('transactions')
-          .select('amount')
-          .eq('account_id', account.id);
-
-        const balance = (txSum || []).reduce(
-          (sum: number, tx: { amount: number }) => sum + tx.amount,
-          0
-        );
-        transactionBalances.set(account.id, balance);
       }
     }
 
@@ -109,15 +71,8 @@ export async function GET() {
     const typeBalances = new Map<string, number>();
 
     for (const account of accounts) {
-      let balance = 0;
-
-      if (account.type === 'investment') {
-        balance = investmentValuations.get(account.id) || 0;
-      } else if (transactionBalances.has(account.id)) {
-        balance = transactionBalances.get(account.id)!;
-      } else if (wealthSnapshots.has(account.id)) {
-        balance = wealthSnapshots.get(account.id)!;
-      }
+      // Use the calculated balance from snapshot + subsequent transactions
+      const balance = snapshotBalances.get(account.id) || 0;
 
       byAccount.push({
         accountId: account.id,
@@ -147,45 +102,24 @@ export async function GET() {
     lastMonth.setMonth(lastMonth.getMonth() - 1);
     const lastMonthStr = lastMonth.toISOString().split('T')[0];
 
-    // Get previous investment valuations
-    let previousInvestmentTotal = 0;
-    if (investmentAccountIds.length > 0) {
-      const { data: prevValuations } = await supabaseAdmin
-        .from('investment_valuations')
-        .select('account_id, value')
-        .in('account_id', investmentAccountIds)
-        .lte('date', lastMonthStr)
-        .order('date', { ascending: false });
-
-      const prevInvMap = new Map<string, number>();
-      for (const v of prevValuations || []) {
-        if (!prevInvMap.has(v.account_id)) {
-          prevInvMap.set(v.account_id, v.value);
-        }
-      }
-      previousInvestmentTotal = Array.from(prevInvMap.values()).reduce((a, b) => a + b, 0);
-    }
-
-    // Get previous wealth snapshots
-    let previousSnapshotTotal = 0;
-    if (otherAccountIds.length > 0) {
+    // Get previous wealth snapshots for all accounts
+    let previousTotal = 0;
+    if (accountIds.length > 0) {
       const { data: prevSnapshots } = await supabaseAdmin
         .from('wealth_snapshots')
         .select('account_id, balance')
-        .in('account_id', otherAccountIds)
+        .in('account_id', accountIds)
         .lte('date', lastMonthStr)
         .order('date', { ascending: false });
 
       const prevSnapMap = new Map<string, number>();
       for (const s of prevSnapshots || []) {
         if (!prevSnapMap.has(s.account_id)) {
-          prevSnapMap.set(s.account_id, s.balance);
+          prevSnapMap.set(s.account_id, Number(s.balance));
         }
       }
-      previousSnapshotTotal = Array.from(prevSnapMap.values()).reduce((a, b) => a + b, 0);
+      previousTotal = Array.from(prevSnapMap.values()).reduce((a, b) => a + b, 0);
     }
-
-    const previousTotal = previousInvestmentTotal + previousSnapshotTotal;
     const change = previousTotal > 0 ? total - previousTotal : null;
     const changePercent = previousTotal > 0 ? ((total - previousTotal) / previousTotal) * 100 : null;
 

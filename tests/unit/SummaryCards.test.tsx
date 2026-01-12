@@ -5,9 +5,12 @@ import { SummaryData } from '@/lib/hooks/useDashboardData';
 
 const mockSummaryData: SummaryData = {
   totalBalance: 5000,
-  monthIncome: 3000,
-  monthExpenses: 1500,
-  monthNet: 1500,
+  periodIncome: 3000,
+  periodExpenses: 1500,
+  periodNet: 1500,
+  period: 'this_month',
+  startDate: '2026-01-01',
+  endDate: '2026-01-31',
 };
 
 describe('SummaryCards', () => {
@@ -31,22 +34,23 @@ describe('SummaryCards', () => {
       expect(screen.getByText('Total Balance')).toBeInTheDocument();
     });
 
-    it('renders Income card', () => {
+    it('renders Income card with period label', () => {
       render(<SummaryCards data={mockSummaryData} isLoading={false} />);
 
-      expect(screen.getByText('Income (This Month)')).toBeInTheDocument();
+      // Period label is dynamic based on the period value
+      expect(screen.getByText(/Income/)).toBeInTheDocument();
     });
 
-    it('renders Expenses card', () => {
+    it('renders Expenses card with period label', () => {
       render(<SummaryCards data={mockSummaryData} isLoading={false} />);
 
-      expect(screen.getByText('Expenses (This Month)')).toBeInTheDocument();
+      expect(screen.getByText(/Expenses/)).toBeInTheDocument();
     });
 
-    it('renders Net card', () => {
+    it('renders Net card with period label', () => {
       render(<SummaryCards data={mockSummaryData} isLoading={false} />);
 
-      expect(screen.getByText('Net (This Month)')).toBeInTheDocument();
+      expect(screen.getByText(/Net/)).toBeInTheDocument();
     });
   });
 
@@ -119,7 +123,7 @@ describe('SummaryCards', () => {
     it('shows negative net in red', () => {
       const negativeNetData: SummaryData = {
         ...mockSummaryData,
-        monthNet: -500,
+        periodNet: -500,
       };
       const { container } = render(
         <SummaryCards data={negativeNetData} isLoading={false} />

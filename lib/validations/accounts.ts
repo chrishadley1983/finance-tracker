@@ -19,6 +19,7 @@ export const accountSchema = z.object({
   is_active: z.boolean(),
   is_archived: z.boolean(),
   include_in_net_worth: z.boolean(),
+  exclude_from_snapshots: z.boolean(),
   hsbc_account_id: z.string().nullable(),
   investment_provider: z.string().nullable(),
   investment_type: z.string().nullable(),
@@ -38,6 +39,7 @@ export const createAccountSchema = z.object({
   is_active: z.boolean().optional().default(true),
   is_archived: z.boolean().optional().default(false),
   include_in_net_worth: z.boolean().optional().default(true),
+  exclude_from_snapshots: z.boolean().optional().default(false),
   notes: z.string().max(500).optional(),
   hsbc_account_id: z.string().nullable().optional(),
 });
@@ -49,6 +51,7 @@ export const updateAccountSchema = z.object({
   is_active: z.boolean().optional(),
   is_archived: z.boolean().optional(),
   include_in_net_worth: z.boolean().optional(),
+  exclude_from_snapshots: z.boolean().optional(),
   notes: z.string().max(500).nullable().optional(),
   icon: z.string().nullable().optional(),
   color: z.string().nullable().optional(),

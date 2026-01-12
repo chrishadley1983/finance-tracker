@@ -8,6 +8,7 @@ export interface FilterState {
   dateFrom?: string;
   dateTo?: string;
   search?: string;
+  validated?: 'all' | 'validated' | 'unvalidated';
 }
 
 export interface TransactionWithRelations {
@@ -20,6 +21,8 @@ export interface TransactionWithRelations {
   categorisation_source: string;
   hsbc_transaction_id: string | null;
   created_at: string;
+  is_validated: boolean;
+  needs_review: boolean;
   account: { name: string } | null;
   category: { name: string; group_name: string } | null;
 }
@@ -44,8 +47,8 @@ export function useTransactions({
   filters,
   page,
   pageSize,
-  sortColumn: _sortColumn,
-  sortDirection: _sortDirection,
+  sortColumn = 'date',
+  sortDirection = 'desc',
 }: UseTransactionsParams): UseTransactionsResult {
   const [transactions, setTransactions] = useState<TransactionWithRelations[]>([]);
   const [total, setTotal] = useState(0);
@@ -95,11 +98,23 @@ export function useTransactions({
       if (debouncedSearch) {
         params.set('search', debouncedSearch);
       }
+      if (filters.validated && filters.validated !== 'all') {
+        params.set('validated', filters.validated);
+      }
 
       params.set('limit', pageSize.toString());
       params.set('offset', ((page - 1) * pageSize).toString());
+      params.set('sort_column', sortColumn);
+      params.set('sort_direction', sortDirection);
+      params.set('_t', Date.now().toString()); // Cache-buster
 
-      const response = await fetch(`/api/transactions?${params.toString()}`);
+      const response = await fetch(`/api/transactions?${params.toString()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -116,7 +131,7 @@ export function useTransactions({
     } finally {
       setIsLoading(false);
     }
-  }, [filters.accountId, filters.categoryId, filters.dateFrom, filters.dateTo, debouncedSearch, page, pageSize]);
+  }, [filters.accountId, filters.categoryId, filters.dateFrom, filters.dateTo, filters.validated, debouncedSearch, page, pageSize, sortColumn, sortDirection]);
 
   useEffect(() => {
     fetchTransactions();

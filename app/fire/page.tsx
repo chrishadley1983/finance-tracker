@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { AppLayout } from '@/components/layout';
 import {
   FireInputsForm,
   ScenarioCards,
@@ -97,11 +98,8 @@ export default function FirePage() {
   ) || null;
 
   return (
-    <div className="p-6">
+    <AppLayout title="FIRE Calculator">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          FIRE Calculator
-        </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
           Financial Independence, Retire Early projections
         </p>
@@ -134,6 +132,6 @@ export default function FirePage() {
           <ProjectionTable result={selectedResult} isLoading={isLoading} />
         </>
       )}
-    </div>
+    </AppLayout>
   );
 }

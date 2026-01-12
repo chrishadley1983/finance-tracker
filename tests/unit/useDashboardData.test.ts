@@ -8,9 +8,12 @@ global.fetch = mockFetch;
 
 const mockSummary = {
   totalBalance: 5000,
-  monthIncome: 3000,
-  monthExpenses: 1500,
-  monthNet: 1500,
+  periodIncome: 3000,
+  periodExpenses: 1500,
+  periodNet: 1500,
+  period: 'this_month',
+  startDate: '2026-01-01',
+  endDate: '2026-01-31',
 };
 
 const mockTransactions = {
@@ -111,11 +114,11 @@ describe('useDashboardData', () => {
       });
     });
 
-    it('fetches summary endpoint', async () => {
+    it('fetches summary endpoint with period', async () => {
       renderHook(() => useDashboardData());
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/transactions/summary');
+        expect(mockFetch).toHaveBeenCalledWith('/api/transactions/summary?period=this_month');
       });
     });
 
@@ -127,11 +130,11 @@ describe('useDashboardData', () => {
       });
     });
 
-    it('fetches by-category endpoint', async () => {
+    it('fetches by-category endpoint with period', async () => {
       renderHook(() => useDashboardData());
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/transactions/by-category');
+        expect(mockFetch).toHaveBeenCalledWith('/api/transactions/by-category?period=this_month');
       });
     });
 
@@ -337,9 +340,12 @@ describe('useDashboardData', () => {
       });
 
       expect(result.current.summary).toHaveProperty('totalBalance');
-      expect(result.current.summary).toHaveProperty('monthIncome');
-      expect(result.current.summary).toHaveProperty('monthExpenses');
-      expect(result.current.summary).toHaveProperty('monthNet');
+      expect(result.current.summary).toHaveProperty('periodIncome');
+      expect(result.current.summary).toHaveProperty('periodExpenses');
+      expect(result.current.summary).toHaveProperty('periodNet');
+      expect(result.current.summary).toHaveProperty('period');
+      expect(result.current.summary).toHaveProperty('startDate');
+      expect(result.current.summary).toHaveProperty('endDate');
     });
 
     it('handles missing data field in transactions response', async () => {

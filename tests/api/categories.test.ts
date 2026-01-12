@@ -44,6 +44,10 @@ describe('Categories API', () => {
   });
 
   describe('GET /api/categories', () => {
+    const createRequest = (url = 'http://localhost/api/categories') => {
+      return new NextRequest(url);
+    };
+
     it('returns a list of categories ordered by display_order and name', async () => {
       const mockCategories = [
         { id: '1', name: 'Groceries', group_name: 'Food', is_income: false, display_order: 0 },
@@ -51,7 +55,7 @@ describe('Categories API', () => {
       ];
       mockOrder.mockReturnValue({ order: mockOrder, data: mockCategories, error: null });
 
-      const response = await GET();
+      const response = await GET(createRequest());
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -62,7 +66,7 @@ describe('Categories API', () => {
     it('returns 500 on database error', async () => {
       mockOrder.mockReturnValue({ order: () => ({ data: null, error: { message: 'Database error' } }) });
 
-      const response = await GET();
+      const response = await GET(createRequest());
 
       expect(response.status).toBe(500);
     });
