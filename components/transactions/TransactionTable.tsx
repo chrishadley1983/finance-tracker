@@ -10,8 +10,12 @@ interface Category {
   group_name: string;
 }
 
+export interface TransactionWithRunningBalance extends TransactionWithRelations {
+  running_balance?: number | null;
+}
+
 interface TransactionTableProps {
-  transactions: TransactionWithRelations[];
+  transactions: TransactionWithRunningBalance[];
   isLoading: boolean;
   onSort: (column: string) => void;
   sortColumn: string;
@@ -23,6 +27,8 @@ interface TransactionTableProps {
   onValidate?: (transaction: TransactionWithRelations) => void;
   categories?: Category[];
   onInlineUpdate?: (id: string, field: 'description' | 'category_id', value: string | null) => Promise<void>;
+  showRunningBalance?: boolean;
+  hideAccountColumn?: boolean;
 }
 
 function formatDate(dateString: string): string {
@@ -401,6 +407,8 @@ export function TransactionTable({
   onValidate,
   categories = [],
   onInlineUpdate,
+  showRunningBalance = false,
+  hideAccountColumn = false,
 }: TransactionTableProps) {
   const hasSelection = onSelectionChange !== undefined;
   const hasActions = onEdit || onDelete || onValidate;
@@ -418,13 +426,15 @@ export function TransactionTable({
     }
   };
 
-  const columns = [
+  const baseColumns = [
     { key: 'date', label: 'Date', sortable: true },
     { key: 'description', label: 'Description', sortable: true },
-    { key: 'account', label: 'Account', sortable: true },
+    ...(hideAccountColumn ? [] : [{ key: 'account', label: 'Account', sortable: true }]),
     { key: 'category', label: 'Category', sortable: true },
     { key: 'amount', label: 'Amount', sortable: true, align: 'right' as const },
+    ...(showRunningBalance ? [{ key: 'balance', label: 'Balance', sortable: false, align: 'right' as const }] : []),
   ];
+  const columns = baseColumns;
 
   const handleHeaderClick = (column: string, sortable: boolean) => {
     if (sortable) {
@@ -568,9 +578,11 @@ export function TransactionTable({
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
-                      {transaction.account?.name || '-'}
-                    </td>
+                    {!hideAccountColumn && (
+                      <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
+                        {transaction.account?.name || '-'}
+                      </td>
+                    )}
                     <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
                       {hasInlineEdit ? (
                         <EditableCategory
@@ -592,6 +604,19 @@ export function TransactionTable({
                     }`}>
                       {formatAmount(transaction.amount)}
                     </td>
+                    {showRunningBalance && (
+                      <td className={`px-4 py-3 text-sm font-medium text-right whitespace-nowrap ${
+                        transaction.running_balance === null
+                          ? 'text-slate-400'
+                          : (transaction.running_balance ?? 0) >= 0
+                            ? 'text-slate-900'
+                            : 'text-red-600'
+                      }`}>
+                        {transaction.running_balance === null
+                          ? '-'
+                          : formatAmount(transaction.running_balance ?? 0)}
+                      </td>
+                    )}
                     {/* Actions */}
                     {hasActions && (
                       <td className="px-4 py-3 whitespace-nowrap">

@@ -37,7 +37,7 @@ describe('Transactions Bulk API', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // vi.restoreAllMocks(); - removed to preserve module mocks
   });
 
   describe('PUT /api/transactions/bulk', () => {

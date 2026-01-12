@@ -9,6 +9,7 @@ function mapInputsRow(row: InputsRow): FireInputs {
   return {
     id: row.id,
     currentAge: row.current_age ?? 35,
+    dateOfBirth: row.date_of_birth,
     targetRetirementAge: row.target_retirement_age,
     currentPortfolioValue: row.current_portfolio_value,
     annualIncome: row.annual_income,
@@ -19,6 +20,8 @@ function mapInputsRow(row: InputsRow): FireInputs {
     includeStatePension: row.include_state_pension ?? true,
     partnerStatePension: row.partner_state_pension ?? false,
     excludePropertyFromFire: row.exclude_property_from_fire ?? true,
+    normalFireSpend: row.normal_fire_spend ?? 55000,
+    fatFireSpend: row.fat_fire_spend ?? 65000,
     updatedAt: row.updated_at ?? new Date().toISOString(),
   };
 }
@@ -48,6 +51,7 @@ export async function GET() {
       // Return default inputs if none exist
       const defaults: Omit<FireInputs, 'id' | 'updatedAt'> = {
         currentAge: 35,
+        dateOfBirth: null,
         targetRetirementAge: 55,
         currentPortfolioValue: null,
         annualIncome: null,
@@ -58,6 +62,8 @@ export async function GET() {
         includeStatePension: true,
         partnerStatePension: false,
         excludePropertyFromFire: true,
+        normalFireSpend: 55000,
+        fatFireSpend: 65000,
       };
       return NextResponse.json({ inputs: defaults, isNew: true });
     }
@@ -105,6 +111,7 @@ export async function PUT(request: NextRequest) {
         .from('fire_inputs')
         .update({
           current_age: data.currentAge,
+          date_of_birth: data.dateOfBirth || null,
           target_retirement_age: data.targetRetirementAge || null,
           current_portfolio_value: data.currentPortfolioValue || null,
           annual_income: data.annualIncome || null,
@@ -115,6 +122,8 @@ export async function PUT(request: NextRequest) {
           include_state_pension: data.includeStatePension,
           partner_state_pension: data.partnerStatePension,
           exclude_property_from_fire: data.excludePropertyFromFire,
+          normal_fire_spend: data.normalFireSpend,
+          fat_fire_spend: data.fatFireSpend,
         })
         .eq('id', existing.id)
         .select()
@@ -135,6 +144,7 @@ export async function PUT(request: NextRequest) {
         .from('fire_inputs')
         .insert({
           current_age: data.currentAge,
+          date_of_birth: data.dateOfBirth || null,
           target_retirement_age: data.targetRetirementAge || null,
           current_portfolio_value: data.currentPortfolioValue || null,
           annual_income: data.annualIncome || null,
@@ -145,6 +155,8 @@ export async function PUT(request: NextRequest) {
           include_state_pension: data.includeStatePension,
           partner_state_pension: data.partnerStatePension,
           exclude_property_from_fire: data.excludePropertyFromFire,
+          normal_fire_spend: data.normalFireSpend,
+          fat_fire_spend: data.fatFireSpend,
         })
         .select()
         .single();

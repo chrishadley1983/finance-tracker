@@ -50,7 +50,7 @@ describe('FIRE Parameters API', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // vi.restoreAllMocks(); - removed to preserve module mocks
   });
 
   describe('GET /api/fire-parameters', () => {

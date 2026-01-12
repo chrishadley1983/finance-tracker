@@ -5,3 +5,4 @@ export { MonthlySnapshotForm } from './MonthlySnapshotForm';
 export { SnapshotHistoryTable } from './SnapshotHistoryTable';
 export { CoastFireCard } from './CoastFireCard';
 export { CoastFireSettings } from './CoastFireSettings';
+export { WealthSnapshotModal } from './WealthSnapshotModal';

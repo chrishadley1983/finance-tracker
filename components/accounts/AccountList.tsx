@@ -9,6 +9,7 @@ interface AccountListProps {
   onDelete: (account: AccountWithStats) => void;
   onReallocate: (account: AccountWithStats) => void;
   onArchiveToggle: (account: AccountWithStats) => void;
+  onViewSnapshots?: (account: AccountWithStats) => void;
   isLoading?: boolean;
 }
 
@@ -18,6 +19,7 @@ export function AccountList({
   onDelete,
   onReallocate,
   onArchiveToggle,
+  onViewSnapshots,
   isLoading = false,
 }: AccountListProps) {
   if (isLoading) {
@@ -80,6 +82,7 @@ export function AccountList({
           onDelete={() => onDelete(account)}
           onReallocate={() => onReallocate(account)}
           onArchiveToggle={() => onArchiveToggle(account)}
+          onViewSnapshots={onViewSnapshots ? () => onViewSnapshots(account) : undefined}
         />
       ))}
     </div>

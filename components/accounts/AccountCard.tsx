@@ -1,8 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { AccountWithStats } from '@/lib/types/account';
 import { getAccountIcon, getAccountTypeLabel } from '@/lib/types/account';
+
+// Account types that can have transactions
+const TRANSACTION_ACCOUNT_TYPES = ['current', 'savings', 'credit'];
+
+// Account types that are wealth/investment based (use snapshots)
+const WEALTH_ACCOUNT_TYPES = ['investment', 'pension', 'isa', 'property'];
 
 interface AccountCardProps {
   account: AccountWithStats;
@@ -10,6 +17,7 @@ interface AccountCardProps {
   onDelete: () => void;
   onReallocate: () => void;
   onArchiveToggle: () => void;
+  onViewSnapshots?: () => void;
 }
 
 export function AccountCard({
@@ -18,8 +26,25 @@ export function AccountCard({
   onDelete,
   onReallocate,
   onArchiveToggle,
+  onViewSnapshots,
 }: AccountCardProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const router = useRouter();
+
+  // Check if this account type can have transactions
+  const isTransactionalAccount = TRANSACTION_ACCOUNT_TYPES.includes(account.type);
+  const canViewTransactions = isTransactionalAccount && account.transactionCount > 0;
+
+  // Check if this is a wealth account type
+  const isWealthAccount = WEALTH_ACCOUNT_TYPES.includes(account.type);
+
+  const handleCardClick = () => {
+    if (canViewTransactions) {
+      router.push(`/transactions?accountId=${account.id}`);
+    } else if (isWealthAccount && onViewSnapshots) {
+      onViewSnapshots();
+    }
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-GB', {
@@ -57,24 +82,45 @@ export function AccountCard({
   const typeLabel = getAccountTypeLabel(account.type);
   const isInvestmentType = ['investment', 'pension', 'isa'].includes(account.type);
 
-  // Check if snapshot is stale (> 30 days old)
-  const isSnapshotStale = () => {
-    if (account.balanceSource !== 'snapshot' || !account.snapshotDate) return false;
-    const snapshotDate = new Date(account.snapshotDate);
+  // Check if data is stale (> 30 days since last update)
+  // For transactional accounts, use latestTransaction date
+  // For snapshot-based accounts, use snapshotDate
+  const isDataStale = () => {
     const now = new Date();
-    const diffDays = Math.floor((now.getTime() - snapshotDate.getTime()) / (1000 * 60 * 60 * 24));
-    return diffDays > 30;
+
+    // For transactional accounts, check latest transaction date
+    if (isTransactionalAccount && account.latestTransaction) {
+      const latestTxDate = new Date(account.latestTransaction);
+      const diffDays = Math.floor((now.getTime() - latestTxDate.getTime()) / (1000 * 60 * 60 * 24));
+      return diffDays > 30;
+    }
+
+    // For snapshot-based accounts, check snapshot date
+    if (account.balanceSource === 'snapshot' && account.snapshotDate) {
+      const snapshotDate = new Date(account.snapshotDate);
+      const diffDays = Math.floor((now.getTime() - snapshotDate.getTime()) / (1000 * 60 * 60 * 24));
+      return diffDays > 30;
+    }
+
+    return false;
   };
 
   // Get balance source label
   const getBalanceSourceLabel = () => {
+    // For transactional accounts (current, savings, credit), show latest transaction date
+    if (isTransactionalAccount && account.latestTransaction) {
+      return `as of ${formatDate(account.latestTransaction)}`;
+    }
+
     switch (account.balanceSource) {
       case 'valuation':
         return `as of ${formatDate(account.snapshotDate)}`;
       case 'snapshot':
         return `as of ${formatDate(account.snapshotDate)}`;
       case 'transactions':
-        return 'calculated from transactions';
+        return account.latestTransaction
+          ? `as of ${formatDate(account.latestTransaction)}`
+          : 'calculated from transactions';
       case 'none':
       default:
         return null;
@@ -83,9 +129,10 @@ export function AccountCard({
 
   return (
     <div
+      onClick={handleCardClick}
       className={`bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow ${
         account.is_archived ? 'opacity-60 border-gray-200' : 'border-gray-200'
-      }`}
+      } ${canViewTransactions || isWealthAccount ? 'cursor-pointer' : ''}`}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -110,7 +157,10 @@ export function AccountCard({
         {/* Menu */}
         <div className="relative">
           <button
-            onClick={() => setShowMenu(!showMenu)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
             className="p-1 text-gray-400 hover:text-gray-600 rounded"
             aria-label="Account menu"
           >
@@ -184,7 +234,7 @@ export function AccountCard({
             <p className="text-sm text-gray-500">
               {getBalanceSourceLabel()}
             </p>
-            {isSnapshotStale() && (
+            {isDataStale() && (
               <span className="px-1.5 py-0.5 text-xs bg-amber-100 text-amber-700 rounded">
                 Stale
               </span>

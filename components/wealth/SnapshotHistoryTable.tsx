@@ -51,7 +51,7 @@ export function SnapshotHistoryTable() {
       if (!accountsRes.ok) throw new Error('Failed to fetch accounts');
       const accountsData = await accountsRes.json();
       const fetchedAccounts: Account[] = (accountsData.accounts || [])
-        .filter((a: Account) => a.type !== 'credit')
+        .filter((a: Account) => a.type !== 'credit' && a.type !== 'current')
         .sort((a: Account, b: Account) => {
           const typeOrder: Record<string, number> = { pension: 1, isa: 2, investment: 3, savings: 4, property: 5, current: 6, other: 7 };
           const aOrder = typeOrder[a.type] || 99;
@@ -230,18 +230,18 @@ export function SnapshotHistoryTable() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm table-fixed">
           <thead className="bg-slate-50 sticky top-0">
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-slate-600 sticky left-0 bg-slate-50 z-10">Month</th>
+              <th className="w-24 px-3 py-2 text-left font-medium text-slate-600 sticky left-0 bg-slate-50 z-10">Month</th>
               {accounts.map(account => (
-                <th key={account.id} className="px-3 py-2 text-right font-medium text-slate-600 whitespace-nowrap">
+                <th key={account.id} className="w-28 px-3 py-2 text-center font-medium text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">
                   {account.name}
                 </th>
               ))}
-              <th className="px-3 py-2 text-right font-medium text-slate-900 bg-slate-100">Total</th>
-              <th className="px-3 py-2 text-right font-medium text-slate-600">Change</th>
-              <th className="px-3 py-2 text-right font-medium text-slate-600">%</th>
+              <th className="w-28 px-3 py-2 text-center font-medium text-slate-900 bg-slate-100">Total</th>
+              <th className="w-24 px-3 py-2 text-center font-medium text-slate-600">Change</th>
+              <th className="w-16 px-3 py-2 text-center font-medium text-slate-600">%</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -257,7 +257,7 @@ export function SnapshotHistoryTable() {
                   return (
                     <td
                       key={account.id}
-                      className="px-3 py-2 text-right cursor-pointer hover:bg-blue-50"
+                      className="px-3 py-2 text-center cursor-pointer hover:bg-blue-50"
                       onClick={() => handleCellClick(row.date, account.id, snapshot?.balance || null)}
                     >
                       {isEditing ? (
@@ -278,10 +278,10 @@ export function SnapshotHistoryTable() {
                     </td>
                   );
                 })}
-                <td className="px-3 py-2 text-right font-semibold text-slate-900 bg-slate-50">
+                <td className="px-3 py-2 text-center font-semibold text-slate-900 bg-slate-50">
                   {formatCurrency(row.total)}
                 </td>
-                <td className={`px-3 py-2 text-right ${
+                <td className={`px-3 py-2 text-center ${
                   row.change === null ? 'text-slate-300' :
                   row.change >= 0 ? 'text-emerald-600' : 'text-red-600'
                 }`}>
@@ -291,7 +291,7 @@ export function SnapshotHistoryTable() {
                     </>
                   ) : '-'}
                 </td>
-                <td className={`px-3 py-2 text-right ${
+                <td className={`px-3 py-2 text-center ${
                   row.changePercent === null ? 'text-slate-300' :
                   row.changePercent >= 0 ? 'text-emerald-600' : 'text-red-600'
                 }`}>

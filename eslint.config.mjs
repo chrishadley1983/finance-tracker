@@ -21,9 +21,12 @@ export default [
       },
       globals: {
         ...globals.browser,
+        ...globals.node,
         React: "readonly",
         console: "readonly",
         NodeJS: "readonly",
+        Buffer: "readonly",
+        RequestInit: "readonly",
       },
     },
     plugins: {

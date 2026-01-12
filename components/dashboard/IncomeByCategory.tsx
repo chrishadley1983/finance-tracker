@@ -6,7 +6,7 @@ import { CategorySpend } from '@/lib/hooks/useDashboardData';
 
 const INITIAL_DISPLAY_COUNT = 8;
 
-interface IncomeByCategory {
+interface IncomeByCategoryProps {
   data: CategorySpend[];
   isLoading: boolean;
   dateFrom?: string;
@@ -34,7 +34,7 @@ function SkeletonRow() {
   );
 }
 
-export function IncomeByCategory({ data, isLoading, dateFrom, dateTo }: IncomeByCategory) {
+export function IncomeByCategory({ data, isLoading, dateFrom, dateTo }: IncomeByCategoryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
 

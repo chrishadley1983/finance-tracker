@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, Save, X } from 'lucide-react';
 import type { FireInputs } from '@/lib/types/fire';
 
@@ -30,25 +30,55 @@ export function FireInputsForm({
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     currentAge: inputs?.currentAge ?? 35,
+    dateOfBirth: inputs?.dateOfBirth ?? '',
     targetRetirementAge: inputs?.targetRetirementAge ?? 55,
     currentPortfolioValue: inputs?.currentPortfolioValue ?? portfolioValue ?? 0,
     annualIncome: inputs?.annualIncome ?? 0,
-    annualSavings: inputs?.annualSavings ?? 0,
+    annualSavings: inputs?.annualSavings ?? 18000, // Default £1,500/month
+    expectedReturn: inputs?.expectedReturn ?? 7,
+    withdrawalRate: inputs?.withdrawalRate ?? 4,
     includeStatePension: inputs?.includeStatePension ?? true,
     partnerStatePension: inputs?.partnerStatePension ?? false,
+    normalFireSpend: inputs?.normalFireSpend ?? 55000,
+    fatFireSpend: inputs?.fatFireSpend ?? 65000,
   });
+
+  // Update form data when inputs load from API
+  useEffect(() => {
+    if (inputs) {
+      setFormData({
+        currentAge: inputs.currentAge ?? 35,
+        dateOfBirth: inputs.dateOfBirth ?? '',
+        targetRetirementAge: inputs.targetRetirementAge ?? 55,
+        currentPortfolioValue: inputs.currentPortfolioValue ?? portfolioValue ?? 0,
+        annualIncome: inputs.annualIncome ?? 0,
+        annualSavings: inputs.annualSavings ?? 18000,
+        expectedReturn: inputs.expectedReturn ?? 7,
+        withdrawalRate: inputs.withdrawalRate ?? 4,
+        includeStatePension: inputs.includeStatePension ?? true,
+        partnerStatePension: inputs.partnerStatePension ?? false,
+        normalFireSpend: inputs.normalFireSpend ?? 55000,
+        fatFireSpend: inputs.fatFireSpend ?? 65000,
+      });
+    }
+  }, [inputs, portfolioValue]);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
       await onSave({
         currentAge: formData.currentAge,
+        dateOfBirth: formData.dateOfBirth || null,
         targetRetirementAge: formData.targetRetirementAge || null,
         currentPortfolioValue: formData.currentPortfolioValue || null,
         annualIncome: formData.annualIncome || null,
         annualSavings: formData.annualSavings || null,
+        expectedReturn: formData.expectedReturn,
+        withdrawalRate: formData.withdrawalRate,
         includeStatePension: formData.includeStatePension,
         partnerStatePension: formData.partnerStatePension,
+        normalFireSpend: formData.normalFireSpend,
+        fatFireSpend: formData.fatFireSpend,
       });
       setIsEditing(false);
     } finally {
@@ -82,6 +112,10 @@ export function FireInputsForm({
               Portfolio: <span className="font-medium">{formatCurrency(displayPortfolio)}</span>
               {' · '}
               Saving: <span className="font-medium">{formatCurrency(displaySavings)}/yr</span>
+              {' · '}
+              Return: <span className="font-medium">{inputs?.expectedReturn ?? 7}%</span>
+              {' · '}
+              SWR: <span className="font-medium">{inputs?.withdrawalRate ?? 4}%</span>
               {inputs?.includeStatePension && (
                 <>
                   {' · '}
@@ -117,6 +151,19 @@ export function FireInputsForm({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Date of Birth
+          </label>
+          <input
+            type="date"
+            value={formData.dateOfBirth || ''}
+            onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          />
+          <p className="text-xs text-gray-500 mt-1">For exact age calculation</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Current Age
           </label>
           <input
@@ -127,6 +174,9 @@ export function FireInputsForm({
             min={18}
             max={100}
           />
+          {formData.dateOfBirth && (
+            <p className="text-xs text-gray-500 mt-1">DOB will override this</p>
+          )}
         </div>
 
         <div>
@@ -177,16 +227,83 @@ export function FireInputsForm({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Annual Savings
+            Monthly Savings
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">£</span>
+            <input
+              type="number"
+              value={Math.round((formData.annualSavings || 0) / 12) || ''}
+              onChange={(e) => setFormData({ ...formData, annualSavings: (parseFloat(e.target.value) || 0) * 12 })}
+              className="w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              min={0}
+              step={100}
+              placeholder="1500"
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Annual: {formatCurrency(formData.annualSavings || 0)}</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Expected Real Return (%)
           </label>
           <input
             type="number"
-            value={formData.annualSavings || ''}
-            onChange={(e) => setFormData({ ...formData, annualSavings: parseFloat(e.target.value) || 0 })}
+            value={formData.expectedReturn}
+            onChange={(e) => setFormData({ ...formData, expectedReturn: parseFloat(e.target.value) || 7 })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             min={0}
-            placeholder="0"
+            max={15}
+            step={0.5}
           />
+          <p className="text-xs text-gray-500 mt-1">After inflation (default 7%)</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Safe Withdrawal Rate (%)
+          </label>
+          <input
+            type="number"
+            value={formData.withdrawalRate}
+            onChange={(e) => setFormData({ ...formData, withdrawalRate: parseFloat(e.target.value) || 4 })}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            min={1}
+            max={10}
+            step={0.25}
+          />
+          <p className="text-xs text-gray-500 mt-1">For FIRE target calc (default 4%)</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Normal FIRE Spend
+          </label>
+          <input
+            type="number"
+            value={formData.normalFireSpend || ''}
+            onChange={(e) => setFormData({ ...formData, normalFireSpend: parseFloat(e.target.value) || 55000 })}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            min={0}
+            step={1000}
+          />
+          <p className="text-xs text-gray-500 mt-1">Annual spend for Normal FIRE</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            FAT FIRE Spend
+          </label>
+          <input
+            type="number"
+            value={formData.fatFireSpend || ''}
+            onChange={(e) => setFormData({ ...formData, fatFireSpend: parseFloat(e.target.value) || 65000 })}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            min={0}
+            step={1000}
+          />
+          <p className="text-xs text-gray-500 mt-1">Annual spend for FAT FIRE</p>
         </div>
 
         <div className="flex flex-col justify-end">

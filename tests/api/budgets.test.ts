@@ -73,7 +73,7 @@ describe('Budgets API', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // Don't use restoreAllMocks() as it would restore the module mock
   });
 
   describe('GET /api/budgets', () => {

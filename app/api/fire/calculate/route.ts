@@ -35,6 +35,7 @@ function mapInputsRow(row: InputsRow): FireInputs {
   return {
     id: row.id,
     currentAge: row.current_age ?? 35,
+    dateOfBirth: row.date_of_birth,
     targetRetirementAge: row.target_retirement_age,
     currentPortfolioValue: row.current_portfolio_value,
     annualIncome: row.annual_income,
@@ -45,6 +46,8 @@ function mapInputsRow(row: InputsRow): FireInputs {
     includeStatePension: row.include_state_pension ?? true,
     partnerStatePension: row.partner_state_pension ?? false,
     excludePropertyFromFire: row.exclude_property_from_fire ?? true,
+    normalFireSpend: row.normal_fire_spend ?? 55000,
+    fatFireSpend: row.fat_fire_spend ?? 65000,
     updatedAt: row.updated_at ?? new Date().toISOString(),
   };
 }
@@ -120,6 +123,7 @@ export async function POST(request: NextRequest) {
       inputs = {
         id: '',
         currentAge: 35,
+        dateOfBirth: null,
         targetRetirementAge: 55,
         currentPortfolioValue: null,
         annualIncome: null,
@@ -130,6 +134,8 @@ export async function POST(request: NextRequest) {
         includeStatePension: true,
         partnerStatePension: false,
         excludePropertyFromFire: true,
+        normalFireSpend: 55000,
+        fatFireSpend: 65000,
         updatedAt: new Date().toISOString(),
       };
     }

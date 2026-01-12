@@ -33,7 +33,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    // Transform data to match expected format with nested account object
+    const snapshots = (data || []).map(snapshot => ({
+      id: snapshot.id,
+      date: snapshot.date,
+      balance: snapshot.balance,
+      account: snapshot.account ? {
+        id: snapshot.account_id,
+        name: snapshot.account.name,
+        type: snapshot.account.type,
+      } : null,
+    }));
+
+    return NextResponse.json({ snapshots });
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(

@@ -10,6 +10,7 @@ import {
   DeleteAccountDialog,
   ReallocateDialog,
 } from '@/components/accounts';
+import { WealthSnapshotModal } from '@/components/wealth';
 
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState<AccountWithStats[]>([]);
@@ -26,6 +27,7 @@ export default function AccountsPage() {
   const [editingAccount, setEditingAccount] = useState<AccountWithStats | null>(null);
   const [deletingAccount, setDeletingAccount] = useState<AccountWithStats | null>(null);
   const [reallocatingAccount, setReallocatingAccount] = useState<AccountWithStats | null>(null);
+  const [snapshotAccount, setSnapshotAccount] = useState<AccountWithStats | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   // Fetch accounts
@@ -287,6 +289,7 @@ export default function AccountsPage() {
         onDelete={setDeletingAccount}
         onReallocate={setReallocatingAccount}
         onArchiveToggle={handleArchiveToggle}
+        onViewSnapshots={setSnapshotAccount}
         isLoading={isLoading}
       />
 
@@ -331,6 +334,18 @@ export default function AccountsPage() {
           availableAccounts={accounts as Account[]}
           onConfirm={handleReallocate}
           isLoading={isSaving}
+        />
+      )}
+
+      {/* Wealth Snapshot Modal */}
+      {snapshotAccount && (
+        <WealthSnapshotModal
+          isOpen={!!snapshotAccount}
+          accountId={snapshotAccount.id}
+          accountName={snapshotAccount.name}
+          accountType={snapshotAccount.type}
+          onClose={() => setSnapshotAccount(null)}
+          onUpdate={fetchAccounts}
         />
       )}
       </div>

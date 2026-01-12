@@ -51,7 +51,7 @@ describe('Net Worth API', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // vi.restoreAllMocks(); - removed to preserve module mocks
   });
 
   describe('GET /api/wealth/net-worth', () => {

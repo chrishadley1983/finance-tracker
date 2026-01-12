@@ -51,7 +51,8 @@ describe('Accounts API', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // Don't use restoreAllMocks() as it would restore the module mock
+    // and cause "Cannot read properties of undefined" errors
   });
 
   describe('GET /api/accounts', () => {
@@ -163,40 +164,104 @@ describe('Accounts API', () => {
       expect(response.status).toBe(400);
     });
 
-    it('returns 400 when provider is missing', async () => {
-      const invalidAccount = {
+    it('creates account when provider is missing (provider is optional)', async () => {
+      const accountWithoutProvider = {
         name: 'Test Account',
         type: 'current',
       };
+      const createdAccount = { id: 'new-id', ...accountWithoutProvider, provider: '', is_active: true, sort_order: 0 };
+
+      // Mock sequence for creating account
+      let callCount = 0;
+      mockSingle.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          // Duplicate check - no existing account with that name
+          return Promise.resolve({ data: null, error: { code: 'PGRST116' } });
+        } else if (callCount === 2) {
+          // Max sort_order - no accounts
+          return Promise.resolve({ data: null, error: null });
+        } else {
+          // Insert result
+          return Promise.resolve({ data: createdAccount, error: null });
+        }
+      });
 
       const request = new NextRequest('http://localhost/api/accounts', {
         method: 'POST',
-        body: JSON.stringify(invalidAccount),
+        body: JSON.stringify(accountWithoutProvider),
       });
 
       const response = await POST(request);
 
-      expect(response.status).toBe(400);
+      // Provider is now optional, so this should succeed
+      expect(response.status).toBe(201);
     });
   });
 
   describe('GET /api/accounts/[id]', () => {
     it('returns a single account by ID', async () => {
       const mockAccount = { id: '123', name: 'HSBC Current', type: 'current', provider: 'HSBC' };
-      mockSingle.mockResolvedValue({ data: mockAccount, error: null });
+
+      // The GET route makes multiple queries - set up comprehensive mock
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'accounts') {
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () => Promise.resolve({ data: mockAccount, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'transactions') {
+          return {
+            select: () => ({
+              eq: () => Promise.resolve({ data: [], error: null }),
+            }),
+          };
+        }
+        if (table === 'wealth_snapshots') {
+          return {
+            select: () => ({
+              eq: () => ({
+                order: () => ({
+                  limit: () => Promise.resolve({ data: [], error: null }),
+                }),
+              }),
+            }),
+          };
+        }
+        return {
+          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+        };
+      });
 
       const request = new NextRequest('http://localhost/api/accounts/123');
       const response = await GET_BY_ID(request, { params: Promise.resolve({ id: '123' }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.id).toBe('123');
+      expect(data.account.id).toBe('123');
     });
 
     it('returns 404 when account not found', async () => {
-      mockSingle.mockResolvedValue({
-        data: null,
-        error: { code: 'PGRST116', message: 'Not found' }
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'accounts') {
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () => Promise.resolve({
+                  data: null,
+                  error: { code: 'PGRST116', message: 'Not found' }
+                }),
+              }),
+            }),
+          };
+        }
+        return {
+          select: () => ({ eq: () => Promise.resolve({ data: [], error: null }) }),
+        };
       });
 
       const request = new NextRequest('http://localhost/api/accounts/nonexistent');
@@ -210,8 +275,54 @@ describe('Accounts API', () => {
 
   describe('PUT /api/accounts/[id]', () => {
     it('updates an account with valid data', async () => {
+      const existingAccount = { id: '123', name: 'Old Name' };
       const updatedAccount = { id: '123', name: 'Updated Name', type: 'current', provider: 'HSBC' };
-      mockSingle.mockResolvedValue({ data: updatedAccount, error: null });
+
+      // PUT/PATCH route:
+      // 1. Check account exists: .select().eq().single()
+      // 2. If name changing, check duplicates: .select().eq().neq().single()
+      // 3. Update: .update().eq().select().single()
+      let selectCount = 0;
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'accounts') {
+          return {
+            select: () => {
+              selectCount++;
+              if (selectCount === 1) {
+                // Check account exists
+                return {
+                  eq: () => ({
+                    single: () => Promise.resolve({ data: existingAccount, error: null }),
+                  }),
+                };
+              }
+              if (selectCount === 2) {
+                // Duplicate check - returns no duplicate
+                return {
+                  eq: () => ({
+                    neq: () => ({
+                      single: () => Promise.resolve({ data: null, error: { code: 'PGRST116' } }),
+                    }),
+                  }),
+                };
+              }
+              return {
+                single: () => Promise.resolve({ data: updatedAccount, error: null }),
+              };
+            },
+            update: () => ({
+              eq: () => ({
+                select: () => ({
+                  single: () => Promise.resolve({ data: updatedAccount, error: null }),
+                }),
+              }),
+            }),
+          };
+        }
+        return {
+          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+        };
+      });
 
       const request = new NextRequest('http://localhost/api/accounts/123', {
         method: 'PUT',
@@ -222,13 +333,26 @@ describe('Accounts API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.name).toBe('Updated Name');
+      expect(data.account.name).toBe('Updated Name');
     });
 
     it('returns 404 when updating non-existent account', async () => {
-      mockSingle.mockResolvedValue({
-        data: null,
-        error: { code: 'PGRST116', message: 'Not found' }
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'accounts') {
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () => Promise.resolve({
+                  data: null,
+                  error: { code: 'PGRST116', message: 'Not found' }
+                }),
+              }),
+            }),
+          };
+        }
+        return {
+          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+        };
       });
 
       const request = new NextRequest('http://localhost/api/accounts/nonexistent', {
@@ -256,20 +380,83 @@ describe('Accounts API', () => {
   });
 
   describe('DELETE /api/accounts/[id]', () => {
-    it('deletes an account and returns 204', async () => {
-      mockEq.mockReturnValue({ error: null });
+    it('deletes an account and returns success', async () => {
+      const mockAccount = { id: '123', name: 'Test Account' };
+
+      // DELETE route:
+      // 1. Check account exists
+      // 2. Get transaction count
+      // 3. Delete valuations
+      // 4. Delete snapshots
+      // 5. Delete account
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'accounts') {
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () => Promise.resolve({ data: mockAccount, error: null }),
+              }),
+            }),
+            delete: () => ({
+              eq: () => Promise.resolve({ error: null }),
+            }),
+          };
+        }
+        if (table === 'transactions') {
+          return {
+            select: () => ({
+              eq: () => Promise.resolve({ count: 0, error: null }),
+            }),
+          };
+        }
+        // For investment_valuations, wealth_snapshots - just return success on delete
+        return {
+          delete: () => ({
+            eq: () => Promise.resolve({ error: null }),
+          }),
+        };
+      });
 
       const request = new NextRequest('http://localhost/api/accounts/123', {
         method: 'DELETE',
       });
 
       const response = await DELETE(request, { params: Promise.resolve({ id: '123' }) });
+      const data = await response.json();
 
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
     });
 
     it('returns 500 on database error during delete', async () => {
-      mockEq.mockReturnValue({ error: { message: 'Delete failed' } });
+      const mockAccount = { id: '123', name: 'Test Account' };
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'accounts') {
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () => Promise.resolve({ data: mockAccount, error: null }),
+              }),
+            }),
+            delete: () => ({
+              eq: () => Promise.resolve({ error: { message: 'Delete failed' } }),
+            }),
+          };
+        }
+        if (table === 'transactions') {
+          return {
+            select: () => ({
+              eq: () => Promise.resolve({ count: 0, error: null }),
+            }),
+          };
+        }
+        return {
+          delete: () => ({
+            eq: () => Promise.resolve({ error: null }),
+          }),
+        };
+      });
 
       const request = new NextRequest('http://localhost/api/accounts/123', {
         method: 'DELETE',

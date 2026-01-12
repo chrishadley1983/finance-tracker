@@ -163,6 +163,7 @@ describe('FIRE Calculator', () => {
     const baseInputs: FireInputs = {
       id: 'test-inputs',
       currentAge: 35,
+      dateOfBirth: null,
       targetRetirementAge: 55,
       currentPortfolioValue: 100000,
       annualIncome: 60000,
@@ -173,6 +174,8 @@ describe('FIRE Calculator', () => {
       includeStatePension: true,
       partnerStatePension: false,
       excludePropertyFromFire: true,
+      normalFireSpend: 55000,
+      fatFireSpend: 65000,
       updatedAt: new Date().toISOString(),
     };
 
@@ -357,6 +360,7 @@ describe('FIRE Calculator', () => {
     const inputs: FireInputs = {
       id: 'test',
       currentAge: 35,
+      dateOfBirth: null,
       targetRetirementAge: 55,
       currentPortfolioValue: 100000,
       annualIncome: 60000,
@@ -367,6 +371,8 @@ describe('FIRE Calculator', () => {
       includeStatePension: true,
       partnerStatePension: false,
       excludePropertyFromFire: true,
+      normalFireSpend: 55000,
+      fatFireSpend: 65000,
       updatedAt: new Date().toISOString(),
     };
 

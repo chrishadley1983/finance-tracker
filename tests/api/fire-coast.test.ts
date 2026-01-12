@@ -30,7 +30,7 @@ describe('Fire Coast API', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // vi.restoreAllMocks(); - removed to preserve module mocks
   });
 
   describe('GET /api/fire/coast', () => {

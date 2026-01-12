@@ -88,7 +88,7 @@ describe('Transactions API', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // vi.restoreAllMocks(); - removed to preserve module mocks
   });
 
   describe('GET /api/transactions', () => {

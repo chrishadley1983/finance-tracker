@@ -10,6 +10,7 @@ import {
   TransactionToolbar,
   TransactionEditModal,
   TransactionFormData,
+  TransactionWithRunningBalance,
 } from '@/components/transactions';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useTransactions, FilterState, TransactionWithRelations } from '@/lib/hooks/useTransactions';
@@ -65,13 +66,84 @@ export default function TransactionsPage() {
   // Loading states for operations
   const [isOperating, setIsOperating] = useState(false);
 
-  const { transactions, total, isLoading, error, refetch } = useTransactions({
+  // Check if filtering by single account (for running balance mode)
+  // Note: validated === 'all' or undefined means no validation filter is applied
+  const isSingleAccountFilter = Boolean(
+    filters.accountId &&
+    !filters.categoryId &&
+    !filters.search &&
+    !filters.dateFrom &&
+    !filters.dateTo &&
+    (!filters.validated || filters.validated === 'all')
+  );
+
+  // State for account-specific transactions with running balance
+  const [accountTransactions, setAccountTransactions] = useState<TransactionWithRunningBalance[]>([]);
+  const [accountTotal, setAccountTotal] = useState(0);
+  const [accountName, setAccountName] = useState<string | null>(null);
+  const [accountIsLoading, setAccountIsLoading] = useState(false);
+  const [accountError, setAccountError] = useState<string | null>(null);
+
+  // Regular transactions hook (used when not in single account mode)
+  const { transactions: regularTransactions, total: regularTotal, isLoading: regularIsLoading, error: regularError, refetch: regularRefetch } = useTransactions({
     filters,
     page,
     pageSize,
     sortColumn,
     sortDirection,
   });
+
+  // Fetch account-specific transactions with running balance
+  const fetchAccountTransactions = useCallback(async () => {
+    if (!filters.accountId || !isSingleAccountFilter) return;
+
+    setAccountIsLoading(true);
+    setAccountError(null);
+
+    try {
+      const params = new URLSearchParams();
+      params.set('limit', pageSize.toString());
+      params.set('offset', ((page - 1) * pageSize).toString());
+      params.set('sort_direction', sortDirection);
+      params.set('_t', Date.now().toString()); // Cache-buster
+
+      const response = await fetch(`/api/accounts/${filters.accountId}/transactions?${params.toString()}`, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to fetch transactions');
+      }
+
+      const result = await response.json();
+      setAccountTransactions(result.data);
+      setAccountTotal(result.total);
+      setAccountName(result.account?.name || null);
+    } catch (err) {
+      setAccountError(err instanceof Error ? err.message : 'An error occurred');
+      setAccountTransactions([]);
+      setAccountTotal(0);
+    } finally {
+      setAccountIsLoading(false);
+    }
+  }, [filters.accountId, isSingleAccountFilter, page, pageSize, sortDirection]);
+
+  // Fetch account transactions when in single account mode
+  useEffect(() => {
+    if (isSingleAccountFilter) {
+      fetchAccountTransactions();
+    }
+  }, [isSingleAccountFilter, fetchAccountTransactions]);
+
+  // Use account-specific data when in single account mode
+  const transactions = isSingleAccountFilter ? accountTransactions : regularTransactions;
+  const total = isSingleAccountFilter ? accountTotal : regularTotal;
+  const isLoading = isSingleAccountFilter ? accountIsLoading : regularIsLoading;
+  const error = isSingleAccountFilter ? accountError : regularError;
+  const refetch = isSingleAccountFilter ? fetchAccountTransactions : regularRefetch;
 
   // Fetch categories on mount
   useEffect(() => {
@@ -359,9 +431,23 @@ export default function TransactionsPage() {
       <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-500">
-            Manage and view all your transactions
-          </p>
+          {isSingleAccountFilter && accountName ? (
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-slate-500">
+                Transactions for <span className="font-semibold text-slate-700">{accountName}</span>
+              </p>
+              <button
+                onClick={() => handleFilterChange({})}
+                className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline"
+              >
+                View all transactions
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">
+              Manage and view all your transactions
+            </p>
+          )}
         </div>
 
         {/* Toolbar */}
@@ -405,6 +491,8 @@ export default function TransactionsPage() {
           onValidate={handleValidate}
           categories={categories}
           onInlineUpdate={handleInlineUpdate}
+          showRunningBalance={isSingleAccountFilter}
+          hideAccountColumn={isSingleAccountFilter}
         />
 
         {/* Pagination */}

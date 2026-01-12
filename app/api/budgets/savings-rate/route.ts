@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     // Call the RPC function
     const { data, error } = await supabaseAdmin.rpc('get_savings_rate', {
       p_year: query.year,
-      p_month: query.month || null,
+      p_month: query.month,
     });
 
     if (error) {

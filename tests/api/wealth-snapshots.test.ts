@@ -77,7 +77,7 @@ describe('Wealth Snapshots API', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // vi.restoreAllMocks(); - removed to preserve module mocks
   });
 
   describe('GET /api/wealth-snapshots', () => {
