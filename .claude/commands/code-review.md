@@ -70,6 +70,20 @@ Create `docs/reviews/YYYY-MM-DD_HH-MM_review.md`:
 - <suggestion>
 ```
 
-### 5. Update State
+### 5. CLAUDE.md Health Check
+
+On every `branch` or `full` review, also audit the project's CLAUDE.md:
+
+| Check | Flag If |
+|-------|---------|
+| Length | >200 lines — extract to linked `docs/` files |
+| Inline code | Code blocks >5 lines — reference real source files instead |
+| Feature docs | Feature-specific documentation — move to `docs/` |
+| Incident rules | One-off warnings or workarounds — remove or generalise |
+| Duplication | Content repeated from global `~/.claude/CLAUDE.md` |
+
+Report issues as **Medium** severity under a **CLAUDE.md Health** heading in the review report.
+
+### 6. Update State
 
 Update `docs/agents/code-review/state.json`
