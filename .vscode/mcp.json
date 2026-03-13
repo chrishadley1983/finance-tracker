@@ -6,7 +6,7 @@
         "-y",
         "@supabase/mcp-server-supabase@latest",
         "--db-url",
-        "postgresql://postgres:Emmie2018!!!@db.vkezoyhjoufvsjopjbrr.supabase.co:5432/postgres"
+        "postgresql://postgres:Emmie2018!!!@db.modjoikyuhqzouxvieua.supabase.co:5432/postgres?options=-c%20search_path%3Dfinance"
       ]
     }
   }

@@ -13,4 +13,7 @@ export const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseService
     autoRefreshToken: false,
     persistSession: false,
   },
+  db: {
+    schema: 'finance',
+  },
 });
