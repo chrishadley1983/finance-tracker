@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Settings, ChevronDown, ChevronUp, Play } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Settings, ChevronDown, ChevronUp, Play, Lock, Unlock } from 'lucide-react';
 
 export interface WrapperBalancesUI {
   isa: number;
@@ -36,11 +36,52 @@ interface ErnConfigPanelProps {
   config: ErnConfig;
   onConfigChange: (config: ErnConfig) => void;
   isLoading?: boolean;
-  /** Live portfolio total from net worth API (excludes property) */
   livePortfolio?: number | null;
-  /** Live wrapper balances from net worth API */
   liveWrapperBalances?: WrapperBalancesUI | null;
 }
+
+// ---- localStorage persistence ----
+
+const LOCKS_KEY = 'ern-config-locks';
+const VALUES_KEY = 'ern-config-locked-values';
+
+type LockableField =
+  | 'portfolio' | 'annualSpend' | 'equityAllocation' | 'horizonYears'
+  | 'preserveFraction' | 'currentAge' | 'statePensionAnnual' | 'statePensionStartAge'
+  | 'retirementAge' | 'annualSavings' | 'partialEarningsAnnual' | 'partialEarningsYears'
+  | 'wrapperBalances';
+
+type LocksMap = Partial<Record<LockableField, boolean>>;
+
+function loadLocks(): LocksMap {
+  try {
+    const raw = localStorage.getItem(LOCKS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveLocks(locks: LocksMap) {
+  localStorage.setItem(LOCKS_KEY, JSON.stringify(locks));
+}
+
+function loadLockedValues(): Partial<ErnConfig> {
+  try {
+    const raw = localStorage.getItem(VALUES_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveLockedValues(locks: LocksMap, draft: ErnConfig) {
+  const values: Record<string, unknown> = {};
+  for (const [field, locked] of Object.entries(locks)) {
+    if (locked) {
+      values[field] = (draft as unknown as Record<string, unknown>)[field];
+    }
+  }
+  localStorage.setItem(VALUES_KEY, JSON.stringify(values));
+}
+
+// ---- Helpers ----
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-GB', {
@@ -51,6 +92,33 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+// ---- Lock button component ----
+
+function LockButton({
+  locked,
+  onToggle,
+}: {
+  locked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      title={locked ? 'Locked — value persists across sessions. Click to unlock.' : 'Click to lock this value across sessions.'}
+      className={`p-0.5 rounded transition-colors ${
+        locked
+          ? 'text-amber-500 hover:text-amber-600'
+          : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'
+      }`}
+    >
+      {locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+    </button>
+  );
+}
+
+// ---- Main component ----
+
 export function ErnConfigPanel({
   config,
   onConfigChange,
@@ -59,39 +127,82 @@ export function ErnConfigPanel({
   liveWrapperBalances,
 }: ErnConfigPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [draft, setDraft] = useState(config);
+  const [locks, setLocks] = useState<LocksMap>(() => loadLocks());
+  const [draft, setDraft] = useState<ErnConfig>(() => {
+    // On first render, apply any locked values over the initial config
+    const locked = loadLockedValues();
+    return { ...config, ...locked };
+  });
 
-  // Toggle states: true = use live data from portfolio, false = manual override
-  const [useLivePortfolio, setUseLivePortfolio] = useState(true);
-  const [useLiveWrappers, setUseLiveWrappers] = useState(true);
+  // Toggle states for live data (only apply when field is NOT locked)
+  const [useLivePortfolio, setUseLivePortfolio] = useState(!locks.portfolio);
+  const [useLiveWrappers, setUseLiveWrappers] = useState(!locks.wrapperBalances);
+
+  // Persist locks + values whenever they change
+  const persistLocks = useCallback((newLocks: LocksMap, currentDraft: ErnConfig) => {
+    saveLocks(newLocks);
+    saveLockedValues(newLocks, currentDraft);
+  }, []);
+
+  const toggleLock = useCallback((field: LockableField) => {
+    setLocks(prev => {
+      const next = { ...prev, [field]: !prev[field] };
+      // When locking portfolio or wrappers, disable "use live" for that field
+      if (next[field]) {
+        if (field === 'portfolio') setUseLivePortfolio(false);
+        if (field === 'wrapperBalances') setUseLiveWrappers(false);
+      }
+      persistLocks(next, draft);
+      return next;
+    });
+  }, [draft, persistLocks]);
 
   // Sync draft when config prop changes (e.g. after net worth fetch)
+  // but respect locks — locked values don't get overwritten
   useEffect(() => {
     setDraft(prev => {
       const next = { ...config };
-      // Preserve manual overrides if toggled off
-      if (!useLivePortfolio) {
+      const lockedValues = loadLockedValues();
+
+      // Apply locked values over incoming config
+      for (const [field, value] of Object.entries(lockedValues)) {
+        if (locks[field as LockableField]) {
+          (next as Record<string, unknown>)[field] = value;
+        }
+      }
+
+      // Also preserve manual overrides for live-toggle fields
+      if (!useLivePortfolio && !locks.portfolio) {
         next.portfolio = prev.portfolio;
       }
-      if (!useLiveWrappers) {
+      if (!useLiveWrappers && !locks.wrapperBalances) {
         next.wrapperBalances = prev.wrapperBalances;
       }
+
       return next;
     });
-  }, [config, useLivePortfolio, useLiveWrappers]);
+  }, [config, locks, useLivePortfolio, useLiveWrappers]);
 
-  // When switching from manual back to live, apply the live values
+  // When switching from manual back to live, apply the live values (unless locked)
   useEffect(() => {
-    if (useLivePortfolio && livePortfolio != null) {
+    if (useLivePortfolio && !locks.portfolio && livePortfolio != null) {
       setDraft(prev => ({ ...prev, portfolio: livePortfolio }));
     }
-  }, [useLivePortfolio, livePortfolio]);
+  }, [useLivePortfolio, livePortfolio, locks.portfolio]);
 
   useEffect(() => {
-    if (useLiveWrappers && liveWrapperBalances) {
+    if (useLiveWrappers && !locks.wrapperBalances && liveWrapperBalances) {
       setDraft(prev => ({ ...prev, wrapperBalances: liveWrapperBalances }));
     }
-  }, [useLiveWrappers, liveWrapperBalances]);
+  }, [useLiveWrappers, liveWrapperBalances, locks.wrapperBalances]);
+
+  // Re-persist values whenever draft changes and there are active locks
+  useEffect(() => {
+    const hasAnyLock = Object.values(locks).some(Boolean);
+    if (hasAnyLock) {
+      saveLockedValues(locks, draft);
+    }
+  }, [draft, locks]);
 
   const handleSubmit = () => {
     onConfigChange(draft);
@@ -107,6 +218,18 @@ export function ErnConfigPanel({
   const wrapperTotal = draft.wrapperBalances
     ? draft.wrapperBalances.isa + draft.wrapperBalances.sipp + draft.wrapperBalances.gia + draft.wrapperBalances.cash
     : 0;
+
+  const lockedCount = Object.values(locks).filter(Boolean).length;
+
+  // Helper to render a field label with lock button
+  const FieldLabel = ({ field, children }: { field: LockableField; children: React.ReactNode }) => (
+    <div className="flex items-center gap-1.5 mb-1">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        {children}
+      </label>
+      <LockButton locked={!!locks[field]} onToggle={() => toggleLock(field)} />
+    </div>
+  );
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6">
@@ -124,6 +247,11 @@ export function ErnConfigPanel({
               {draft.retirementAge && draft.retirementAge > draft.currentAge && (
                 <> | retire at {draft.retirementAge}</>
               )}
+              {lockedCount > 0 && (
+                <span className="inline-flex items-center gap-0.5 ml-2 text-amber-500">
+                  <Lock className="h-3 w-3" /> {lockedCount}
+                </span>
+              )}
             </span>
           </div>
         </div>
@@ -140,12 +268,10 @@ export function ErnConfigPanel({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Portfolio */}
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Portfolio Value
-                </label>
-                {hasLivePortfolio && (
-                  <label className="flex items-center gap-1.5 cursor-pointer">
+              <div className="flex items-center justify-between">
+                <FieldLabel field="portfolio">Portfolio Value</FieldLabel>
+                {hasLivePortfolio && !locks.portfolio && (
+                  <label className="flex items-center gap-1.5 cursor-pointer mb-1">
                     <input
                       type="checkbox"
                       checked={useLivePortfolio}
@@ -160,14 +286,19 @@ export function ErnConfigPanel({
                 type="number"
                 value={draft.portfolio}
                 onChange={(e) => setDraft({ ...draft, portfolio: Number(e.target.value) })}
-                disabled={useLivePortfolio && hasLivePortfolio}
-                className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white text-sm ${
-                  useLivePortfolio && hasLivePortfolio
-                    ? 'bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                    : 'bg-white dark:bg-gray-700'
+                disabled={useLivePortfolio && hasLivePortfolio && !locks.portfolio}
+                className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                  locks.portfolio
+                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
+                    : useLivePortfolio && hasLivePortfolio
+                    ? 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                 }`}
               />
-              {useLivePortfolio && hasLivePortfolio && (
+              {locks.portfolio && (
+                <p className="text-xs text-amber-500 mt-1">Locked across sessions</p>
+              )}
+              {!locks.portfolio && useLivePortfolio && hasLivePortfolio && (
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
                   From your accounts (excl. property)
                 </p>
@@ -176,22 +307,25 @@ export function ErnConfigPanel({
 
             {/* Annual Spend */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Annual Spend
-              </label>
+              <FieldLabel field="annualSpend">Annual Spend</FieldLabel>
               <input
                 type="number"
                 value={draft.annualSpend}
                 onChange={(e) => setDraft({ ...draft, annualSpend: Number(e.target.value) })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                  locks.annualSpend
+                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
+                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                }`}
               />
+              {locks.annualSpend && <p className="text-xs text-amber-500 mt-1">Locked across sessions</p>}
             </div>
 
             {/* Equity Allocation */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <FieldLabel field="equityAllocation">
                 Equity: {(draft.equityAllocation * 100).toFixed(0)}%
-              </label>
+              </FieldLabel>
               <input
                 type="range"
                 min="40"
@@ -208,9 +342,9 @@ export function ErnConfigPanel({
 
             {/* Horizon */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <FieldLabel field="horizonYears">
                 Horizon: {draft.horizonYears} years
-              </label>
+              </FieldLabel>
               <input
                 type="range"
                 min="20"
@@ -227,9 +361,9 @@ export function ErnConfigPanel({
 
             {/* Capital Preservation */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <FieldLabel field="preserveFraction">
                 Preserve: {(draft.preserveFraction * 100).toFixed(0)}%
-              </label>
+              </FieldLabel>
               <input
                 type="range"
                 min="0"
@@ -246,40 +380,46 @@ export function ErnConfigPanel({
 
             {/* Current Age */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Current Age
-              </label>
+              <FieldLabel field="currentAge">Current Age</FieldLabel>
               <input
                 type="number"
                 value={draft.currentAge}
                 onChange={(e) => setDraft({ ...draft, currentAge: Number(e.target.value) })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                  locks.currentAge
+                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
+                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                }`}
               />
             </div>
 
             {/* State Pension */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                State Pension (annual)
-              </label>
+              <FieldLabel field="statePensionAnnual">State Pension (annual)</FieldLabel>
               <input
                 type="number"
                 value={draft.statePensionAnnual}
                 onChange={(e) => setDraft({ ...draft, statePensionAnnual: Number(e.target.value) })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                  locks.statePensionAnnual
+                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
+                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                }`}
               />
             </div>
 
             {/* Pension Start Age */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Pension Start Age
-              </label>
+              <FieldLabel field="statePensionStartAge">Pension Start Age</FieldLabel>
               <input
                 type="number"
                 value={draft.statePensionStartAge}
                 onChange={(e) => setDraft({ ...draft, statePensionStartAge: Number(e.target.value) })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                  locks.statePensionStartAge
+                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
+                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                }`}
               />
             </div>
 
@@ -290,16 +430,18 @@ export function ErnConfigPanel({
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Retirement Age
-                  </label>
+                  <FieldLabel field="retirementAge">Retirement Age</FieldLabel>
                   <input
                     type="number"
                     min={draft.currentAge}
                     max={100}
                     value={draft.retirementAge ?? draft.currentAge}
                     onChange={(e) => setDraft({ ...draft, retirementAge: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                      locks.retirementAge
+                        ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
+                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                    }`}
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     {(draft.retirementAge ?? draft.currentAge) > draft.currentAge
@@ -308,42 +450,48 @@ export function ErnConfigPanel({
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Annual Savings
-                  </label>
+                  <FieldLabel field="annualSavings">Annual Savings</FieldLabel>
                   <input
                     type="number"
                     min={0}
                     value={draft.annualSavings ?? 0}
                     onChange={(e) => setDraft({ ...draft, annualSavings: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                      locks.annualSavings
+                        ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
+                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                    }`}
                   />
                   <p className="text-xs text-gray-500 mt-1">Contributions during accumulation</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Partial Earnings (annual)
-                  </label>
+                  <FieldLabel field="partialEarningsAnnual">Partial Earnings (annual)</FieldLabel>
                   <input
                     type="number"
                     min={0}
                     value={draft.partialEarningsAnnual ?? 0}
                     onChange={(e) => setDraft({ ...draft, partialEarningsAnnual: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                      locks.partialEarningsAnnual
+                        ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
+                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                    }`}
                   />
                   <p className="text-xs text-gray-500 mt-1">Post-retirement income (e.g. consulting)</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Partial Earnings Years
-                  </label>
+                  <FieldLabel field="partialEarningsYears">Partial Earnings Years</FieldLabel>
                   <input
                     type="number"
                     min={0}
                     max={30}
                     value={draft.partialEarningsYears ?? 0}
                     onChange={(e) => setDraft({ ...draft, partialEarningsYears: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                      locks.partialEarningsYears
+                        ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
+                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                    }`}
                   />
                   <p className="text-xs text-gray-500 mt-1">Duration of partial earnings</p>
                 </div>
@@ -353,10 +501,13 @@ export function ErnConfigPanel({
             {/* Portfolio Wrapper Mix */}
             <div className="col-span-full">
               <div className="flex items-center justify-between mb-3 border-t border-gray-100 dark:border-gray-700 pt-3">
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Portfolio Wrapper Mix
-                </h4>
-                {hasLiveWrappers && (
+                <div className="flex items-center gap-1.5">
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Portfolio Wrapper Mix
+                  </h4>
+                  <LockButton locked={!!locks.wrapperBalances} onToggle={() => toggleLock('wrapperBalances')} />
+                </div>
+                {hasLiveWrappers && !locks.wrapperBalances && (
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <input
                       type="checkbox"
@@ -368,12 +519,15 @@ export function ErnConfigPanel({
                   </label>
                 )}
               </div>
-              {useLiveWrappers && hasLiveWrappers && (
+              {locks.wrapperBalances && (
+                <p className="text-xs text-amber-500 mb-3">Locked across sessions. Unlock to use live balances.</p>
+              )}
+              {!locks.wrapperBalances && useLiveWrappers && hasLiveWrappers && (
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-3">
                   Populated from your account balances. Uncheck to override manually.
                 </p>
               )}
-              {!hasLiveWrappers && (
+              {!locks.wrapperBalances && !hasLiveWrappers && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
                   How your portfolio is split across tax wrappers. This determines the tax-optimal drawdown order.
                 </p>
@@ -387,7 +541,9 @@ export function ErnConfigPanel({
                     cash: { name: 'Cash', hint: 'Liquidity buffer' },
                   };
                   const { name, hint } = labels[wrapper];
-                  const isDisabled = useLiveWrappers && hasLiveWrappers;
+                  const isDisabled = locks.wrapperBalances
+                    ? false  // locked values are editable (they'll be re-saved)
+                    : useLiveWrappers && hasLiveWrappers;
 
                   return (
                     <div key={wrapper}>
@@ -409,10 +565,12 @@ export function ErnConfigPanel({
                           },
                         })}
                         disabled={isDisabled}
-                        className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm ${
-                          isDisabled
-                            ? 'bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                            : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                        className={`w-full px-3 py-2 border rounded-lg text-sm ${
+                          locks.wrapperBalances
+                            ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
+                            : isDisabled
+                            ? 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                         }`}
                       />
                       <p className="text-xs text-gray-500 mt-1">{hint}</p>
