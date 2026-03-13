@@ -92,7 +92,11 @@ export function DrawdownExplainer({
 }: DrawdownExplainerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const realReturn = capeImpliedReturn > 0 ? capeImpliedReturn : 0.04;
+  // capeImpliedReturn comes from the API as a percentage (e.g. 2.56 for CAPE 39)
+  // Convert to decimal for projection (0.0256)
+  const realReturn = capeImpliedReturn > 0
+    ? (capeImpliedReturn > 1 ? capeImpliedReturn / 100 : capeImpliedReturn)
+    : 0.04;
 
   const projection = useMemo((): ProjectionResult | null => {
     const accumulationYears = Math.max(0, retirementAge - currentAge);
