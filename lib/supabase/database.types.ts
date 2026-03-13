@@ -12,7 +12,7 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
-  public: {
+  finance: {
     Tables: {
       accounts: {
         Row: {
@@ -33,7 +33,7 @@ export type Database = {
           opening_balance: number | null
           provider: string
           sort_order: number | null
-          type: Database["public"]["Enums"]["account_type"]
+          type: Database["finance"]["Enums"]["account_type"]
           updated_at: string
         }
         Insert: {
@@ -54,7 +54,7 @@ export type Database = {
           opening_balance?: number | null
           provider: string
           sort_order?: number | null
-          type: Database["public"]["Enums"]["account_type"]
+          type: Database["finance"]["Enums"]["account_type"]
           updated_at?: string
         }
         Update: {
@@ -75,7 +75,7 @@ export type Database = {
           opening_balance?: number | null
           provider?: string
           sort_order?: number | null
-          type?: Database["public"]["Enums"]["account_type"]
+          type?: Database["finance"]["Enums"]["account_type"]
           updated_at?: string
         }
         Relationships: []
@@ -309,7 +309,7 @@ export type Database = {
           created_at: string
           id: string
           is_system: boolean | null
-          match_type: Database["public"]["Enums"]["match_type"]
+          match_type: Database["finance"]["Enums"]["match_type"]
           notes: string | null
           pattern: string
         }
@@ -319,7 +319,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_system?: boolean | null
-          match_type?: Database["public"]["Enums"]["match_type"]
+          match_type?: Database["finance"]["Enums"]["match_type"]
           notes?: string | null
           pattern: string
         }
@@ -329,7 +329,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_system?: boolean | null
-          match_type?: Database["public"]["Enums"]["match_type"]
+          match_type?: Database["finance"]["Enums"]["match_type"]
           notes?: string | null
           pattern?: string
         }
@@ -567,7 +567,7 @@ export type Database = {
           imported_count: number
           raw_data: Json | null
           started_at: string | null
-          status: Database["public"]["Enums"]["import_status"]
+          status: Database["finance"]["Enums"]["import_status"]
           total_rows: number
         }
         Insert: {
@@ -583,7 +583,7 @@ export type Database = {
           imported_count?: number
           raw_data?: Json | null
           started_at?: string | null
-          status?: Database["public"]["Enums"]["import_status"]
+          status?: Database["finance"]["Enums"]["import_status"]
           total_rows?: number
         }
         Update: {
@@ -599,7 +599,7 @@ export type Database = {
           imported_count?: number
           raw_data?: Json | null
           started_at?: string | null
-          status?: Database["public"]["Enums"]["import_status"]
+          status?: Database["finance"]["Enums"]["import_status"]
           total_rows?: number
         }
         Relationships: [
@@ -783,7 +783,7 @@ export type Database = {
         Row: {
           account_id: string
           amount: number
-          categorisation_source: Database["public"]["Enums"]["categorisation_source"]
+          categorisation_source: Database["finance"]["Enums"]["categorisation_source"]
           category_id: string | null
           created_at: string
           date: string
@@ -796,7 +796,7 @@ export type Database = {
         Insert: {
           account_id: string
           amount: number
-          categorisation_source?: Database["public"]["Enums"]["categorisation_source"]
+          categorisation_source?: Database["finance"]["Enums"]["categorisation_source"]
           category_id?: string | null
           created_at?: string
           date: string
@@ -809,7 +809,7 @@ export type Database = {
         Update: {
           account_id?: string
           amount?: number
-          categorisation_source?: Database["public"]["Enums"]["categorisation_source"]
+          categorisation_source?: Database["finance"]["Enums"]["categorisation_source"]
           category_id?: string | null
           created_at?: string
           date?: string
@@ -993,7 +993,7 @@ export type Database = {
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "finance">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
@@ -1109,7 +1109,7 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  public: {
+  finance: {
     Enums: {
       account_type: [
         "current",

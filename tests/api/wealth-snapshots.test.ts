@@ -81,8 +81,8 @@ describe('Wealth Snapshots API', () => {
   });
 
   describe('GET /api/wealth-snapshots', () => {
-    it('returns a list of wealth snapshots', async () => {
-      const mockSnapshots = [
+    it('returns a list of wealth snapshots in { snapshots } wrapper', async () => {
+      const dbSnapshots = [
         {
           id: TEST_SNAPSHOT_ID,
           account_id: TEST_ACCOUNT_ID,
@@ -92,10 +92,9 @@ describe('Wealth Snapshots API', () => {
           account: { name: 'HSBC Current', type: 'current' },
         },
       ];
-      // Create chain that resolves to mockSnapshots
       const successChain = createThenableChain(
         { mockOrder, mockEq, mockGte, mockLte, mockSingle, mockSelect },
-        { data: mockSnapshots, error: null }
+        { data: dbSnapshots, error: null }
       );
       mockSelect.mockReturnValue(successChain);
 
@@ -104,7 +103,18 @@ describe('Wealth Snapshots API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toEqual(mockSnapshots);
+      expect(data).toHaveProperty('snapshots');
+      expect(Array.isArray(data.snapshots)).toBe(true);
+      expect(data.snapshots.length).toBe(1);
+      // Verify transformed shape
+      expect(data.snapshots[0].id).toBe(TEST_SNAPSHOT_ID);
+      expect(data.snapshots[0].date).toBe('2025-01-01');
+      expect(data.snapshots[0].balance).toBe(50000.00);
+      expect(data.snapshots[0].account).toEqual({
+        id: TEST_ACCOUNT_ID,
+        name: 'HSBC Current',
+        type: 'current',
+      });
       expect(mockFrom).toHaveBeenCalledWith('wealth_snapshots');
     });
 
@@ -124,7 +134,6 @@ describe('Wealth Snapshots API', () => {
     });
 
     it('returns 500 on database error', async () => {
-      // Create chain that resolves to error
       const errorChain = createThenableChain(
         { mockOrder, mockEq, mockGte, mockLte, mockSingle, mockSelect },
         { data: null, error: { message: 'Database error' } }

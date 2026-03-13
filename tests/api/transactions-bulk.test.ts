@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { PUT, DELETE } from '@/app/api/transactions/bulk/route';
 
-// Valid UUIDs for testing
-const UUID_1 = '11111111-1111-1111-1111-111111111111';
-const UUID_2 = '22222222-2222-2222-2222-222222222222';
-const UUID_3 = '33333333-3333-3333-3333-333333333333';
-const CAT_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+// Valid RFC 4122 UUIDs for testing (version 4, variant 1)
+const UUID_1 = '11111111-1111-4111-a111-111111111111';
+const UUID_2 = '22222222-2222-4222-a222-222222222222';
+const UUID_3 = '33333333-3333-4333-a333-333333333333';
+const CAT_UUID = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa';
 
 // Mock Supabase
 const mockUpdate = vi.fn();

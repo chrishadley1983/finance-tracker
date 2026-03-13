@@ -15,12 +15,20 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+// Mock fetch for review count
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
 describe('Sidebar', () => {
   const mockOnClose = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockPathname.mockReturnValue('/');
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ stats: { total: 0 } }),
+    });
   });
 
   afterEach(() => {
@@ -35,10 +43,12 @@ describe('Sidebar', () => {
       expect(screen.getByText('Accounts')).toBeInTheDocument();
       expect(screen.getByText('Transactions')).toBeInTheDocument();
       expect(screen.getByText('Import')).toBeInTheDocument();
+      expect(screen.getByText('Review')).toBeInTheDocument();
       expect(screen.getByText('Categories')).toBeInTheDocument();
       expect(screen.getByText('Budgets')).toBeInTheDocument();
-      expect(screen.getByText('Wealth')).toBeInTheDocument();
+      expect(screen.getByText('Investments')).toBeInTheDocument();
       expect(screen.getByText('FIRE Calculator')).toBeInTheDocument();
+      expect(screen.getByText('Planning Notes')).toBeInTheDocument();
       expect(screen.getByText('Settings')).toBeInTheDocument();
     });
 
@@ -60,11 +70,11 @@ describe('Sidebar', () => {
       expect(hrefs).toContain('/transactions');
       expect(hrefs).toContain('/import');
       expect(hrefs).toContain('/review');
-      expect(hrefs).toContain('/investments');
       expect(hrefs).toContain('/categories');
       expect(hrefs).toContain('/budgets');
       expect(hrefs).toContain('/wealth');
       expect(hrefs).toContain('/fire');
+      expect(hrefs).toContain('/planning');
       expect(hrefs).toContain('/settings');
     });
   });

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERN SWR Analysis — Hadley Finance</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-tertiary: #374151;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --text-tertiary: #6b7280;
+  --border: #374151;
+  --border-light: #4b5563;
+  --emerald: #10B981;
+  --emerald-dark: #059669;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --orange: #f97316;
+  --grid: rgba(255,255,255,0.06);
+  --tick: #9ca3af;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-primary: #f9fafb;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f3f4f6;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+    --border: #e5e7eb;
+    --border-light: #d1d5db;
+    --grid: rgba(0,0,0,0.05);
+    --tick: #6b7280;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+
+/* Config Panel */
+.config-panel {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.config-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; cursor: pointer; user-select: none;
+}
+.config-header:hover { background: var(--bg-tertiary); }
+.config-title { font-weight: 600; font-size: 15px; }
+.config-summary { font-size: 13px; color: var(--text-secondary); margin-left: 12px; }
+.config-chevron { font-size: 18px; color: var(--text-secondary); transition: transform 0.2s; }
+.config-body { display: none; padding: 0 20px 20px; border-top: 1px solid var(--border); }
+.config-body.open { display: block; padding-top: 16px; }
+.config-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.config-field label {
+  display: block; font-size: 13px; font-weight: 500;
+  color: var(--text-secondary); margin-bottom: 4px;
+}
+.config-field input[type="number"],
+.config-field select {
+  width: 100%; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid var(--border-light); background: var(--bg-tertiary);
+  color: var(--text-primary); font-size: 14px;
+}
+.config-field input[type="range"] { width: 100%; accent-color: var(--emerald); }
+.range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-tertiary); }
+.config-section-title {
+  grid-column: 1 / -1; font-size: 14px; font-weight: 600;
+  color: var(--text-secondary); border-top: 1px solid var(--border);
+  padding-top: 12px; margin-top: 4px;
+}
+.toggle-row { display: flex; flex-wrap: wrap; gap: 16px; grid-column: 1 / -1; }
+.toggle-label {
+  display: flex; align-items: center; gap: 6px; font-size: 13px;
+  color: var(--text-secondary); cursor: pointer;
+}
+.toggle-label input { accent-color: var(--emerald); }
+.run-btn {
+  grid-column: 1 / -1; display: flex; justify-content: flex-end;
+}
+.run-btn button {
+  padding: 10px 20px; border-radius: 8px; border: none;
+  background: var(--emerald); color: white; font-weight: 600;
+  font-size: 14px; cursor: pointer; transition: background 0.2s;
+}
+.run-btn button:hover { background: var(--emerald-dark); }
+
+/* Summary Cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.card {
+  background: var(--bg-secondary); border-radius: 12px; padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3); position: relative; cursor: help;
+}
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.card-title { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+.card-icon { font-size: 18px; }
+.card-value { font-size: 26px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.card-tooltip {
+  display: none; position: absolute; z-index: 10; bottom: 100%; left: 50%;
+  transform: translateX(-50%); margin-bottom: 8px; width: 280px;
+  padding: 12px; background: #1f2937; color: #f9fafb; font-size: 12px;
+  border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); line-height: 1.5;
+}
+.card:hover .card-tooltip { display: block; }
+.clr-emerald { color: var(--emerald); }
+.clr-blue { color: var(--blue); }
+.clr-red { color: var(--red); }
+.clr-yellow { color: var(--yellow); }
+
+/* Takeaways Banner */
+.takeaways-section {
+  background: var(--bg-secondary); border-radius: 12px; padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-bottom: 24px;
+}
+.takeaways-banner {
+  display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+  background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 16px;
+  font-size: 13px; color: var(--text-secondary); font-style: italic;
+}
+.takeaway-item {
+  display: flex; gap: 12px; padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.takeaway-item:last-child { border-bottom: none; }
+.takeaway-badge {
+  flex-shrink: 0; padding: 2px 10px; border-radius: 12px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase; height: fit-content;
+}
+.badge-strong { background: rgba(16,185,129,0.15); color: var(--emerald); }
+.badge-watch { background: rgba(245,158,11,0.15); color: var(--yellow); }
+.badge-idea { background: rgba(59,130,246,0.15); color: var(--blue); }
+.takeaway-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.takeaway-desc { font-size: 13px; color: var(--text-secondary); }
+
+/* Charts */
+.chart-section {
+  background: var(--bg-secondary); border-radius: 12px; padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-bottom: 24px;
+}
+.chart-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.chart-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+.chart-wrap { position: relative; width: 100%; }
+.legend {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;
+  font-size: 11px; color: var(--text-secondary);
+}
+.legend span { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* Conditional Failure Table */
+.table-section {
+  background: var(--bg-secondary); border-radius: 12px; padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-bottom: 24px;
+  overflow-x: auto;
+}
+.cft { width: 100%; border-collapse: collapse; font-size: 13px; }
+.cft th {
+  text-align: center; padding: 8px 10px; font-weight: 500;
+  color: var(--text-secondary); border-bottom: 2px solid var(--border);
+}
+.cft th:first-child { text-align: left; }
+.cft td { text-align: center; padding: 6px 8px; font-family: monospace; font-size: 12px; font-weight: 500; }
+.cft td:first-child { text-align: left; font-family: inherit; font-weight: 600; color: var(--text-primary); }
+.cft td:nth-child(2) { color: var(--text-secondary); }
+.cft tr { border-bottom: 1px solid var(--border); }
+.cft tr:last-child { border-bottom: none; }
+.cf-0 { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+.cf-5 { background: rgba(74,222,128,0.15); color: #86efac; }
+.cf-15 { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.cf-30 { background: rgba(249,115,22,0.15); color: #fb923c; }
+.cf-50 { background: rgba(239,68,68,0.15); color: #fca5a5; }
+@media (prefers-color-scheme: light) {
+  .cf-0 { background: #d1fae5; color: #065f46; }
+  .cf-5 { background: #dcfce7; color: #166534; }
+  .cf-15 { background: #fef3c7; color: #92400e; }
+  .cf-30 { background: #ffedd5; color: #9a3412; }
+  .cf-50 { background: #fee2e2; color: #991b1b; }
+  .card-tooltip { background: #111827; color: #f9fafb; }
+}
+
+/* Explainer */
+.explainer-panel {
+  background: var(--bg-secondary); border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-bottom: 24px;
+  overflow: hidden;
+}
+.explainer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; cursor: pointer;
+}
+.explainer-header:hover { background: var(--bg-tertiary); }
+.explainer-body { display: none; padding: 0 20px 24px; border-top: 1px solid var(--border); }
+.explainer-body.open { display: block; padding-top: 16px; }
+.explainer-body h4 { font-weight: 600; margin-bottom: 8px; margin-top: 20px; }
+.explainer-body h4:first-child { margin-top: 0; }
+.explainer-body p, .explainer-body li { font-size: 14px; color: var(--text-secondary); }
+.explainer-body ul { padding-left: 20px; }
+.explainer-body li { margin-bottom: 4px; }
+.explainer-body .formula {
+  font-family: monospace; background: var(--bg-tertiary);
+  padding: 8px 12px; border-radius: 6px; margin: 8px 0; display: inline-block;
+}
+
+/* Footer */
+.footer { text-align: center; font-size: 11px; color: var(--text-tertiary); padding: 16px 0 8px; }
+
+/* CAPE alert bar */
+.cape-alert {
+  display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+  background: rgba(239,68,68,0.1); border-radius: 8px; margin-bottom: 20px;
+  font-size: 13px; color: var(--red); flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body { padding: 12px; }
+  .cards { grid-template-columns: 1fr 1fr; }
+  .config-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .cards { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<h1>ERN SWR Analysis</h1>
+<p class="subtitle">1,861 monthly real returns (1871-2026) &middot; Exhaustive historical simulation &middot; ERN methodology</p>
+
+<div class="cape-alert" id="capeAlert"></div>
+
+<!-- Config Panel -->
+<div class="config-panel">
+  <div class="config-header" onclick="toggleConfig()">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="config-title">ERN Configuration</span>
+      <span class="config-summary" id="configSummary"></span>
+    </div>
+    <span class="config-chevron" id="configChevron">&#9660;</span>
+  </div>
+  <div class="config-body" id="configBody">
+    <div class="config-grid">
+      <div class="config-field">
+        <label>Portfolio Value</label>
+        <input type="number" id="cfgPortfolio" value="1000000" step="10000">
+      </div>
+      <div class="config-field">
+        <label>Annual Spend</label>
+        <input type="number" id="cfgSpend" value="50000" step="1000">
+      </div>
+      <div class="config-field">
+        <label>Equity: <span id="eqLabel">80</span>%</label>
+        <input type="range" id="cfgEquity" min="40" max="100" value="80" step="5" oninput="document.getElementById('eqLabel').textContent=this.value">
+        <div class="range-labels"><span>40%</span><span>100%</span></div>
+      </div>
+      <div class="config-field">
+        <label>Horizon: <span id="horLabel">50</span> years</label>
+        <input type="range" id="cfgHorizon" min="20" max="60" value="50" step="1" oninput="document.getElementById('horLabel').textContent=this.value">
+        <div class="range-labels"><span>20yr</span><span>60yr</span></div>
+      </div>
+      <div class="config-field">
+        <label>Preserve: <span id="presLabel">50</span>%</label>
+        <input type="range" id="cfgPreserve" min="0" max="100" value="50" step="5" oninput="document.getElementById('presLabel').textContent=this.value">
+        <div class="range-labels"><span>Deplete</span><span>Full preserve</span></div>
+      </div>
+      <div class="config-field">
+        <label>Current Age</label>
+        <input type="number" id="cfgAge" value="40">
+      </div>
+      <div class="config-field">
+        <label>State Pension (annual)</label>
+        <input type="number" id="cfgPension" value="23000" step="1000">
+      </div>
+      <div class="config-field">
+        <label>Pension Start Age</label>
+        <input type="number" id="cfgPensionAge" value="67">
+      </div>
+
+      <div class="config-section-title">Pre-Retirement</div>
+      <div class="config-field">
+        <label>Retirement Age</label>
+        <input type="number" id="cfgRetireAge" value="50">
+      </div>
+      <div class="config-field">
+        <label>Annual Savings</label>
+        <input type="number" id="cfgSavings" value="18000" step="1000">
+      </div>
+      <div class="config-field">
+        <label>Partial Earnings (annual)</label>
+        <input type="number" id="cfgPartialEarn" value="0" step="1000">
+      </div>
+      <div class="config-field">
+        <label>Partial Earnings Years</label>
+        <input type="number" id="cfgPartialYrs" value="0">
+      </div>
+
+      <div class="toggle-row">
+        <label class="toggle-label"><input type="checkbox" id="cfgGogo" checked> Spending decline (go-go/slow-go/no-go)</label>
+        <label class="toggle-label"><input type="checkbox" id="cfgGlide"> Glidepath to 100% equity over 15yr</label>
+        <label class="toggle-label"><input type="checkbox" id="cfgGuard"> Guardrail: cut 15% if portfolio &lt;80% peak</label>
+      </div>
+
+      <div class="run-btn">
+        <button onclick="runAll()">Run Analysis</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards" id="summaryCards"></div>
+
+<!-- Static AI Takeaways -->
+<div class="takeaways-section">
+  <div class="takeaways-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    Example takeaways — no AI model connected in this standalone version
+  </div>
+  <div class="takeaway-item">
+    <span class="takeaway-badge badge-strong">strong</span>
+    <div>
+      <div class="takeaway-title">Monte Carlo survival rate above 95%</div>
+      <div class="takeaway-desc">500 simulated retirement paths show a 96% probability of your portfolio lasting the full horizon. This accounts for state pension income from age 67.</div>
+    </div>
+  </div>
+  <div class="takeaway-item">
+    <span class="takeaway-badge badge-watch">watch</span>
+    <div>
+      <div class="takeaway-title">Withdrawal rate above ERN dynamic rule</div>
+      <div class="takeaway-desc">Your planned withdrawal of 4.05% exceeds the CAPE-adjusted safe rate of 3.03%. The gap means you're relying on favourable sequence of returns.</div>
+    </div>
+  </div>
+  <div class="takeaway-item">
+    <span class="takeaway-badge badge-watch">watch</span>
+    <div>
+      <div class="takeaway-title">Elevated CAPE regime</div>
+      <div class="takeaway-desc">Current CAPE ~39 is in the top 5% of all historical readings. Every historical 4% rule failure started at elevated CAPE.</div>
+    </div>
+  </div>
+  <div class="takeaway-item">
+    <span class="takeaway-badge badge-idea">idea</span>
+    <div>
+      <div class="takeaway-title">Working 2 more years dramatically improves outcomes</div>
+      <div class="takeaway-desc">Retiring at 52 instead of 50 adds &pound;36k in savings and 2 fewer years of withdrawals, reducing your WR from 4.05% to ~3.5%.</div>
+    </div>
+  </div>
+  <div class="takeaway-item">
+    <span class="takeaway-badge badge-strong">strong</span>
+    <div>
+      <div class="takeaway-title">Coast FI already reached</div>
+      <div class="takeaway-desc">With &pound;1.54M in investable assets, compound growth alone would fund retirement at state pension age even with zero further savings.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPE Scatter Chart -->
+<div class="chart-section">
+  <div class="chart-title">Historical Fail-Safe SWR vs Starting CAPE</div>
+  <div class="chart-subtitle">Each dot = one historical cohort. Red dashed = current CAPE. Purple dashed = your withdrawal rate.</div>
+  <div class="chart-wrap" style="height:320px"><canvas id="chartScatter"></canvas></div>
+</div>
+
+<!-- SWR by CAPE Bucket -->
+<div class="chart-section">
+  <div class="chart-title">SWR by CAPE Bucket (fail-safe vs median)</div>
+  <div class="chart-subtitle">Grouped by starting CAPE ratio at retirement</div>
+  <div class="chart-wrap" style="height:220px"><canvas id="chartBucket"></canvas></div>
+</div>
+
+<!-- Monte Carlo Fan -->
+<div class="chart-section">
+  <div class="chart-title">Monte Carlo Fan (500 paths, monthly block-bootstrap)</div>
+  <div class="legend">
+    <span><span class="legend-dot" style="background:rgba(93,202,165,0.12)"></span>5th-95th</span>
+    <span><span class="legend-dot" style="background:rgba(93,202,165,0.3)"></span>25th-75th</span>
+    <span><span class="legend-dot" style="background:#5DCAA5"></span>Median</span>
+    <span><span class="legend-dot" style="background:#E24B4A;opacity:0.5"></span>Worst</span>
+  </div>
+  <div class="chart-wrap" style="height:300px"><canvas id="chartMC"></canvas></div>
+</div>
+
+<!-- CAPE Withdrawal Curve -->
+<div class="chart-section">
+  <div class="chart-title">ERN CAPE-Based Dynamic Withdrawal Rate</div>
+  <div class="chart-subtitle">WR = 1.75% + 0.50 x (100 / CAPE)</div>
+  <div class="chart-wrap" style="height:200px"><canvas id="chartCapeWR"></canvas></div>
+</div>
+
+<!-- Conditional Failure Table -->
+<div class="table-section">
+  <div class="chart-title">Conditional Failure Probability</div>
+  <div class="chart-subtitle">Failure rate (%) by starting CAPE bucket and withdrawal rate — ERN's signature output</div>
+  <div id="cftContainer"></div>
+</div>
+
+<!-- Explainer -->
+<div class="explainer-panel">
+  <div class="explainer-header" onclick="toggleExplainer()">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:18px">&#128214;</span>
+      <span style="font-weight:600">How This Works</span>
+    </div>
+    <span class="config-chevron" id="explainerChevron">&#9660;</span>
+  </div>
+  <div class="explainer-body" id="explainerBody">
+    <h4>Historical Simulation</h4>
+    <p>Tests every possible retirement start date since 1871 using Shiller's monthly real return data (S&P 500 + 10-year Treasury). For each start date, computes the maximum sustainable withdrawal rate (SWR) over your chosen horizon using a closed-form formula from ERN's Safe Withdrawal Rate Series (Part 8).</p>
+    <p style="margin-top:8px">The <strong>fail-safe SWR</strong> is the worst case across all start dates — the withdrawal rate that would have survived every historical scenario. The CAPE-conditional view groups results by starting CAPE ratio to show how valuations at retirement affect outcomes.</p>
+
+    <h4>Monte Carlo Simulation</h4>
+    <p>Runs 500 simulated paths using block-bootstrap resampling (60-month blocks) from historical data. This preserves the autocorrelation and volatility clustering seen in real markets, rather than assuming returns are independent each month.</p>
+    <p style="margin-top:8px"><strong>Survival rate</strong> = percentage of paths where the portfolio stays above &pound;1,000 at the end of the horizon. The fan chart shows the 5th, 25th, 50th, 75th, and 95th percentile outcomes plus the single worst path.</p>
+
+    <h4>CAPE-Based Dynamic Withdrawal Rate</h4>
+    <p>Uses ERN's regression from Parts 18 &amp; 54:</p>
+    <div class="formula">WR = 1.75% + 0.50 &times; (100 / CAPE)</div>
+    <p style="margin-top:8px">This rate adjusts to market conditions — lower when valuations are stretched, higher when they're compressed. Never runs out of money by construction.</p>
+
+    <h4>Spending Rules</h4>
+    <ul>
+      <li><strong>Go-go / slow-go / no-go:</strong> Optional age-based spending decline reflecting reduced activity in later retirement.</li>
+      <li><strong>Guardrail:</strong> Cuts withdrawal by 15% if the portfolio drops below 80% of its peak, providing a safety valve during downturns.</li>
+      <li><strong>State pension offset:</strong> UK state pension reduces the required portfolio withdrawal after pension age, significantly improving survival rates.</li>
+      <li><strong>Partial earnings:</strong> Post-retirement income (consulting, part-time work) offsets withdrawals during the configured period.</li>
+    </ul>
+
+    <h4>Key Assumptions &amp; Limitations</h4>
+    <ul>
+      <li>All returns are <strong>real</strong> (inflation-adjusted). Withdrawal amounts are in today's money.</li>
+      <li>Historical data uses US market returns (Shiller). UK-specific return data is not available at monthly resolution since 1871, but long-run equity premia are similar.</li>
+      <li>UK state pension is assumed to grow with inflation (triple lock maintained in real terms).</li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">Built with ERN methodology &middot; Shiller monthly data 1871&ndash;2026 &middot; Not financial advice</div>
+
+<script>
+// ======================== SHILLER DATA ARRAY (exact from v4) ========================
+const D=[[-118,-253,0],[142,-110,0],[716,420,0],[542,282,0],[119,194,0],[-142,44,0],[335,205,0],[-92,-202,0],[-618,-110,0],[156,45,0],[35,-186,0],[300,45,0],[87,29,0],[220,-120,0],[95,-192,0],[44,37,0],[25,106,0],[135,178,0],[-148,-48,0],[-199,-40,0],[311,258,0],[-280,-260,0],[444,177,0],[129,30,0],[-94,-166,0],[-28,54,0],[-86,54,0],[297,280,0],[213,358,0],[33,46,0],[54,54,0],[-710,54,0],[-595,292,0],[17,375,0],[747,-186,0],[442,-101,0],[359,70,0],[-88,77,0],[-64,226,0],[-120,152,0],[254,316,0],[-14,-8,0],[161,145,0],[218,76,0],[203,232,0],[237,154,0],[-6,75,0],[60,66,0],[38,74,0],[192,74,0],[101,-13,0],[-82,331,0],[26,245,0],[82,73,0],[14,-17,0],[57,162,0],[-102,72,0],[305,153,0],[149,163,0],[348,154,0],[191,46,0],[33,46,0],[-232,140,0],[44,422,0],[265,325,0],[-60,46,0],[-439,-43,0],[-639,-52,0],[-168,-137,0],[-207,-32,0],[-163,-132,0],[-190,-129,0],[-277,309,0],[10,519,0],[-915,-233,0],[-107,-134,0],[-116,612,0],[419,-44,0],[1186,426,0],[792,148,0],[270,44,0],[97,245,0],[18,44,0],[353,349,0],[-59,154,0],[455,258,0],[431,146,0],[418,384,0],[488,272,0],[129,-75,0],[-147,-62,0],[247,44,0],[35,150,0],[134,163,0],[217,277,0],[295,-78,0],[294,-57,0],[-13,152,0],[498,174,0],[493,51,0],[203,154,0],[130,-60,0],[114,50,0],[52,-302,0],[544,-478,0],[31,-462,0],[-276,-248,0],[118,-242,0],[210,58,0],[125,-50,0],[202,461,0],[-480,356,0],[290,255,0],[500,56,0],[399,56,0],[-77,-49,0],[330,56,0],[453,-51,0],[350,-48,0],[739,151,184],[-91,-56,181],[151,31,182],[-99,-66,179],[599,144,188],[160,31,190],[-413,-66,181],[-387,-156,172],[-256,-344,167],[-215,-59,162],[207,137,164],[-248,30,159],[-105,38,156],[-270,-67,151],[29,30,150],[-41,-57,149],[-170,-66,145],[-91,-55,143],[702,116,152],[256,-63,155],[416,303,160],[-134,129,157],[-299,120,151],[199,131,153],[-6,30,152],[-275,-69,147],[272,131,150],[349,121,154],[-24,133,153],[443,336,159],[94,243,159],[-406,30,152],[259,128,154],[-222,30,150],[311,140,154],[-276,-78,149],[-248,30,144],[323,38,148],[13,38,147],[-200,249,143],[-559,245,134],[-351,38,129],[174,153,130],[687,38,138],[-160,142,135],[-156,155,132],[80,257,133],[146,147,134],[-172,37,131],[254,-71,133],[313,270,137],[-89,-76,135],[173,273,137],[247,278,139],[307,-68,143],[610,37,151],[31,151,151],[626,36,159],[572,-77,168],[-270,-189,163],[277,275,166],[230,20,170],[-59,126,168],[30,149,168],[88,271,168],[622,140,178],[68,-98,178],[-21,-117,177],[296,21,181],[288,21,185],[280,13,189],[-340,-94,181],[-310,-217,175],[-161,-102,171],[269,13,174],[263,22,178],[206,22,180],[-133,147,177],[-98,136,174],[-325,-99,167],[22,136,166],[-406,-91,158],[106,-110,159],[-246,-208,154],[6,-85,153],[91,156,154],[-340,46,148],[202,161,150],[290,158,153],[-149,172,150],[172,-78,152],[252,46,156],[285,46,159],[-129,-65,157],[-288,-84,152],[-154,45,149],[603,410,158],[266,143,161],[-46,165,160],[17,29,160],[564,279,169],[204,29,172],[-169,29,168],[167,37,171],[143,-102,173],[-148,29,170],[-58,29,169],[-137,-79,166],[401,279,172],[-77,12,170],[-41,21,169],[243,13,172],[325,-117,177],[-39,21,176],[-39,13,175],[-545,-338,166],[-254,-102,161],[-417,14,154],[-468,255,147],[-195,22,144],[697,142,154],[33,-97,154],[-257,-83,150],[243,-86,154],[122,156,155],[75,274,156],[-12,147,156],[374,30,161],[991,162,177],[34,38,177],[3,150,176],[340,30,182],[484,290,190],[52,22,190],[413,289,197],[158,156,199],[34,22,199],[-19,22,197],[-229,-241,192],[41,-122,192],[-214,23,186],[237,23,190],[-253,-238,184],[-189,-96,180],[-157,-345,176],[-253,-82,171],[-91,284,169],[155,148,171],[-727,171,157],[-188,288,154],[-649,295,143],[205,444,145],[345,-357,150],[204,-98,152],[473,298,159],[-167,182,156],[116,309,157],[321,181,162],[642,337,171],[177,46,174],[-329,46,168],[-93,46,166],[-164,46,162],[127,-236,164],[66,-86,165],[5,332,165],[41,45,165],[84,183,166],[-76,45,165],[-101,21,163],[41,21,163],[42,-396,163],[435,-123,170],[101,-107,172],[208,151,175],[332,168,180],[97,22,182],[-112,22,179],[-303,14,173],[-428,155,165],[70,172,165],[602,184,175],[-122,38,172],[283,201,176],[147,203,178],[-6,181,177],[-613,45,166],[-532,45,157],[565,37,165],[-39,-250,164],[414,-242,170],[-331,37,165],[330,340,170],[-59,28,168],[60,36,169],[-122,186,167],[231,180,170],[503,28,178],[480,28,186],[212,-407,190],[220,-254,193],[-145,187,190],[-322,28,183],[247,36,187],[306,28,192],[-137,-105,189],[-420,44,180],[-139,44,177],[-4,-610,176],[1147,741,195],[222,194,198],[406,51,205],[12,43,204],[-178,42,199],[362,42,205],[494,-106,214],[791,42,229],[122,-248,230],[169,18,232],[22,-102,231],[-390,18,220],[-335,-114,212],[245,-99,215],[142,-119,217],[-447,-343,205],[-149,-112,201],[99,-90,202],[-772,-109,185],[163,26,186],[96,-87,187],[112,34,187],[160,26,189],[-208,279,184],[-149,143,179],[-78,-82,176],[294,143,180],[-310,-90,173],[524,151,181],[823,26,194],[780,166,207],[194,-104,209],[426,150,216],[394,26,223],[1003,138,244],[-472,18,230],[1030,26,252],[-751,-100,231],[40,-112,230],[-132,-89,225],[-80,18,222],[119,-108,223],[-239,-86,216],[364,133,223],[119,18,224],[45,19,224],[258,-94,228],[-115,-105,224],[-137,-91,219],[258,19,223],[414,130,231],[-57,-91,228],[-918,-634,206],[-34,350,204],[-300,-86,196],[422,-96,203],[-26,20,201],[-25,367,198],[-374,20,189],[72,261,189],[-515,20,178],[-420,20,169],[-279,20,163],[-316,-101,156],[-161,151,152],[190,132,154],[508,20,160],[-23,-210,158],[-446,-204,150],[132,148,150],[402,129,155],[62,256,155],[58,29,154],[457,21,160],[265,-90,163],[354,-92,167],[624,21,176],[338,-204,180],[130,29,181],[250,21,184],[470,29,191],[437,157,198],[-92,29,194],[-359,146,186],[149,29,187],[345,29,192],[291,-71,195],[171,138,197],[170,37,199],[-132,-79,194],[155,-82,195],[375,29,201],[-42,13,198],[-215,13,192],[-105,13,188],[-336,-92,180],[164,13,181],[106,352,182],[532,-211,189],[232,-92,192],[-478,-204,181],[124,-99,181],[-157,-87,176],[-151,116,172],[-483,-196,162],[-844,135,146],[89,15,146],[-506,-193,137],[-383,-85,131],[428,15,135],[-706,15,125],[-59,24,123],[-1125,-81,108],[-130,442,105],[800,242,113],[590,120,119],[-199,158,115],[463,40,119],[468,-76,124],[587,40,130],[59,40,130],[305,-63,133],[473,32,138],[-68,40,137],[49,-74,136],[610,-62,144],[151,-72,145],[183,152,147],[-357,-88,141],[175,23,143],[271,-191,146],[270,-73,149],[104,-83,150],[179,24,152],[180,-79,154],[-60,-80,152],[-121,-170,149],[-114,-77,147],[62,-74,147],[-88,116,145],[-320,25,140],[92,-156,140],[-290,-64,135],[62,224,135],[-355,116,130],[-464,25,123],[392,135,127],[216,128,129],[816,331,139],[238,231,141],[-237,33,137],[286,25,140],[546,359,147],[-185,-78,143],[331,357,147],[258,33,150],[242,33,153],[-114,-88,150],[-730,-274,139],[-605,-75,130],[103,33,130],[561,143,137],[188,125,139],[-45,-66,137],[-152,-107,135],[123,-192,136],[55,-287,136],[31,2,136],[135,104,137],[52,3,138],[176,-90,139],[-11,-91,139],[20,4,139],[-71,4,137],[-219,116,133],[-144,-97,131],[-312,53,126],[-145,61,124],[34,53,124],[-127,164,122],[-554,-50,114],[82,-42,115],[316,52,118],[41,-49,118],[-270,60,114],[-303,-48,110],[138,160,111],[460,51,116],[281,128,119],[-143,35,116],[-94,129,115],[6,-74,114],[-3,35,114],[-603,-73,106],[-149,-170,104],[47,35,105],[146,126,106],[-52,-71,105],[-289,135,101],[225,27,103],[12,152,103],[409,145,107],[692,-49,114],[-287,-56,110],[158,51,111],[7,51,111],[469,42,115],[414,50,120],[492,-56,125],[288,-47,128],[59,42,128],[-214,-47,125],[-99,26,123],[-86,-78,121],[-160,-69,119],[169,-76,120],[48,-67,120],[-94,18,117],[30,-73,117],[268,-154,119],[173,-159,120],[98,-148,120],[-439,-59,114],[-270,-66,109],[-751,-239,100],[365,12,103],[-568,-465,96],[-434,-137,91],[104,-142,91],[-65,169,90],[-385,-141,85],[-633,-213,79],[-614,-135,73],[-760,21,67],[-401,-133,64],[457,-201,66],[309,-25,67],[-57,110,66],[-162,-96,65],[178,-170,65],[-53,-91,65],[-119,-228,63],[-37,-150,63],[-178,-146,61],[293,-150,62],[126,-139,63],[-259,-84,61],[-4,46,61],[285,191,62],[237,-116,63],[203,-174,64],[619,-112,68],[319,7,70],[77,-273,70],[-784,-162,64],[151,-48,65],[385,-158,67],[-460,-208,64],[-452,-203,61],[-258,-198,59],[-872,-70,54],[648,-68,58],[-325,-263,56],[-715,-112,51],[-262,-110,50],[90,82,50],[-100,281,50],[568,184,53],[118,84,53],[-405,85,51],[-650,241,47],[724,246,51],[314,428,52],[-143,145,51],[215,209,53],[597,317,56],[-691,154,52],[-26,31,52],[-62,95,51],[427,210,53],[195,86,54],[656,152,58],[469,143,61],[277,331,62],[273,36,64],[553,148,68],[659,36,72],[439,28,75],[-46,28,75],[59,-24,76],[550,157,80],[307,28,82],[205,-24,84],[-508,-32,80],[-34,-23,79],[246,88,81],[475,60,85],[208,52,87],[-362,-8,83],[-425,60,80],[-388,0,76],[-397,-66,73],[163,118,74],[57,-8,74],[-151,0,73],[354,50,75],[392,58,78],[379,50,80],[154,108,81],[-84,100,80],[-121,109,79],[18,49,79],[242,41,80],[454,-10,83],[455,108,87],[-106,-18,85],[-138,-10,84],[609,49,88],[526,-18,93],[459,48,96],[188,98,98],[-275,-10,95],[-3,106,94],[307,-18,97],[107,-75,98],[206,-66,99],[179,39,101],[275,47,103],[373,39,107],[180,-120,108],[261,95,111],[193,47,113],[56,55,113],[-585,111,107],[-290,-10,104],[173,111,105],[582,111,112],[586,168,118],[500,111,124],[137,-4,126],[-239,-4,124],[117,-12,126],[271,52,130],[90,167,131],[297,86,136],[256,86,140],[288,28,144],[328,-30,150],[55,-86,151],[441,210,158],[634,86,168],[545,-30,178],[-173,-30,175],[325,86,181],[272,28,186],[77,28,188],[33,129,188],[575,4,199],[666,12,212],[284,-46,218],[-400,71,209],[109,13,210],[359,5,217],[614,-103,230],[296,72,235],[708,5,251],[129,72,253],[770,14,270],[81,54,271],[265,105,276],[29,113,275],[120,-14,277],[161,-6,279],[794,-71,299],[596,53,314],[425,52,325],[-1032,44,289],[-2619,52,211],[498,102,220],[242,110,223],[727,86,237],[474,79,245],[606,-32,258],[-509,79,243],[-923,87,218],[-58,140,215],[-30,88,213],[-26,-33,210],[-1285,80,182],[-623,89,169],[-444,207,160],[485,154,167],[951,131,181],[303,68,185],[-850,77,168],[-798,135,154],[-140,137,150],[385,5,155],[-249,5,150],[-1381,72,128],[-1217,73,111],[343,150,114],[-1755,75,93],[120,216,93],[134,197,93],[184,126,94],[-2270,126,71],[-1006,201,63],[-1179,128,55],[614,53,58],[5000,136,88],[1116,128,97],[-1259,128,84],[39,128,84],[-193,129,82],[618,208,87],[-987,202,78],[112,115,78],[1124,43,87],[2931,35,112],[1665,-36,131],[515,-264,137],[-537,-41,130],[-49,43,129],[-938,34,117],[280,42,120],[232,34,122],[609,42,130],[694,-26,139],[-480,50,132],[202,42,135],[-983,49,121],[94,-26,122],[-436,41,117],[-351,49,113],[-345,-99,109],[196,123,111],[321,48,114],[181,115,116],[-107,-100,115],[-333,-42,110],[-593,31,104],[715,-34,111],[826,31,119],[493,104,125],[560,31,132],[710,31,141],[243,31,144],[299,31,148],[892,-34,161],[30,30,161],[583,30,170],[604,22,181],[316,87,186],[42,22,187],[-501,22,177],[383,-50,183],[548,-58,193],[158,-49,196],[146,22,198],[557,22,209],[312,22,215],[-138,14,211],[273,-49,216],[331,30,222],[-47,-40,220],[-627,-40,205],[-474,-40,194],[-332,30,187],[565,-39,196],[142,30,198],[-1436,-39,168],[-1409,30,143],[-763,99,131],[-32,99,130],[468,171,135],[-111,108,132],[-602,29,123],[-413,-34,117],[226,108,119],[292,29,122],[2046,37,147],[104,36,149],[-410,28,142],[1238,108,160],[43,36,161],[-258,28,157],[-116,36,156],[26,100,156],[27,36,157],[-1160,100,139],[410,27,145],[217,27,148],[284,27,152],[-106,35,151],[870,-186,164],[212,98,168],[-140,27,166],[-196,35,162],[57,99,163],[-94,-37,162],[-14,34,161],[142,34,163],[-1334,42,141],[-874,-38,128],[462,105,133],[266,33,136],[476,33,142],[147,33,143],[285,41,146],[-427,-39,139],[72,32,139],[-572,-16,130],[47,-94,129],[-322,-85,124],[-227,-84,120],[198,-218,121],[572,-22,127],[-126,-148,124],[-47,-146,122],[-469,-144,115],[-470,-85,109],[-649,-77,100],[130,-139,101],[-310,-43,96],[-596,-105,90],[-406,-42,85],[61,-102,85],[574,20,89],[373,-41,91],[-57,-48,90],[165,21,90],[667,-99,96],[154,-39,96],[45,-39,96],[650,21,101],[643,21,107],[220,-154,108],[259,-95,110],[377,-37,113],[218,21,115],[306,70,117],[-398,79,112],[197,-37,113],[-50,21,111],[-420,21,106],[177,21,107],[367,21,110],[-24,29,109],[324,29,112],[-187,-29,109],[220,28,111],[455,-29,115],[244,-28,117],[-105,20,115],[-122,28,113],[288,28,115],[-28,28,114],[202,-28,116],[339,28,119],[374,36,123],[32,28,123],[290,28,126],[358,-21,130],[106,-76,131],[-169,27,128],[71,27,129],[718,35,138],[451,27,143],[361,35,148],[146,-29,150],[430,34,156],[114,74,157],[-374,-99,151],[619,-44,160],[-2,-36,160],[-140,-89,157],[-796,-546,145],[-357,-188,139],[-1526,-80,118],[-376,-174,113],[-236,-224,111],[244,-82,113],[92,19,114],[427,3,119],[-543,-172,112],[-329,3,109],[-136,11,107],[346,-42,110],[574,-79,117],[-287,-130,113],[-429,-214,108],[304,12,111],[-115,-39,109],[-238,-116,106],[-212,-122,104],[-363,114,100],[236,71,101],[637,-140,107],[489,-14,112],[372,-55,115],[-316,-95,111],[-288,-5,107],[-67,28,105],[362,69,108],[-431,110,102],[27,69,101],[206,69,102],[-251,103,98],[150,19,99],[0,-23,97],[24,61,96],[-530,-23,90],[716,104,96],[374,-31,98],[145,-23,98],[403,104,101],[154,-23,102],[413,104,105],[307,62,107],[253,3,109],[95,-39,109],[339,4,111],[348,-38,114],[174,-38,115],[-787,-120,105],[578,-86,110],[370,-36,113],[389,-77,116],[-1,-36,115],[-99,-115,113],[632,-152,119],[310,-104,121],[-149,-25,118],[193,14,119],[24,-25,118],[-114,14,116],[236,22,117],[496,14,122],[234,-63,124],[-37,-24,123],[-301,-62,118],[321,-24,121],[384,14,125],[-58,91,123],[75,6,123],[-17,-23,122],[46,15,122],[286,-23,124],[259,-60,126],[88,7,126],[-111,15,124],[-162,15,121],[366,7,124],[450,15,129],[137,53,130],[-40,86,128],[58,10,128],[-447,-25,121],[63,-189,121],[-347,-60,116],[191,170,117],[52,-29,117],[-411,89,111],[314,154,113],[309,43,116],[184,94,117],[303,110,120],[268,29,122],[258,101,124],[484,121,129],[403,-82,133],[122,12,133],[446,84,138],[240,-29,140],[312,41,143],[272,-20,146],[431,-20,151],[535,34,157],[217,-59,159],[371,-10,164],[-44,-2,162],[381,-34,166],[-8,15,165],[615,7,173],[725,-110,184],[-30,-32,182],[443,-12,188],[-472,97,177],[707,16,188],[162,5,189],[-238,73,182],[96,72,182],[721,-72,193],[111,-188,193],[-319,77,185],[-99,8,181],[498,-136,188],[8,-114,186],[-344,-49,178],[-132,24,174],[-72,-92,171],[143,-87,172],[-186,134,167],[-434,88,158],[125,-64,159],[228,-63,161],[379,-102,166],[159,-165,167],[160,-142,168],[-520,33,158],[-374,41,151],[-590,-7,141],[-214,197,137],[32,439,136],[161,52,137],[70,58,137],[171,11,139],[54,70,139],[356,-8,143],[273,-16,146],[272,-193,149],[441,-212,155],[294,-146,159],[436,-1,165],[297,45,169],[252,-31,173],[390,-130,179],[-92,116,177],[281,9,182],[159,-105,184],[177,-118,186],[-95,-22,184],[387,-46,190],[-32,13,189],[-403,-197,181],[-16,124,180],[67,38,180],[346,-90,186],[-114,49,183],[-393,189,175],[-107,229,172],[124,-22,174],[-62,-20,172],[364,162,178],[-220,235,173],[149,112,175],[-272,32,170],[-233,-107,166],[354,0,171],[269,105,175],[543,32,184],[437,80,192],[340,64,198],[292,-1,203],[126,88,206],[-108,-105,203],[-69,-66,201],[419,-30,209],[-87,48,207],[135,81,209],[478,17,218],[116,-63,220],[-349,18,212],[157,33,214],[34,122,214],[-327,71,206],[-718,8,190],[-1141,0,168],[238,-80,171],[302,57,175],[-92,0,173],[-285,73,167],[720,41,178],[463,81,185],[415,56,192],[160,-40,194],[-44,-8,192],[498,1,201],[227,65,205],[-11,-48,203],[-154,-23,199],[303,50,204],[289,-31,209],[18,-22,208],[-30,26,207],[207,-6,210],[333,2,216],[148,51,218],[207,-21,221],[170,27,224],[122,59,225],[-67,27,223],[363,-14,229],[-91,67,226],[164,-5,228],[197,43,232],[62,35,232],[-149,11,227],[282,27,232],[98,19,233],[2,3,232],[124,11,234],[173,27,237],[-511,-28,223],[10,43,223],[212,-5,226],[360,3,233],[217,-44,237],[108,-44,239],[-52,-130,236],[198,46,240],[-105,-199,237],[-416,-23,226],[268,74,231],[-501,16,218],[-86,-15,215],[-29,-158,213],[-634,-179,199],[-322,76,191],[-117,117,188],[532,-78,197],[72,299,197],[413,248,204],[373,-2,210],[232,80,214],[168,-32,216],[175,-199,219],[-129,-125,215],[169,-100,218],[155,-83,220],[135,-2,222],[-20,-129,220],[-317,-199,212],[281,58,217],[-60,124,215],[-454,-7,204],[-184,-126,199],[735,98,212],[226,-166,216],[235,110,220],[-52,165,217],[-221,81,211],[321,-15,216],[214,-107,220],[150,-78,222],[100,-244,222],[-425,14,211],[-80,-125,209],[-273,-119,202],[171,100,204],[323,-96,209],[-549,-201,197],[-472,-119,186],[-82,26,184],[36,-346,184],[80,54,184],[46,-26,184],[-553,-400,173],[-85,-75,170],[-370,450,163],[148,143,165],[-350,-274,158],[-1143,-379,139],[-78,70,138],[1,316,137],[326,6,141],[578,123,148],[197,58,150],[-30,400,149],[662,365,158],[411,173,164],[389,130,170],[257,353,174],[342,-81,179],[-160,-447,175],[-232,-124,170],[-71,-138,168],[-176,151,165],[249,407,168],[-210,194,164],[-437,145,156],[664,-96,166],[442,33,172],[159,-103,174],[237,34,178],[102,-69,179],[-101,75,176],[28,43,176],[-98,3,174],[354,-53,179],[-144,-244,176],[-6,63,175],[501,190,183],[207,-35,186],[75,-50,187],[-400,-160,178],[-226,-93,174],[-231,18,169],[-323,-156,163],[-265,-51,158],[98,-149,158],[-338,-331,152],[177,287,154],[332,209,159],[-746,38,146],[-741,-17,134],[83,-228,135],[-371,-46,129],[326,-266,133],[-521,-221,125],[-390,-117,120],[-36,13,118],[-1206,-233,103],[-492,-238,98],[-1108,-52,86],[138,79,87],[294,162,89],[-682,185,82],[822,-32,89],[997,73,97],[458,-248,101],[111,-372,102],[611,147,108],[213,151,110],[-68,-204,109],[-717,-223,100],[-140,-9,99],[440,246,103],[130,66,104],[-154,71,102],[935,256,111],[380,-11,115],[62,95,116],[74,164,116],[-109,-278,115],[37,44,115],[213,36,117],[-108,60,116],[208,173,118],[-360,154,113],[-53,140,112],[344,361,116],[-104,-265,114],[-336,-185,110],[-72,-62,109],[-201,50,106],[-43,-60,105],[24,139,105],[79,-29,105],[-240,-28,102],[-149,77,100],[-251,-115,97],[50,-34,97],[-40,-57,96],[-400,-215,92],[-160,-53,90],[-52,-20,89],[401,-99,92],[453,-184,96],[-40,-126,95],[-82,-149,94],[684,209,100],[-35,-14,99],[-364,-194,95],[-586,-108,89],[147,-130,90],[327,-85,92],[-220,-41,90],[132,-41,90],[127,-86,91],[-312,-106,87],[129,235,88],[32,-68,88],[402,-84,91],[46,-270,91],[-412,-772,86],[-124,-285,85],[332,189,87],[186,-379,88],[294,-1321,90],[-1014,-316,80],[-226,1007,78],[401,1019,81],[570,292,85],[497,-294,88],[276,-662,90],[198,-317,92],[235,-190,93],[376,-723,96],[-216,-115,93],[-79,240,92],[-406,-490,88],[344,97,90],[61,-404,90],[-238,-298,88],[-3,528,87],[-308,-639,84],[4,-482,84],[-918,-274,75],[151,242,76],[272,1497,78],[86,-184,78],[-510,-612,73],[-222,217,71],[-264,587,69],[503,65,72],[-37,219,71],[-644,-549,66],[-27,346,66],[59,806,66],[1187,663,74],[855,1212,80],[471,400,83],[177,137,84],[371,131,87],[203,-131,89],[387,257,92],[346,103,95],[379,42,98],[145,-319,100],[31,-372,100],[-270,-310,97],[280,208,99],[35,155,100],[-134,-44,98],[-22,-24,98],[98,166,98],[-557,-87,93],[25,-304,93],[2,-193,93],[-54,-546,92],[-213,-37,90],[-129,234,88],[879,583,96],[92,217,96],[-69,363,96],[129,573,96],[-70,152,96],[450,173,100],[529,-56,104],[-85,-221,103],[55,394,104],[235,520,106],[223,613,108],[206,-54,110],[-203,51,107],[-216,26,104],[112,153,105],[613,425,111],[501,469,116],[48,105,117],[599,497,123],[667,858,131],[293,468,135],[22,-294,135],[257,-62,138],[-180,465,136],[210,146,138],[-290,-209,134],[-18,69,134],[344,197,138],[162,163,140],[600,20,149],[608,-113,158],[391,16,164],[-138,-606,162],[-18,-439,161],[413,204,168],[285,4,173],[590,-229,183],[-354,-505,176],[-1208,-28,155],[-1238,598,135],[-133,-30,133],[398,304,139],[306,413,143],[279,-102,146],[-139,-260,144],[-252,-257,140],[555,168,147],[-72,-80,146],[-213,-126,142],[125,232,143],[346,185,148],[-210,-63,144],[216,-62,147],[300,42,150],[288,-29,154],[-73,-132,153],[289,156,156],[353,274,161],[315,512,166],[255,252,170],[453,-21,177],[14,-28,177],[-19,164,176],[-204,154,172],[258,74,176],[-321,-330,170],[-298,-186,165],[215,-80,168],[4,-104,168],[361,74,173],[262,242,178],[-21,40,177],[-870,-243,161],[-513,-122,153],[-290,149,148],[276,314,151],[459,318,158],[-127,0,156],[1144,244,173],[289,-157,178],[211,109,181],[-47,13,180],[5,-130,180],[63,62,181],[238,335,185],[-74,221,183],[4,145,183],[-28,121,182],[86,318,184],[720,92,197],[-96,-225,195],[-151,-149,192],[12,96,193],[192,120,196],[-168,129,193],[170,374,196],[66,228,197],[10,162,197],[-153,-118,193],[261,-183,198],[334,144,204],[-35,142,203],[137,291,205],[180,240,208],[-162,30,204],[58,-20,205],[73,100,206],[6,170,205],[148,124,208],[114,282,209],[82,27,211],[-6,-274,210],[89,8,211],[146,36,214],[-42,-162,212],[-176,-391,208],[-348,-351,200],[99,-117,202],[77,90,202],[-79,-127,200],[267,68,205],[55,-142,205],[-51,-168,204],[-50,-125,202],[-102,186,199],[204,49,202],[341,272,208],[222,244,211],[288,138,216],[314,382,222],[298,403,227],[355,-37,233],[25,-142,232],[352,266,239],[58,147,239],[243,145,243],[346,232,250],[-42,37,247],[556,-113,259],[-71,-369,256],[-19,-178,254],[216,-149,258],[122,-86,259],[-366,70,248],[288,222,254],[170,-128,256],[379,264,264],[485,299,275],[120,-28,277],[293,-202,283],[403,151,292],[-87,-187,288],[-352,-117,275],[929,208,299],[521,219,312],[560,257,327],[16,-31,325],[94,99,326],[139,170,329],[-109,176,323],[276,118,330],[5,245,328],[620,4,347],[512,-36,363],[322,36,372],[-40,20,369],[-1,155,368],[434,66,382],[-708,129,354],[-501,456,335],[104,239,337],[1098,-202,373],[417,190,388],[479,-42,405],[-19,-197,404],[261,-172,413],[350,11,427],[-10,-245,425],[-61,-242,421],[421,107,438],[-400,-96,419],[-107,18,413],[-145,-120,405],[704,109,432],[281,-150,442],[-42,-280,437],[-305,108,421],[309,178,432],[136,262,435],[-295,-321,419],[262,272,427],[62,68,427],[94,226,428],[-159,20,419],[-538,79,393],[-83,58,387],[-326,438,372],[-18,44,369],[-253,51,358],[-929,187,323],[5,-198,321],[640,-202,340],[-255,116,330],[-239,104,321],[-205,260,314],[-1164,188,276],[353,202,285],[523,-9,300],[187,-275,305],[-52,60,302],[-373,106,290],[436,-310,302],[-405,44,290],[-282,83,281],[-597,221,263],[-1086,254,234],[80,316,235],[-492,330,223],[-153,-40,219],[663,-55,233],[-81,72,231],[-66,-26,229],[-713,76,212],[70,44,213],[552,-67,224],[548,362,235],[559,211,248],[49,-503,248],[-54,-380,246],[283,148,252],[214,30,256],[149,55,259],[318,71,266],[443,82,276],[54,36,276],[-219,168,268],[65,-415,269],[-313,-316,259],[253,0,264],[-208,240,257],[-144,208,251],[257,134,256],[-42,6,254],[472,-43,264],[311,40,271],[-155,22,265],[110,17,267],[-103,-305,263],[-306,98,254],[144,207,256],[213,141,260],[134,-156,262],[-20,-80,261],[-93,-38,257],[-282,-193,248],[480,54,259],[256,135,264],[70,1,264],[-22,-103,262],[93,-136,263],[-5,-260,261],[-127,-104,256],[-290,23,247],[42,29,247],[209,190,250],[304,219,256],[418,86,265],[216,158,269],[200,55,272],[39,-152,272],[106,18,273],[-335,76,262],[351,-130,269],[277,-70,275],[15,-259,274],[60,125,274],[-402,324,261],[279,131,267],[277,8,273],[-537,281,257],[131,81,259],[-709,271,240],[-185,2,235],[-346,127,226],[362,-166,233],[171,-212,237],[-520,-242,224],[-657,53,209],[252,170,214],[-471,207,203],[-1938,36,163],[-683,456,152],[69,1032,153],[-152,-103,151],[-717,-307,141],[-592,39,133],[1204,-89,149],[635,-292,160],[199,-399,163],[143,175,166],[788,-17,180],[358,175,188],[230,27,193],[202,13,198],[240,-106,203],[101,-116,205],[-292,61,199],[551,-42,210],[391,-82,218],[-596,368,204],[-345,214,197],[-18,177,196],[73,259,197],[331,56,203],[445,98,212],[245,-159,217],[354,-418,224],[298,-100,229],[264,-172,234],[-207,68,229],[157,-76,231],[19,213,230],[-356,173,221],[301,16,226],[-1064,556,200],[-94,259,197],[324,-99,201],[186,138,203],[181,66,205],[433,-19,212],[371,-28,218],[211,-218,220],[-34,83,217],[-297,230,209],[-101,174,205],[309,102,210],[282,-162,214],[256,-62,217],[-18,-6,215],[-237,143,209],[246,-15,212],[396,-167,219],[150,-121,220],[246,7,224],[156,187,226],[439,-139,234],[-135,-303,229],[321,-209,234],[13,-118,233],[108,-45,234],[238,202,238],[408,-38,246],[153,-120,248],[59,19,248],[-49,107,245],[207,-49,249],[-13,-2,247],[118,107,249],[301,-29,255],[154,74,258],[-26,134,256],[170,-75,259],[-240,231,251],[628,49,266],[121,173,267],[-64,331,264],[239,-107,270],[-54,-91,267],[68,76,267],[47,-242,268],[-78,-144,265],[-8,51,263],[-229,153,256],[-435,34,245],[436,102,254],[315,-114,262],[-76,69,259],[-657,122,242],[-63,257,240],[591,-116,253],[235,32,259],[-71,-25,256],[74,118,258],[347,142,266],[111,-45,269],[-68,-67,267],[-63,-103,265],[136,-274,268],[391,-265,278],[85,10,280],[226,-3,286],[167,-36,290],[-45,135,289],[161,11,293],[168,98,297],[106,-79,300],[-5,77,299],[112,-26,301],[280,-103,309],[159,27,313],[295,-14,320],[429,-178,333],[-332,-247,320],[-16,17,318],[-206,-40,309],[154,-105,312],[195,65,316],[157,40,318],[240,18,323],[156,-75,326],[-402,-112,310],[-175,84,302],[-526,291,282],[154,100,283],[538,4,295],[138,54,295],[318,0,301],[-174,104,292],[139,290,292],[365,344,299],[-313,14,287],[301,-50,292],[-22,-17,288],[449,-60,298],[257,-16,303],[295,56,309],[-15,195,307],[-1874,539,248],[502,244,259],[589,-2,273],[593,-97,288],[296,43,296],[556,-50,311],[-76,-32,308],[168,-86,312],[402,-51,324],[416,-50,337],[236,-154,345],[193,-189,351],[11,-338,350],[516,-92,367],[-4,-50,365],[87,0,367],[258,124,374],[197,22,379],[-35,-88,376],[-38,-238,372],[423,-20,385],[-4,54,383],[-287,-302,369],[-378,-211,352],[-220,-274,342],[-44,-531,338],[-888,-205,306],[-468,-301,290],[48,219,290],[649,28,307],[-748,-492,282],[-348,-378,270],[539,115,283],[32,280,283],[57,22,283],[258,-201,289],[-285,76,279],[342,134,287],[48,-84,287],[460,-146,299],[355,-108,308],[-122,-193,304],[126,94,308],[-742,-393,295],[887,182,308],[430,333,315],[138,-79,323],[369,-81,334],[431,1,342],[-441,-346,331],[459,129,340],[364,180,353],[107,108,356],[130,300,360],[301,123,368],[-108,-284,365],[556,-111,380],[-261,-210,373],[231,-50,380],[-153,147,375],[-188,86,369],[-468,100,350],[228,-20,355],[257,100,363],[165,59,368],[-90,139,365],[332,177,378],[239,-223,385],[233,-61,392],[-163,-140,388],[231,61,395],[-162,61,390]];
+
+// ======================== COMPUTATION FUNCTIONS (from v4) ========================
+function computeSWR(si, eq, T, F, glide) {
+  if (si + T > D.length) return null;
+  let cr = 1, sinv = 1;
+  for (let t = 0; t < T; t++) {
+    const m = si + t;
+    let e = eq;
+    if (glide) e = Math.min(1, eq + (1 - eq) * Math.min(1, t / 180));
+    const r = e * D[m][0] / 10000 + (1 - e) * D[m][1] / 10000;
+    cr *= (1 + r);
+    if (t < T - 1) sinv += 1 / cr;
+  }
+  if (cr <= 0 || sinv <= 0) return null;
+  const w = (cr - F) / (cr * sinv);
+  return w > 0 ? w * 12 * 100 : 0;
+}
+
+function runMC(port, spend, eq, Tmo, glide, spMo, pStart, gogo, guard, N) {
+  const bs = 60, mx = D.length - bs;
+  const paths = []; let sd = 42;
+  const rn = () => { sd = (sd * 16807 + 0) % 2147483647; return sd / 2147483647; };
+  const wMo = spend / 12;
+  for (let s = 0; s < N; s++) {
+    let p = port, pk = port; const v = [];
+    let bOff = Math.floor(rn() * mx);
+    for (let t = 0; t < Tmo; t++) {
+      if (t % bs === 0) bOff = Math.floor(rn() * mx);
+      const mi = bOff + (t % bs);
+      let e = eq; if (glide) e = Math.min(1, eq + (1 - eq) * Math.min(1, t / 180));
+      const r = e * D[mi][0] / 10000 + (1 - e) * D[mi][1] / 10000;
+      let w = wMo;
+      if (gogo) { const yr = t / 12; if (yr <= 30) w *= 1.2; else if (yr > 40) w *= 0.75; }
+      if (t >= pStart) w = Math.max(0, w - spMo);
+      if (guard && p < pk * 0.8) w *= 0.85;
+      pk = Math.max(pk, p);
+      p = Math.max(0, (p - w) * (1 + r));
+      if (t % 12 === 0) v.push(p);
+    }
+    paths.push(v);
+  }
+  return paths;
+}
+
+// ======================== ADDITIONAL FUNCTIONS ========================
+function computeErnDynamicWr(cape) {
+  if (cape <= 0) return 0;
+  return Math.min(1.75 + 0.50 * (100 / cape), 10);
+}
+
+function computeConditionalFailureTable(cohorts, wrRates) {
+  wrRates = wrRates || [2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0];
+  const bucketDefs = [
+    { label: 'All', min: 0, max: Infinity },
+    { label: '<15', min: 0, max: 15 },
+    { label: '15-20', min: 15, max: 20 },
+    { label: '20-25', min: 20, max: 25 },
+    { label: '25-30', min: 25, max: 30 },
+    { label: '30+', min: 30, max: Infinity }
+  ];
+  return {
+    wrRates: wrRates,
+    rows: bucketDefs.map(function(bd) {
+      var inBucket = bd.label === 'All'
+        ? cohorts
+        : cohorts.filter(function(c) { return c.cape >= bd.min && c.cape < bd.max; });
+      var count = inBucket.length;
+      var failureRates = {};
+      wrRates.forEach(function(wr) {
+        if (count === 0) { failureRates[wr.toFixed(2)] = 0; }
+        else {
+          var failures = inBucket.filter(function(c) { return c.swr < wr; }).length;
+          failureRates[wr.toFixed(2)] = +((failures / count) * 100).toFixed(1);
+        }
+      });
+      return { label: bd.label, count: count, failureRates: failureRates };
+    })
+  };
+}
+
+// ======================== CHART INSTANCES ========================
+let ch1 = null, ch2 = null, ch3 = null, ch4 = null;
+
+// ======================== HELPERS ========================
+const fmt = v => v >= 1e6 ? '\u00a3' + (v / 1e6).toFixed(1) + 'M' : v >= 1e3 ? '\u00a3' + Math.round(v / 1e3) + 'k' : '\u00a3' + Math.round(v);
+const fmtCurrency = v => '\u00a3' + Number(v).toLocaleString('en-GB');
+
+function getConfig() {
+  return {
+    portfolio: +document.getElementById('cfgPortfolio').value,
+    spend: +document.getElementById('cfgSpend').value,
+    equity: +document.getElementById('cfgEquity').value / 100,
+    horizon: +document.getElementById('cfgHorizon').value,
+    preserve: +document.getElementById('cfgPreserve').value / 100,
+    age: +document.getElementById('cfgAge').value,
+    pension: +document.getElementById('cfgPension').value,
+    pensionAge: +document.getElementById('cfgPensionAge').value,
+    retireAge: +document.getElementById('cfgRetireAge').value,
+    savings: +document.getElementById('cfgSavings').value,
+    partialEarn: +document.getElementById('cfgPartialEarn').value,
+    partialYrs: +document.getElementById('cfgPartialYrs').value,
+    gogo: document.getElementById('cfgGogo').checked,
+    glide: document.getElementById('cfgGlide').checked,
+    guard: document.getElementById('cfgGuard').checked
+  };
+}
+
+function updateConfigSummary() {
+  const c = getConfig();
+  const wr = c.portfolio > 0 ? (c.spend / c.portfolio * 100).toFixed(2) : '0';
+  document.getElementById('configSummary').textContent =
+    fmtCurrency(c.portfolio) + ' portfolio | ' + fmtCurrency(c.spend) + '/yr (' + wr + '% WR) | ' +
+    Math.round(c.equity * 100) + '/' + Math.round((1 - c.equity) * 100) + ' equity/bond | ' +
+    c.horizon + 'yr horizon' +
+    (c.retireAge > c.age ? ' | retire at ' + c.retireAge : '');
+}
+
+function toggleConfig() {
+  const body = document.getElementById('configBody');
+  const chev = document.getElementById('configChevron');
+  body.classList.toggle('open');
+  chev.innerHTML = body.classList.contains('open') ? '&#9650;' : '&#9660;';
+}
+
+function toggleExplainer() {
+  const body = document.getElementById('explainerBody');
+  const chev = document.getElementById('explainerChevron');
+  body.classList.toggle('open');
+  chev.innerHTML = body.classList.contains('open') ? '&#9650;' : '&#9660;';
+}
+
+function getCellClass(rate) {
+  if (rate === 0) return 'cf-0';
+  if (rate < 5) return 'cf-5';
+  if (rate < 15) return 'cf-15';
+  if (rate < 30) return 'cf-30';
+  return 'cf-50';
+}
+
+// ======================== MAIN ANALYSIS ========================
+function runAll() {
+  const c = getConfig();
+  updateConfigSummary();
+
+  // Accumulation: project portfolio forward to retirement age
+  let port = c.portfolio;
+  const yearsToRetire = Math.max(0, c.retireAge - c.age);
+  if (yearsToRetire > 0) {
+    // Use CAPE-implied return for accumulation projection
+    const capeReturn = 1 / 39; // ~2.56% real at CAPE 39
+    for (let y = 0; y < yearsToRetire; y++) {
+      port = (port + c.savings) * (1 + capeReturn);
+    }
+  }
+
+  const currentCape = 39;
+  const wr = c.spend / port * 100;
+  const ernWr = computeErnDynamicWr(currentCape);
+  const T = c.horizon * 12;
+  const cs = 119; // first index with CAPE data
+  const lv = D.length - T;
+
+  // Historical SWR computation
+  const swrs = [];
+  const byC = {};
+  for (let i = cs; i <= lv; i += 3) {
+    const cape = D[i][2] / 10;
+    if (cape < 2) continue;
+    const s = computeSWR(i, c.equity, T, c.preserve, c.glide);
+    if (s === null) continue;
+    swrs.push({ c: cape, s: s, i: i });
+    const b = cape < 15 ? '<15' : cape < 20 ? '15-20' : cape < 25 ? '20-25' : cape < 30 ? '25-30' : '30+';
+    if (!byC[b]) byC[b] = [];
+    byC[b].push(s);
+  }
+
+  const all = swrs.map(d => d.s).sort((a, b) => a - b);
+  const fs = all[0] || 0;
+  const med = all[Math.floor(all.length / 2)] || 0;
+  const hi = swrs.filter(d => d.c >= 30);
+  const hiMin = hi.length ? Math.min(...hi.map(d => d.s)) : 0;
+
+  // CAPE alert
+  document.getElementById('capeAlert').innerHTML =
+    '<strong>CAPE ~' + currentCape + '</strong>&nbsp; Your WR: ' + wr.toFixed(2) +
+    '% &middot; ERN dynamic: ' + ernWr.toFixed(2) + '% &middot; CAPE 30+ fail-safe: ' + hiMin.toFixed(2) + '%';
+
+  // Monte Carlo
+  const pSt = (c.pensionAge - c.age) * 12;
+  const spMo = c.pension / 12;
+  const paths = runMC(port, c.spend, c.equity, T, c.glide, spMo, pSt, c.gogo, c.guard, 500);
+  const yrs = Array.from({ length: Math.floor(T / 12) }, (_, i) => c.age + i);
+  const pAt = (a, p) => { const so = [...a].sort((x, y) => x - y); return so[Math.floor(p / 100 * so.length)] || 0; };
+  let wi = 0, we = Infinity;
+  paths.forEach((p, i) => { if ((p[p.length - 1] || 0) < we) { we = p[p.length - 1] || 0; wi = i; } });
+  const f5 = [], f25 = [], f50 = [], f75 = [], f95 = [], fw = [];
+  for (let y = 0; y < yrs.length; y++) {
+    const v = paths.map(p => p[y] || 0);
+    f5.push(Math.round(pAt(v, 5))); f25.push(Math.round(pAt(v, 25)));
+    f50.push(Math.round(pAt(v, 50))); f75.push(Math.round(pAt(v, 75)));
+    f95.push(Math.round(pAt(v, 95))); fw.push(Math.round(paths[wi][y] || 0));
+  }
+  const sv = Math.round(paths.filter(p => (p[p.length - 1] || 0) > 1000).length / paths.length * 100);
+
+  // Summary Cards
+  const wrDelta = wr - ernWr;
+  const wrColor = wrDelta > 0.5 ? 'clr-red' : wrDelta > 0 ? 'clr-yellow' : 'clr-emerald';
+  const wrStatus = wrDelta <= 0 ? 'Below ERN WR' : wrDelta < 0.5 ? 'Near ERN WR' : 'Above ERN WR';
+  const svColor = sv >= 95 ? 'clr-emerald' : sv >= 80 ? 'clr-emerald' : 'clr-red';
+
+  document.getElementById('summaryCards').innerHTML =
+    buildCard('Fail-Safe SWR', fs.toFixed(2) + '%', 'Worst of ' + swrs.length + ' cohorts (1871-2026)',
+      'The lowest safe withdrawal rate across every possible retirement start date since 1871. If you\'d retired in the single worst month in history, ' + fs.toFixed(2) + '% is the most you could have withdrawn annually without running out over your full horizon. This is the absolute floor — ultra-conservative.',
+      '&#128737;', 'clr-emerald') +
+    buildCard('ERN Dynamic WR', ernWr.toFixed(2) + '%', 'CAPE ' + currentCape + ' (1.75 + 0.50 x 1/CAPE)',
+      'A market-aware withdrawal rate using ERN\'s regression formula. When CAPE is high, future returns tend to be lower, so this rate drops. At today\'s CAPE of ' + currentCape + ', it suggests withdrawing less than the historical fail-safe. Based on ERN Safe Withdrawal Rate Series Parts 18 & 54.',
+      '&#127919;', 'clr-blue') +
+    buildCard('Your Withdrawal Rate', wr.toFixed(2) + '%', wrStatus + (yearsToRetire > 0 ? ' (projected portfolio ' + fmt(Math.round(port)) + ')' : ''),
+      'Your annual spend divided by your portfolio value at retirement. Compare it to the ERN Dynamic WR — if yours is higher, you\'re taking more risk than current market valuations suggest is safe. The gap between the two rates is where sequence-of-returns risk lives.',
+      '&#128200;', wrColor) +
+    buildCard('MC Survival', sv + '%', '500-path block bootstrap',
+      'Percentage of 500 simulated futures where your portfolio didn\'t run out. Uses block-bootstrap resampling (60-month blocks) from real historical returns, preserving the clustering of good and bad periods. Accounts for state pension income and spending adjustments. Above 95% is generally considered robust.',
+      '&#9889;', svColor);
+
+  // Chart options base
+  const gc = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim();
+  const tc = getComputedStyle(document.documentElement).getPropertyValue('--tick').trim();
+
+  // ---- CAPE Scatter ----
+  if (ch1) ch1.destroy();
+  ch1 = new Chart(document.getElementById('chartScatter'), {
+    type: 'scatter',
+    data: {
+      datasets: [
+        { data: swrs.map(d => ({ x: d.c, y: d.s })), backgroundColor: 'rgba(93,202,165,0.4)', pointRadius: 1.5 },
+        { data: [{ x: currentCape, y: 0 }, { x: currentCape, y: Math.max(12, all[all.length - 1] || 12) }], type: 'line', borderColor: '#E24B4A', borderWidth: 1.5, borderDash: [4, 3], pointRadius: 0, fill: false },
+        { data: [{ x: 4, y: wr }, { x: 46, y: wr }], type: 'line', borderColor: '#534AB7', borderWidth: 1, borderDash: [6, 4], pointRadius: 0, fill: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.datasetIndex === 0 ? 'CAPE ' + c.raw.x.toFixed(0) + ' SWR ' + c.raw.y.toFixed(2) + '%' : '' } } },
+      scales: {
+        x: { title: { display: true, text: 'Starting CAPE', font: { size: 11 }, color: tc }, grid: { color: gc }, ticks: { color: tc, font: { size: 10 } }, border: { display: false }, min: 4, max: 46 },
+        y: { title: { display: true, text: 'Fail-safe SWR %', font: { size: 11 }, color: tc }, grid: { color: gc }, ticks: { color: tc, font: { size: 10 }, callback: v => v + '%' }, border: { display: false }, min: 0 }
+      }
+    }
+  });
+
+  // ---- CAPE Bucket Bar ----
+  if (ch2) ch2.destroy();
+  const bk = ['<15', '15-20', '20-25', '25-30', '30+'];
+  const bd = bk.map(b => { const a = (byC[b] || []).sort((x, y) => x - y); return { mn: a[0] || 0, md: a[Math.floor(a.length / 2)] || 0, n: a.length }; });
+  const bc = ['#5DCAA5', '#85B7EB', '#EF9F27', '#E24B4A', '#791F1F'];
+  ch2 = new Chart(document.getElementById('chartBucket'), {
+    type: 'bar',
+    data: {
+      labels: bk.map((b, i) => b + ' (' + bd[i].n + ')'),
+      datasets: [
+        { label: 'Fail-safe', data: bd.map(d => Math.round(d.mn * 100) / 100), backgroundColor: bc.map(c => c + '88'), borderRadius: 3, barPercentage: 0.6 },
+        { label: 'Median', data: bd.map(d => Math.round(d.md * 100) / 100), backgroundColor: bc, borderRadius: 3, barPercentage: 0.6 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.raw.toFixed(2) + '%' } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: tc, font: { size: 10 } }, border: { display: false } },
+        y: { grid: { color: gc }, ticks: { color: tc, font: { size: 10 }, callback: v => v + '%' }, border: { display: false }, min: 0 }
+      }
+    }
+  });
+
+  // ---- MC Fan ----
+  if (ch3) ch3.destroy();
+  ch3 = new Chart(document.getElementById('chartMC'), {
+    type: 'line',
+    data: {
+      labels: yrs,
+      datasets: [
+        { data: f95, borderColor: 'transparent', backgroundColor: 'rgba(93,202,165,0.08)', fill: true, pointRadius: 0, tension: 0.2 },
+        { data: f75, borderColor: 'transparent', backgroundColor: 'rgba(93,202,165,0.15)', fill: '-1', pointRadius: 0, tension: 0.2 },
+        { data: f50, borderColor: '#5DCAA5', backgroundColor: 'rgba(93,202,165,0.22)', fill: '-1', borderWidth: 2, pointRadius: 0, tension: 0.2 },
+        { data: f25, borderColor: 'transparent', backgroundColor: 'rgba(93,202,165,0.15)', fill: '-1', pointRadius: 0, tension: 0.2 },
+        { data: f5, borderColor: 'rgba(93,202,165,0.3)', backgroundColor: 'rgba(93,202,165,0.08)', fill: '-1', borderWidth: 1, borderDash: [2, 2], pointRadius: 0, tension: 0.2 },
+        { data: fw, borderColor: 'rgba(226,75,74,0.5)', borderWidth: 1.5, borderDash: [3, 2], fill: false, pointRadius: 0, tension: 0.2 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { title: ctx => 'Age ' + ctx[0].label, label: ctx => { const n = ['95th', '75th', 'Median', '25th', '5th', 'Worst']; return (n[ctx.datasetIndex] || '') + ': ' + fmt(ctx.raw); } } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: tc, font: { size: 10 }, callback: (v, i) => { const ages = [42, 45, 50, 55, 60, 65, 67, 70, 75, 80, 85, 90]; return ages.includes(yrs[i]) ? yrs[i] : ''; }, autoSkip: false, maxRotation: 0 }, border: { display: false } },
+        y: { grid: { color: gc }, ticks: { color: tc, font: { size: 10 }, callback: v => fmt(v) }, border: { display: false } }
+      }
+    }
+  });
+
+  // ---- CAPE Withdrawal Curve ----
+  if (ch4) ch4.destroy();
+  const cl = Array.from({ length: 37 }, (_, i) => i + 8);
+  const ew = cl.map(c => +(1.75 + 0.50 * (100 / c)).toFixed(2));
+  ch4 = new Chart(document.getElementById('chartCapeWR'), {
+    type: 'line',
+    data: {
+      labels: cl,
+      datasets: [
+        { data: ew, borderColor: '#5DCAA5', borderWidth: 2, fill: false, pointRadius: 0, tension: 0.3 },
+        // Current CAPE marker line
+        { data: cl.map(cape => cape === currentCape ? computeErnDynamicWr(currentCape) : null), borderColor: '#E24B4A', backgroundColor: '#E24B4A', pointRadius: cl.map(cape => cape === currentCape ? 6 : 0), pointStyle: 'circle', showLine: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'WR: ' + (ctx.raw !== null ? ctx.raw : 0) + '% = \u00a3' + Math.round(port * (ctx.raw || 0) / 100).toLocaleString() + '/yr' } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: tc, font: { size: 10 }, callback: (v, i) => i % 5 === 0 ? cl[i] : '', autoSkip: false }, border: { display: false }, title: { display: true, text: 'CAPE', font: { size: 11 }, color: tc } },
+        y: { grid: { color: gc }, ticks: { color: tc, font: { size: 10 }, callback: v => v + '%' }, border: { display: false }, min: 0 }
+      }
+    }
+  });
+
+  // ---- Conditional Failure Table ----
+  const cohorts = swrs.map(d => ({ cape: d.c, swr: d.s }));
+  const cft = computeConditionalFailureTable(cohorts);
+  let html = '<table class="cft"><thead><tr><th>CAPE Bucket</th><th>#</th>';
+  cft.wrRates.forEach(r => { html += '<th>' + r.toFixed(1) + '%</th>'; });
+  html += '</tr></thead><tbody>';
+  cft.rows.forEach(row => {
+    html += '<tr><td>' + row.label + '</td><td>' + row.count + '</td>';
+    cft.wrRates.forEach(r => {
+      const val = row.failureRates[r.toFixed(2)] || 0;
+      html += '<td class="' + getCellClass(val) + '">' + Math.round(val) + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('cftContainer').innerHTML = html;
+}
+
+function buildCard(title, value, subtitle, tooltip, icon, colorClass) {
+  return '<div class="card">' +
+    '<div class="card-header"><span class="card-title">' + title + '</span><span class="card-icon ' + colorClass + '">' + icon + '</span></div>' +
+    '<div class="card-value ' + colorClass + '">' + value + '</div>' +
+    '<div class="card-sub">' + subtitle + '</div>' +
+    '<div class="card-tooltip">' + tooltip + '</div>' +
+    '</div>';
+}
+
+// ======================== INIT ========================
+updateConfigSummary();
+runAll();
+</script>
+</body>
+</html>

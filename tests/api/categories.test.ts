@@ -131,19 +131,24 @@ describe('Categories API', () => {
       expect(response.status).toBe(400);
     });
 
-    it('returns 400 when group_name is missing', async () => {
-      const invalidCategory = {
+    it('creates a category when group_name is missing (defaults to Ungrouped)', async () => {
+      const categoryWithoutGroup = {
         name: 'Entertainment',
       };
+      const createdCategory = { id: 'new-id', name: 'Entertainment', group_name: 'Ungrouped', is_income: false, display_order: 0 };
+
+      mockSingle.mockResolvedValue({ data: createdCategory, error: null });
 
       const request = new NextRequest('http://localhost/api/categories', {
         method: 'POST',
-        body: JSON.stringify(invalidCategory),
+        body: JSON.stringify(categoryWithoutGroup),
       });
 
       const response = await POST(request);
+      const data = await response.json();
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(201);
+      expect(data.name).toBe('Entertainment');
     });
 
     it('returns 400 when name is empty string', async () => {

@@ -19,25 +19,18 @@ describe('SummaryCards', () => {
   });
 
   describe('rendering', () => {
-    it('renders 4 metric cards', () => {
+    it('renders 3 metric cards', () => {
       const { container } = render(
         <SummaryCards data={mockSummaryData} isLoading={false} />
       );
 
       const cards = container.querySelectorAll('.bg-slate-800');
-      expect(cards.length).toBe(4);
-    });
-
-    it('renders Total Balance card', () => {
-      render(<SummaryCards data={mockSummaryData} isLoading={false} />);
-
-      expect(screen.getByText('Total Balance')).toBeInTheDocument();
+      expect(cards.length).toBe(3);
     });
 
     it('renders Income card with period label', () => {
       render(<SummaryCards data={mockSummaryData} isLoading={false} />);
 
-      // Period label is dynamic based on the period value
       expect(screen.getByText(/Income/)).toBeInTheDocument();
     });
 
@@ -55,12 +48,6 @@ describe('SummaryCards', () => {
   });
 
   describe('currency formatting', () => {
-    it('formats total balance as GBP', () => {
-      render(<SummaryCards data={mockSummaryData} isLoading={false} />);
-
-      expect(screen.getByText('£5,000')).toBeInTheDocument();
-    });
-
     it('formats income as GBP', () => {
       render(<SummaryCards data={mockSummaryData} isLoading={false} />);
 
@@ -81,13 +68,13 @@ describe('SummaryCards', () => {
       const { container } = render(<SummaryCards data={null} isLoading={true} />);
 
       const skeletons = container.querySelectorAll('.animate-pulse');
-      expect(skeletons.length).toBe(4);
+      expect(skeletons.length).toBe(3);
     });
 
     it('does not show data when loading', () => {
       render(<SummaryCards data={mockSummaryData} isLoading={true} />);
 
-      expect(screen.queryByText('Total Balance')).not.toBeInTheDocument();
+      expect(screen.queryByText(/Income/)).not.toBeInTheDocument();
     });
   });
 
@@ -140,27 +127,18 @@ describe('SummaryCards', () => {
       render(<SummaryCards data={null} isLoading={false} />);
 
       const zeroValues = screen.getAllByText('£0');
-      expect(zeroValues.length).toBe(4);
+      expect(zeroValues.length).toBe(3);
     });
   });
 
   describe('grid layout', () => {
-    it('uses grid layout with 2 columns on mobile', () => {
+    it('uses grid layout with 3 columns', () => {
       const { container } = render(
         <SummaryCards data={mockSummaryData} isLoading={false} />
       );
 
       const grid = container.querySelector('.grid');
-      expect(grid).toHaveClass('grid-cols-2');
-    });
-
-    it('uses grid layout with 4 columns on large screens', () => {
-      const { container } = render(
-        <SummaryCards data={mockSummaryData} isLoading={false} />
-      );
-
-      const grid = container.querySelector('.grid');
-      expect(grid).toHaveClass('lg:grid-cols-4');
+      expect(grid).toHaveClass('grid-cols-3');
     });
   });
 });

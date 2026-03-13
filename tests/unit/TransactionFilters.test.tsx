@@ -7,13 +7,13 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 const mockAccounts = [
-  { id: 'acc-1', name: 'HSBC Current' },
-  { id: 'acc-2', name: 'Savings Account' },
+  { id: 'acc-1', name: 'HSBC Current', type: 'current' },
+  { id: 'acc-2', name: 'Savings Account', type: 'savings' },
 ];
 
 const mockCategories = [
-  { id: 'cat-1', name: 'Groceries', group_name: 'Food' },
-  { id: 'cat-2', name: 'Restaurants', group_name: 'Food' },
+  { id: 'cat-1', name: 'Groceries', group_name: 'Food', group_id: null },
+  { id: 'cat-2', name: 'Restaurants', group_name: 'Food', group_id: null },
 ];
 
 describe('TransactionFilters', () => {
@@ -52,10 +52,10 @@ describe('TransactionFilters', () => {
     it('renders dropdown selects', async () => {
       render(<TransactionFilters filters={{}} onChange={mockOnChange} />);
 
-      // Wait for loading to complete
+      // Wait for loading to complete - now 3 selects: account, category, validated
       await waitFor(() => {
         const selects = screen.getAllByRole('combobox');
-        expect(selects.length).toBeGreaterThanOrEqual(2);
+        expect(selects.length).toBeGreaterThanOrEqual(3);
       });
     });
 

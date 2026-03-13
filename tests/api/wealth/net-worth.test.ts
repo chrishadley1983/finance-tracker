@@ -1,18 +1,24 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GET } from '@/app/api/wealth/net-worth/route';
 
-// Create a more sophisticated mock that tracks table calls
+// Track table call counts and mock responses
 let tableCallCount: Record<string, number> = {};
 let mockResponses: Record<string, { data: unknown; error: unknown }[]> = {};
+let rpcResponses: Record<string, { data: unknown; error: unknown }> = {};
 
 function resetMockState() {
   tableCallCount = {};
   mockResponses = {};
+  rpcResponses = {};
 }
 
 function setMockResponse(table: string, responses: { data: unknown; error: unknown }[]) {
   mockResponses[table] = responses;
   tableCallCount[table] = 0;
+}
+
+function setRpcResponse(fnName: string, response: { data: unknown; error: unknown }) {
+  rpcResponses[fnName] = response;
 }
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -27,11 +33,9 @@ vi.mock('@/lib/supabase/server', () => ({
 
       const chainMock: Record<string, unknown> = {};
       chainMock.select = () => chainMock;
-      chainMock.eq = () => chainMock;
       chainMock.in = () => chainMock;
-      chainMock.order = () => Promise.resolve(getNextResponse());
       chainMock.lte = () => chainMock;
-      // For accounts query: eq('is_active', true) returns the response directly
+      chainMock.order = () => Promise.resolve(getNextResponse());
       chainMock.eq = (_col: string, _val: unknown) => {
         if (table === 'accounts') {
           return Promise.resolve(getNextResponse());
@@ -40,6 +44,10 @@ vi.mock('@/lib/supabase/server', () => ({
       };
 
       return chainMock;
+    },
+    rpc: (fnName: string) => {
+      const response = rpcResponses[fnName] || { data: null, error: null };
+      return Promise.resolve(response);
     },
   },
 }));
@@ -64,17 +72,15 @@ describe('Net Worth API', () => {
         error: null,
       }]);
 
-      setMockResponse('investment_valuations', [
-        { data: [{ account_id: 'acc-2', value: 50000, date: '2026-01-01' }], error: null },
-        { data: [], error: null }, // previous
-      ]);
+      setRpcResponse('get_account_balances_with_snapshots', {
+        data: [
+          { account_id: 'acc-1', snapshot_date: '2026-01-01', snapshot_balance: 5000, transactions_sum: 0, current_balance: 5000 },
+        ],
+        error: null,
+      });
 
+      // Previous month snapshots
       setMockResponse('wealth_snapshots', [
-        { data: [{ account_id: 'acc-1', balance: 5000, date: '2026-01-01' }], error: null },
-        { data: [], error: null }, // previous
-      ]);
-
-      setMockResponse('transactions', [
         { data: [], error: null },
       ]);
 
@@ -116,7 +122,7 @@ describe('Net Worth API', () => {
       expect(data.error).toBe('Failed to fetch accounts');
     });
 
-    it('handles investment accounts', async () => {
+    it('handles accounts with balance from snapshots', async () => {
       setMockResponse('accounts', [{
         data: [
           { id: 'acc-1', name: 'ISA', type: 'investment', is_active: true },
@@ -124,13 +130,14 @@ describe('Net Worth API', () => {
         error: null,
       }]);
 
-      setMockResponse('investment_valuations', [
-        { data: [{ account_id: 'acc-1', value: 100000, date: '2026-01-01' }], error: null },
-        { data: [], error: null },
-      ]);
+      setRpcResponse('get_account_balances_with_snapshots', {
+        data: [
+          { account_id: 'acc-1', snapshot_date: '2026-01-01', snapshot_balance: 100000, transactions_sum: 0, current_balance: 100000 },
+        ],
+        error: null,
+      });
 
       setMockResponse('wealth_snapshots', [
-        { data: [], error: null },
         { data: [], error: null },
       ]);
 
@@ -141,7 +148,7 @@ describe('Net Worth API', () => {
       expect(data.total).toBe(100000);
     });
 
-    it('handles accounts with no valuations returning zero', async () => {
+    it('handles accounts with no balances returning zero', async () => {
       setMockResponse('accounts', [{
         data: [
           { id: 'acc-1', name: 'Empty ISA', type: 'investment', is_active: true },
@@ -149,13 +156,12 @@ describe('Net Worth API', () => {
         error: null,
       }]);
 
-      setMockResponse('investment_valuations', [
-        { data: [], error: null },
-        { data: [], error: null },
-      ]);
+      setRpcResponse('get_account_balances_with_snapshots', {
+        data: [],
+        error: null,
+      });
 
       setMockResponse('wealth_snapshots', [
-        { data: [], error: null },
         { data: [], error: null },
       ]);
 
@@ -163,7 +169,6 @@ describe('Net Worth API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      // With no valuations, investment account should have 0 balance
       expect(data.byAccount.length).toBe(1);
       expect(data.byAccount[0].balance).toBe(0);
     });
@@ -176,13 +181,14 @@ describe('Net Worth API', () => {
         error: null,
       }]);
 
-      setMockResponse('investment_valuations', [
-        { data: [{ account_id: 'acc-1', value: 50000, date: '2026-01-01' }], error: null },
-        { data: [], error: null },
-      ]);
+      setRpcResponse('get_account_balances_with_snapshots', {
+        data: [
+          { account_id: 'acc-1', snapshot_date: '2026-01-01', snapshot_balance: 50000, transactions_sum: 0, current_balance: 50000 },
+        ],
+        error: null,
+      });
 
       setMockResponse('wealth_snapshots', [
-        { data: [], error: null },
         { data: [], error: null },
       ]);
 
@@ -204,13 +210,14 @@ describe('Net Worth API', () => {
         error: null,
       }]);
 
-      setMockResponse('investment_valuations', [
-        { data: [{ account_id: 'acc-1', value: 75000, date: '2026-01-01' }], error: null },
-        { data: [], error: null },
-      ]);
+      setRpcResponse('get_account_balances_with_snapshots', {
+        data: [
+          { account_id: 'acc-1', snapshot_date: '2026-01-01', snapshot_balance: 75000, transactions_sum: 0, current_balance: 75000 },
+        ],
+        error: null,
+      });
 
       setMockResponse('wealth_snapshots', [
-        { data: [], error: null },
         { data: [], error: null },
       ]);
 
@@ -232,14 +239,16 @@ describe('Net Worth API', () => {
         error: null,
       }]);
 
-      setMockResponse('investment_valuations', [
-        { data: [{ account_id: 'acc-1', value: 110000, date: '2026-01-01' }], error: null },
-        { data: [{ account_id: 'acc-1', value: 100000 }], error: null }, // previous
-      ]);
+      setRpcResponse('get_account_balances_with_snapshots', {
+        data: [
+          { account_id: 'acc-1', snapshot_date: '2026-01-01', snapshot_balance: 110000, transactions_sum: 0, current_balance: 110000 },
+        ],
+        error: null,
+      });
 
+      // Previous month snapshots
       setMockResponse('wealth_snapshots', [
-        { data: [], error: null },
-        { data: [], error: null },
+        { data: [{ account_id: 'acc-1', balance: 100000 }], error: null },
       ]);
 
       const response = await GET();

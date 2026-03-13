@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/database.types';
 
-type TransactionRow = Database['public']['Tables']['transactions']['Row'];
+type TransactionRow = Database['finance']['Tables']['transactions']['Row'];
 
 interface ReviewQueueTransaction {
   id: string;

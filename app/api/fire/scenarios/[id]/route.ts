@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { updateFireScenarioSchema, type FireScenario } from '@/lib/types/fire';
 import type { Database } from '@/lib/supabase/database.types';
 
-type ScenarioRow = Database['public']['Tables']['fire_scenarios']['Row'];
+type ScenarioRow = Database['finance']['Tables']['fire_scenarios']['Row'];
 
 interface RouteContext {
   params: Promise<{ id: string }>;

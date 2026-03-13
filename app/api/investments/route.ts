@@ -9,8 +9,8 @@ import {
 } from '@/lib/types/investment';
 import type { Database } from '@/lib/supabase/database.types';
 
-type AccountRow = Database['public']['Tables']['accounts']['Row'];
-type ValuationRow = Database['public']['Tables']['investment_valuations']['Row'];
+type AccountRow = Database['finance']['Tables']['accounts']['Row'];
+type ValuationRow = Database['finance']['Tables']['investment_valuations']['Row'];
 
 // =============================================================================
 // GET - List investment accounts with latest valuations

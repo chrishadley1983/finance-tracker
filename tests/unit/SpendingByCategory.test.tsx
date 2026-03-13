@@ -1,7 +1,14 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import { SpendingByCategory } from '@/components/dashboard/SpendingByCategory';
 import { CategorySpend } from '@/lib/hooks/useDashboardData';
+
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
+}));
 
 const mockCategorySpend: CategorySpend[] = [
   {
@@ -125,15 +132,15 @@ describe('SpendingByCategory', () => {
     });
   });
 
-  describe('category key uniqueness', () => {
-    it('uses categoryId as key for each category', () => {
-      // This is implicitly tested by React not throwing warnings
+  describe('category items', () => {
+    it('renders category names with correct styling', () => {
       const { container } = render(
         <SpendingByCategory data={mockCategorySpend} isLoading={false} />
       );
 
-      // All categories should render without key warnings
-      expect(container.querySelectorAll('.text-sm.text-slate-300').length).toBe(3);
+      // Categories are rendered as buttons with text-sm text-slate-300 spans
+      const categoryNames = container.querySelectorAll('.text-sm.text-slate-300');
+      expect(categoryNames.length).toBe(3);
     });
   });
 });

@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { bulkValuationsSchema } from '@/lib/types/investment';
 import type { Database } from '@/lib/supabase/database.types';
 
-type ValuationRow = Database['public']['Tables']['investment_valuations']['Row'];
+type ValuationRow = Database['finance']['Tables']['investment_valuations']['Row'];
 
 interface RouteContext {
   params: Promise<{ id: string }>;

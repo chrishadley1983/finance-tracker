@@ -1,19 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { simulateRequestSchema } from '@/lib/types/fire';
-import { runHistoricalSimulations } from '@/lib/fire/historical-simulator';
+import { ernSimulateRequestSchema } from '@/lib/fire/ern/types';
+import { runExhaustiveHistoricalSim } from '@/lib/fire/ern/historical-sim';
+import {
+  computeErnDynamicWr,
+  generateCapeWithdrawalCurve,
+  computeCapeImpliedReturn,
+  computeConditionalFailureTable,
+} from '@/lib/fire/ern/cape-analysis';
+import { getLatestCape, getDataVintage } from '@/lib/fire/ern/live-cape';
+import { projectPortfolioAtRetirement } from '@/lib/fire/ern/accumulation';
 
 /**
  * POST /api/fire/simulate
  *
- * Run historical simulations with the provided configuration.
- * Returns success rates, percentiles, and individual simulation results.
+ * Run ERN-grade historical simulation with the provided configuration.
+ * Returns fail-safe SWR, CAPE analysis, conditional failure tables, and per-cohort data.
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validate request body
-    const parsed = simulateRequestSchema.safeParse(body);
+    const parsed = ernSimulateRequestSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         {
@@ -26,30 +33,65 @@ export async function POST(request: NextRequest) {
 
     const { config } = parsed.data;
 
-    // Run simulations
-    const results = runHistoricalSimulations(config);
+    // Compute CAPE-based analysis (latest from Shiller dataset)
+    const currentCape = getLatestCape();
+    const capeImpliedReturn = computeCapeImpliedReturn(currentCape);
 
-    // Return results (excluding full yearly data to reduce payload)
-    const response = {
-      ...results,
-      simulations: results.simulations.map(sim => ({
-        startYear: sim.startYear,
-        endYear: sim.endYear,
-        success: sim.success,
-        failureYear: sim.failureYear,
-        yearsLasted: sim.yearsLasted,
-        finalPortfolioValue: sim.finalPortfolioValue,
-        finalPortfolioReal: sim.finalPortfolioReal,
-        minimumPortfolioValue: sim.minimumPortfolioValue,
-        minimumPortfolioYear: sim.minimumPortfolioYear,
-        totalWithdrawals: sim.totalWithdrawals,
-        averageAnnualWithdrawal: sim.averageAnnualWithdrawal,
-        // Include yearly data only if specifically requested
-        yearlyData: body.includeYearlyData ? sim.yearlyData : undefined,
-      })),
+    // Accumulation: project portfolio forward if retirement is in the future
+    const retirementAge = config.retirementAge ?? config.currentAge;
+    const yearsToRetirement = Math.max(0, retirementAge - config.currentAge);
+    let simPortfolio = config.portfolio;
+    let projectedPortfolio: number | undefined;
+
+    if (yearsToRetirement > 0) {
+      projectedPortfolio = projectPortfolioAtRetirement(
+        config.portfolio,
+        config.annualSavings ?? 0,
+        yearsToRetirement,
+        capeImpliedReturn,
+      );
+      simPortfolio = projectedPortfolio;
+    }
+
+    // Adjust config for historical sim: use projected portfolio, drawdown-only horizon
+    const drawdownYears = config.horizonYears - yearsToRetirement;
+    const simConfig = {
+      ...config,
+      portfolio: simPortfolio,
+      horizonYears: Math.max(10, drawdownYears),
     };
 
-    return NextResponse.json(response);
+    // Run exhaustive historical simulation on projected retirement portfolio
+    const historical = runExhaustiveHistoricalSim(simConfig);
+
+    const ernDynamicWr = computeErnDynamicWr(currentCape);
+    const capeWithdrawalCurve = generateCapeWithdrawalCurve();
+    const conditionalFailureTable = computeConditionalFailureTable(historical.cohorts);
+    const personalWr = (config.annualSpend / simPortfolio) * 100;
+
+    return NextResponse.json({
+      historical: {
+        ...historical,
+        // Exclude full cohort array from default response to reduce payload
+        cohorts: body.includeCohorts ? historical.cohorts : undefined,
+      },
+      ernDynamicWr,
+      capeImpliedReturn,
+      personalWr,
+      currentCape,
+      capeWithdrawalCurve,
+      conditionalFailureTable,
+      config,
+      // Accumulation metadata (only present when retirementAge > currentAge)
+      ...(projectedPortfolio !== undefined && {
+        accumulation: {
+          projectedPortfolio: Math.round(projectedPortfolio),
+          yearsToRetirement,
+          drawdownYears: Math.max(10, drawdownYears),
+          growthRateUsed: capeImpliedReturn,
+        },
+      }),
+    });
   } catch (error) {
     console.error('Simulation error:', error);
     return NextResponse.json(
@@ -62,33 +104,39 @@ export async function POST(request: NextRequest) {
 /**
  * GET /api/fire/simulate
  *
- * Returns information about available simulation parameters.
+ * Returns information about the ERN simulation API.
  */
 export async function GET() {
   return NextResponse.json({
-    description: 'Historical FIRE simulation API',
+    description: 'ERN-grade SWR simulation API (monthly resolution)',
+    methodology: 'Closed-form SWR per ERN Part 8, exhaustive historical simulation',
+    currentCape: getLatestCape(),
+    dataVintage: getDataVintage(),
+    dataRange: {
+      firstMonth: '1871-02',
+      source: 'Shiller monthly real returns (S&P 500 + 10yr Treasury)',
+    },
     methods: {
       POST: {
-        description: 'Run historical simulations',
+        description: 'Run ERN historical simulation',
         body: {
           config: {
-            retirementDuration: 'number (1-60), default 30',
-            stockAllocation: 'number (0-100), default 75',
-            bondAllocation: 'number (0-100), default 25',
-            withdrawalStrategy: "'constant_dollar' | 'percent_of_portfolio'",
-            initialWithdrawalRate: 'number (0.5-15), default 4',
-            initialPortfolio: 'number (required)',
-            extraIncome: 'ExtraIncomeSource[]',
-            currentAge: 'number (18-100, required)',
+            equityAllocation: 'number (0.4-1.0), default 0.8',
+            horizonYears: 'number (20-60), default 48',
+            preserveFraction: 'number (0-1), default 0.5',
+            glidepathEnabled: 'boolean, default false',
+            annualSpend: 'number, default 50000',
+            portfolio: 'number, default 1538050',
+            statePensionAnnual: 'number, default 23000',
+            statePensionStartAge: 'number, default 67',
+            currentAge: 'number, default 42',
+            gogoEnabled: 'boolean, default true',
+            guardrailEnabled: 'boolean, default false',
+            mcPaths: 'number (100-2000), default 500',
           },
-          includeYearlyData: 'boolean (optional, include full yearly data)',
+          includeCohorts: 'boolean (optional, include per-cohort data)',
         },
       },
-    },
-    dataRange: {
-      firstYear: 1928,
-      lastYear: 2024,
-      note: 'Data from NYU Stern (Damodaran) and US Inflation Calculator',
     },
   });
 }

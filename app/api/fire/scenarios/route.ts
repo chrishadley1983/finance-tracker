@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { createFireScenarioSchema, type FireScenario } from '@/lib/types/fire';
 import type { Database } from '@/lib/supabase/database.types';
 
-type ScenarioRow = Database['public']['Tables']['fire_scenarios']['Row'];
+type ScenarioRow = Database['finance']['Tables']['fire_scenarios']['Row'];
 
 function mapScenarioRow(row: ScenarioRow): FireScenario {
   return {

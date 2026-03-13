@@ -16,6 +16,14 @@ const mockSummary = {
   endDate: '2026-01-31',
 };
 
+const mockAccountSummary = {
+  netWorth: 10000,
+  accountTypeBalances: [
+    { type: 'current', label: 'Current', balance: 5000 },
+    { type: 'savings', label: 'Savings', balance: 5000 },
+  ],
+};
+
 const mockTransactions = {
   data: [
     { id: 'txn-1', date: '2025-01-15', amount: -50, description: 'Test', category: null },
@@ -24,6 +32,10 @@ const mockTransactions = {
 
 const mockCategorySpend = [
   { categoryId: 'cat-1', categoryName: 'Groceries', amount: 500, percentage: 50 },
+];
+
+const mockIncomeByCategory = [
+  { categoryId: 'cat-2', categoryName: 'Salary', amount: 3000, percentage: 100 },
 ];
 
 const mockMonthlyTrend = [
@@ -78,39 +90,51 @@ describe('useDashboardData', () => {
   describe('successful data fetching', () => {
     beforeEach(() => {
       mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/summary')) {
+        if (url.includes('/api/transactions/summary')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockSummary),
           });
         }
-        if (url.includes('/transactions') && url.includes('limit=10')) {
+        if (url.includes('/api/accounts/summary')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockAccountSummary),
+          });
+        }
+        if (url.includes('/api/transactions?') && url.includes('limit=10')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockTransactions),
           });
         }
-        if (url.includes('/by-category')) {
+        if (url.includes('/api/transactions/by-category')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockCategorySpend),
           });
         }
-        if (url.includes('/monthly-trend')) {
+        if (url.includes('/api/transactions/income-by-category')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockIncomeByCategory),
+          });
+        }
+        if (url.includes('/api/transactions/monthly-trend')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockMonthlyTrend),
           });
         }
-        return Promise.reject(new Error('Unknown URL'));
+        return Promise.reject(new Error('Unknown URL: ' + url));
       });
     });
 
-    it('fetches all 4 endpoints', async () => {
+    it('fetches all 6 endpoints', async () => {
       renderHook(() => useDashboardData());
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(4);
+        expect(mockFetch).toHaveBeenCalledTimes(6);
       });
     });
 
@@ -118,7 +142,10 @@ describe('useDashboardData', () => {
       renderHook(() => useDashboardData());
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/transactions/summary?period=this_month');
+        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
+        const summaryCall = calls.find((url: string) => url.includes('/api/transactions/summary'));
+        expect(summaryCall).toBeDefined();
+        expect(summaryCall).toContain('period=this_month');
       });
     });
 
@@ -126,7 +153,9 @@ describe('useDashboardData', () => {
       renderHook(() => useDashboardData());
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/transactions?limit=10');
+        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
+        const txnCall = calls.find((url: string) => url.includes('/api/transactions?') && url.includes('limit=10'));
+        expect(txnCall).toBeDefined();
       });
     });
 
@@ -134,7 +163,10 @@ describe('useDashboardData', () => {
       renderHook(() => useDashboardData());
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/transactions/by-category?period=this_month');
+        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
+        const catCall = calls.find((url: string) => url.includes('/api/transactions/by-category'));
+        expect(catCall).toBeDefined();
+        expect(catCall).toContain('period=this_month');
       });
     });
 
@@ -142,7 +174,29 @@ describe('useDashboardData', () => {
       renderHook(() => useDashboardData());
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/transactions/monthly-trend');
+        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
+        const trendCall = calls.find((url: string) => url.includes('/api/transactions/monthly-trend'));
+        expect(trendCall).toBeDefined();
+      });
+    });
+
+    it('fetches account summary endpoint', async () => {
+      renderHook(() => useDashboardData());
+
+      await waitFor(() => {
+        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
+        const accountCall = calls.find((url: string) => url.includes('/api/accounts/summary'));
+        expect(accountCall).toBeDefined();
+      });
+    });
+
+    it('fetches income-by-category endpoint', async () => {
+      renderHook(() => useDashboardData());
+
+      await waitFor(() => {
+        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
+        const incomeCall = calls.find((url: string) => url.includes('/api/transactions/income-by-category'));
+        expect(incomeCall).toBeDefined();
       });
     });
 
@@ -198,7 +252,7 @@ describe('useDashboardData', () => {
   describe('error handling', () => {
     it('handles summary API error', async () => {
       mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/summary')) {
+        if (url.includes('/api/transactions/summary')) {
           return Promise.resolve({
             ok: false,
             json: () => Promise.resolve({ error: 'Summary failed' }),
@@ -221,7 +275,7 @@ describe('useDashboardData', () => {
 
     it('handles transactions API error', async () => {
       mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/transactions') && url.includes('limit=10')) {
+        if (url.includes('/api/transactions?') && url.includes('limit=10')) {
           return Promise.resolve({
             ok: false,
             json: () => Promise.resolve({ error: 'Transactions failed' }),
@@ -239,12 +293,17 @@ describe('useDashboardData', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
+      // The hook checks errors sequentially, so the first failing check determines the error.
+      // accountSummary is checked before transactions, so if accountSummary also fails
+      // we'd get that error. But here accountSummary returns ok:true with empty data.
+      // However the hook checks: summaryRes, accountSummaryRes, transactionsRes in order.
+      // Since the mock returns ok:true for accountSummary (default), transactionsRes error should be caught.
       expect(result.current.error).toBe('Transactions failed');
     });
 
     it('handles category API error', async () => {
       mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/by-category')) {
+        if (url.includes('/api/transactions/by-category')) {
           return Promise.resolve({
             ok: false,
             json: () => Promise.resolve({ error: 'Category failed' }),
@@ -267,7 +326,7 @@ describe('useDashboardData', () => {
 
     it('handles trend API error', async () => {
       mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/monthly-trend')) {
+        if (url.includes('/api/transactions/monthly-trend')) {
           return Promise.resolve({
             ok: false,
             json: () => Promise.resolve({ error: 'Trend failed' }),
@@ -304,31 +363,43 @@ describe('useDashboardData', () => {
   describe('data shape', () => {
     beforeEach(() => {
       mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/summary')) {
+        if (url.includes('/api/transactions/summary')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockSummary),
           });
         }
-        if (url.includes('/transactions') && url.includes('limit=10')) {
+        if (url.includes('/api/accounts/summary')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockAccountSummary),
+          });
+        }
+        if (url.includes('/api/transactions?') && url.includes('limit=10')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockTransactions),
           });
         }
-        if (url.includes('/by-category')) {
+        if (url.includes('/api/transactions/by-category')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockCategorySpend),
           });
         }
-        if (url.includes('/monthly-trend')) {
+        if (url.includes('/api/transactions/income-by-category')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockIncomeByCategory),
+          });
+        }
+        if (url.includes('/api/transactions/monthly-trend')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockMonthlyTrend),
           });
         }
-        return Promise.reject(new Error('Unknown URL'));
+        return Promise.reject(new Error('Unknown URL: ' + url));
       });
     });
 
@@ -350,7 +421,7 @@ describe('useDashboardData', () => {
 
     it('handles missing data field in transactions response', async () => {
       mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/transactions') && url.includes('limit=10')) {
+        if (url.includes('/api/transactions?') && url.includes('limit=10')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({}), // No data field

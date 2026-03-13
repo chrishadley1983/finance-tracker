@@ -9,8 +9,8 @@ import {
 import { calculateFireProjection } from '@/lib/fire/calculator';
 import type { Database } from '@/lib/supabase/database.types';
 
-type ScenarioRow = Database['public']['Tables']['fire_scenarios']['Row'];
-type InputsRow = Database['public']['Tables']['fire_inputs']['Row'];
+type ScenarioRow = Database['finance']['Tables']['fire_scenarios']['Row'];
+type InputsRow = Database['finance']['Tables']['fire_inputs']['Row'];
 
 function mapScenarioRow(row: ScenarioRow): FireScenario {
   return {

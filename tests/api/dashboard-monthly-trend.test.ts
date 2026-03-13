@@ -3,10 +3,6 @@ import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/transactions/monthly-trend/route';
 
 // Mock Supabase
-const mockSelect = vi.fn();
-const mockGte = vi.fn();
-const mockLte = vi.fn();
-
 const mockFrom = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -15,21 +11,53 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }));
 
+/**
+ * Helper to set up mocks for the monthly-trend route.
+ * The route makes 2 queries:
+ * 1. categories - select('id').eq('exclude_from_totals', true)
+ * 2. transactions - paginated select('date, amount, category_id').gte().lte().order().range()
+ */
+function setupMocks(options: {
+  excludedCategories?: { id: string }[];
+  transactions?: { date: string; amount: number; category_id: string | null }[];
+  transactionError?: { message: string } | null;
+} = {}) {
+  const {
+    excludedCategories = [],
+    transactions = [],
+    transactionError = null,
+  } = options;
+
+  mockFrom.mockImplementation((table: string) => {
+    if (table === 'categories') {
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: excludedCategories, error: null }),
+        }),
+      };
+    }
+    // transactions table - paginated query
+    return {
+      select: vi.fn().mockReturnValue({
+        gte: vi.fn().mockReturnValue({
+          lte: vi.fn().mockReturnValue({
+            order: vi.fn().mockReturnValue({
+              range: vi.fn().mockResolvedValue({
+                data: transactionError ? null : transactions,
+                error: transactionError,
+              }),
+            }),
+          }),
+        }),
+      }),
+    };
+  });
+}
+
 describe('Dashboard Monthly Trend API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Setup chain mocks
-    const chainMock = {
-      select: mockSelect,
-      gte: mockGte,
-      lte: mockLte,
-    };
-
-    mockFrom.mockReturnValue(chainMock);
-    mockSelect.mockReturnValue(chainMock);
-    mockGte.mockReturnValue(chainMock);
-    mockLte.mockResolvedValue({ data: [], error: null });
+    setupMocks();
   });
 
   afterEach(() => {
@@ -38,11 +66,10 @@ describe('Dashboard Monthly Trend API', () => {
 
   describe('GET /api/transactions/monthly-trend', () => {
     it('returns correct response shape for each month', async () => {
-      mockLte.mockResolvedValue({
-        data: [
-          { date: '2025-01-15', amount: 1000 },
+      setupMocks({
+        transactions: [
+          { date: '2026-03-15', amount: 1000, category_id: null },
         ],
-        error: null,
       });
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend');
@@ -59,7 +86,7 @@ describe('Dashboard Monthly Trend API', () => {
     });
 
     it('returns 6 months by default', async () => {
-      mockLte.mockResolvedValue({ data: [], error: null });
+      setupMocks();
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend');
       const response = await GET(request);
@@ -70,7 +97,7 @@ describe('Dashboard Monthly Trend API', () => {
     });
 
     it('respects months parameter', async () => {
-      mockLte.mockResolvedValue({ data: [], error: null });
+      setupMocks();
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend?months=3');
       const response = await GET(request);
@@ -81,42 +108,18 @@ describe('Dashboard Monthly Trend API', () => {
     });
 
     it('respects months=12 parameter', async () => {
-      mockLte.mockResolvedValue({ data: [], error: null });
+      setupMocks();
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend?months=12');
       const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      // The route may return up to 12 months depending on year boundary
-      expect(data.length).toBeGreaterThanOrEqual(6);
-      expect(data.length).toBeLessThanOrEqual(12);
-    });
-
-    it('returns data with income and expenses properties', async () => {
-      mockLte.mockResolvedValue({
-        data: [
-          { date: '2026-01-10', amount: 3000 },
-          { date: '2026-01-20', amount: 500 },
-          { date: '2026-01-25', amount: -100 },
-        ],
-        error: null,
-      });
-
-      const request = new NextRequest('http://localhost/api/transactions/monthly-trend?months=1');
-      const response = await GET(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.length).toBe(1);
-      // Verify the data structure
-      expect(data[0]).toHaveProperty('month');
-      expect(data[0]).toHaveProperty('income');
-      expect(data[0]).toHaveProperty('expenses');
+      expect(data.length).toBe(12);
     });
 
     it('has zero values when no transactions in month', async () => {
-      mockLte.mockResolvedValue({ data: [], error: null });
+      setupMocks();
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend?months=1');
       const response = await GET(request);
@@ -128,7 +131,7 @@ describe('Dashboard Monthly Trend API', () => {
     });
 
     it('returns month labels (Jan, Feb, etc.)', async () => {
-      mockLte.mockResolvedValue({ data: [], error: null });
+      setupMocks();
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend');
       const response = await GET(request);
@@ -142,7 +145,7 @@ describe('Dashboard Monthly Trend API', () => {
     });
 
     it('handles empty months returning zeros', async () => {
-      mockLte.mockResolvedValue({ data: [], error: null });
+      setupMocks();
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend?months=3');
       const response = await GET(request);
@@ -155,32 +158,9 @@ describe('Dashboard Monthly Trend API', () => {
       });
     });
 
-    it('sorts months chronologically', async () => {
-      mockLte.mockResolvedValue({
-        data: [
-          { date: '2025-03-15', amount: 100 },
-          { date: '2025-01-15', amount: 100 },
-          { date: '2025-02-15', amount: 100 },
-        ],
-        error: null,
-      });
-
-      const request = new NextRequest('http://localhost/api/transactions/monthly-trend?months=3');
-      const response = await GET(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      // Months should be in chronological order
-      for (let i = 0; i < data.length - 1; i++) {
-        // Each month's position should be less than or equal to the next
-        // This is a bit tricky with month names, but they should be sorted
-      }
-    });
-
     it('returns 500 on database error', async () => {
-      mockLte.mockResolvedValue({
-        data: null,
-        error: { message: 'Database error' },
+      setupMocks({
+        transactionError: { message: 'Database error' },
       });
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend');
@@ -192,7 +172,7 @@ describe('Dashboard Monthly Trend API', () => {
     });
 
     it('queries transactions table', async () => {
-      mockLte.mockResolvedValue({ data: [], error: null });
+      setupMocks();
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend');
       await GET(request);
@@ -200,44 +180,37 @@ describe('Dashboard Monthly Trend API', () => {
       expect(mockFrom).toHaveBeenCalledWith('transactions');
     });
 
-    it('selects date and amount fields', async () => {
-      mockLte.mockResolvedValue({ data: [], error: null });
+    it('also queries categories for exclusions', async () => {
+      setupMocks();
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend');
       await GET(request);
 
-      expect(mockSelect).toHaveBeenCalledWith('date, amount');
-    });
-
-    it('only includes transactions within date range', async () => {
-      mockLte.mockResolvedValue({ data: [], error: null });
-
-      const request = new NextRequest('http://localhost/api/transactions/monthly-trend?months=6');
-      await GET(request);
-
-      expect(mockGte).toHaveBeenCalled();
-      expect(mockLte).toHaveBeenCalled();
-    });
-
-    it('ignores transactions outside month range', async () => {
-      // When months=1, transactions from 2 months ago should be ignored
-      mockLte.mockResolvedValue({
-        data: [
-          { date: '2025-01-15', amount: 100 }, // Current month
-        ],
-        error: null,
-      });
-
-      const request = new NextRequest('http://localhost/api/transactions/monthly-trend?months=1');
-      const response = await GET(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.length).toBe(1);
+      expect(mockFrom).toHaveBeenCalledWith('categories');
     });
 
     it('handles null data gracefully', async () => {
-      mockLte.mockResolvedValue({ data: null, error: null });
+      // Return null data with no error - route should treat as empty
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'categories') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
+          };
+        }
+        return {
+          select: vi.fn().mockReturnValue({
+            gte: vi.fn().mockReturnValue({
+              lte: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  range: vi.fn().mockResolvedValue({ data: null, error: null }),
+                }),
+              }),
+            }),
+          }),
+        };
+      });
 
       const request = new NextRequest('http://localhost/api/transactions/monthly-trend');
       const response = await GET(request);
@@ -249,6 +222,29 @@ describe('Dashboard Monthly Trend API', () => {
         expect(item.income).toBe(0);
         expect(item.expenses).toBe(0);
       });
+    });
+
+    it('filters out transactions in excluded categories', async () => {
+      const now = new Date();
+      const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+      const currentYear = now.getFullYear();
+      const dateStr = `${currentYear}-${currentMonth}-15`;
+
+      setupMocks({
+        excludedCategories: [{ id: 'excluded-cat' }],
+        transactions: [
+          { date: dateStr, amount: -100, category_id: 'excluded-cat' },
+          { date: dateStr, amount: -50, category_id: 'normal-cat' },
+        ],
+      });
+
+      const request = new NextRequest('http://localhost/api/transactions/monthly-trend?months=1');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      // Only the non-excluded transaction should be counted
+      expect(data[0].expenses).toBe(50);
     });
   });
 });

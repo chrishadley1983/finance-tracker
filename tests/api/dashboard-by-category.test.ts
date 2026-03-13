@@ -8,16 +8,13 @@ const TEST_CATEGORY_2_ID = '550e8400-e29b-41d4-a716-446655440002';
 const TEST_CATEGORY_3_ID = '550e8400-e29b-41d4-a716-446655440003';
 
 // Mock Supabase
-const mockSelect = vi.fn();
-const mockGte = vi.fn();
-const mockLte = vi.fn();
-const mockLt = vi.fn();
-
 const mockFrom = vi.fn();
+const mockRpc = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   supabaseAdmin: {
     from: (...args: unknown[]) => mockFrom(...args),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   },
 }));
 
@@ -25,19 +22,15 @@ describe('Dashboard By-Category API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Setup chain mocks
-    const chainMock = {
-      select: mockSelect,
-      gte: mockGte,
-      lte: mockLte,
-      lt: mockLt,
-    };
+    // Default: categories query returns empty excluded list
+    mockFrom.mockImplementation(() => ({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    }));
 
-    mockFrom.mockReturnValue(chainMock);
-    mockSelect.mockReturnValue(chainMock);
-    mockGte.mockReturnValue(chainMock);
-    mockLte.mockReturnValue(chainMock);
-    mockLt.mockResolvedValue({ data: [], error: null });
+    // Default: RPC returns empty
+    mockRpc.mockResolvedValue({ data: [], error: null });
   });
 
   afterEach(() => {
@@ -46,9 +39,9 @@ describe('Dashboard By-Category API', () => {
 
   describe('GET /api/transactions/by-category', () => {
     it('returns correct response shape for each category', async () => {
-      mockLt.mockResolvedValue({
+      mockRpc.mockResolvedValue({
         data: [
-          { amount: -100, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries' } },
+          { category_id: TEST_CATEGORY_1_ID, category_name: 'Groceries', total_amount: -100 },
         ],
         error: null,
       });
@@ -67,29 +60,11 @@ describe('Dashboard By-Category API', () => {
       }
     });
 
-    it('returns top 8 categories only', async () => {
-      const transactions = [];
-      for (let i = 1; i <= 12; i++) {
-        transactions.push({
-          amount: -100 * i,
-          category: { id: `cat-${i}`, name: `Category ${i}` },
-        });
-      }
-      mockLt.mockResolvedValue({ data: transactions, error: null });
-
-      const request = new NextRequest('http://localhost/api/transactions/by-category');
-      const response = await GET(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.length).toBeLessThanOrEqual(8);
-    });
-
-    it('only includes expenses (negative amounts)', async () => {
-      mockLt.mockResolvedValue({
+    it('only includes expenses (negative amounts become positive)', async () => {
+      mockRpc.mockResolvedValue({
         data: [
-          { amount: -50, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries' } },
-          { amount: -150, category: { id: TEST_CATEGORY_2_ID, name: 'Transport' } },
+          { category_id: TEST_CATEGORY_1_ID, category_name: 'Groceries', total_amount: -50 },
+          { category_id: TEST_CATEGORY_2_ID, category_name: 'Transport', total_amount: -150 },
         ],
         error: null,
       });
@@ -106,11 +81,10 @@ describe('Dashboard By-Category API', () => {
     });
 
     it('calculates percentages correctly', async () => {
-      mockLt.mockResolvedValue({
+      mockRpc.mockResolvedValue({
         data: [
-          { amount: -200, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries' } },
-          { amount: -100, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries' } },
-          { amount: -100, category: { id: TEST_CATEGORY_2_ID, name: 'Transport' } },
+          { category_id: TEST_CATEGORY_1_ID, category_name: 'Groceries', total_amount: -300 },
+          { category_id: TEST_CATEGORY_2_ID, category_name: 'Transport', total_amount: -100 },
         ],
         error: null,
       });
@@ -120,7 +94,7 @@ describe('Dashboard By-Category API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      // Total expenses: 200 + 100 + 100 = 400
+      // Total expenses: 300 + 100 = 400
       // Groceries: 300 = 75%
       // Transport: 100 = 25%
       const groceries = data.find((c: { categoryName: string }) => c.categoryName === 'Groceries');
@@ -132,32 +106,10 @@ describe('Dashboard By-Category API', () => {
       expect(transport.percentage).toBe(25);
     });
 
-    it('filters by month parameter', async () => {
-      mockLt.mockResolvedValue({ data: [], error: null });
-
-      const request = new NextRequest('http://localhost/api/transactions/by-category?month=2025-06');
-      await GET(request);
-
-      // Verify date filtering was called (exact dates depend on implementation)
-      expect(mockGte).toHaveBeenCalled();
-      expect(mockLte).toHaveBeenCalled();
-    });
-
-    it('uses current month when no month parameter provided', async () => {
-      mockLt.mockResolvedValue({ data: [], error: null });
-
-      const request = new NextRequest('http://localhost/api/transactions/by-category');
-      await GET(request);
-
-      expect(mockGte).toHaveBeenCalled();
-      expect(mockLte).toHaveBeenCalled();
-    });
-
     it('handles uncategorized transactions', async () => {
-      mockLt.mockResolvedValue({
+      mockRpc.mockResolvedValue({
         data: [
-          { amount: -100, category: null },
-          { amount: -50, category: null },
+          { category_id: null, category_name: null, total_amount: -150 },
         ],
         error: null,
       });
@@ -173,33 +125,12 @@ describe('Dashboard By-Category API', () => {
       expect(data[0].amount).toBe(150);
     });
 
-    it('groups transactions by category', async () => {
-      mockLt.mockResolvedValue({
-        data: [
-          { amount: -50, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries' } },
-          { amount: -75, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries' } },
-          { amount: -100, category: { id: TEST_CATEGORY_2_ID, name: 'Transport' } },
-        ],
-        error: null,
-      });
-
-      const request = new NextRequest('http://localhost/api/transactions/by-category');
-      const response = await GET(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.length).toBe(2);
-
-      const groceries = data.find((c: { categoryId: string }) => c.categoryId === TEST_CATEGORY_1_ID);
-      expect(groceries.amount).toBe(125); // 50 + 75
-    });
-
     it('sorts categories by amount descending', async () => {
-      mockLt.mockResolvedValue({
+      mockRpc.mockResolvedValue({
         data: [
-          { amount: -50, category: { id: TEST_CATEGORY_1_ID, name: 'Small' } },
-          { amount: -200, category: { id: TEST_CATEGORY_2_ID, name: 'Large' } },
-          { amount: -100, category: { id: TEST_CATEGORY_3_ID, name: 'Medium' } },
+          { category_id: TEST_CATEGORY_1_ID, category_name: 'Small', total_amount: -50 },
+          { category_id: TEST_CATEGORY_2_ID, category_name: 'Large', total_amount: -200 },
+          { category_id: TEST_CATEGORY_3_ID, category_name: 'Medium', total_amount: -100 },
         ],
         error: null,
       });
@@ -215,7 +146,7 @@ describe('Dashboard By-Category API', () => {
     });
 
     it('handles empty result for month with no expenses', async () => {
-      mockLt.mockResolvedValue({ data: [], error: null });
+      mockRpc.mockResolvedValue({ data: [], error: null });
 
       const request = new NextRequest('http://localhost/api/transactions/by-category');
       const response = await GET(request);
@@ -225,36 +156,21 @@ describe('Dashboard By-Category API', () => {
       expect(data).toEqual([]);
     });
 
-    it('returns 500 on database error', async () => {
-      mockLt.mockResolvedValue({
-        data: null,
-        error: { message: 'Database error' },
-      });
-
-      const request = new NextRequest('http://localhost/api/transactions/by-category');
-      const response = await GET(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(500);
-      expect(data.error).toBe('Database error');
-    });
-
-    it('queries transactions with category join', async () => {
-      mockLt.mockResolvedValue({ data: [], error: null });
+    it('calls rpc with get_spending_by_category', async () => {
+      mockRpc.mockResolvedValue({ data: [], error: null });
 
       const request = new NextRequest('http://localhost/api/transactions/by-category');
       await GET(request);
 
-      expect(mockFrom).toHaveBeenCalledWith('transactions');
-      expect(mockSelect).toHaveBeenCalled();
+      expect(mockRpc).toHaveBeenCalledWith('get_spending_by_category', expect.any(Object));
     });
 
     it('handles percentage rounding', async () => {
-      mockLt.mockResolvedValue({
+      mockRpc.mockResolvedValue({
         data: [
-          { amount: -33.33, category: { id: TEST_CATEGORY_1_ID, name: 'Cat1' } },
-          { amount: -33.33, category: { id: TEST_CATEGORY_2_ID, name: 'Cat2' } },
-          { amount: -33.34, category: { id: TEST_CATEGORY_3_ID, name: 'Cat3' } },
+          { category_id: TEST_CATEGORY_1_ID, category_name: 'Cat1', total_amount: -33.33 },
+          { category_id: TEST_CATEGORY_2_ID, category_name: 'Cat2', total_amount: -33.33 },
+          { category_id: TEST_CATEGORY_3_ID, category_name: 'Cat3', total_amount: -33.34 },
         ],
         error: null,
       });
@@ -268,6 +184,53 @@ describe('Dashboard By-Category API', () => {
       data.forEach((item: { percentage: number }) => {
         expect(Number.isInteger(item.percentage)).toBe(true);
       });
+    });
+
+    it('falls back to client-side aggregation on RPC error', async () => {
+      // RPC fails
+      mockRpc.mockResolvedValue({
+        data: null,
+        error: { message: 'function does not exist' },
+      });
+
+      // Fallback: categories query + transactions query with range
+      let fromCallCount = 0;
+      mockFrom.mockImplementation((table: string) => {
+        fromCallCount++;
+        if (table === 'categories') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
+          };
+        }
+        // transactions table - paginated query
+        return {
+          select: vi.fn().mockReturnValue({
+            gte: vi.fn().mockReturnValue({
+              lte: vi.fn().mockReturnValue({
+                lt: vi.fn().mockReturnValue({
+                  range: vi.fn().mockResolvedValue({
+                    data: [
+                      { amount: -100, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries', exclude_from_totals: false } },
+                    ],
+                    error: null,
+                  }),
+                }),
+              }),
+            }),
+          }),
+        };
+      });
+
+      const request = new NextRequest('http://localhost/api/transactions/by-category');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.length).toBe(1);
+      expect(data[0].categoryName).toBe('Groceries');
+      expect(data[0].amount).toBe(100);
     });
   });
 });

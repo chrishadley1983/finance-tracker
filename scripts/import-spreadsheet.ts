@@ -141,7 +141,7 @@ const accountMap = new Map<string, string>();
 const categoryMap = new Map<string, string>();
 
 // Account type mapping based on known accounts
-function getAccountType(name: string): Database['public']['Enums']['account_type'] {
+function getAccountType(name: string): Database['finance']['Enums']['account_type'] {
   const lower = name.toLowerCase();
   if (lower.includes('pension') || lower.includes('sipp') || lower.includes('prn') || lower.includes('prc') || lower.includes('acn pens')) {
     return 'pension';
@@ -335,7 +335,7 @@ async function importCategoryMappings(workbook: XLSX.WorkBook): Promise<void> {
       continue;
     }
 
-    const matchType: Database['public']['Enums']['match_type'] =
+    const matchType: Database['finance']['Enums']['match_type'] =
       row.Type?.toLowerCase() === 'custom' ? 'exact' : 'contains';
 
     const { error } = await supabase
@@ -417,8 +417,8 @@ async function importTransactions(workbook: XLSX.WorkBook): Promise<void> {
 
   // Process in batches of 100 for better performance
   const batchSize = 100;
-  const batches: Array<Database['public']['Tables']['transactions']['Insert'][]> = [];
-  let currentBatch: Database['public']['Tables']['transactions']['Insert'][] = [];
+  const batches: Array<Database['finance']['Tables']['transactions']['Insert'][]> = [];
+  let currentBatch: Database['finance']['Tables']['transactions']['Insert'][] = [];
 
   for (const row of allTransactions) {
     const date = formatDate(row.date);

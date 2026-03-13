@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { fireInputsSchema, type FireInputs } from '@/lib/types/fire';
 import type { Database } from '@/lib/supabase/database.types';
 
-type InputsRow = Database['public']['Tables']['fire_inputs']['Row'];
+type InputsRow = Database['finance']['Tables']['fire_inputs']['Row'];
 
 function mapInputsRow(row: InputsRow): FireInputs {
   return {
