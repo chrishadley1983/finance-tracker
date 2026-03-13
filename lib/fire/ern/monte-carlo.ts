@@ -142,6 +142,7 @@ export function runMonteCarlo(config: McConfig): McResults {
           const retirementAge = (config.currentAge ?? 42) + retirementMonth / 12;
           const ageNow = retirementAge + drawdownMonth / 12;
           const receivingStatePension = ageNow >= spaAge;
+          const canAccessSipp = ageNow >= 57;
           const annualW = w * 12; // Annualise for tax calc
 
           const result = computeOptimalDrawdown({
@@ -152,6 +153,7 @@ export function runMonteCarlo(config: McConfig): McResults {
             lsaUsed,
             giaGainFraction: Math.min(0.9, 0.5 + (drawdownMonth / 12) * 0.01),
             useUFPLS: false,
+            canAccessSipp,
           });
 
           lsaUsed += result.fromSippTaxFree;

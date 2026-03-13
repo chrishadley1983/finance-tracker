@@ -260,11 +260,28 @@ export function DrawdownExplainer({
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Pre-pension strategy */}
-              {prePensionYears > 0 && (
+              {/* Pre-SIPP access strategy (before age 57) */}
+              {retirementAge < 57 && (
+                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                  <h5 className="font-medium text-purple-800 dark:text-purple-300 mb-2">
+                    Pre-SIPP Access (age {retirementAge}&ndash;57)
+                  </h5>
+                  <ol className="list-decimal list-inside space-y-1 text-purple-700 dark:text-purple-400">
+                    <li><strong>ISA</strong> first &mdash; entirely tax-free</li>
+                    <li><strong>GIA</strong> if ISA insufficient &mdash; CGT on gains only</li>
+                    <li><strong>Cash</strong> as last resort</li>
+                  </ol>
+                  <p className="mt-2 text-xs text-purple-600 dark:text-purple-500">
+                    SIPP inaccessible until age 57 &mdash; pension stays invested and compounds
+                  </p>
+                </div>
+              )}
+
+              {/* Pre-pension, post-SIPP access strategy (age 57 to SPA) */}
+              {Math.max(retirementAge, 57) < statePensionStartAge && (
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
                   <h5 className="font-medium text-blue-800 dark:text-blue-300 mb-2">
-                    Pre-Pension (age {retirementAge}&ndash;{statePensionStartAge})
+                    SIPP Access, Pre-Pension (age {Math.max(retirementAge, 57)}&ndash;{statePensionStartAge})
                   </h5>
                   <ol className="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-400">
                     <li><strong>SIPP</strong> up to Personal Allowance ({fmt(12570)}/yr) &mdash; taxed at 0% via PA</li>

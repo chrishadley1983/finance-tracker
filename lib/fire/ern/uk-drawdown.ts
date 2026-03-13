@@ -78,6 +78,9 @@ export interface DrawdownConfig {
 
   /** Whether to use UFPLS (spread TFLS) vs upfront TFLS */
   useUFPLS?: boolean;
+
+  /** Whether the person has reached minimum pension access age (57 in UK) */
+  canAccessSipp?: boolean;
 }
 
 // =============================================================================
@@ -104,6 +107,7 @@ export function computeOptimalDrawdown(config: DrawdownConfig): DrawdownResult {
     lsaUsed = 0,
     giaGainFraction = 0.5,
     useUFPLS = false,
+    canAccessSipp = true,
   } = config;
 
   // Net spending need after state pension
@@ -118,12 +122,15 @@ export function computeOptimalDrawdown(config: DrawdownConfig): DrawdownResult {
   let fromCash = 0;
   let remaining = spendingGap;
 
+  // SIPP is inaccessible before minimum pension age (57 in UK)
+  const effectiveSipp = canAccessSipp ? balances.sipp : 0;
+
   if (!receivingStatePension) {
     // PRE-PENSION STRATEGY: Fill PA with SIPP, then ISA
 
     // Draw SIPP up to personal allowance (taxed at 0% due to PA)
     const paSpace = PERSONAL_ALLOWANCE;
-    const sippForPA = Math.min(remaining, paSpace, balances.sipp);
+    const sippForPA = Math.min(remaining, paSpace, effectiveSipp);
 
     if (sippForPA > 0) {
       if (useUFPLS) {
@@ -153,9 +160,9 @@ export function computeOptimalDrawdown(config: DrawdownConfig): DrawdownResult {
     fromIsa = Math.min(remaining, balances.isa);
     remaining -= fromIsa;
 
-    // If ISA insufficient, draw SIPP
+    // If ISA insufficient, draw SIPP (only if accessible)
     if (remaining > 0) {
-      const sippDraw = Math.min(remaining, balances.sipp);
+      const sippDraw = Math.min(remaining, effectiveSipp);
       if (sippDraw > 0) {
         if (useUFPLS) {
           const lsaRemaining = Math.max(0, LUMP_SUM_ALLOWANCE - lsaUsed);
@@ -255,6 +262,9 @@ export interface DrawdownProjectionConfig {
 
   /** Use UFPLS strategy */
   useUFPLS?: boolean;
+
+  /** Minimum age to access SIPP (default 57) */
+  sippAccessAge?: number;
 }
 
 /**
@@ -280,6 +290,7 @@ export function projectDrawdown(config: DrawdownProjectionConfig): {
     lsaUsed: initialLsaUsed = 0,
     giaGainFraction: initialGiaGainFraction = 0.5,
     useUFPLS = false,
+    sippAccessAge = 57,
   } = config;
 
   let balances = { ...config.balances };
@@ -293,6 +304,7 @@ export function projectDrawdown(config: DrawdownProjectionConfig): {
     const age = currentAge + y;
     const receivingStatePension = age >= statePensionAge;
     const statePensionIncome = receivingStatePension ? statePensionAnnual : 0;
+    const canAccessSipp = age >= sippAccessAge;
 
     // Estimate GIA gain fraction (increases over time as gains compound)
     const giaGainFraction = Math.min(
@@ -308,6 +320,7 @@ export function projectDrawdown(config: DrawdownProjectionConfig): {
       lsaUsed,
       giaGainFraction,
       useUFPLS,
+      canAccessSipp,
     });
 
     // Track LSA usage

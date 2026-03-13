@@ -169,9 +169,13 @@ describe('UK Drawdown Optimiser', () => {
         horizonYears: 48,
       });
 
-      // Pre-pension: SIPP drawn first
-      const prePension = result.years[0]; // Age 42
-      expect(prePension.fromSipp).toBeGreaterThan(0);
+      // Before SIPP access age (57): no SIPP drawn
+      const preSippAccess = result.years[0]; // Age 42
+      expect(preSippAccess.fromSipp).toBe(0);
+
+      // After SIPP access, pre-pension: SIPP drawn to fill PA
+      const postSippAccess = result.years[15]; // Age 57
+      expect(postSippAccess.fromSipp).toBeGreaterThan(0);
 
       // Post-pension: ISA drawn first (if available)
       const postPension = result.years[25]; // Age 67
