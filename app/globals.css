@@ -28,3 +28,101 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Pet animations — all CSS-only, hardware accelerated */
+.pet-bounce {
+  animation: pet-bounce 2s ease-in-out infinite;
+}
+
+.pet-wobble {
+  animation: pet-wobble 1.5s ease-in-out infinite;
+}
+
+.pet-float {
+  animation: pet-float 2s ease-in-out infinite;
+}
+
+.pet-float-up {
+  animation: pet-float-up 1.2s ease-out forwards;
+}
+
+.pet-pulse {
+  animation: pet-pulse 1s ease-in-out infinite;
+}
+
+.pet-hatch-shake {
+  animation: pet-hatch-shake 0.3s ease-in-out infinite;
+}
+
+.pet-sparkle {
+  position: absolute;
+  animation: pet-sparkle 2s ease-in-out infinite;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+@keyframes pet-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pet-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@keyframes pet-float {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(-4px); opacity: 0.7; }
+}
+
+@keyframes pet-float-up {
+  0% { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, -40px); opacity: 0; }
+}
+
+@keyframes pet-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes pet-hatch-shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-4px) rotate(-5deg); }
+  75% { transform: translateX(4px) rotate(5deg); }
+}
+
+@keyframes pet-sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Widget inline SVG animations */
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-4deg); }
+  75% { transform: rotate(4deg); }
+}
+
+@keyframes pet-breathe {
+  0%, 100% { transform: scaleY(1) scaleX(1); }
+  50% { transform: scaleY(1.03) scaleX(0.98); }
+}
+
+@keyframes pet-sleep-breathe {
+  0%, 100% { transform: scaleY(1) scaleX(1); }
+  50% { transform: scaleY(1.06) scaleX(0.96); }
+}
+
+@keyframes pet-happy-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-10px) rotate(-3deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-6px) rotate(3deg); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.3); }
+}

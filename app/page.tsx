@@ -13,6 +13,7 @@ import {
   TimeframePeriod,
 } from '@/components/dashboard';
 import { useDashboardData } from '@/lib/hooks/useDashboardData';
+import { PetWidget } from '@/components/pets/PetWidget';
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<TimeframePeriod>('last_month');
@@ -99,6 +100,7 @@ export default function DashboardPage() {
               dateFrom={summary?.startDate}
               dateTo={summary?.endDate}
             />
+            <PetWidget />
           </div>
         </div>
       </div>

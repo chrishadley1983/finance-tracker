@@ -40,5 +40,6 @@ next-env.d.ts
 /playwright/.cache/
 
 data/
+.data/
 nul
 summary_test.json

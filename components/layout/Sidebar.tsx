@@ -105,6 +105,15 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    href: '/pets',
+    label: 'Pets',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21c-1.5 0-3-.5-4-1.5C6 18 5 16.5 5 15c0-1 .5-2 1.5-3S9 10 9 8c0-1-.5-2-1-3 2 1 3 3 4 5 1-2 2-4 4-5-.5 1-1 2-1 3 0 2 1.5 3 2.5 4s1.5 2 1.5 3c0 1.5-1 3-3 4.5-1 1-2.5 1.5-4 1.5z" />
+      </svg>
+    ),
+  },
+  {
     href: '/settings',
     label: 'Settings',
     icon: (
