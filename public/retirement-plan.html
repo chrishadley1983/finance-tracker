@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Retirement Plan — Chris &amp; Abby Hadley</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+ :root { --bg:#0f172a; --card:#1e293b; --border:#334155; --text:#e2e8f0; --dim:#94a3b8; --accent:#3b82f6; --ok:#10b981; --warn:#f59e0b; --bad:#ef4444; }
+ * { box-sizing: border-box; }
+ body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 32px 16px; line-height: 1.5; }
+ .wrap { max-width: 1080px; margin: 0 auto; }
+ header { border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 28px; }
+ h1 { margin: 0 0 4px; font-size: 28px; }
+ h2 { margin: 32px 0 12px; font-size: 20px; color: #f8fafc; border-left: 3px solid var(--accent); padding-left: 10px; }
+ h3 { margin: 20px 0 8px; font-size: 15px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; }
+ .sub { color: var(--dim); font-size: 13px; margin: 0; }
+ .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 18px; }
+ table { width: 100%; border-collapse: collapse; margin: 8px 0 4px; font-size: 14px; }
+ th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+ th { color: var(--dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+ td.ok { color: var(--ok); }
+ td.bad { color: var(--bad); }
+ .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+ .kpi { background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+ .kpi .h { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
+ .kpi .v { font-size: 22px; font-weight: 600; margin-top: 4px; }
+ .kpi .s { font-size: 11px; color: #64748b; margin-top: 2px; }
+ .chart-wrap { position: relative; height: 540px; margin-top: 8px; }
+ .pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-right: 6px; }
+ .pill.ok { background: rgba(16,185,129,0.15); color: var(--ok); }
+ .pill.warn { background: rgba(245,158,11,0.15); color: var(--warn); }
+ .pill.bad { background: rgba(239,68,68,0.15); color: var(--bad); }
+ ul { padding-left: 20px; } li { margin-bottom: 4px; }
+ .footer { color: var(--dim); font-size: 11px; margin-top: 32px; border-top: 1px solid var(--border); padding-top: 12px; }
+ @media print { body { background: white; color: black; } .card { background: white; border: 1px solid #ddd; } h2 { color: black; } .kpi { background: #f8fafc; } }
+ @media (max-width: 720px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <h1>Retirement Plan — Chris &amp; Abby Hadley</h1>
+ <p class="sub">Scenario B · Generated 21 Apr 2026 · Chris 42 · Abby 39 · Plan horizon to Abby 95 (2082)</p>
+</header>
+
+<section class="card">
+ <h2>Executive Summary</h2>
+ <p>We retire in <b>2031</b> (Chris 48, Abby 45) and live on <b>£60k/yr</b> in today's money. A Hadley Bricks partnership with Abby (50/50, £27.5k gross) runs 2031-2037 until Max leaves school. Even under sustained 2% real returns the plan holds to age 95; under central 3% assumptions, the pot ends around <b>£3.05m</b> in real terms — meaning we're likely to leave a meaningful estate.</p>
+ <div class="kpis">
+  <div class="kpi"><div class="h">Net worth today</div><div class="v">£2.20m</div><div class="s">Including £696k home</div></div>
+  <div class="kpi"><div class="h">Retirement date</div><div class="v">2031</div><div class="s">Chris 48 / Abby 45</div></div>
+  <div class="kpi"><div class="h">Target spend</div><div class="v">£60k/yr</div><div class="s">Real terms, 50+ yrs</div></div>
+  <div class="kpi"><div class="h">Plan end wealth</div><div class="v">£3.05m</div><div class="s">Central case, real</div></div>
+ </div>
+</section>
+
+<section class="card">
+ <h2>Where We Stand Today</h2>
+ <table>
+  <thead><tr><th>Asset</th><th class="n">Value £</th><th class="n">% of NW</th><th>Access</th></tr></thead>
+  <tbody>
+   <tr><td>Pensions</td><td class="n">801,685</td><td class="n">36.4%</td><td>Age 57</td></tr>
+   <tr><td>Property (primary residence)</td><td class="n">696,000</td><td class="n">31.6%</td><td>On sale/downsize</td></tr>
+   <tr><td>ISAs</td><td class="n">519,878</td><td class="n">23.6%</td><td>Immediate, tax-free</td></tr>
+   <tr><td>Savings (incl. £60k crypto)</td><td class="n">134,499</td><td class="n">6.1%</td><td>Immediate</td></tr>
+   <tr><td>Other (Green Gilt)</td><td class="n">25,000</td><td class="n">1.1%</td><td>On sale</td></tr>
+   <tr><td>Current</td><td class="n">21,927</td><td class="n">1.0%</td><td>Immediate</td></tr>
+   <tr><td>Investments (GIA)</td><td class="n">2,032</td><td class="n">0.1%</td><td>Immediate</td></tr>
+   <tr><td>Credit</td><td class="n bad">-604</td><td class="n">0.0%</td><td>—</td></tr>
+   <tr><th>Total Net Worth</th><th class="n">2,200,417</th><th class="n">100%</th><th></th></tr>
+  </tbody>
+ </table>
+ <h3>Cashflow (2024 actuals)</h3>
+ <table>
+  <thead><tr><th>Item</th><th class="n">£/yr</th></tr></thead>
+  <tbody>
+   <tr><td>Expenses (2024 total)</td><td class="n">71,118</td></tr>
+   <tr><td>Income (salaries, excl. pension contribs)</td><td class="n">~92,787</td></tr>
+   <tr><td>Last month run-rate — in line with 2024</td><td class="n">5,725/mo</td></tr>
+  </tbody>
+ </table>
+ <p class="sub"><b>Note on breakdown:</b> of the headline £156k "Savings + Current", ~£60k is held in crypto and £25k in a Government Green Gilt. Actual true cash is ~£96k — still comfortably above target.</p>
+</section>
+
+<section class="card">
+ <h2>Assumptions</h2>
+ <table>
+  <thead><tr><th>Parameter</th><th>Value</th><th>Basis</th></tr></thead>
+  <tbody>
+   <tr><td>Chris DOB</td><td>10 Nov 1983</td><td>Confirmed</td></tr>
+   <tr><td>Abby DOB</td><td>5 Aug 1986</td><td>Confirmed</td></tr>
+   <tr><td>Real investment return</td><td>3% central (2% low / 5% high)</td><td>Long-run UK equity/mixed portfolio, net of inflation</td></tr>
+   <tr><td>Annual spend (real)</td><td>£60,000</td><td>Below 2024 actual of £71k (mortgage-free, kids younger)</td></tr>
+   <tr><td>Savings 2026-2030</td><td>£20k/yr into ISAs</td><td>Couple's ISA allowance partially used</td></tr>
+   <tr><td>Hadley Bricks gross profit</td><td>£27.5k/yr (midpoint of £25-30k)</td><td>Partnership 50/50 split with Abby</td></tr>
+   <tr><td>HB period</td><td>2031 → summer 2037</td><td>Starts at RE, ends when Max (b.2018) finishes A-levels</td></tr>
+   <tr><td>Pension access age</td><td>57</td><td>UK minimum from April 2028 (Chris 2040, Abby 2043)</td></tr>
+   <tr><td>State Pension age</td><td>68</td><td>Current legislation; Chris 2051, Abby 2054</td></tr>
+   <tr><td>State Pension amount</td><td>£11,502/yr each (real)</td><td>Full entitlement at 2024/25 rate</td></tr>
+   <tr><td>Plan horizon</td><td>Age 95 (Abby 2082)</td><td>Conservative; joint mortality ~94</td></tr>
+   <tr><td>Inflation handling</td><td>All figures in today's money</td><td>Real returns used throughout</td></tr>
+  </tbody>
+ </table>
+</section>
+
+<section class="card">
+ <h2>The Plan in Four Phases</h2>
+ <table>
+  <thead><tr><th>Phase</th><th>Years</th><th>Activity</th><th class="n">Gross income £k</th><th class="n">Net draw from pot £k</th></tr></thead>
+  <tbody>
+   <tr><td>1. Save</td><td>2026-2030</td><td>Chris full-time on HB, Abby working. Contribute £20k/yr.</td><td class="n">full salaries</td><td class="n">0 (+£20k saved)</td></tr>
+   <tr><td>2. Partnership</td><td>2031-2036</td><td>Retire from main work. HB 50/50 partnership £27.5k gross (both partners).</td><td class="n">26.9 net</td><td class="n">33</td></tr>
+   <tr><td>3. Bridge</td><td>2037-2039</td><td>HB ends. Full ISA drawdown until Chris 57.</td><td class="n">0</td><td class="n">60</td></tr>
+   <tr><td>4. Pensions</td><td>2040+</td><td>Chris 57: pension unlocks. Abby 2043. State Pensions 2051/2054.</td><td class="n">0 → 23 (SPs)</td><td class="n">60 → 37</td></tr>
+  </tbody>
+ </table>
+</section>
+
+<section class="card">
+ <h2>Hadley Bricks Partnership — Tax</h2>
+ <p class="sub">50/50 split. Both partners use their full Personal Allowance. Both earn State Pension qualifying years automatically (share &gt; £6,725 SPT).</p>
+ <table>
+  <thead><tr><th>Item</th><th class="n">Chris £</th><th class="n">Abby £</th><th class="n">Combined £</th></tr></thead>
+  <tbody>
+   <tr><td>Profit share</td><td class="n">13,750</td><td class="n">13,750</td><td class="n">27,500</td></tr>
+   <tr><td>Personal Allowance</td><td class="n">12,570</td><td class="n">12,570</td><td class="n">25,140</td></tr>
+   <tr><td>Taxable amount</td><td class="n">1,180</td><td class="n">1,180</td><td class="n">2,360</td></tr>
+   <tr><td>Income tax (20%)</td><td class="n">236</td><td class="n">236</td><td class="n">472</td></tr>
+   <tr><td>Class 4 NI (6%)</td><td class="n">71</td><td class="n">71</td><td class="n">142</td></tr>
+   <tr><td>Class 2 NI credit (auto)</td><td>yes</td><td>yes</td><td>—</td></tr>
+   <tr><th>Net take-home</th><th class="n">13,443</th><th class="n">13,443</th><th class="n">26,886</th></tr>
+  </tbody>
+ </table>
+ <p class="sub">Saves ~£5-8k/yr in tax vs. running through Chris alone at higher marginal rates, and gives Abby 6 qualifying NI years.</p>
+</section>
+
+<section class="card">
+ <h2>Cash Deployment Plan</h2>
+ <table>
+  <thead><tr><th>Bucket</th><th class="n">£</th><th>Action</th></tr></thead>
+  <tbody>
+   <tr><td>Savings (cash portion)</td><td class="n">~74,000</td><td>Deploy £40k to ISAs over 2 tax years</td></tr>
+   <tr><td>Current</td><td class="n">21,927</td><td>Keep as working cash</td></tr>
+   <tr><td>Crypto (held in Savings)</td><td class="n">60,000</td><td>Keep — long-term risk allocation</td></tr>
+   <tr><td>Green Gilt (Other)</td><td class="n">25,000</td><td>Keep — fixed-income ballast</td></tr>
+  </tbody>
+ </table>
+ <h3>ISA Deployment Schedule</h3>
+ <table>
+  <thead><tr><th>Tax year</th><th>Chris ISA £</th><th>Abby ISA £</th><th class="n">Total £</th></tr></thead>
+  <tbody>
+   <tr><td>2026/27</td><td>10,000</td><td>10,000</td><td class="n">20,000</td></tr>
+   <tr><td>2027/28</td><td>10,000</td><td>10,000</td><td class="n">20,000</td></tr>
+   <tr><th>Total deployed</th><th></th><th></th><th class="n">40,000</th></tr>
+  </tbody>
+ </table>
+ <p class="sub">Leaves ~£30k working cash (6 months cover) + £60k crypto + £25k gilt as secondary buffers. Abby's salary continues 2026-2030 as additional safety.</p>
+</section>
+
+<section class="card">
+ <h2>Wealth Projection — Fan Chart</h2>
+ <div class="chart-wrap"><canvas id="chart"></canvas></div>
+ <p class="sub" style="margin-top:12px;">Green band = range between 2% (pessimistic) and 5% (optimistic) real returns. Blue = central 3% base plan. Red horizontal line = £0 (plan failure threshold — never crossed).</p>
+</section>
+
+<section class="card">
+ <h2>Key Milestones — Combined Investable Wealth (real £k)</h2>
+ <table>
+  <thead><tr><th>Year</th><th>Event</th><th class="n">Low 2%</th><th class="n">Central 3%</th><th class="n">High 5%</th></tr></thead>
+  <tbody>
+   <tr><td>2026</td><td>Today</td><td class="n">1,505</td><td class="n">1,505</td><td class="n">1,505</td></tr>
+   <tr><td>2031</td><td>Retire (Chris 48)</td><td class="n">1,766</td><td class="n">1,851</td><td class="n">2,031</td></tr>
+   <tr><td>2037</td><td>HB ends</td><td class="n">1,780</td><td class="n">1,996</td><td class="n">2,497</td></tr>
+   <tr><td>2040</td><td>Chris 57 — pension unlocks</td><td class="n">1,705</td><td class="n">1,996</td><td class="n">2,702</td></tr>
+   <tr><td>2051</td><td>Chris State Pension starts</td><td class="n">1,390</td><td class="n">1,994</td><td class="n">3,768</td></tr>
+   <tr><td>2054</td><td>Abby State Pension starts</td><td class="n">1,326</td><td class="n">2,029</td><td class="n">4,209</td></tr>
+   <tr><td>2070</td><td>Chris 87 / Abby 84</td><td class="n">1,131</td><td class="n">2,510</td><td class="n">8,312</td></tr>
+   <tr><td>2082</td><td>Abby 95 (plan end)</td><td class="n">938</td><td class="n">3,053</td><td class="n">14,339</td></tr>
+  </tbody>
+ </table>
+</section>
+
+<section class="card">
+ <h2>Drawdown Strategy</h2>
+ <table>
+  <thead><tr><th>Phase</th><th>Source order</th><th>Tax efficiency</th></tr></thead>
+  <tbody>
+   <tr><td>2031-2036 Partnership</td><td>HB income first, then ISA for shortfall</td><td>HB profits absorbed by PAs; ISA draws tax-free</td></tr>
+   <tr><td>2037-2039 Pure bridge</td><td>ISA drawdown only</td><td>Fully tax-free</td></tr>
+   <tr><td>2040-2050 Post-57</td><td>Pension: 25% tax-free lump + taxable draws up to PA+basic rate band; top up with ISA</td><td>~8% effective tax; use both personal allowances and basic-rate bands</td></tr>
+   <tr><td>2051-2053 Chris SP live</td><td>SP £11.5k + taxable pension + ISA</td><td>SP uses Chris's PA; Abby draws tax-free up to her PA</td></tr>
+   <tr><td>2054+ Both SP live</td><td>Both SPs + reduced pension + ISA top-up</td><td>Net draw from pot drops to £37k/yr</td></tr>
+  </tbody>
+ </table>
+</section>
+
+<section class="card">
+ <h2>Risks &amp; Mitigations</h2>
+ <table>
+  <thead><tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr></thead>
+  <tbody>
+   <tr><td>Sequence-of-returns (market drop 2031-2033)</td><td><span class="pill warn">Medium</span></td><td>Hold 2-3 yrs spend in cash/bonds; flex spending down to £45-50k in bad years</td></tr>
+   <tr><td>One partner becomes ill/incapacitated</td><td><span class="pill bad">High</span></td><td>Review income protection + life cover in next 3 months</td></tr>
+   <tr><td>Expense creep above £60k real</td><td><span class="pill warn">Medium</span></td><td>Annual review; safe spend cap at £75k from 2037; house equity as backstop</td></tr>
+   <tr><td>Inheritance Tax on growing estate</td><td><span class="pill bad">High</span></td><td>Start 7-year gift clock now; consider BPR-qualifying investments; review pension IHT changes post-2027</td></tr>
+   <tr><td>Long-term care costs</td><td><span class="pill warn">Medium</span></td><td>Property equity £696k is backstop; consider LTC insurance at 65</td></tr>
+   <tr><td>HB income under-delivers</td><td><span class="pill warn">Low</span></td><td>Extra ~£7k/yr ISA draw covers shortfall without breaking plan</td></tr>
+   <tr><td>State Pension system reform / delays</td><td><span class="pill warn">Low</span></td><td>SP is &lt;10% of retirement income; plan resilient without it</td></tr>
+  </tbody>
+ </table>
+</section>
+
+<section class="card">
+ <h2>Action Checklist — Next 12 Months</h2>
+ <table>
+  <thead><tr><th>#</th><th>Action</th><th>Owner</th><th>By when</th></tr></thead>
+  <tbody>
+   <tr><td>1</td><td>Deploy £20k cash → ISAs (£10k each) — 2026/27 tax year</td><td>Both</td><td>Next 2 weeks</td></tr>
+   <tr><td>2</td><td>Deploy £20k cash → ISAs (£10k each) — 2027/28</td><td>Both</td><td>Apr 2027</td></tr>
+   <tr><td>3</td><td>Check both State Pension forecasts (gov.uk/check-state-pension)</td><td>Both</td><td>Next 2 weeks</td></tr>
+   <tr><td>4</td><td>Review investment allocations — target ≥80% equity household-wide</td><td>Chris</td><td>Next month</td></tr>
+   <tr><td>5</td><td>Life + income protection review</td><td>Both</td><td>Next 3 months</td></tr>
+   <tr><td>6</td><td>IHT planning session with specialist</td><td>Both</td><td>Next 6 months</td></tr>
+   <tr><td>7</td><td>Engage accountant re: HB partnership set-up for 2031</td><td>Chris</td><td>Q4 2030</td></tr>
+   <tr><td>8</td><td>Annual plan review checkpoint</td><td>Both</td><td>Apr 2027</td></tr>
+  </tbody>
+ </table>
+</section>
+
+<section class="card">
+ <h2>The Bottom Line</h2>
+ <p><b>We're on track.</b> The maths works under pessimistic, central, and optimistic market conditions. The questions ahead aren't whether we can afford to retire — they're about <i>how</i> we want to live, what we do for the kids, and how we manage the Inheritance Tax exposure on a growing estate.</p>
+ <p>Three numbers to remember:</p>
+ <ul>
+  <li><b>£1.85m at retirement (2031)</b> — where we're heading</li>
+  <li><b>£60k real spend</b> — what we've planned for</li>
+  <li><b>Plan never breaks</b> under 2-5% real returns — downside protected, upside large</li>
+ </ul>
+</section>
+
+<p class="footer">This is a deterministic projection, not regulated financial advice. Tax legislation, returns, and personal circumstances change. Review annually. For binding decisions consult an FCA-authorised IFA.</p>
+</div>
+
+<script>
+const chartData = {"labels": [2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033, 2034, 2035, 2036, 2037, 2038, 2039, 2040, 2041, 2042, 2043, 2044, 2045, 2046, 2047, 2048, 2049, 2050, 2051, 2052, 2053, 2054, 2055, 2056, 2057, 2058, 2059, 2060, 2061, 2062, 2063, 2064, 2065, 2066, 2067, 2068, 2069, 2070, 2071, 2072, 2073, 2074, 2075, 2076, 2077, 2078, 2079, 2080, 2081, 2082], "datasets": [{"label": "Low (2% real)", "data": [1505.0, 1555.1, 1606.2, 1658.3, 1711.5, 1765.7, 1767.9, 1770.2, 1772.5, 1774.8, 1777.2, 1779.7, 1755.3, 1730.4, 1705.0, 1679.1, 1652.7, 1625.7, 1598.2, 1570.2, 1541.6, 1512.5, 1482.7, 1452.4, 1421.4, 1389.8, 1369.1, 1348.0, 1326.5, 1316.0, 1305.3, 1294.4, 1283.3, 1272.0, 1260.4, 1248.6, 1236.6, 1224.3, 1211.8, 1199.1, 1186.0, 1172.8, 1159.2, 1145.4, 1131.3, 1116.9, 1102.3, 1087.3, 1072.1, 1056.5, 1040.6, 1024.4, 1007.9, 991.1, 973.9, 956.4, 938.5], "borderColor": "#ef4444", "backgroundColor": "rgba(239,68,68,0.05)", "borderWidth": 1.6, "borderDash": [5, 4], "pointRadius": 0, "tension": 0.1, "fill": false}, {"label": "High (5% real)", "data": [1505.0, 1600.2, 1700.3, 1805.3, 1915.5, 2031.3, 2099.8, 2171.7, 2247.2, 2326.4, 2409.6, 2497.0, 2561.9, 2630.0, 2701.5, 2776.5, 2855.4, 2938.1, 3025.0, 3116.3, 3212.1, 3312.7, 3418.3, 3529.3, 3645.7, 3768.0, 3907.9, 4054.8, 4209.0, 4382.5, 4564.6, 4755.8, 4956.6, 5167.5, 5388.8, 5621.3, 5865.3, 6121.6, 6390.7, 6673.2, 6969.9, 7281.4, 7608.5, 7951.9, 8312.5, 8691.1, 9088.6, 9506.1, 9944.4, 10404.6, 10887.8, 11395.2, 11928.0, 12487.4, 13074.8, 13691.5, 14339.1], "borderColor": "#10b981", "backgroundColor": "rgba(16,185,129,0.12)", "borderWidth": 1.6, "borderDash": [5, 4], "pointRadius": 0, "tension": 0.1, "fill": "-1"}, {"label": "Central (3% real)", "data": [1505.0, 1570.2, 1637.3, 1706.4, 1777.6, 1850.9, 1873.3, 1896.4, 1920.2, 1944.7, 1970.0, 1996.0, 1995.8, 1995.7, 1995.6, 1995.4, 1995.3, 1995.2, 1995.0, 1994.9, 1994.7, 1994.6, 1994.4, 1994.2, 1994.1, 1993.9, 2005.2, 2016.9, 2028.9, 2052.7, 2077.3, 2102.6, 2128.7, 2155.6, 2183.2, 2211.7, 2241.1, 2271.3, 2302.5, 2334.5, 2367.6, 2401.6, 2436.6, 2472.7, 2509.9, 2548.2, 2587.7, 2628.3, 2670.1, 2713.2, 2757.6, 2803.4, 2850.5, 2899.0, 2949.0, 3000.4, 3053.4], "borderColor": "#3b82f6", "backgroundColor": "rgba(59,130,246,0)", "borderWidth": 3.0, "pointRadius": 0, "tension": 0.1, "fill": false}]};
+const ctx = document.getElementById('chart').getContext('2d');
+new Chart(ctx, {
+ type: 'line',
+ data: chartData,
+ options: {
+  responsive: true, maintainAspectRatio: false,
+  plugins: {
+   legend: { labels: { color: '#e2e8f0' } },
+   tooltip: { mode: 'index', intersect: false,
+    callbacks: { label: c => c.dataset.label + ': £' + c.parsed.y.toLocaleString('en-GB', {maximumFractionDigits:0}) + 'k' } },
+   annotation: {
+    annotations: {
+     r:  { type:'line', xMin:5,  xMax:5,  borderColor:'#f1f5f9', borderWidth:1, borderDash:[4,4], label:{ display:true, content:'Retire 2031', position:'start', color:'#f1f5f9', font:{size:10}, backgroundColor:'rgba(0,0,0,0.4)'}},
+     h:  { type:'line', xMin:11, xMax:11, borderColor:'#94a3b8', borderWidth:1, borderDash:[4,4], label:{ display:true, content:'HB ends 2037', position:'start', color:'#f1f5f9', font:{size:10}, backgroundColor:'rgba(0,0,0,0.4)'}},
+     c57:{ type:'line', xMin:14, xMax:14, borderColor:'#94a3b8', borderWidth:1, borderDash:[4,4], label:{ display:true, content:'Chris 57', position:'start', color:'#f1f5f9', font:{size:10}, backgroundColor:'rgba(0,0,0,0.4)'}},
+     c68:{ type:'line', xMin:25, xMax:25, borderColor:'#94a3b8', borderWidth:1, borderDash:[4,4], label:{ display:true, content:'Chris SP', position:'start', color:'#f1f5f9', font:{size:10}, backgroundColor:'rgba(0,0,0,0.4)'}},
+     a68:{ type:'line', xMin:28, xMax:28, borderColor:'#94a3b8', borderWidth:1, borderDash:[4,4], label:{ display:true, content:'Abby SP', position:'start', color:'#f1f5f9', font:{size:10}, backgroundColor:'rgba(0,0,0,0.4)'}},
+     z:  { type:'line', yMin:0, yMax:0, borderColor:'#ef4444', borderWidth:1 }
+    }
+   }
+  },
+  scales: {
+   x: { ticks: { color:'#94a3b8', maxTicksLimit: 12 }, grid: { color:'rgba(148,163,184,0.12)' } },
+   y: { ticks: { color:'#94a3b8', callback: v => '£' + v.toLocaleString('en-GB') + 'k' },
+        grid: { color: 'rgba(148,163,184,0.12)' },
+        title: { display: true, text: 'Combined Investable Wealth (real £k)', color: '#cbd5e1' } }
+  },
+  interaction: { mode: 'index', intersect: false }
+ }
+});
+</script>
+</body>
+</html>
