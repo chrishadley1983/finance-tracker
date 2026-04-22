@@ -1,112 +1,108 @@
-# Merge Feature Agent
+# Merge Feature Command
 
-Execute the Standard Boot Sequence first: `cat docs/agents/config/boot-sequence.md`
+You are now operating as the **Merge Feature Agent**. Follow the comprehensive instructions in `docs/agents/merge-feature-agent.md`.
 
-## Purpose
+## Quick Reference
 
-Safely merge feature branches with verification.
-
-## Usage
-
-`/merge-feature <branch-name>`
-
-## Execution
-
-### 1. Boot Sequence
-Execute all phases from boot-sequence.md
-
-### 2. Pre-Merge Verification
-
-```bash
-# Check for uncommitted changes
-git status --porcelain
-
-# Ensure on main
-git branch --show-current
-
-# Fetch latest
-git fetch origin
-
-# Check branch exists
-git branch -a | grep <branch-name>
+### Usage
+```
+/merge-feature <mode>
 ```
 
-### 3. Prepare Merge
+### Available Modes
 
-```bash
-# Switch to main
-git checkout main
+| Mode | Description |
+|------|-------------|
+| `<branch-name>` | Merge specific branch to main (with deploy verification) |
+| `auto` | Auto-detect current feature branch |
+| `list` | List unmerged branches |
+| `status` | Show merge status |
+| `check` | Check merge readiness (no action taken) |
+| `preview` | Run critical path tests against Vercel preview |
+| `verify-production` | Run critical path tests against production |
+| `rollback` | Revert last merge and redeploy |
 
-# Pull latest
-git pull origin main
-
-# Show what will be merged
-git log main..<branch-name> --oneline
+### Examples
+```powershell
+/merge-feature feature/budget-alerts    # Full merge with deploy verification
+/merge-feature check                     # Check if ready to merge
+/merge-feature preview                   # Test preview deployment
+/merge-feature verify-production         # Test production health
+/merge-feature rollback                  # Revert last merge
+/merge-feature list                      # List unmerged branches
 ```
 
-### 4. Execute Merge
+### Track Detection
 
-```bash
-# Merge with --no-ff to preserve history
-git merge --no-ff <branch-name> -m "Merge <branch-name> into main"
+The agent detects the track from branch name:
+- **FEATURE track:** `feature/*`, `chore/*`, `refactor/*` -> Full prerequisites
+- **FIX track:** `fix/*`, `hotfix/*`, `bugfix/*` -> Abbreviated checks
+
+### Prerequisites
+
+**FEATURE track:**
+1. Done criteria exists in `docs/features/<name>/`
+2. Verify Done passed
+3. `/test pre-merge` passed
+4. `/code-review branch` completed
+
+**FIX track:**
+1. `/code-review branch` completed
+
+### Permissions
+
+For this project:
+- Cannot push directly to main (GitHub branch protection)
+- Can create pull requests via `gh pr create`
+- Can merge PRs via GitHub after checks pass
+- Can delete local and remote branches
+- Can force delete branches after merge confirmed
+- Never force push to main
+
+### Extended Merge Process
+
+1. Detect track from branch name
+2. Check prerequisites (track-specific)
+3. Pre-merge verification
+4. Fetch latest main
+5. Execute merge with `--no-ff`
+6. Post-merge verification (TypeScript, lint, tests)
+7. Push to origin
+8. **Wait for Vercel deployment**
+9. **Run production verification**
+10. **Update last-deploy.json**
+11. Delete merged branches
+12. Generate merge report
+
+### Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `docs/agents/merge-feature/config.json` | URLs, timeouts, track settings |
+| `docs/agents/merge-feature/critical-paths.spec.ts` | Playwright verification tests |
+| `docs/agents/merge-feature/last-deploy.json` | Last deployment record (for rollback) |
+
+### Output Files
+
+- Merge Report: `docs/merges/YYYY-MM-DD_<branch>.md`
+- Last Deploy: `docs/agents/merge-feature/last-deploy.json`
+
+### Recovery
+
+Undo merge before push:
+```powershell
+git reset --hard HEAD~1
 ```
 
-### 5. Post-Merge Verification
-
-```bash
-# TypeScript check
-npx tsc --noEmit
-
-# Run tests
-npm test
-
-# Start dev server (briefly)
-npm run dev &
-sleep 5
-curl http://localhost:3000/api/health
-kill %1
+Undo merge after push (use rollback for verified recovery):
+```powershell
+/merge-feature rollback
 ```
 
-### 6. Push and Cleanup
-
-```bash
-# Push to origin
+Manual revert (if rollback unavailable):
+```powershell
+git revert -m 1 HEAD
 git push origin main
-
-# Delete local branch
-git branch -D <branch-name>
-
-# Delete remote branch
-git push origin --delete <branch-name>
 ```
 
-### 7. Generate Report
-
-Create `docs/merges/YYYY-MM-DD_<branch-name>.md`:
-
-```markdown
-# Merge Report
-
-**Branch:** <branch-name>
-**Merged:** <timestamp>
-**Commits:** N
-
-## Verification Results
-
-| Check | Status |
-|-------|--------|
-| TypeScript | Pass |
-| Tests | Pass |
-| Dev Server | Running |
-
-## Files Changed
-- <list>
-
-## Cleanup
-- Local branch deleted
-- Remote branch deleted
-```
-
-### 8. Update State
-
-Update `docs/agents/merge-feature/state.json`
+ARGUMENTS: <mode>
