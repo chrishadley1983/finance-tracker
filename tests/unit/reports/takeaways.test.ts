@@ -173,7 +173,7 @@ describe('analyseFireProgress', () => {
   it('flags scenario target reached', () => {
     const result = analyseFireProgress(makeReport({
       firePortfolio: 1_000_000,
-      fireScenarios: [{ name: 'Lean', targetAmount: 800_000, currentAmount: 1_000_000, progressPct: 125 }],
+      fireScenarios: [{ name: 'Lean', annualSpend: 32_000, withdrawalRate: 4, targetAmount: 800_000, currentAmount: 1_000_000, progressPct: 125 }],
     }));
     expect(result).not.toBeNull();
     expect(result!.tag).toBe('strong');
@@ -184,7 +184,7 @@ describe('analyseFireProgress', () => {
   it('flags ≥80% progress towards closest target', () => {
     const result = analyseFireProgress(makeReport({
       firePortfolio: 850_000,
-      fireScenarios: [{ name: 'Full', targetAmount: 1_000_000, currentAmount: 850_000, progressPct: 85 }],
+      fireScenarios: [{ name: 'Full', annualSpend: 40_000, withdrawalRate: 4, targetAmount: 1_000_000, currentAmount: 850_000, progressPct: 85 }],
     }));
     expect(result).not.toBeNull();
     expect(result!.title).toContain('85%');
@@ -193,7 +193,7 @@ describe('analyseFireProgress', () => {
   it('returns null when far from target', () => {
     expect(analyseFireProgress(makeReport({
       firePortfolio: 200_000,
-      fireScenarios: [{ name: 'Fat', targetAmount: 2_000_000, currentAmount: 200_000, progressPct: 10 }],
+      fireScenarios: [{ name: 'Fat', annualSpend: 80_000, withdrawalRate: 4, targetAmount: 2_000_000, currentAmount: 200_000, progressPct: 10 }],
     }))).toBeNull();
   });
 });
