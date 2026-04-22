@@ -51,6 +51,11 @@ summary_test.json
 /Docs/*.zip
 /Docs/fire-calculator-input/
 
+# MCP server config — contains local DB connection string / credentials.
+# Never commit. Local file continues to work for the VS Code / Claude Code
+# Supabase connector.
+/.vscode/mcp.json
+
 # One-off personal reconciliation and PDF-parsing scripts.
 # These contain account-specific IDs, dated CSV paths, or session-specific
 # cleanup logic and aren't reusable as-is. The statement-reconcile skill
