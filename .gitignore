@@ -50,3 +50,33 @@ summary_test.json
 /supabase/.temp/
 /Docs/*.zip
 /Docs/fire-calculator-input/
+
+# One-off personal reconciliation and PDF-parsing scripts.
+# These contain account-specific IDs, dated CSV paths, or session-specific
+# cleanup logic and aren't reusable as-is. The statement-reconcile skill
+# references parse-pdf-v4.mjs, validate-parser.mjs, and fx-fee-matcher.mjs
+# so they stay on disk; they're just kept out of git.
+/scripts/check-direct-entries.mjs
+/scripts/checkpoint-reconcile.mjs
+/scripts/debug-trend.js
+/scripts/dig-drift.mjs
+/scripts/extract-balances.mjs
+/scripts/extract-statements.mjs
+/scripts/find-extra-dupes.mjs
+/scripts/full-reconcile.mjs
+/scripts/fx-fee-matcher.mjs
+/scripts/import-hsbc-apr2026.mjs
+/scripts/insert-missing-tfl.mjs
+/scripts/inspect-accounts.mjs
+/scripts/match-by-amount.mjs
+/scripts/move-mar-direct-entries.mjs
+/scripts/parse-cc-pdf.mjs
+/scripts/parse-hsbc-statements.mjs
+/scripts/parse-pdf-v2.mjs
+/scripts/parse-pdf-v3.mjs
+/scripts/parse-pdf-v4.mjs
+/scripts/reconcile-apr22.mjs
+/scripts/reconcile-final.mjs
+/scripts/reconcile-hsbc.ts
+/scripts/recover-deleted.mjs
+/scripts/validate-parser.mjs
