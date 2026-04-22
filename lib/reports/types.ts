@@ -67,6 +67,8 @@ export interface MonthlyTrendItem {
 
 export interface FireScenarioProgress {
   name: string;
+  annualSpend: number;
+  withdrawalRate: number;
   targetAmount: number;
   currentAmount: number;
   progressPct: number;

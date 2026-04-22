@@ -4,8 +4,17 @@ import { Sidebar } from '@/components/layout/Sidebar';
 
 // Mock next/navigation
 const mockPathname = vi.fn();
+const mockPush = vi.fn();
+const mockRefresh = vi.fn();
 vi.mock('next/navigation', () => ({
   usePathname: () => mockPathname(),
+  useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
+}));
+
+// Mock Supabase client — logout button calls createClient().auth.signOut()
+const mockSignOut = vi.fn();
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({ auth: { signOut: mockSignOut } }),
 }));
 
 // Mock next/link - pass through className
@@ -25,6 +34,7 @@ describe('Sidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPathname.mockReturnValue('/');
+    mockSignOut.mockResolvedValue({ error: null });
     mockFetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ stats: { total: 0 } }),
@@ -62,7 +72,7 @@ describe('Sidebar', () => {
       render(<Sidebar isOpen={true} onClose={mockOnClose} />);
 
       const links = screen.getAllByRole('link');
-      expect(links.length).toBe(11);
+      expect(links.length).toBe(13);
 
       const hrefs = links.map(link => link.getAttribute('href'));
       expect(hrefs).toContain('/');
@@ -74,7 +84,9 @@ describe('Sidebar', () => {
       expect(hrefs).toContain('/budgets');
       expect(hrefs).toContain('/wealth');
       expect(hrefs).toContain('/fire');
+      expect(hrefs).toContain('/reports');
       expect(hrefs).toContain('/planning');
+      expect(hrefs).toContain('/pets');
       expect(hrefs).toContain('/settings');
     });
   });

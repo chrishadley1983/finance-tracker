@@ -31,15 +31,31 @@ Personal finance app replacing "Life Planning V2" spreadsheet. Transaction track
 
 | Command | Purpose |
 |---------|---------|
-| `/test` | Test planning, generation, and execution (modes: `quick`, `plan analyze`, `build critical`, `pre-merge`, etc.) |
+| `/define-done` | Define binary success criteria before building |
+| `/feature-spec` | Transform criteria into implementation plan (optional) |
+| `/build-feature` | Autonomous build-verify loop until criteria converge |
+| `/verify-done` | Adversarial verification against done criteria |
+| `/fix` | Isolated bug fix track (approval-gated) |
+| `/test` | Test planning, generation, and execution |
 | `/code-review` | Review code against standards |
-| `/merge-feature` | Safe branch merge with verification |
+| `/merge-feature` | Safe branch merge with Vercel deploy verification |
+| `/performance` | Performance analysis and auditing |
+| `/docs` | Functional documentation generation |
 
-### Workflow
+### Workflows
 
-- **During dev:** `/test quick` → `/code-review staged` → commit
-- **Before merge:** `/test pre-merge` → `/code-review branch` → `/merge-feature`
-- **Coverage gaps:** `/test plan analyze` → `/test build critical` → `/test quick`
+**Feature track:**
+```
+/define-done → /feature-spec (optional) → /build-feature → /test pre-merge → /code-review branch → /merge-feature
+```
+
+**Fix track:**
+```
+/fix → /code-review branch → /merge-feature
+```
+
+**During dev:** `/test quick` → `/code-review staged` → commit
+**Coverage gaps:** `/test plan analyze` → `/test build critical` → `/test quick`
 
 ---
 
@@ -62,9 +78,14 @@ Finance-Tracker/
 │   ├── supabase/            # Database client (finance schema)
 │   └── validations/         # Zod schemas
 ├── docs/
-│   ├── agents/
+│   ├── agents/              # Agent specs, state, config
 │   │   ├── config/          # boot-sequence.md, file-feature-map.json
-│   │   └── truth/           # feature-status.json (THE source of truth)
+│   │   ├── truth/           # feature-status.json (THE source of truth)
+│   │   └── merge-feature/   # Vercel config, critical paths, last deploy
+│   ├── features/            # Done criteria, specs, build state per feature
+│   ├── fixes/               # Fix reports
+│   ├── merges/              # Merge reports
+│   ├── functional/          # Generated functional documentation
 │   └── knowledge/           # Project documentation
 ├── tests/
 │   ├── unit/

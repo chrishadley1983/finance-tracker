@@ -22,13 +22,13 @@ export async function POST(request: NextRequest) {
     }
 
     const report = await aggregateMonthlyReport(year, month);
+    const html = generateMonthlyReportHtml(report);
 
     if (body.save !== false) {
-      await saveMonthlyReport(report);
+      await saveMonthlyReport(report, html);
     }
 
     if (body.format === 'html') {
-      const html = generateMonthlyReportHtml(report);
       return new NextResponse(html, {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',

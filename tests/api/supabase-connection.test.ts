@@ -7,8 +7,9 @@ describe('Supabase Connection', () => {
     vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-service-role-key');
   });
 
-  it('browser client can be imported without error', async () => {
-    const { supabase } = await import('@/lib/supabase/client');
+  it('browser client can be created without error', async () => {
+    const { createClient } = await import('@/lib/supabase/client');
+    const supabase = createClient();
     expect(supabase).toBeDefined();
     expect(typeof supabase.from).toBe('function');
   });
@@ -19,9 +20,9 @@ describe('Supabase Connection', () => {
     expect(typeof supabaseAdmin.from).toBe('function');
   });
 
-  it('browser client has correct URL configured', async () => {
-    const { supabase } = await import('@/lib/supabase/client');
-    // The supabaseUrl is stored internally, we can verify the client works
+  it('browser client is functional', async () => {
+    const { createClient } = await import('@/lib/supabase/client');
+    const supabase = createClient();
     expect(supabase).toBeDefined();
   });
 });

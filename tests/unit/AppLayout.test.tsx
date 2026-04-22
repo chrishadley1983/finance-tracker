@@ -2,9 +2,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { AppLayout } from '@/components/layout/AppLayout';
 
-// Mock next/navigation
+// Mock next/navigation — Sidebar uses useRouter for post-logout redirect
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
+
+// Mock Supabase client — Sidebar logout button calls createClient().auth.signOut()
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({ auth: { signOut: vi.fn().mockResolvedValue({ error: null }) } }),
 }));
 
 // Mock next/link

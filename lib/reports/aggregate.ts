@@ -81,9 +81,16 @@ export async function aggregateMonthlyReport(
     fetchPriorReport(year, month),
   ]);
 
-  // Process budget comparisons
+  // Get excluded category IDs (transfers, credit card payments, etc.)
+  const { data: excludedCats } = await supabaseAdmin
+    .from('categories')
+    .select('id')
+    .eq('exclude_from_totals', true);
+  const excludedIds = new Set((excludedCats || []).map((c: { id: string }) => c.id));
+
+  // Process budget comparisons — exclude income categories and excluded categories
   const budgetComparisons: BudgetComparisonItem[] = (budgetResult.data || [])
-    .filter((r: { is_income: boolean }) => !r.is_income)
+    .filter((r: { is_income: boolean; category_id: string }) => !r.is_income && !excludedIds.has(r.category_id))
     .map((r: {
       category_name: string;
       group_name: string;
@@ -101,19 +108,27 @@ export async function aggregateMonthlyReport(
         : 0,
     }));
 
-  // Process savings rate
-  const savings = savingsResult.data?.[0];
-  const income = Number(savings?.total_income_actual) || 0;
-  const expenses = Number(savings?.total_expense_actual) || 0;
+  // Compute income and expenses from budget RPC data (excluding transfers/CC payments)
+  // The savings_rate RPC includes excluded categories, so we derive from budget data instead
+  let income = 0;
+  let expenses = 0;
+  for (const r of budgetResult.data || []) {
+    if (excludedIds.has(r.category_id)) continue;
+    const actual = Number(r.actual_amount) || 0;
+    if (r.is_income) {
+      income += actual;
+    } else {
+      expenses += actual;
+    }
+  }
   const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
 
   // Net worth
   const { netWorth, wealthBreakdown } = netWorthResult;
-  const priorNetWorth = priorReportResult?.netWorth ?? (netWorthHistoryResult.length >= 2
-    ? netWorthHistoryResult[netWorthHistoryResult.length - 2]?.total ?? netWorth
-    : netWorth);
-  const netWorthChange = netWorth - priorNetWorth;
-  const netWorthChangePct = priorNetWorth > 0 ? (netWorthChange / priorNetWorth) * 100 : 0;
+  const netWorthChange = priorReportResult ? netWorth - priorReportResult.netWorth : 0;
+  const netWorthChangePct = priorReportResult && priorReportResult.netWorth > 0
+    ? (netWorthChange / priorReportResult.netWorth) * 100
+    : 0;
 
   // FIRE portfolio (ex property)
   const firePortfolio = wealthBreakdown
@@ -129,6 +144,8 @@ export async function aggregateMonthlyReport(
       const targetAmount = annualSpend / (wr / 100);
       return {
         name: s.name,
+        annualSpend,
+        withdrawalRate: wr,
         targetAmount,
         currentAmount: firePortfolio,
         progressPct: targetAmount > 0 ? (firePortfolio / targetAmount) * 100 : 0,
@@ -181,22 +198,13 @@ async function fetchNetWorthForMonth(
   const nextYear = month === 12 ? year + 1 : year;
   const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
 
-  // Get latest snapshot date in the month
-  const { data } = await supabaseAdmin
-    .from('wealth_snapshots')
-    .select('date')
-    .gte('date', startDate)
-    .lt('date', endDate)
-    .order('date', { ascending: false })
-    .limit(1);
-
-  const snapshotDate = data?.[0]?.date ?? startDate;
-
-  // Get balances by type for that date
+  // Get ALL snapshots in the month — we'll pick the latest per account
   const { data: snapshots } = await supabaseAdmin
     .from('wealth_snapshots')
-    .select('balance, account_id')
-    .eq('date', snapshotDate);
+    .select('balance, account_id, date')
+    .gte('date', startDate)
+    .lt('date', endDate)
+    .order('date', { ascending: false });
 
   const { data: accounts } = await supabaseAdmin
     .from('accounts')
@@ -207,13 +215,20 @@ async function fetchNetWorthForMonth(
     (accounts || []).map((a: { id: string; type: string }) => [a.id, a.type]),
   );
 
+  // Pick the latest snapshot per account (already sorted desc by date)
+  const latestByAccount = new Map<string, number>();
+  for (const s of snapshots || []) {
+    if (!latestByAccount.has(s.account_id)) {
+      latestByAccount.set(s.account_id, Number(s.balance));
+    }
+  }
+
   const typeMap = new Map<string, number>();
   let netWorth = 0;
 
-  for (const s of snapshots || []) {
-    const type = accountMap.get(s.account_id);
+  for (const [accountId, balance] of Array.from(latestByAccount.entries())) {
+    const type = accountMap.get(accountId);
     if (!type) continue;
-    const balance = Number(s.balance);
     netWorth += balance;
     typeMap.set(type, (typeMap.get(type) || 0) + balance);
   }
@@ -232,7 +247,8 @@ async function fetchNetWorthForMonth(
 async function fetchNetWorthHistory(): Promise<{ date: string; total: number }[]> {
   const { data } = await supabaseAdmin
     .from('wealth_snapshots')
-    .select('date, balance, account_id');
+    .select('date, balance, account_id')
+    .order('date', { ascending: true });
 
   const { data: accounts } = await supabaseAdmin
     .from('accounts')
@@ -240,16 +256,35 @@ async function fetchNetWorthHistory(): Promise<{ date: string; total: number }[]
     .eq('include_in_net_worth', true);
 
   const validAccounts = new Set((accounts || []).map((a: { id: string }) => a.id));
-  const dateMap = new Map<string, number>();
 
+  // Build a running ledger: for each date, carry forward last known balance per account
+  // Group snapshots by date first
+  const snapshotsByDate = new Map<string, Map<string, number>>();
   for (const s of data || []) {
     if (!validAccounts.has(s.account_id)) continue;
-    dateMap.set(s.date, (dateMap.get(s.date) || 0) + Number(s.balance));
+    if (!snapshotsByDate.has(s.date)) snapshotsByDate.set(s.date, new Map());
+    snapshotsByDate.get(s.date)!.set(s.account_id, Number(s.balance));
   }
 
-  return Array.from(dateMap.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, total]) => ({ date, total }));
+  const dates = Array.from(snapshotsByDate.keys()).sort();
+  const currentBalances = new Map<string, number>(); // running balance per account
+  const result: { date: string; total: number }[] = [];
+
+  for (const date of dates) {
+    const updates = snapshotsByDate.get(date)!;
+    // Apply updates for this date
+    for (const [accountId, balance] of Array.from(updates.entries())) {
+      currentBalances.set(accountId, balance);
+    }
+    // Sum all known balances
+    let total = 0;
+    for (const balance of Array.from(currentBalances.values())) {
+      total += balance;
+    }
+    result.push({ date, total });
+  }
+
+  return result;
 }
 
 async function fetchMonthlyTrend(
@@ -270,12 +305,24 @@ async function fetchMonthlyTrend(
   const nextYear = month === 12 ? year + 1 : year;
   const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
 
-  // Fetch transactions with categories
-  const { data: transactions } = await supabaseAdmin
-    .from('transactions')
-    .select('date, amount, category_id')
-    .gte('date', startDate)
-    .lt('date', endDate);
+  // Fetch ALL transactions (paginate past Supabase 1000-row default limit)
+  const allTransactions: { date: string; amount: number; category_id: string | null }[] = [];
+  let from = 0;
+  const pageSize = 1000;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { data: page } = await supabaseAdmin
+      .from('transactions')
+      .select('date, amount, category_id')
+      .gte('date', startDate)
+      .lt('date', endDate)
+      .range(from, from + pageSize - 1);
+    if (!page || page.length === 0) break;
+    allTransactions.push(...page);
+    if (page.length < pageSize) break;
+    from += pageSize;
+  }
+  const transactions = allTransactions;
 
   const { data: categories } = await supabaseAdmin
     .from('categories')
@@ -354,7 +401,7 @@ async function fetchPriorReport(
 /**
  * Save report data to the monthly_reports table.
  */
-export async function saveMonthlyReport(data: MonthlyReportData): Promise<void> {
+export async function saveMonthlyReport(data: MonthlyReportData, html?: string): Promise<void> {
   const reportSnapshot = {
     net_worth: data.netWorth,
     net_worth_change: data.netWorthChange,
@@ -371,21 +418,66 @@ export async function saveMonthlyReport(data: MonthlyReportData): Promise<void> 
       .map((c) => ({ name: c.categoryName, actual: c.actual, budget: c.budget })),
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const row: Record<string, any> = {
+    year: data.year,
+    month: data.month,
+    report_data: reportSnapshot,
+  };
+  if (html) {
+    row.report_html = html;
+  }
+
   // Upsert — ON CONFLICT(year, month) DO UPDATE
   // monthly_reports table may not be in generated types yet
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabaseAdmin as any)
     .from('monthly_reports')
-    .upsert(
-      {
-        year: data.year,
-        month: data.month,
-        report_data: reportSnapshot,
-      },
-      { onConflict: 'year,month' },
-    );
+    .upsert(row, { onConflict: 'year,month' });
 
   if (error) {
     console.error('Error saving monthly report:', error);
   }
+}
+
+/**
+ * List all saved monthly reports (summary data for the index page).
+ */
+export async function listMonthlyReports(): Promise<{
+  year: number;
+  month: number;
+  report_data: Record<string, unknown>;
+  generated_at: string;
+}[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabaseAdmin as any)
+    .from('monthly_reports')
+    .select('year, month, report_data, generated_at')
+    .order('year', { ascending: false })
+    .order('month', { ascending: false });
+
+  if (error) {
+    console.error('Error listing monthly reports:', error);
+    return [];
+  }
+  return data || [];
+}
+
+/**
+ * Get the stored HTML for a specific monthly report.
+ * Returns null if no HTML is stored (report predates this feature).
+ */
+export async function getMonthlyReportHtml(year: number, month: number): Promise<string | null> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabaseAdmin as any)
+    .from('monthly_reports')
+    .select('report_html')
+    .eq('year', year)
+    .eq('month', month)
+    .single();
+
+  if (error || !data?.report_html) {
+    return null;
+  }
+  return data.report_html as string;
 }

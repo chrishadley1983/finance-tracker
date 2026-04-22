@@ -37,8 +37,8 @@ function makeReport(overrides: Partial<MonthlyReportData> = {}): MonthlyReportDa
     ],
     firePortfolio: 300_000,
     fireScenarios: [
-      { name: 'Lean', targetAmount: 800_000, currentAmount: 300_000, progressPct: 37.5 },
-      { name: 'Full', targetAmount: 1_200_000, currentAmount: 300_000, progressPct: 25 },
+      { name: 'Lean', annualSpend: 32_000, withdrawalRate: 4, targetAmount: 800_000, currentAmount: 300_000, progressPct: 37.5 },
+      { name: 'Full', annualSpend: 48_000, withdrawalRate: 4, targetAmount: 1_200_000, currentAmount: 300_000, progressPct: 25 },
     ],
     priorMonth: {
       netWorth: 490_000,

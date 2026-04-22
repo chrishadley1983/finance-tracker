@@ -98,7 +98,15 @@ export function generateMonthlyReportHtml(data: MonthlyReportData): string {
   // Prior month deltas
   const prior = data.priorMonth;
   const nwDelta = prior ? data.netWorth - prior.netWorth : data.netWorthChange;
-  const nwDeltaPct = prior && prior.netWorth > 0 ? (nwDelta / prior.netWorth) * 100 : data.netWorthChangePct;
+  const nwDeltaPct = prior && prior.netWorth > 0 ? (nwDelta / prior.netWorth) * 100 : (prior ? data.netWorthChangePct : null);
+  const hasPriorMonth = prior !== null && prior !== undefined;
+
+  // Budget totals — only include categories that actually have a budget set
+  const budgetedCategories = data.budgetComparisons.filter((c) => c.budget > 0);
+  const totalBudget = budgetedCategories.reduce((sum, c) => sum + c.budget, 0);
+  const totalActual = budgetedCategories.reduce((sum, c) => sum + c.actual, 0);
+  const budgetVariance = totalActual - totalBudget;
+  const budgetVariancePct = totalBudget > 0 ? (budgetVariance / totalBudget) * 100 : 0;
 
   // Donut colours
   const donutColours = [
@@ -205,7 +213,7 @@ export function generateMonthlyReportHtml(data: MonthlyReportData): string {
   <div class="card">
     <div class="card-label">Net Worth</div>
     <div class="card-value">${esc(fmtCurrency(data.netWorth))}</div>
-    <div class="card-delta ${nwDelta >= 0 ? 'positive' : 'negative'}">${deltaArrow(nwDelta)} ${esc(fmtCurrency(Math.abs(nwDelta)))} (${esc(fmtPct(nwDeltaPct))})</div>
+    ${hasPriorMonth && nwDeltaPct !== null ? `<div class="card-delta ${nwDelta >= 0 ? 'positive' : 'negative'}">${deltaArrow(nwDelta)} ${esc(fmtCurrency(Math.abs(nwDelta)))} (${esc(fmtPct(nwDeltaPct))})</div>` : ''}
   </div>
   <div class="card">
     <div class="card-label">Income</div>
@@ -213,9 +221,9 @@ export function generateMonthlyReportHtml(data: MonthlyReportData): string {
     ${prior ? `<div class="card-delta ${data.income >= prior.income ? 'positive' : 'negative'}">${deltaArrow(data.income - prior.income)} vs ${esc(fmtCurrency(prior.income))} last month</div>` : ''}
   </div>
   <div class="card">
-    <div class="card-label">Spending</div>
-    <div class="card-value">${esc(fmtCurrency(data.expenses))}</div>
-    ${prior ? `<div class="card-delta ${data.expenses <= prior.expenses ? 'positive' : 'negative'}">${deltaArrow(data.expenses - prior.expenses)} vs ${esc(fmtCurrency(prior.expenses))} last month</div>` : ''}
+    <div class="card-label">Spending (Budgeted)</div>
+    <div class="card-value">${esc(fmtCurrency(totalActual))}</div>
+    ${totalBudget > 0 ? `<div class="card-delta ${budgetVariance <= 0 ? 'positive' : 'negative'}">vs ${esc(fmtCurrency(totalBudget))} budget · ${budgetVariance <= 0 ? 'Under' : 'Over'} by ${esc(fmtCurrency(Math.abs(budgetVariance)))}</div>` : ''}
   </div>
   <div class="card">
     <div class="card-label">Savings Rate</div>
@@ -288,15 +296,19 @@ ${data.fireScenarios.length > 0 ? `
     ${data.fireScenarios.map((s) => {
       const pct = Math.min(s.progressPct, 100);
       const colour = s.progressPct >= 100 ? 'var(--green)' : s.progressPct >= 75 ? 'var(--accent)' : 'var(--amber)';
+      const remaining = s.targetAmount - data.firePortfolio;
       return `<div class="fire-bar-container">
         <div class="fire-bar-label">
-          <span>${esc(s.name)}</span>
-          <span>${esc(fmtCurrency(s.targetAmount))}</span>
+          <span><strong>${esc(s.name)}</strong> <span style="color:var(--text3);font-size:0.8rem">${esc(fmtCurrencyFull(s.annualSpend))}/yr @ ${s.withdrawalRate}% WR</span></span>
+          <span>Target: ${esc(fmtCurrencyFull(s.targetAmount))}</span>
         </div>
         <div class="fire-bar-track">
           <div class="fire-bar-fill" style="width:${pct.toFixed(1)}%;background:${colour}">
             <span class="fire-bar-pct">${s.progressPct.toFixed(0)}%</span>
           </div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text3);margin-top:2px;text-align:right">
+          ${s.progressPct >= 100 ? 'Target reached' : `${esc(fmtCurrencyFull(remaining))} remaining`}
         </div>
       </div>`;
     }).join('')}

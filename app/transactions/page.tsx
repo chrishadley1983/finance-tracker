@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AppLayout } from '@/components/layout';
 import {
@@ -22,6 +22,20 @@ interface Category {
 }
 
 export default function TransactionsPage() {
+  return (
+    <Suspense fallback={
+      <AppLayout title="Transactions">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" />
+        </div>
+      </AppLayout>
+    }>
+      <TransactionsPageContent />
+    </Suspense>
+  );
+}
+
+function TransactionsPageContent() {
   const searchParams = useSearchParams();
 
   // Initialize filters from URL params
