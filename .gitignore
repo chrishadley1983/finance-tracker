@@ -43,3 +43,10 @@ data/
 .data/
 nul
 summary_test.json
+
+# Sensitive personal data — never commit
+/Statements/
+/scripts/backups/
+/supabase/.temp/
+/Docs/*.zip
+/Docs/fire-calculator-input/
