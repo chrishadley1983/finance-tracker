@@ -100,8 +100,29 @@ describe('CSV Parser', () => {
       const content = '2024-01-01,Test,100\n2024-01-02,Test2,200';
       const result = parseCSVString(content, { hasHeader: false });
 
-      expect(result.headers).toEqual([]);
+      expect(result.headers).toEqual(['Column 1', 'Column 2', 'Column 3']);
       expect(result.rows).toHaveLength(2);
+    });
+
+    it('auto-detects headerless HSBC export (single data row)', () => {
+      // HSBC.co.uk "Download transactions" exports this exact shape: no header,
+      // date in DD/MM/YYYY, then description, then signed amount.
+      const content = '21/04/2026,IKEA LTD SHOP ONLINE   LONDON        GBR,-255.00';
+      const result = parseCSVString(content);
+
+      expect(result.headers).toEqual(['Column 1', 'Column 2', 'Column 3']);
+      expect(result.rows).toHaveLength(1);
+      expect(result.totalRows).toBe(1);
+      expect(result.rows[0][0]).toBe('21/04/2026');
+      expect(result.rows[0][2]).toBe('-255.00');
+    });
+
+    it('auto-detects headered CSV by default', () => {
+      const content = 'Date,Description,Amount\n2024-01-01,Test,100';
+      const result = parseCSVString(content);
+
+      expect(result.headers).toEqual(['Date', 'Description', 'Amount']);
+      expect(result.rows).toHaveLength(1);
     });
 
     it('skips initial rows when specified', () => {

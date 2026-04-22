@@ -157,6 +157,38 @@ export function detectDelimiter(content: string): string {
 }
 
 /**
+ * Heuristically detect whether the first row is a header.
+ *
+ * Returns false when the row contains any cell that looks like transaction
+ * data (a date or a numeric amount) — e.g. HSBC.co.uk's headerless
+ * "TransactionHistory.csv" export: `21/04/2026,IKEA...,-255.00`.
+ */
+export function detectHasHeader(firstRow: string[] | undefined): boolean {
+  if (!firstRow || firstRow.length === 0) return true;
+
+  const datePattern = /^\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}$/;
+  // Numeric: optional sign, digits (with optional thousands separators), optional decimal
+  const numericPattern = /^-?\d{1,3}(,\d{3})*(\.\d+)?$|^-?\d+(\.\d+)?$/;
+
+  for (const cell of firstRow) {
+    const trimmed = cell.trim();
+    if (!trimmed) continue;
+    if (datePattern.test(trimmed)) return false;
+    if (numericPattern.test(trimmed)) return false;
+  }
+
+  return true;
+}
+
+/**
+ * Build synthetic column names for headerless CSVs so the mapping UI still
+ * has dropdown options to pick from.
+ */
+function syntheticHeaders(columnCount: number): string[] {
+  return Array.from({ length: columnCount }, (_, i) => `Column ${i + 1}`);
+}
+
+/**
  * Count delimiter occurrences, handling quoted fields.
  */
 function countDelimiter(line: string, delimiter: string): number {
@@ -184,7 +216,7 @@ function countDelimiter(line: string, delimiter: string): number {
  * Parse CSV content from a File object.
  */
 export async function parseCSV(file: File, options: ParseOptions = {}): Promise<ParseResult> {
-  const { hasHeader = true, skipRows = 0 } = options;
+  const { hasHeader, skipRows = 0 } = options;
 
   // Read file as ArrayBuffer for encoding detection
   const buffer = await file.arrayBuffer();
@@ -235,11 +267,16 @@ export async function parseCSV(file: File, options: ParseOptions = {}): Promise<
     rows = rows.slice(skipRows);
   }
 
+  // Resolve header flag: auto-detect if caller did not explicitly set it
+  const hasHeaderResolved = hasHeader ?? detectHasHeader(rows[0]);
+
   // Extract headers
   let headers: string[] = [];
-  if (hasHeader && rows.length > 0) {
+  if (hasHeaderResolved && rows.length > 0) {
     headers = rows[0].map((h) => h.trim());
     rows = rows.slice(1);
+  } else if (!hasHeaderResolved && rows.length > 0) {
+    headers = syntheticHeaders(rows[0].length);
   }
 
   // Filter out completely empty rows
@@ -261,7 +298,7 @@ export function parseCSVString(
   content: string,
   options: ParseOptions = {}
 ): ParseResult {
-  const { hasHeader = true, skipRows = 0 } = options;
+  const { hasHeader, skipRows = 0 } = options;
 
   // Remove BOM if present
   if (content.charCodeAt(0) === 0xfeff) {
@@ -286,11 +323,16 @@ export function parseCSVString(
     rows = rows.slice(skipRows);
   }
 
+  // Resolve header flag: auto-detect if caller did not explicitly set it
+  const hasHeaderResolved = hasHeader ?? detectHasHeader(rows[0]);
+
   // Extract headers
   let headers: string[] = [];
-  if (hasHeader && rows.length > 0) {
+  if (hasHeaderResolved && rows.length > 0) {
     headers = rows[0].map((h) => h.trim());
     rows = rows.slice(1);
+  } else if (!hasHeaderResolved && rows.length > 0) {
+    headers = syntheticHeaders(rows[0].length);
   }
 
   // Filter out completely empty rows
