@@ -17,6 +17,36 @@
 
   /* ===== Layout ===== */
   .app { max-width: 480px; margin: 0 auto; padding: 16px; min-height: 100vh; }
+  
+  @media (min-width: 600px) {
+    .app { max-width: 90vw; }
+    .pet-stage { flex-direction: row; gap: 24px; align-items: center; justify-content: center; }
+    .pet-sprite-wrap { margin: 0; }
+    .pet-name { text-align: left; }
+    .pet-info { text-align: left; }
+    .action-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .action-btn { padding: 14px 12px; font-size: 15px; }
+    .food-grid { gap: 10px; }
+    .food-btn { padding: 10px 14px; font-size: 14px; }
+    .games-row { grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .game-btn { padding: 16px 12px; }
+    .tab-row { gap: 12px; }
+    .tab-btn { padding: 12px 20px; font-size: 15px; }
+    .card { padding: 24px; }
+    .stat-row { gap: 14px; }
+    .stat-bar { height: 14px; }
+    .mood-row { gap: 12px; }
+    .accessories-grid { grid-template-columns: repeat(6, 1fr); gap: 10px; }
+    .achievements-grid { grid-template-columns: repeat(4, 1fr); }
+    .toy-grid { grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .mole-grid { gap: 16px; max-width: 400px; margin: 0 auto; }
+    .mole-cell { height: 90px; font-size: 36px; }
+    .memory-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 400px; margin: 0 auto; }
+    .memory-card { height: 80px; }
+    .dance-buttons { gap: 12px; }
+    .dance-btn { width: 90px; height: 90px; }
+  }
+
 
   .header {
     display: flex; align-items: center; justify-content: space-between;
