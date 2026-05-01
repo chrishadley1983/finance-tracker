@@ -373,6 +373,50 @@ describe('Dashboard Summary API', () => {
       expect(data.totalBalance).toBe(165000);
     });
 
+    it('does not count credits in expense categories as expenses (refunds)', async () => {
+      // A refund (credit) sitting in an expense category must not inflate
+      // periodExpenses; SpendingByCategory only sums debits, so summary
+      // must match. Regression for the £1,563.73 mismatch.
+      setupSuccessMocks({
+        accounts: [],
+        categories: [
+          { id: 'income-cat', is_income: true, exclude_from_totals: false },
+          { id: 'travel-cat', is_income: false, exclude_from_totals: false },
+        ],
+        periodTransactions: [
+          { amount: -500, category_id: 'travel-cat' }, // £500 holiday spend
+          { amount: 100, category_id: 'travel-cat' },  // £100 refund
+          { amount: 1000, category_id: 'income-cat' }, // income, unrelated
+        ],
+      });
+
+      const response = await GET(createRequest());
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.periodExpenses).toBe(500); // not 600
+      expect(data.periodIncome).toBe(1000);
+    });
+
+    it('does not count debits in income categories as income (reversals)', async () => {
+      setupSuccessMocks({
+        accounts: [],
+        categories: [
+          { id: 'income-cat', is_income: true, exclude_from_totals: false },
+        ],
+        periodTransactions: [
+          { amount: 1000, category_id: 'income-cat' },
+          { amount: -50, category_id: 'income-cat' }, // income reversal
+        ],
+      });
+
+      const response = await GET(createRequest());
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.periodIncome).toBe(1000); // not 1050
+    });
+
     it('excludes transactions in excluded categories from totals', async () => {
       setupSuccessMocks({
         accounts: [],

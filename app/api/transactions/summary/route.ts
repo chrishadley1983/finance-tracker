@@ -243,16 +243,19 @@ export async function GET(request: NextRequest) {
       t => !t.category_id || !excludedCategoryIds.has(t.category_id)
     );
 
-    // Calculate income based on category (is_income flag), not amount sign
-    // Income = absolute value of transactions in income categories
-    // Expenses = absolute value of transactions NOT in income categories
+    // Income = credits in income categories. Expenses = debits in
+    // non-income categories. Filtering on sign matches the by-category
+    // endpoint and prevents refunds (credits in expense categories) from
+    // being double-counted as expenses.
     const periodIncome = includedTransactions
       .filter((t) => t.category_id && incomeCategoryIds.has(t.category_id))
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      .filter((t) => Number(t.amount) > 0)
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const periodExpenses = includedTransactions
       .filter((t) => !t.category_id || !incomeCategoryIds.has(t.category_id))
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      .filter((t) => Number(t.amount) < 0)
+      .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
     const periodNet = periodIncome - periodExpenses;
 

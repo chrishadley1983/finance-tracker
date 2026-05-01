@@ -25,6 +25,15 @@ describe('normalizeDescription', () => {
     expect(normalizeDescription('INTL 0043 SUPABASE USD 25.00 @ 1.3248  Visa Rate VIS'))
       .toBe('intl 0043 supabase usd 25.00 @ 1.3248 visa rate');
   });
+
+  it('strips a trailing " - <note>" user annotation so re-imports match', () => {
+    // User edits a DB row to add a note about what they bought; the next
+    // CSV re-import should still recognise the row as the same tuple.
+    expect(normalizeDescription('AMAZON UK* NB3T26C LONDON VIS - Mouse'))
+      .toBe(normalizeDescription('AMAZON UK* NB3T26C LONDON VIS'));
+    expect(normalizeDescription('TESCO STORES 3007 TUNBRIDGE WEL ))) - Weekly shop'))
+      .toBe(normalizeDescription('TESCO STORES 3007 TUNBRIDGE WEL )))'));
+  });
 });
 
 describe('planImport — count-based dedup', () => {
