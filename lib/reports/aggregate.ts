@@ -39,16 +39,9 @@ export async function aggregateMonthlyReport(
   year: number,
   month: number,
 ): Promise<MonthlyReportData> {
-  const monthStr = String(month).padStart(2, '0');
-  const startDate = `${year}-${monthStr}-01`;
-  const nextMonth = month === 12 ? 1 : month + 1;
-  const nextYear = month === 12 ? year + 1 : year;
-  const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
-
   // Run all queries in parallel
   const [
     budgetResult,
-    savingsResult,
     netWorthResult,
     netWorthHistoryResult,
     trendResult,
@@ -58,9 +51,6 @@ export async function aggregateMonthlyReport(
   ] = await Promise.all([
     // Budget vs actual
     supabaseAdmin.rpc('get_budget_vs_actual', { p_year: year, p_month: month }),
-
-    // Savings rate
-    supabaseAdmin.rpc('get_savings_rate', { p_year: year, p_month: month }),
 
     // Net worth snapshot (latest date for the month)
     fetchNetWorthForMonth(year, month),
@@ -88,40 +78,63 @@ export async function aggregateMonthlyReport(
     .eq('exclude_from_totals', true);
   const excludedIds = new Set((excludedCats || []).map((c: { id: string }) => c.id));
 
+  // The get_budget_vs_actual RPC returns SUM(ABS(amount)) per category, so a
+  // refund (credit in an expense category) inflates the expense total.
+  // Recompute actuals sign-aware from raw transactions, matching the dashboard
+  // (`/api/transactions/summary`): expenses = debits in non-income categories,
+  // income = credits in income categories.
+  const monthTransactions = await fetchTransactionsForMonth(year, month);
+
+  const incomeCategoryIds = new Set(
+    (budgetResult.data || [])
+      .filter((r: { is_income: boolean; category_id: string }) => r.is_income)
+      .map((r: { category_id: string }) => r.category_id),
+  );
+
+  const actualByCategory = new Map<string, number>();
+  let income = 0;
+  let expenses = 0;
+  for (const t of monthTransactions) {
+    const amt = Number(t.amount);
+    if (t.category_id && excludedIds.has(t.category_id)) continue;
+    const isIncome = t.category_id ? incomeCategoryIds.has(t.category_id) : false;
+    if (isIncome) {
+      if (amt > 0) {
+        income += amt;
+        actualByCategory.set(t.category_id!, (actualByCategory.get(t.category_id!) || 0) + amt);
+      }
+    } else {
+      if (amt < 0) {
+        const abs = Math.abs(amt);
+        expenses += abs;
+        if (t.category_id) {
+          actualByCategory.set(t.category_id, (actualByCategory.get(t.category_id) || 0) + abs);
+        }
+      }
+    }
+  }
+  const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
+
   // Process budget comparisons — exclude income categories and excluded categories
   const budgetComparisons: BudgetComparisonItem[] = (budgetResult.data || [])
     .filter((r: { is_income: boolean; category_id: string }) => !r.is_income && !excludedIds.has(r.category_id))
     .map((r: {
+      category_id: string;
       category_name: string;
       group_name: string;
       budget_amount: number;
-      actual_amount: number;
-      variance: number;
-    }) => ({
-      categoryName: r.category_name,
-      groupName: r.group_name,
-      budget: Number(r.budget_amount),
-      actual: Number(r.actual_amount),
-      variance: Number(r.variance),
-      variancePct: Number(r.budget_amount) > 0
-        ? ((Number(r.actual_amount) - Number(r.budget_amount)) / Number(r.budget_amount)) * 100
-        : 0,
-    }));
-
-  // Compute income and expenses from budget RPC data (excluding transfers/CC payments)
-  // The savings_rate RPC includes excluded categories, so we derive from budget data instead
-  let income = 0;
-  let expenses = 0;
-  for (const r of budgetResult.data || []) {
-    if (excludedIds.has(r.category_id)) continue;
-    const actual = Number(r.actual_amount) || 0;
-    if (r.is_income) {
-      income += actual;
-    } else {
-      expenses += actual;
-    }
-  }
-  const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
+    }) => {
+      const budget = Number(r.budget_amount);
+      const actual = actualByCategory.get(r.category_id) || 0;
+      return {
+        categoryName: r.category_name,
+        groupName: r.group_name,
+        budget,
+        actual,
+        variance: actual - budget,
+        variancePct: budget > 0 ? ((actual - budget) / budget) * 100 : 0,
+      };
+    });
 
   // Net worth
   const { netWorth, wealthBreakdown } = netWorthResult;
@@ -285,6 +298,35 @@ async function fetchNetWorthHistory(): Promise<{ date: string; total: number }[]
   }
 
   return result;
+}
+
+async function fetchTransactionsForMonth(
+  year: number,
+  month: number,
+): Promise<{ amount: number; category_id: string | null }[]> {
+  const monthStr = String(month).padStart(2, '0');
+  const startDate = `${year}-${monthStr}-01`;
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextYear = month === 12 ? year + 1 : year;
+  const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
+
+  const all: { amount: number; category_id: string | null }[] = [];
+  let from = 0;
+  const pageSize = 1000;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { data: page } = await supabaseAdmin
+      .from('transactions')
+      .select('amount, category_id')
+      .gte('date', startDate)
+      .lt('date', endDate)
+      .range(from, from + pageSize - 1);
+    if (!page || page.length === 0) break;
+    all.push(...page);
+    if (page.length < pageSize) break;
+    from += pageSize;
+  }
+  return all;
 }
 
 async function fetchMonthlyTrend(
