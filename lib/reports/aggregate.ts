@@ -205,42 +205,114 @@ async function fetchNetWorthForMonth(
   year: number,
   month: number,
 ): Promise<{ netWorth: number; wealthBreakdown: WealthBreakdownItem[] }> {
+  // The report represents the user's wealth AT END OF MONTH M. Two conventions
+  // matter:
+  //   - Monthly snapshots (pension, isa, savings, property, other, investment)
+  //     are entered on the 1st of each month and represent the prior
+  //     month-end. So "end of April" = the 2026-05-01 snapshot.
+  //   - Transactional accounts (current, credit) have a seed snapshot and a
+  //     stream of transactions; "end of April" = latest snapshot at-or-before
+  //     2026-04-30 + sum(transactions in (snapshot.date, 2026-04-30]).
+  // The previous logic queried snapshots WHERE date IN [month-01, next-01),
+  // which only caught the start-of-month entries (i.e. PRIOR month-end), and
+  // ignored transactional accounts entirely. The result diverged from the
+  // dashboard by ~£60–70k.
+  const TRANSACTIONAL_TYPES = new Set(['current', 'credit']);
+
   const monthStr = String(month).padStart(2, '0');
-  const startDate = `${year}-${monthStr}-01`;
   const nextMonth = month === 12 ? 1 : month + 1;
   const nextYear = month === 12 ? year + 1 : year;
-  const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
-
-  // Get ALL snapshots in the month — we'll pick the latest per account
-  const { data: snapshots } = await supabaseAdmin
-    .from('wealth_snapshots')
-    .select('balance, account_id, date')
-    .gte('date', startDate)
-    .lt('date', endDate)
-    .order('date', { ascending: false });
+  const nextMonthStartStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
+  const monthEndStr = `${year}-${monthStr}-${String(lastDayOfMonth).padStart(2, '0')}`;
 
   const { data: accounts } = await supabaseAdmin
     .from('accounts')
     .select('id, type, include_in_net_worth')
     .eq('include_in_net_worth', true);
 
-  const accountMap = new Map(
+  const accountTypeMap = new Map<string, string>(
     (accounts || []).map((a: { id: string; type: string }) => [a.id, a.type]),
   );
 
-  // Pick the latest snapshot per account (already sorted desc by date)
-  const latestByAccount = new Map<string, number>();
-  for (const s of snapshots || []) {
-    if (!latestByAccount.has(s.account_id)) {
-      latestByAccount.set(s.account_id, Number(s.balance));
+  const snapshotAccountIds: string[] = [];
+  const transactionalAccountIds: string[] = [];
+  for (const a of accounts || []) {
+    if (TRANSACTIONAL_TYPES.has(a.type)) transactionalAccountIds.push(a.id);
+    else snapshotAccountIds.push(a.id);
+  }
+
+  const balanceByAccount = new Map<string, number>();
+
+  // Snapshot accounts: latest snapshot at-or-before next-month-01.
+  if (snapshotAccountIds.length > 0) {
+    const { data: snaps } = await supabaseAdmin
+      .from('wealth_snapshots')
+      .select('balance, account_id, date')
+      .in('account_id', snapshotAccountIds)
+      .lte('date', nextMonthStartStr)
+      .order('date', { ascending: false });
+
+    for (const s of snaps || []) {
+      if (!balanceByAccount.has(s.account_id)) {
+        balanceByAccount.set(s.account_id, Number(s.balance));
+      }
+    }
+  }
+
+  // Transactional accounts: latest snapshot at-or-before month-end + sum of
+  // transactions in (snapshot.date, month-end].
+  if (transactionalAccountIds.length > 0) {
+    const { data: snaps } = await supabaseAdmin
+      .from('wealth_snapshots')
+      .select('balance, account_id, date')
+      .in('account_id', transactionalAccountIds)
+      .lte('date', monthEndStr)
+      .order('date', { ascending: false });
+
+    const baselineByAccount = new Map<string, { date: string; balance: number }>();
+    for (const s of snaps || []) {
+      if (!baselineByAccount.has(s.account_id)) {
+        baselineByAccount.set(s.account_id, { date: s.date, balance: Number(s.balance) });
+      }
+    }
+
+    const txByAccount = new Map<string, { date: string; amount: number }[]>();
+    let txFrom = 0;
+    const txPageSize = 1000;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { data: page } = await supabaseAdmin
+        .from('transactions')
+        .select('account_id, date, amount')
+        .in('account_id', transactionalAccountIds)
+        .lte('date', monthEndStr)
+        .range(txFrom, txFrom + txPageSize - 1);
+      if (!page || page.length === 0) break;
+      for (const t of page) {
+        const arr = txByAccount.get(t.account_id) || [];
+        arr.push({ date: t.date, amount: Number(t.amount) });
+        txByAccount.set(t.account_id, arr);
+      }
+      if (page.length < txPageSize) break;
+      txFrom += txPageSize;
+    }
+
+    for (const accountId of transactionalAccountIds) {
+      const baseline = baselineByAccount.get(accountId);
+      if (!baseline) continue;
+      let balance = baseline.balance;
+      for (const tx of txByAccount.get(accountId) || []) {
+        if (tx.date > baseline.date) balance += tx.amount;
+      }
+      balanceByAccount.set(accountId, balance);
     }
   }
 
   const typeMap = new Map<string, number>();
   let netWorth = 0;
-
-  for (const [accountId, balance] of Array.from(latestByAccount.entries())) {
-    const type = accountMap.get(accountId);
+  for (const [accountId, balance] of Array.from(balanceByAccount.entries())) {
+    const type = accountTypeMap.get(accountId);
     if (!type) continue;
     netWorth += balance;
     typeMap.set(type, (typeMap.get(type) || 0) + balance);
