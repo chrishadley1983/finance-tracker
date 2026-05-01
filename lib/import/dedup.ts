@@ -38,10 +38,16 @@ export interface DedupPlan<T extends CountableTx> {
 
 /**
  * Normalise description so CSV export variants collide. Mirrors the
- * suffix-strip rules HSBC uses (")))", VIS, CR, DD, BP, etc.).
+ * suffix-strip rules HSBC uses (")))", VIS, CR, DD, BP, etc.) and
+ * strips a trailing user annotation of the form " - <note>" so that
+ * a DB row hand-edited to "AMAZON UK* NB3T26C LONDON VIS - Mouse"
+ * still matches the canonical CSV row "AMAZON UK* NB3T26C LONDON VIS".
  */
 export function normalizeDescription(desc: string): string {
   let n = desc.toLowerCase().trim().replace(/\s+/g, ' ');
+  // Strip trailing " - <annotation>" before suffix strips, since the
+  // annotation typically follows VIS/)))/etc.
+  n = n.replace(/\s+-\s+.+$/, '');
   n = n.replace(/\s+\)+\s*$/, '');
   n = n.replace(/\s+(vis|cr|dd|dr|bp|obp|atm)\s*$/i, '');
   n = n.replace(/\s*\*\s*/g, '*');
