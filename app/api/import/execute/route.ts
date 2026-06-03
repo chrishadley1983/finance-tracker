@@ -49,10 +49,16 @@ async function loadOriginalHashes(ids: string[], into: Map<string, string>): Pro
   for (let i = 0; i < ids.length; i += CHUNK) {
     const batch = ids.slice(i, i + CHUNK);
     if (batch.length === 0) continue;
-    const { data: hashRows } = await supabaseAdmin
+    const { data: hashRows, error: hashErr } = await supabaseAdmin
       .from('imported_transaction_hashes')
       .select('transaction_id, hash')
       .in('transaction_id', batch);
+    if (hashErr) {
+      // Without original hashes, dedup silently falls back to keying on the
+      // (editable) live description — reintroducing the duplicate-on-rename
+      // bug this lookup exists to prevent. Surface it rather than degrade quietly.
+      console.warn(`loadOriginalHashes: failed to fetch original import hashes: ${hashErr.message}`);
+    }
     for (const h of hashRows || []) {
       if (h.transaction_id && !into.has(h.transaction_id)) into.set(h.transaction_id, h.hash);
     }
