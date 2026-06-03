@@ -14,26 +14,30 @@ vi.mock('@/lib/supabase/server', () => ({
 /**
  * Helper to set up mocks for the monthly-trend route.
  * The route makes 2 queries:
- * 1. categories - select('id').eq('exclude_from_totals', true)
+ * 1. categories - select('id, is_income, exclude_from_totals') (awaited directly)
  * 2. transactions - paginated select('date, amount, category_id').gte().lte().order().range()
  */
 function setupMocks(options: {
   excludedCategories?: { id: string }[];
+  incomeCategories?: { id: string }[];
   transactions?: { date: string; amount: number; category_id: string | null }[];
   transactionError?: { message: string } | null;
 } = {}) {
   const {
     excludedCategories = [],
+    incomeCategories = [],
     transactions = [],
     transactionError = null,
   } = options;
 
   mockFrom.mockImplementation((table: string) => {
     if (table === 'categories') {
+      const rows = [
+        ...excludedCategories.map((c) => ({ id: c.id, is_income: false, exclude_from_totals: true })),
+        ...incomeCategories.map((c) => ({ id: c.id, is_income: true, exclude_from_totals: false })),
+      ];
       return {
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ data: excludedCategories, error: null }),
-        }),
+        select: vi.fn().mockResolvedValue({ data: rows, error: null }),
       };
     }
     // transactions table - paginated query
@@ -245,6 +249,32 @@ describe('Dashboard Monthly Trend API', () => {
       expect(response.status).toBe(200);
       // Only the non-excluded transaction should be counted
       expect(data[0].expenses).toBe(50);
+    });
+
+    it('is sign-aware: ignores refunds in expense categories and clawbacks in income categories', async () => {
+      const now = new Date();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const y = now.getFullYear();
+      const d = `${y}-${m}-15`;
+
+      setupMocks({
+        incomeCategories: [{ id: 'salary' }],
+        transactions: [
+          { date: d, amount: 2000, category_id: 'salary' },    // income +2000
+          { date: d, amount: -50, category_id: 'salary' },     // clawback in income cat -> ignored
+          { date: d, amount: -300, category_id: 'groceries' }, // expense 300
+          { date: d, amount: 40, category_id: 'groceries' },   // refund in expense cat -> ignored
+          { date: d, amount: -25, category_id: null },         // uncategorised debit -> expense
+        ],
+      });
+
+      const request = new NextRequest('http://localhost/api/transactions/monthly-trend?months=1');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data[0].income).toBe(2000);
+      expect(data[0].expenses).toBe(325);
     });
   });
 });

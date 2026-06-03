@@ -192,9 +192,13 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
+        // Income = positive amounts only; ignore clawbacks/negatives in an
+        // income category rather than counting them via abs().
+        if (Number(t.amount) <= 0) continue;
+
         const categoryId = t.category_id;
         const categoryName = incomeCategoryNames.get(categoryId) || 'Unknown';
-        const amount = Math.abs(t.amount);
+        const amount = Number(t.amount);
 
         const existing = categoryMap.get(categoryId);
         if (existing) {
