@@ -15,6 +15,7 @@ import type {
   PriorMonthData,
 } from './types';
 import { generateTakeaways } from './takeaways';
+import { classifyAmount } from './classify';
 
 const MONTH_NAMES = [
   '', 'January', 'February', 'March', 'April', 'May', 'June',
@@ -95,22 +96,13 @@ export async function aggregateMonthlyReport(
   let income = 0;
   let expenses = 0;
   for (const t of monthTransactions) {
-    const amt = Number(t.amount);
-    if (t.category_id && excludedIds.has(t.category_id)) continue;
+    const excluded = !!(t.category_id && excludedIds.has(t.category_id));
     const isIncome = t.category_id ? incomeCategoryIds.has(t.category_id) : false;
-    if (isIncome) {
-      if (amt > 0) {
-        income += amt;
-        actualByCategory.set(t.category_id!, (actualByCategory.get(t.category_id!) || 0) + amt);
-      }
-    } else {
-      if (amt < 0) {
-        const abs = Math.abs(amt);
-        expenses += abs;
-        if (t.category_id) {
-          actualByCategory.set(t.category_id, (actualByCategory.get(t.category_id) || 0) + abs);
-        }
-      }
+    const { income: inc, expense: exp } = classifyAmount(Number(t.amount), isIncome, excluded);
+    income += inc;
+    expenses += exp;
+    if (t.category_id && (inc > 0 || exp > 0)) {
+      actualByCategory.set(t.category_id, (actualByCategory.get(t.category_id) || 0) + inc + exp);
     }
   }
   const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
@@ -451,20 +443,24 @@ async function fetchMonthlyTrend(
 
   const monthMap = new Map<string, { income: number; expenses: number }>();
 
+  // Use the same sign-aware classification as the headline totals so the
+  // trend bars match the figures shown above the chart. (Previously this
+  // summed raw amounts for income categories and abs() for every non-income
+  // row — and skipped uncategorised rows — which overstated spend via refunds
+  // and dropped uncategorised income.)
   for (const t of transactions || []) {
-    if (!t.category_id) continue;
-    const cat = catMap.get(t.category_id);
-    if (!cat || cat.excluded) continue;
+    const cat = t.category_id ? catMap.get(t.category_id) : undefined;
+    const { income: inc, expense: exp } = classifyAmount(
+      Number(t.amount),
+      cat?.isIncome ?? false,
+      cat?.excluded ?? false,
+    );
+    if (inc === 0 && exp === 0) continue;
 
     const monthKey = t.date.slice(0, 7);
     const entry = monthMap.get(monthKey) || { income: 0, expenses: 0 };
-
-    if (cat.isIncome) {
-      entry.income += Number(t.amount);
-    } else {
-      entry.expenses += Math.abs(Number(t.amount));
-    }
-
+    entry.income += inc;
+    entry.expenses += exp;
     monthMap.set(monthKey, entry);
   }
 
