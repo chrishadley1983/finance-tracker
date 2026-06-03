@@ -59,33 +59,35 @@ export function tupleKey(date: string, amount: number, description: string): str
 }
 
 /**
- * Decide which incoming rows to insert vs skip, given the existing DB
- * rows in the CSV's date range.
+ * Core count-based planner, keyed on opaque strings. Callers supply the
+ * key for each incoming row and the keys of the existing DB rows. As long
+ * as both sides live in the same key space, the planner is agnostic about
+ * how the keys are derived.
  *
- * Preserves CSV order within each tuple: if a tuple appears 3 times in
- * the CSV and 1 is already in DB, the first 2 CSV occurrences insert
- * and the 3rd skips.
+ * Preserves CSV order within each key: if a key appears 3 times in the CSV
+ * and 1 is already in DB, the first 2 CSV occurrences insert and the 3rd
+ * skips.
  */
-export function planImport<T extends CountableTx>(
+export function planImportWithKeys<T extends CountableTx>(
   incoming: T[],
-  existing: ExistingRow[],
+  incomingKeyOf: (tx: T) => string,
+  existingKeys: string[],
 ): DedupPlan<T> {
   const existingCount = new Map<string, number>();
-  existing.forEach((r) => {
-    const k = tupleKey(r.date, Number(r.amount), r.description);
+  for (const k of existingKeys) {
     existingCount.set(k, (existingCount.get(k) || 0) + 1);
-  });
+  }
 
   const seenInBatch = new Map<string, number>();
   const toInsert: T[] = [];
   const toSkip: T[] = [];
 
   for (const tx of incoming) {
-    const k = tupleKey(tx.date, tx.amount, tx.description);
+    const k = incomingKeyOf(tx);
     const dbHas = existingCount.get(k) ?? 0;
     const csvPositionForThisTuple = (seenInBatch.get(k) ?? 0) + 1;
-    // CSV position N of this tuple needs DB to hold at least N rows of
-    // this tuple. If DB already has ≥ N, this row is redundant.
+    // CSV position N of this key needs DB to hold at least N rows of this
+    // key. If DB already has ≥ N, this row is redundant.
     if (dbHas >= csvPositionForThisTuple) {
       toSkip.push(tx);
     } else {
@@ -95,4 +97,27 @@ export function planImport<T extends CountableTx>(
   }
 
   return { toInsert, toSkip };
+}
+
+/**
+ * Decide which incoming rows to insert vs skip, given the existing DB
+ * rows in the CSV's date range. Keys both sides on the live
+ * (date, amount, normalised description) tuple.
+ *
+ * NOTE: keying on the live description means a DB row that the user has
+ * renamed (e.g. "BCA Remarketing So BN22 YFL BP" → "Car Purchase") will
+ * no longer match its CSV counterpart, so a re-import duplicates it. The
+ * import route avoids this by keying existing rows on their *original*
+ * import hash (see planImportWithKeys); this tuple-keyed variant is kept
+ * for callers/tests that work purely from descriptions.
+ */
+export function planImport<T extends CountableTx>(
+  incoming: T[],
+  existing: ExistingRow[],
+): DedupPlan<T> {
+  return planImportWithKeys(
+    incoming,
+    (tx) => tupleKey(tx.date, tx.amount, tx.description),
+    existing.map((r) => tupleKey(r.date, Number(r.amount), r.description)),
+  );
 }

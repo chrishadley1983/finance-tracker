@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { executeImportRequestSchema } from '@/lib/validations/import';
 import { deleteSessionData } from '@/lib/import';
-import { planImport, tupleKey } from '@/lib/import/dedup';
+import { planImportWithKeys, tupleKey } from '@/lib/import/dedup';
 import { ZodError } from 'zod';
 import crypto from 'crypto';
 
@@ -36,6 +36,27 @@ function mapCategorisationSource(source: string | undefined): DbCategorisationSo
 
 function hashFor(date: string, amount: number, description: string): string {
   return crypto.createHash('sha256').update(tupleKey(date, amount, description)).digest('hex');
+}
+
+/**
+ * Populate `into` with transactionId → original import hash for the given
+ * transaction ids. Batched to stay within PostgREST's URL length limits.
+ * Where a transaction has multiple hash rows (re-hashes), the first wins —
+ * they share the same date/amount/description so the hash is identical.
+ */
+async function loadOriginalHashes(ids: string[], into: Map<string, string>): Promise<void> {
+  const CHUNK = 500;
+  for (let i = 0; i < ids.length; i += CHUNK) {
+    const batch = ids.slice(i, i + CHUNK);
+    if (batch.length === 0) continue;
+    const { data: hashRows } = await supabaseAdmin
+      .from('imported_transaction_hashes')
+      .select('transaction_id, hash')
+      .in('transaction_id', batch);
+    for (const h of hashRows || []) {
+      if (h.transaction_id && !into.has(h.transaction_id)) into.set(h.transaction_id, h.hash);
+    }
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -84,12 +105,17 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Fetch existing DB rows in the CSV's date range — these are the
-    // rows the count-based dedup compares against.
-    let existingRows: Array<{ date: string; amount: number; description: string }> = [];
+    // rows the count-based dedup compares against. We also pull each row's
+    // *original* import hash so dedup is immune to later user edits: a row
+    // the user renamed (e.g. "BCA Remarketing..." → "Car Purchase") still
+    // matches its CSV counterpart because the stored hash reflects the
+    // description at import time, not the current one.
+    let existingRows: Array<{ id: string; date: string; amount: number; description: string }> = [];
+    const existingHashById = new Map<string, string>();
     if (skipDuplicates && minDate && maxDate) {
       const { data, error: existingErr } = await supabaseAdmin
         .from('transactions')
-        .select('date, amount, description')
+        .select('id, date, amount, description')
         .eq('account_id', accountId)
         .gte('date', minDate)
         .lte('date', maxDate);
@@ -97,16 +123,26 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `Failed to fetch existing rows: ${existingErr.message}` }, { status: 500 });
       }
       existingRows = (data || []).map((r) => ({
+        id: r.id,
         date: r.date,
         amount: Number(r.amount),
         description: r.description,
       }));
+      await loadOriginalHashes(existingRows.map((r) => r.id), existingHashById);
     }
 
-    // 4. Plan: for each (date, amount, normDesc) tuple, DB count must end
-    // up equal to CSV count. Insert only the surplus.
+    // Key an existing DB row on its original import hash when available,
+    // otherwise fall back to the live (date, amount, normDesc) tuple hash
+    // (for manually-added rows, or imports predating hash tracking).
+    const dbKeyOf = (r: { id: string; date: string; amount: number; description: string }): string =>
+      existingHashById.get(r.id) ?? hashFor(r.date, r.amount, r.description);
+    const incomingKeyOf = (tx: { date: string; amount: number; description: string }): string =>
+      hashFor(tx.date, tx.amount, tx.description);
+
+    // 4. Plan: for each key, DB count must end up equal to CSV count.
+    // Insert only the surplus.
     const { toInsert, toSkip } = skipDuplicates
-      ? planImport(afterExplicitSkip, existingRows)
+      ? planImportWithKeys(afterExplicitSkip, incomingKeyOf, existingRows.map(dbKeyOf))
       : { toInsert: afterExplicitSkip, toSkip: [] as typeof afterExplicitSkip };
 
     const errors: ImportError[] = [];
@@ -161,10 +197,10 @@ export async function POST(request: NextRequest) {
     const mismatches: VerificationMismatch[] = [];
     let dbRowsInRange = 0;
 
-    // Build CSV-side counts once.
+    // Build CSV-side counts once, keyed the same way as dedup (hash space).
     const csvByKey = new Map<string, typeof afterExplicitSkip>();
     for (const tx of afterExplicitSkip) {
-      const k = tupleKey(tx.date, tx.amount, tx.description);
+      const k = incomingKeyOf(tx);
       if (!csvByKey.has(k)) csvByKey.set(k, []);
       csvByKey.get(k)!.push(tx);
     }
@@ -172,15 +208,18 @@ export async function POST(request: NextRequest) {
     if (minDate && maxDate) {
       const { data: afterRows } = await supabaseAdmin
         .from('transactions')
-        .select('date, amount, description')
+        .select('id, date, amount, description')
         .eq('account_id', accountId)
         .gte('date', minDate)
         .lte('date', maxDate);
       dbRowsInRange = afterRows?.length ?? 0;
 
+      const afterHashById = new Map<string, string>();
+      await loadOriginalHashes((afterRows || []).map((r) => r.id), afterHashById);
+
       const afterCount = new Map<string, number>();
       for (const r of afterRows || []) {
-        const k = tupleKey(r.date, Number(r.amount), r.description);
+        const k = afterHashById.get(r.id) ?? hashFor(r.date, Number(r.amount), r.description);
         afterCount.set(k, (afterCount.get(k) || 0) + 1);
       }
 
