@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { planImport, normalizeDescription, tupleKey } from '@/lib/import/dedup';
+import { planImport, planImportWithKeys, normalizeDescription, tupleKey } from '@/lib/import/dedup';
 
 // Shorthand row factory
 const tx = (
@@ -147,6 +147,44 @@ describe('planImport — count-based dedup', () => {
     const existing = [{ date: '2026-04-07', amount: -8.80, description: 'TFL' }];
     const { toInsert, toSkip } = planImport(incoming, existing);
     expect(toInsert.map((t) => t.rowNumber)).toEqual([2, 3]);
+    expect(toSkip.map((t) => t.rowNumber)).toEqual([1]);
+  });
+});
+
+describe('planImportWithKeys — edit-immune dedup via original import keys', () => {
+  // The import route keys existing rows on the hash of their *original*
+  // import description, not the live (possibly user-edited) one. This is
+  // what stops a renamed row from being duplicated on re-import.
+  const keyOf = (t: { date: string; amount: number; description: string }) =>
+    tupleKey(t.date, t.amount, t.description);
+
+  it('skips a re-import of a row the user renamed', () => {
+    // DB row was imported as "BCA Remarketing So BN22 YFL BP" then renamed
+    // to "Car Purchase". Its original key still reflects the raw merchant.
+    const incoming = [tx(1, '2026-04-27', -11950, 'BCA Remarketing So BN22 YFL BP')];
+    const existingOriginalKeys = [tupleKey('2026-04-27', -11950, 'BCA Remarketing So BN22 YFL BP')];
+    const { toInsert, toSkip } = planImportWithKeys(incoming, keyOf, existingOriginalKeys);
+    expect(toInsert).toHaveLength(0);
+    expect(toSkip).toHaveLength(1);
+  });
+
+  it('skips a re-import despite a location token before the stripped suffix', () => {
+    // "AMAZON* NZ72V7HI4 LONDON VIS" (raw) vs an edited row — original key
+    // is preserved so the location token never causes a mismatch.
+    const incoming = [tx(1, '2026-04-23', -10.66, 'AMAZON* NZ72V7HI4 LONDON VIS')];
+    const existingOriginalKeys = [tupleKey('2026-04-23', -10.66, 'AMAZON* NZ72V7HI4 LONDON VIS')];
+    const { toInsert } = planImportWithKeys(incoming, keyOf, existingOriginalKeys);
+    expect(toInsert).toHaveLength(0);
+  });
+
+  it('still inserts genuinely new rows', () => {
+    const incoming = [
+      tx(1, '2026-04-27', -11950, 'BCA Remarketing So BN22 YFL BP'),
+      tx(2, '2026-04-27', -25, 'TESCO STORES'),
+    ];
+    const existingOriginalKeys = [tupleKey('2026-04-27', -11950, 'BCA Remarketing So BN22 YFL BP')];
+    const { toInsert, toSkip } = planImportWithKeys(incoming, keyOf, existingOriginalKeys);
+    expect(toInsert.map((t) => t.rowNumber)).toEqual([2]);
     expect(toSkip.map((t) => t.rowNumber)).toEqual([1]);
   });
 });
