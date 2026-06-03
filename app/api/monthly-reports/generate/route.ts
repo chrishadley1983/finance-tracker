@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { aggregateMonthlyReport, saveMonthlyReport } from '@/lib/reports/aggregate';
 import { generateMonthlyReportHtml } from '@/lib/reports/monthly-html';
+import { requireUser } from '@/lib/api/require-user';
 
 /**
  * POST /api/monthly-reports/generate
  *
  * Generate (and optionally save) a monthly finance report.
  * Body: { year: number, month: number, save?: boolean, format?: 'json' | 'html' }
+ *
+ * Requires an authenticated session — this endpoint reads all financial data
+ * and writes to monthly_reports, so it must not be publicly triggerable.
  */
 export async function POST(request: NextRequest) {
   try {
+    const unauthorized = await requireUser();
+    if (unauthorized) return unauthorized;
+
     const body = await request.json();
     const year = Number(body.year);
     const month = Number(body.month);
