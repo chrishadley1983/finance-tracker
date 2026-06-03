@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
       is_income: boolean;
       budget_amount: number;
       actual_amount: number;
-      variance: number;
     }) => ({
       categoryId: row.category_id,
       categoryName: row.category_name,
@@ -45,7 +44,9 @@ export async function GET(request: NextRequest) {
       isIncome: row.is_income,
       budgetAmount: Number(row.budget_amount),
       actualAmount: Number(row.actual_amount),
-      variance: Number(row.variance),
+      // The RPC doesn't return variance; derive it (actual - budget). The
+      // actual is now sign-aware (migration 005), so this is meaningful.
+      variance: Number(row.actual_amount) - Number(row.budget_amount),
     }));
 
     // Group by group_name

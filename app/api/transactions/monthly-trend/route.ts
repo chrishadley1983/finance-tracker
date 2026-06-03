@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { classifyAmount } from '@/lib/reports/classify';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,17 +67,22 @@ export async function GET(request: NextRequest) {
     const lastDayOfMonth = new Date(endYear, endMonth + 1, 0).getDate();
     const endDateStr = formatDate(endYear, endMonth, lastDayOfMonth);
 
-    // Get categories that should be excluded from totals
-    const { data: excludedCategories, error: catError } = await supabaseAdmin
+    // Get category classification (income flag + excluded flag) for
+    // sign-aware income/expense totals.
+    const { data: categoryRows, error: catError } = await supabaseAdmin
       .from('categories')
-      .select('id')
-      .eq('exclude_from_totals', true);
+      .select('id, is_income, exclude_from_totals');
 
     if (catError) {
-      console.error('Error fetching excluded categories:', catError);
+      console.error('Error fetching categories:', catError);
     }
 
-    const excludedCategoryIds = new Set(excludedCategories?.map(c => c.id) || []);
+    const excludedCategoryIds = new Set(
+      (categoryRows || []).filter(c => c.exclude_from_totals).map(c => c.id),
+    );
+    const incomeCategoryIds = new Set(
+      (categoryRows || []).filter(c => c.is_income).map(c => c.id),
+    );
 
     // Get all transactions in range using pagination to overcome the 1000 row limit
     const allTransactions: { date: string; amount: number; category_id: string | null }[] = [];
@@ -127,17 +133,17 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Aggregate transactions
+    // Aggregate transactions, sign-aware (matching the dashboard headline and
+    // monthly reports): income = positive amounts in income categories;
+    // expenses = negative amounts in non-income categories (incl.
+    // uncategorised). Excluded categories were already filtered out above.
     for (const t of transactions) {
-      const monthKey = t.date.slice(0, 7); // YYYY-MM from date string
-      const existing = monthMap.get(monthKey);
-      if (existing) {
-        if (t.amount > 0) {
-          existing.income += t.amount;
-        } else {
-          existing.expenses += Math.abs(t.amount);
-        }
-      }
+      const existing = monthMap.get(t.date.slice(0, 7)); // YYYY-MM from date string
+      if (!existing) continue;
+      const isIncome = t.category_id ? incomeCategoryIds.has(t.category_id) : false;
+      const { income, expense } = classifyAmount(Number(t.amount), isIncome, false);
+      existing.income += income;
+      existing.expenses += expense;
     }
 
     // Convert to array with month labels
