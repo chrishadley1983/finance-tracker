@@ -39,21 +39,57 @@ export default function ReportsPage() {
   const [reportHtml, setReportHtml] = useState<string | null>(null);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
 
-  useEffect(() => {
-    async function fetchReports() {
-      try {
-        const response = await fetch('/api/monthly-reports/list');
-        if (!response.ok) throw new Error('Failed to fetch reports');
-        const data = await response.json();
-        setReports(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load reports');
-      } finally {
-        setIsLoading(false);
-      }
+  // Generate-on-demand control. Default the picker to the last completed month.
+  const defaultMonth = (() => {
+    const now = new Date();
+    const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  })();
+  const [genMonth, setGenMonth] = useState(defaultMonth);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [genMessage, setGenMessage] = useState<string | null>(null);
+
+  const fetchReports = useCallback(async () => {
+    try {
+      const response = await fetch('/api/monthly-reports/list');
+      if (!response.ok) throw new Error('Failed to fetch reports');
+      const data = await response.json();
+      setReports(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load reports');
+    } finally {
+      setIsLoading(false);
     }
-    fetchReports();
   }, []);
+
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  const handleGenerate = useCallback(async () => {
+    if (!genMonth) return;
+    const [y, m] = genMonth.split('-').map(Number);
+    setIsGenerating(true);
+    setGenMessage(null);
+    setError(null);
+    try {
+      const res = await fetch('/api/monthly-reports/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year: y, month: m, save: true }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Failed to generate (${res.status})`);
+      }
+      setGenMessage(`${MONTH_NAMES[m - 1]} ${y} report generated.`);
+      await fetchReports();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate report');
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [genMonth, fetchReports]);
 
   const viewReport = useCallback(async (year: number, month: number) => {
     setViewingReport({ year, month });
@@ -142,11 +178,36 @@ export default function ReportsPage() {
     <AppLayout title="Monthly Reports">
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <p className="text-sm text-slate-500">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <p className="max-w-xl text-sm text-slate-500">
             View past monthly finance reports with budget analysis, net worth trends, and FIRE progress.
           </p>
+          <div className="flex items-end gap-2">
+            <label className="flex flex-col text-xs font-medium text-slate-500">
+              Month
+              <input
+                type="month"
+                value={genMonth}
+                onChange={(e) => setGenMonth(e.target.value)}
+                className="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
+              />
+            </label>
+            <button
+              onClick={handleGenerate}
+              disabled={isGenerating || !genMonth}
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {isGenerating ? 'Generating…' : 'Generate / Refresh'}
+            </button>
+          </div>
         </div>
+
+        {/* Generate success message */}
+        {genMessage && (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+            <p className="text-sm text-emerald-700">{genMessage}</p>
+          </div>
+        )}
 
         {/* Error state */}
         {error && (

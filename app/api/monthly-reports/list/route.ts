@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listMonthlyReports, getMonthlyReportHtml } from '@/lib/reports/aggregate';
+import { requireUser } from '@/lib/api/require-user';
 
 /**
  * GET /api/monthly-reports/list
  *
  * Without query params: list all saved monthly reports.
  * With ?year=YYYY&month=MM: return the stored HTML for that report.
+ *
+ * Requires an authenticated session — exposes saved financial summaries.
  */
 export async function GET(request: NextRequest) {
   try {
+    const unauthorized = await requireUser();
+    if (unauthorized) return unauthorized;
+
     const { searchParams } = new URL(request.url);
     const year = searchParams.get('year');
     const month = searchParams.get('month');
