@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
       console.error('RPC error, falling back to client-side:', error);
 
       // Fetch all transactions with pagination
-      let allTransactions: { amount: number; category: { id: string; name: string; exclude_from_totals: boolean } | null }[] = [];
+      let allTransactions: { amount: number; category: { id: string; name: string; is_income: boolean; exclude_from_totals: boolean } | null }[] = [];
       let offset = 0;
       const batchSize = 1000;
 
@@ -148,11 +148,10 @@ export async function GET(request: NextRequest) {
           .from('transactions')
           .select(`
             amount,
-            category:categories(id, name, exclude_from_totals)
+            category:categories(id, name, is_income, exclude_from_totals)
           `)
           .gte('date', startDate)
           .lte('date', endDate)
-          .lt('amount', 0)
           .range(offset, offset + batchSize - 1);
 
         if (batchError) {
@@ -173,16 +172,17 @@ export async function GET(request: NextRequest) {
       const categoryMap = new Map<string, { categoryId: string; categoryName: string; amount: number }>();
 
       for (const t of allTransactions) {
-        const category = t.category as { id: string; name: string; exclude_from_totals: boolean } | null;
+        const category = t.category as { id: string; name: string; is_income: boolean; exclude_from_totals: boolean } | null;
 
-        // Skip transactions in excluded categories
-        if (category?.id && excludedCategoryIds.has(category.id)) {
-          continue;
-        }
+        // Spending chart: known non-income categories only (uncategorised and
+        // income categories are not "spending"); excluded categories skipped.
+        if (!category?.id) continue;
+        if (excludedCategoryIds.has(category.id)) continue;
+        if (category.is_income) continue;
 
-        const categoryId = category?.id || 'uncategorized';
-        const categoryName = category?.name || 'Uncategorized';
-        const amount = Math.abs(t.amount);
+        const categoryId = category.id;
+        const categoryName = category.name;
+        const amount = -Number(t.amount); // net: debits add, refund credits subtract
 
         const existing = categoryMap.get(categoryId);
         if (existing) {
@@ -207,11 +207,13 @@ export async function GET(request: NextRequest) {
       return jsonResponse(result);
     }
 
-    // Use RPC results
+    // Use RPC results. total_amount is the NET spend per category (debits minus
+    // refund credits), so a category can be negative when refunds exceed spend —
+    // keep the sign rather than abs().
     const categories = (categoryTotals || []).map((row: { category_id: string; category_name: string; total_amount: number }) => ({
       categoryId: row.category_id || 'uncategorized',
       categoryName: row.category_name || 'Uncategorized',
-      amount: Math.abs(Number(row.total_amount)),
+      amount: Number(row.total_amount),
     }));
     const totalExpenses = categories.reduce((sum, c) => sum + c.amount, 0);
 

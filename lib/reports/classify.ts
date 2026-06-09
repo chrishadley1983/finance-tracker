@@ -1,25 +1,28 @@
 /**
  * Sign-aware classification of a transaction amount into income vs expense.
  *
- * This is the single source of truth shared by the monthly report's headline
- * totals and its income-vs-spending trend chart, so the two can never diverge
- * (they previously did: the chart summed raw amounts for income categories and
- * abs() for all non-income rows, while the headline was sign-aware).
+ * Single source of truth shared by the report headline, the trend chart, the
+ * dashboard `/api/transactions/summary` and the reporting RPCs.
  *
- * Rules — identical to the dashboard's `/api/transactions/summary`:
+ * Rules:
  *   - Excluded categories (transfers, credit-card payments) contribute nothing.
- *   - Income categories: only positive amounts count as income (a negative in
- *     an income category, e.g. a clawback, is ignored rather than subtracted).
- *   - Everything else, including uncategorised rows: only negative amounts
- *     count as spend (a refund credit in an expense category is ignored rather
- *     than inflating spend).
+ *   - Income categories: only positive amounts count as income (a negative, e.g.
+ *     a clawback, is ignored rather than subtracted).
+ *   - A KNOWN expense category NETS: spend = -amount, so debits add and refund
+ *     credits subtract. A category can go negative in a period when refunds
+ *     exceed spend (a genuine net refund — e.g. leftover holiday FX converted
+ *     back). `isCategorised=true` (the default) selects this path.
+ *   - An UNCATEGORISED row (`isCategorised=false`) counts debits as spend and
+ *     ignores credits — we can't assume an unreviewed credit is a refund.
  */
 export function classifyAmount(
   amount: number,
   isIncome: boolean,
   excluded: boolean,
+  isCategorised: boolean = true,
 ): { income: number; expense: number } {
   if (excluded) return { income: 0, expense: 0 };
   if (isIncome) return { income: amount > 0 ? amount : 0, expense: 0 };
-  return { income: 0, expense: amount < 0 ? Math.abs(amount) : 0 };
+  if (!isCategorised) return { income: 0, expense: amount < 0 ? Math.abs(amount) : 0 };
+  return { income: 0, expense: -amount };
 }
