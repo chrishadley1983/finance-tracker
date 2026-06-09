@@ -45,7 +45,7 @@ After confirmation, one SQL update: set `category_id`, `categorisation_source='r
 If the user corrected any proposal, **append the new rule** to the `project_import_categorise_skill.md` memory (merchant→category, value rule, or rename) so next run improves.
 
 ### 9. Final output — month-to-date summary (ALWAYS)
-Report **cumulative** income & spend for the month of the imported data (not just the rows added), net-of-refunds, e.g.:
+Report **cumulative** income & spend for the month of the imported data (not just the rows added), net-of-refunds. Headline totals:
 ```sql
 with t as (
   select tx.amount, c.is_income, coalesce(c.exclude_from_totals,false) excl, tx.category_id
@@ -56,9 +56,21 @@ select
   round(sum(amount) filter (where amount>0 and is_income and not excl),2) as income_mtd,
   round(sum(case when excl or is_income then 0
                  when category_id is null then (case when amount<0 then abs(amount) else 0 end)
-                 else -amount end),2) as spend_mtd_net;
+                 else -amount end),2) as spend_mtd_net
+from t;
 ```
-Present income MTD, spend MTD (net), net saved, savings rate, and the top spend categories.
+**Income split by category** (granular — always include this):
+```sql
+select c.name as category, round(sum(tx.amount),2) as income, count(*) as n,
+  string_agg(to_char(tx.date,'DD Mon')||' '||left(tx.description,28)||' £'||tx.amount::text, ' | ' order by tx.date) as items
+from finance.transactions tx join finance.categories c on c.id=tx.category_id
+where tx.date>='<YYYY-MM-01>' and tx.date<'<next-month-01>'
+  and tx.amount>0 and c.is_income and coalesce(c.exclude_from_totals,false)=false
+group by c.name order by income desc;
+```
+**Spend by category (net)**: same shape with `c.is_income=false`, `sum(-tx.amount)`.
+
+Present: income MTD **broken down by income category with line items**, spend MTD (net), net saved, savings rate, and top spend categories. Note any category showing a net refund (negative).
 
 ### 10. Report (OPTIONAL — only if asked)
 Reports are generated monthly, not per-import. Only if the user asks, generate via the Reports page "Generate / Refresh" button or `npx tsx scripts/regen-2026-reports.ts`.
