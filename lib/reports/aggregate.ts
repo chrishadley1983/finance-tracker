@@ -98,10 +98,13 @@ export async function aggregateMonthlyReport(
   for (const t of monthTransactions) {
     const excluded = !!(t.category_id && excludedIds.has(t.category_id));
     const isIncome = t.category_id ? incomeCategoryIds.has(t.category_id) : false;
-    const { income: inc, expense: exp } = classifyAmount(Number(t.amount), isIncome, excluded);
+    const { income: inc, expense: exp } = classifyAmount(
+      Number(t.amount), isIncome, excluded, !!t.category_id,
+    );
     income += inc;
     expenses += exp;
-    if (t.category_id && (inc > 0 || exp > 0)) {
+    // Per-category actual nets too (so budget actuals reflect refunds).
+    if (t.category_id && !excluded) {
       actualByCategory.set(t.category_id, (actualByCategory.get(t.category_id) || 0) + inc + exp);
     }
   }
@@ -454,6 +457,7 @@ async function fetchMonthlyTrend(
       Number(t.amount),
       cat?.isIncome ?? false,
       cat?.excluded ?? false,
+      !!t.category_id,
     );
     if (inc === 0 && exp === 0) continue;
 

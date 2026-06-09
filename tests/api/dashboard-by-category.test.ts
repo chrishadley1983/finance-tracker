@@ -60,11 +60,14 @@ describe('Dashboard By-Category API', () => {
       }
     });
 
-    it('only includes expenses (negative amounts become positive)', async () => {
+    it('passes through net spend from the RPC (incl. negative for net-refund categories)', async () => {
+      // get_spending_by_category returns NET spend per category (positive for
+      // normal spend, negative when refunds exceed spend). The route must NOT
+      // abs() it.
       mockRpc.mockResolvedValue({
         data: [
-          { category_id: TEST_CATEGORY_1_ID, category_name: 'Groceries', total_amount: -50 },
-          { category_id: TEST_CATEGORY_2_ID, category_name: 'Transport', total_amount: -150 },
+          { category_id: TEST_CATEGORY_1_ID, category_name: 'Groceries', total_amount: 50 },
+          { category_id: TEST_CATEGORY_2_ID, category_name: 'Holiday Travel', total_amount: -11.45 },
         ],
         error: null,
       });
@@ -74,17 +77,17 @@ describe('Dashboard By-Category API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      // Amounts should be positive (absolute values)
-      data.forEach((item: { amount: number }) => {
-        expect(item.amount).toBeGreaterThan(0);
-      });
+      const groceries = data.find((c: { categoryName: string }) => c.categoryName === 'Groceries');
+      const holiday = data.find((c: { categoryName: string }) => c.categoryName === 'Holiday Travel');
+      expect(groceries.amount).toBe(50);
+      expect(holiday.amount).toBe(-11.45); // net refund preserved
     });
 
     it('calculates percentages correctly', async () => {
       mockRpc.mockResolvedValue({
         data: [
-          { category_id: TEST_CATEGORY_1_ID, category_name: 'Groceries', total_amount: -300 },
-          { category_id: TEST_CATEGORY_2_ID, category_name: 'Transport', total_amount: -100 },
+          { category_id: TEST_CATEGORY_1_ID, category_name: 'Groceries', total_amount: 300 },
+          { category_id: TEST_CATEGORY_2_ID, category_name: 'Transport', total_amount: 100 },
         ],
         error: null,
       });
@@ -109,7 +112,7 @@ describe('Dashboard By-Category API', () => {
     it('handles uncategorized transactions', async () => {
       mockRpc.mockResolvedValue({
         data: [
-          { category_id: null, category_name: null, total_amount: -150 },
+          { category_id: null, category_name: null, total_amount: 150 },
         ],
         error: null,
       });
@@ -128,9 +131,9 @@ describe('Dashboard By-Category API', () => {
     it('sorts categories by amount descending', async () => {
       mockRpc.mockResolvedValue({
         data: [
-          { category_id: TEST_CATEGORY_1_ID, category_name: 'Small', total_amount: -50 },
-          { category_id: TEST_CATEGORY_2_ID, category_name: 'Large', total_amount: -200 },
-          { category_id: TEST_CATEGORY_3_ID, category_name: 'Medium', total_amount: -100 },
+          { category_id: TEST_CATEGORY_1_ID, category_name: 'Small', total_amount: 50 },
+          { category_id: TEST_CATEGORY_2_ID, category_name: 'Large', total_amount: 200 },
+          { category_id: TEST_CATEGORY_3_ID, category_name: 'Medium', total_amount: 100 },
         ],
         error: null,
       });
@@ -204,18 +207,16 @@ describe('Dashboard By-Category API', () => {
             }),
           };
         }
-        // transactions table - paginated query
+        // transactions table - paginated query (no .lt: fallback now nets all signs)
         return {
           select: vi.fn().mockReturnValue({
             gte: vi.fn().mockReturnValue({
               lte: vi.fn().mockReturnValue({
-                lt: vi.fn().mockReturnValue({
-                  range: vi.fn().mockResolvedValue({
-                    data: [
-                      { amount: -100, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries', exclude_from_totals: false } },
-                    ],
-                    error: null,
-                  }),
+                range: vi.fn().mockResolvedValue({
+                  data: [
+                    { amount: -100, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries', is_income: false, exclude_from_totals: false } },
+                  ],
+                  error: null,
                 }),
               }),
             }),

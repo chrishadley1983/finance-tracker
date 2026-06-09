@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
       const existing = monthMap.get(t.date.slice(0, 7)); // YYYY-MM from date string
       if (!existing) continue;
       const isIncome = t.category_id ? incomeCategoryIds.has(t.category_id) : false;
-      const { income, expense } = classifyAmount(Number(t.amount), isIncome, false);
+      const { income, expense } = classifyAmount(Number(t.amount), isIncome, false, !!t.category_id);
       existing.income += income;
       existing.expenses += expense;
     }

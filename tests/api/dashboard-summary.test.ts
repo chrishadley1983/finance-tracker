@@ -373,10 +373,10 @@ describe('Dashboard Summary API', () => {
       expect(data.totalBalance).toBe(165000);
     });
 
-    it('does not count credits in expense categories as expenses (refunds)', async () => {
-      // A refund (credit) sitting in an expense category must not inflate
-      // periodExpenses; SpendingByCategory only sums debits, so summary
-      // must match. Regression for the £1,563.73 mismatch.
+    it('nets a refund (credit) in an expense category against that spend', async () => {
+      // A refund credit in a known expense category subtracts from spend
+      // (£500 spend − £100 refund = £400 net). It must neither inflate (old
+      // abs bug → 600) nor be ignored (→ 500): it nets.
       setupSuccessMocks({
         accounts: [],
         categories: [
@@ -394,7 +394,7 @@ describe('Dashboard Summary API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.periodExpenses).toBe(500); // not 600
+      expect(data.periodExpenses).toBe(400); // 500 − 100 refund
       expect(data.periodIncome).toBe(1000);
     });
 

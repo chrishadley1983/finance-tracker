@@ -251,7 +251,7 @@ describe('Dashboard Monthly Trend API', () => {
       expect(data[0].expenses).toBe(50);
     });
 
-    it('is sign-aware: ignores refunds in expense categories and clawbacks in income categories', async () => {
+    it('nets refunds in expense categories; ignores income clawbacks and uncategorised credits', async () => {
       const now = new Date();
       const m = String(now.getMonth() + 1).padStart(2, '0');
       const y = now.getFullYear();
@@ -263,8 +263,8 @@ describe('Dashboard Monthly Trend API', () => {
           { date: d, amount: 2000, category_id: 'salary' },    // income +2000
           { date: d, amount: -50, category_id: 'salary' },     // clawback in income cat -> ignored
           { date: d, amount: -300, category_id: 'groceries' }, // expense 300
-          { date: d, amount: 40, category_id: 'groceries' },   // refund in expense cat -> ignored
-          { date: d, amount: -25, category_id: null },         // uncategorised debit -> expense
+          { date: d, amount: 40, category_id: 'groceries' },   // refund in expense cat -> NETS (-40)
+          { date: d, amount: -25, category_id: null },         // uncategorised debit -> expense 25
         ],
       });
 
@@ -274,7 +274,7 @@ describe('Dashboard Monthly Trend API', () => {
 
       expect(response.status).toBe(200);
       expect(data[0].income).toBe(2000);
-      expect(data[0].expenses).toBe(325);
+      expect(data[0].expenses).toBe(285); // 300 - 40 + 25
     });
   });
 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { classifyAmount } from '@/lib/reports/classify';
 
 export const dynamic = 'force-dynamic';
 
@@ -243,20 +244,18 @@ export async function GET(request: NextRequest) {
       t => !t.category_id || !excludedCategoryIds.has(t.category_id)
     );
 
-    // Income = credits in income categories. Expenses = debits in
-    // non-income categories. Filtering on sign matches the by-category
-    // endpoint and prevents refunds (credits in expense categories) from
-    // being double-counted as expenses.
-    const periodIncome = includedTransactions
-      .filter((t) => t.category_id && incomeCategoryIds.has(t.category_id))
-      .filter((t) => Number(t.amount) > 0)
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-
-    const periodExpenses = includedTransactions
-      .filter((t) => !t.category_id || !incomeCategoryIds.has(t.category_id))
-      .filter((t) => Number(t.amount) < 0)
-      .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
-
+    // Income = positive credits in income categories. Expenses net within known
+    // expense categories (a refund credit subtracts), while an uncategorised
+    // credit is ignored. Shared classifyAmount keeps this identical to the
+    // reports and RPCs. excludedTransactions were already filtered out above.
+    let periodIncome = 0;
+    let periodExpenses = 0;
+    for (const t of includedTransactions) {
+      const isIncome = !!t.category_id && incomeCategoryIds.has(t.category_id);
+      const { income, expense } = classifyAmount(Number(t.amount), isIncome, false, !!t.category_id);
+      periodIncome += income;
+      periodExpenses += expense;
+    }
     const periodNet = periodIncome - periodExpenses;
 
     return NextResponse.json({
