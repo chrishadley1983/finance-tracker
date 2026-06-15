@@ -6,6 +6,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import { logAiUsage, usageFields } from '@/lib/ai-usage-audit';
 import {
   getPromptForFormat,
   validateVisionResponse,
@@ -147,6 +148,7 @@ export async function parseStatementPage(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), VISION_CONFIG.timeout);
 
+      const requestStart = Date.now();
       const message = await client.messages.create({
         model: VISION_CONFIG.model,
         max_tokens: VISION_CONFIG.maxTokens,
@@ -172,6 +174,17 @@ export async function parseStatementPage(
       });
 
       clearTimeout(timeoutId);
+
+      // Fire-and-forget AI-usage audit (never awaited, never throws).
+      void logAiUsage({
+        feature: 'pdf_vision_parse',
+        model: message.model,
+        status: 'success',
+        request_ms: Date.now() - requestStart,
+        anthropic_message_id: message.id,
+        metadata: { pageNumber, format, attempt: attempts },
+        ...usageFields(message.usage),
+      });
 
       // Extract text response
       const textContent = message.content.find((c) => c.type === 'text');
@@ -240,10 +253,20 @@ export async function parseStatementPage(
         accountInfo: parsed.accountInfo,
       };
     } catch (error) {
-      // Re-throw our errors
+      // Re-throw our errors (these fire after a successful API call — already
+      // logged as success above, so don't double-count them here).
       if (error instanceof PdfVisionError) {
         throw error;
       }
+
+      // The API call itself failed — log an error row (fire-and-forget).
+      void logAiUsage({
+        feature: 'pdf_vision_parse',
+        model: VISION_CONFIG.model,
+        status: 'error',
+        error: error instanceof Error ? error.message : String(error),
+        metadata: { pageNumber, format, attempt: attempts },
+      });
 
       // Handle Anthropic-specific errors
       if (error instanceof Anthropic.RateLimitError) {
