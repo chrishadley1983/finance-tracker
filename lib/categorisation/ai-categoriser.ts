@@ -7,6 +7,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { logAiUsage, usageFields } from '@/lib/ai-usage-audit';
 import {
   buildSingleCategorisePrompt,
   buildBatchCategorisePrompt,
@@ -157,6 +158,7 @@ export async function categoriseWithAI(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), AI_CONFIG.timeout);
 
+      const requestStart = Date.now();
       const message = await client.messages.create({
         model: AI_CONFIG.model,
         max_tokens: AI_CONFIG.maxTokens,
@@ -164,6 +166,17 @@ export async function categoriseWithAI(
       });
 
       clearTimeout(timeoutId);
+
+      // Fire-and-forget AI-usage audit (never awaited, never throws).
+      void logAiUsage({
+        feature: 'categoriser',
+        model: message.model,
+        status: 'success',
+        request_ms: Date.now() - requestStart,
+        anthropic_message_id: message.id,
+        metadata: { mode: 'single', attempt: attempts },
+        ...usageFields(message.usage),
+      });
 
       const textContent = message.content.find((c) => c.type === 'text');
       if (!textContent || textContent.type !== 'text') {
@@ -206,12 +219,23 @@ export async function categoriseWithAI(
     } catch (error) {
       lastError = error as Error;
 
+      // AICategorisationError fires after a successful API call — already
+      // logged as success, so don't double-count it here.
       if (error instanceof AICategorisationError) {
         if (error.code === 'PARSE_ERROR' && attempts <= AI_CONFIG.maxRetries) {
           continue;
         }
         throw error;
       }
+
+      // The API call itself failed — log an error row (fire-and-forget).
+      void logAiUsage({
+        feature: 'categoriser',
+        model: AI_CONFIG.model,
+        status: 'error',
+        error: error instanceof Error ? error.message : String(error),
+        metadata: { mode: 'single', attempt: attempts },
+      });
 
       if (error instanceof Anthropic.RateLimitError) {
         throw new AICategorisationError(
@@ -283,6 +307,7 @@ export async function categoriseBatchWithAI(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), AI_CONFIG.timeout);
 
+      const requestStart = Date.now();
       const message = await client.messages.create({
         model: AI_CONFIG.model,
         max_tokens: AI_CONFIG.maxTokens,
@@ -290,6 +315,17 @@ export async function categoriseBatchWithAI(
       });
 
       clearTimeout(timeoutId);
+
+      // Fire-and-forget AI-usage audit (never awaited, never throws).
+      void logAiUsage({
+        feature: 'categoriser',
+        model: message.model,
+        status: 'success',
+        request_ms: Date.now() - requestStart,
+        anthropic_message_id: message.id,
+        metadata: { mode: 'batch', attempt: attempts, batchSize: transactions.length },
+        ...usageFields(message.usage),
+      });
 
       const textContent = message.content.find((c) => c.type === 'text');
       if (!textContent || textContent.type !== 'text') {
@@ -341,12 +377,23 @@ export async function categoriseBatchWithAI(
     } catch (error) {
       lastError = error as Error;
 
+      // AICategorisationError fires after a successful API call — already
+      // logged as success, so don't double-count it here.
       if (error instanceof AICategorisationError) {
         if (error.code === 'PARSE_ERROR' && attempts <= AI_CONFIG.maxRetries) {
           continue;
         }
         throw error;
       }
+
+      // The API call itself failed — log an error row (fire-and-forget).
+      void logAiUsage({
+        feature: 'categoriser',
+        model: AI_CONFIG.model,
+        status: 'error',
+        error: error instanceof Error ? error.message : String(error),
+        metadata: { mode: 'batch', attempt: attempts, batchSize: transactions.length },
+      });
 
       if (error instanceof Anthropic.RateLimitError) {
         throw new AICategorisationError(

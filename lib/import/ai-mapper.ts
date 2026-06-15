@@ -6,6 +6,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import crypto from 'crypto';
+import { logAiUsage, usageFields } from '@/lib/ai-usage-audit';
 import {
   buildColumnMappingPrompt,
   validateAIResponse,
@@ -191,6 +192,7 @@ export async function suggestColumnMapping(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), AI_CONFIG.timeout);
 
+      const requestStart = Date.now();
       const message = await client.messages.create({
         model: AI_CONFIG.model,
         max_tokens: AI_CONFIG.maxTokens,
@@ -203,6 +205,17 @@ export async function suggestColumnMapping(
       });
 
       clearTimeout(timeoutId);
+
+      // Fire-and-forget AI-usage audit (never awaited, never throws).
+      void logAiUsage({
+        feature: 'ai_mapper',
+        model: message.model,
+        status: 'success',
+        request_ms: Date.now() - requestStart,
+        anthropic_message_id: message.id,
+        metadata: { attempt: attempts },
+        ...usageFields(message.usage),
+      });
 
       // Extract text response
       const textContent = message.content.find((c) => c.type === 'text');
@@ -269,7 +282,9 @@ export async function suggestColumnMapping(
     } catch (error) {
       lastError = error as Error;
 
-      // Check for specific error types
+      // Check for specific error types. AIMappingError fires after a
+      // successful API call (parse/validation) — already logged as success,
+      // so don't double-count it here.
       if (error instanceof AIMappingError) {
         if (error.code === 'PARSE_ERROR' && attempts <= AI_CONFIG.maxRetries) {
           // Retry on parse errors
@@ -277,6 +292,15 @@ export async function suggestColumnMapping(
         }
         throw error;
       }
+
+      // The API call itself failed — log an error row (fire-and-forget).
+      void logAiUsage({
+        feature: 'ai_mapper',
+        model: AI_CONFIG.model,
+        status: 'error',
+        error: error instanceof Error ? error.message : String(error),
+        metadata: { attempt: attempts },
+      });
 
       if (error instanceof Anthropic.RateLimitError) {
         throw new AIMappingError(
