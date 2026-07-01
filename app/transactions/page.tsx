@@ -13,6 +13,7 @@ import {
   TransactionWithRunningBalance,
 } from '@/components/transactions';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { SyncButton } from '@/components/enable-banking';
 import { useTransactions, FilterState, TransactionWithRelations } from '@/lib/hooks/useTransactions';
 
 interface Category {
@@ -444,7 +445,7 @@ function TransactionsPageContent() {
     <AppLayout title="Transactions">
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           {isSingleAccountFilter && accountName ? (
             <div className="flex items-center gap-3">
               <p className="text-sm text-slate-500">
@@ -462,6 +463,8 @@ function TransactionsPageContent() {
               Manage and view all your transactions
             </p>
           )}
+
+          <SyncButton label="Sync all accounts" />
         </div>
 
         {/* Toolbar */}
