@@ -85,3 +85,7 @@ summary_test.json
 /scripts/reconcile-hsbc.ts
 /scripts/recover-deleted.mjs
 /scripts/validate-parser.mjs
+
+# Local bank sync log
+bank-sync.log
+.env.tlcheck.local

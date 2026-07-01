@@ -3,8 +3,12 @@
  * a linked account, reconcile against the ledger and insert only what's
  * missing. INSERT-ONLY — never updates existing rows (preserves user edits).
  * Reuses the provider-agnostic reconcile engine from lib/enable-banking.
+ *
+ * NOTE: not marked `server-only` so it can also be driven from a local Node
+ * script (scripts/sync-truelayer.ts) for scheduled syncs without the Vercel
+ * 60s function limit. It is never imported by client code (the lib/truelayer
+ * barrel deliberately excludes it; only API routes + the local script import it).
  */
-import 'server-only';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { categoriseMultiple } from '@/lib/categorisation';
 import {
