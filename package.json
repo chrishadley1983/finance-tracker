@@ -15,6 +15,7 @@
     "tl:e2e": "node scripts/e2e-truelayer.mjs",
     "sync:bank": "tsx scripts/sync-truelayer.ts",
     "mine:rules": "tsx scripts/mine-merchant-rules.ts",
+    "report:month": "tsx scripts/generate-monthly-report.ts",
     "refresh-shiller": "tsx scripts/refresh-shiller-data.ts"
   },
   "repository": {

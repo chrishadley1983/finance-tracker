@@ -316,7 +316,10 @@ ${data.fireScenarios.length > 0 ? `
 </div>
 ` : ''}
 
-<!-- 8. Key Takeaways -->
+<!-- 8. Holiday & FIRE Impact -->
+${data.holidayFire ? renderHolidayFire(data) : ''}
+
+<!-- 9. Key Takeaways -->
 ${data.takeaways.length > 0 ? `
 <div class="section">
   <h2>Key Takeaways</h2>
@@ -431,6 +434,85 @@ new Chart(document.getElementById('trendChart'), {
 
 </body>
 </html>`;
+}
+
+function renderHolidayFire(data: MonthlyReportData): string {
+  const hf = data.holidayFire!;
+  const savingsRateDelta = hf.savingsRateExHoliday - data.savingsRate;
+
+  const categoryRows = hf.holidayCategories
+    .map(
+      (c) => `<tr>
+        <td>${esc(c.name)}</td>
+        <td style="text-align:right" class="${c.net < 0 ? 'under' : ''}">${esc(fmtCurrencyFull(c.net))}</td>
+      </tr>`,
+    )
+    .join('');
+
+  const scenarioRows = hf.scenarioImpacts
+    .map((s) => {
+      const delta = s.progressDeltaPp;
+      return `<tr>
+        <td>${esc(s.name)}</td>
+        <td style="text-align:right">${s.progressPct.toFixed(1)}%</td>
+        <td style="text-align:right" class="${delta !== null && delta < 0 ? 'over' : 'under'}">${delta !== null ? `${delta >= 0 ? '+' : ''}${delta.toFixed(2)} pp` : '—'}</td>
+        <td style="text-align:right" class="${s.monthSavingsPp >= 0 ? 'under' : 'over'}">${s.monthSavingsPp >= 0 ? '+' : ''}${s.monthSavingsPp.toFixed(2)} pp</td>
+      </tr>`;
+    })
+    .join('');
+
+  return `
+<div class="section">
+  <h2>Holiday &amp; FIRE Impact</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">Holiday Spend (net)</div>
+      <div class="card-value">${esc(fmtCurrency(hf.holidaySpend))}</div>
+      <div class="card-delta">${hf.holidayPctOfExpenses.toFixed(1)}% of total spending</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Spending ex-Holiday</div>
+      <div class="card-value">${esc(fmtCurrency(hf.expensesExHoliday))}</div>
+      <div class="card-delta">essential + everyday spend</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Savings Rate ex-Holiday</div>
+      <div class="card-value">${hf.savingsRateExHoliday.toFixed(1)}%</div>
+      <div class="card-delta ${savingsRateDelta >= 0 ? 'positive' : 'negative'}">${esc(fmtPct(savingsRateDelta))} vs headline rate</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Net Savings This Month</div>
+      <div class="card-value ${hf.monthSavings >= 0 ? '' : 'over'}">${esc(fmtCurrency(hf.monthSavings))}</div>
+      ${hf.firePortfolioChange !== null ? `<div class="card-delta ${hf.firePortfolioChange >= 0 ? 'positive' : 'negative'}">FIRE portfolio ${deltaArrow(hf.firePortfolioChange)} ${esc(fmtCurrency(Math.abs(hf.firePortfolioChange)))} vs last month</div>` : ''}
+    </div>
+  </div>
+  <div class="grid-2">
+    <div>
+      <div class="chart-container" style="padding:0">
+        <table class="budget-table">
+          <thead><tr><th>Holiday Category (net)</th><th style="text-align:right">Spend</th></tr></thead>
+          <tbody>
+            ${categoryRows || '<tr><td colspan="2" style="color:var(--text3)">No holiday spend this month</td></tr>'}
+            <tr>
+              <td><strong>Total</strong></td>
+              <td style="text-align:right"><strong>${esc(fmtCurrencyFull(hf.holidaySpend))}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:0.75rem;color:var(--text3);margin-top:6px">
+        Illustrative: at a 4% withdrawal rate this month's net holiday spend is the
+        portfolio income of ${esc(fmtCurrencyFull(hf.holidayForgoneAnnualIncome))}/yr in retirement.
+      </div>
+    </div>
+    <div class="chart-container" style="padding:0">
+      <table class="budget-table">
+        <thead><tr><th>FIRE Scenario</th><th style="text-align:right">Progress</th><th style="text-align:right">Portfolio Δ (pp)</th><th style="text-align:right">Month's Savings (pp)</th></tr></thead>
+        <tbody>${scenarioRows}</tbody>
+      </table>
+    </div>
+  </div>
+</div>`;
 }
 
 function renderTakeaway(t: Takeaway): string {
