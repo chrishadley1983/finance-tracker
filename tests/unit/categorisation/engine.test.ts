@@ -109,12 +109,20 @@ describe('Categorisation Engine', () => {
           similarity: 0.7,
           date: '2024-01-05',
         },
+        {
+          transactionId: 'tx-3',
+          description: 'AMAZON RETAIL',
+          categoryId: 'cat-shopping',
+          categoryName: 'Shopping',
+          similarity: 0.68,
+          date: '2024-01-02',
+        },
       ]);
       vi.mocked(getMostCommonCategory).mockReturnValue({
         categoryId: 'cat-shopping',
         categoryName: 'Shopping',
-        count: 2,
-        avgSimilarity: 0.75,
+        count: 3,
+        avgSimilarity: 0.73,
       });
 
       const result = await categoriseTransaction({
@@ -125,8 +133,44 @@ describe('Categorisation Engine', () => {
 
       expect(result.source).toBe('similar');
       expect(result.categoryId).toBe('cat-shopping');
-      expect(result.confidence).toBeGreaterThan(0);
+      expect(result.confidence).toBeGreaterThanOrEqual(0.8);
       expect(categoriseWithAI).not.toHaveBeenCalled();
+    });
+
+    it('treats a low-agreement similar match as weak: consults AI, keeps guess as fallback', async () => {
+      vi.mocked(matchRule).mockResolvedValue(null);
+      vi.mocked(findSimilarTransactions).mockResolvedValue([
+        {
+          transactionId: 'tx-1',
+          description: 'HUSH HOMEWEAR LONDON',
+          categoryId: 'cat-eating-out',
+          categoryName: 'Eating out',
+          similarity: 0.55,
+          date: '2024-01-10',
+        },
+      ]);
+      vi.mocked(getMostCommonCategory).mockReturnValue({
+        categoryId: 'cat-eating-out',
+        categoryName: 'Eating out',
+        count: 1,
+        avgSimilarity: 0.55,
+      });
+      // AI unavailable → weak guess is used, flagged by its low confidence
+      vi.mocked(checkAIAvailability).mockResolvedValueOnce({
+        available: false,
+        remaining: 0,
+        dailyLimit: 100,
+      });
+
+      const result = await categoriseTransaction({
+        description: 'Hush Homewear Ltd London',
+        amount: -125.0,
+        date: '2024-01-15',
+      });
+
+      expect(result.source).toBe('similar');
+      expect(result.categoryId).toBe('cat-eating-out');
+      expect(result.confidence).toBeLessThan(0.8);
     });
 
     it('falls back to AI when no rule or similar matches', async () => {

@@ -14,6 +14,7 @@
     "eb:e2e": "node scripts/e2e-enable-banking.mjs",
     "tl:e2e": "node scripts/e2e-truelayer.mjs",
     "sync:bank": "tsx scripts/sync-truelayer.ts",
+    "mine:rules": "tsx scripts/mine-merchant-rules.ts",
     "refresh-shiller": "tsx scripts/refresh-shiller-data.ts"
   },
   "repository": {

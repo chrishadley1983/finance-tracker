@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { recordCorrectionsBatch } from '@/lib/categorisation/learning';
 import type { Database } from '@/lib/supabase/database.types';
 
 type TransactionRow = Database['finance']['Tables']['transactions']['Row'];
@@ -169,6 +170,9 @@ export async function PATCH(request: NextRequest) {
         }
       }
       updates.category_id = categoryId;
+      // A human decision: promote the source so the row becomes trusted
+      // precedent for similarity matching and rule mining.
+      updates.categorisation_source = 'manual';
       // When categorising, also clear the review flag
       updates.needs_review = false;
     }
@@ -184,6 +188,17 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // Snapshot current state BEFORE updating so corrections to
+    // auto-categorisations can feed the rule-learning loop.
+    let before: { id: string; description: string; category_id: string | null; categorisation_source: string }[] = [];
+    if (categoryId !== undefined && categoryId !== null) {
+      const { data: beforeRows } = await supabaseAdmin
+        .from('transactions')
+        .select('id, description, category_id, categorisation_source')
+        .in('id', transactionIds);
+      before = beforeRows ?? [];
+    }
+
     const { data: updated, error } = await supabaseAdmin
       .from('transactions')
       .update(updates)
@@ -196,6 +211,26 @@ export async function PATCH(request: NextRequest) {
         { error: 'Failed to update transactions' },
         { status: 500 }
       );
+    }
+
+    // Record corrections for rows whose auto-assigned category was overridden.
+    // Best-effort: a failure here must not fail the user's update.
+    if (categoryId !== undefined && categoryId !== null) {
+      const corrections = before
+        .filter((r) => r.categorisation_source !== 'manual' && r.category_id !== categoryId)
+        .map((r) => ({
+          description: r.description,
+          originalCategoryId: r.category_id,
+          correctedCategoryId: categoryId,
+          originalSource: r.categorisation_source,
+        }));
+      if (corrections.length > 0) {
+        try {
+          await recordCorrectionsBatch(corrections);
+        } catch (e) {
+          console.warn('Failed to record corrections:', e);
+        }
+      }
     }
 
     return NextResponse.json({

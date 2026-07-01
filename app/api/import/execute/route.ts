@@ -166,6 +166,7 @@ export async function POST(request: NextRequest) {
           description: tx.description,
           category_id: hasCategory ? tx.categoryId : null,
           categorisation_source: mapCategorisationSource(tx.categorisationSource),
+          engine_source: tx.categorisationSource ?? null,
           needs_review: !hasCategory,
         })
         .select('id')

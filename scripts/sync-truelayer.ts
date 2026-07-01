@@ -37,6 +37,38 @@ async function main() {
     );
   }
 
+  // Mine merchant rules from freshly settled history (cheap, idempotent) so
+  // recurring merchants categorise deterministically next time.
+  try {
+    const { mineMerchantRules } = await import('@/lib/categorisation/rule-mining');
+    const mined = await mineMerchantRules();
+    console.log(
+      `  Rule mining: ${mined.created} new rule(s), ${mined.skippedExisting} already covered` +
+        (mined.conflicts.length ? `, ⚠ ${mined.conflicts.length} conflict(s)` : ''),
+    );
+  } catch (e) {
+    console.warn('  Rule mining skipped:', e instanceof Error ? e.message : e);
+  }
+
+  // Review-queue summary so the scheduled-task log shows what needs a human.
+  try {
+    const { supabaseAdmin } = await import('@/lib/supabase/server');
+    const { count: flagged } = await supabaseAdmin
+      .from('transactions')
+      .select('*', { count: 'exact', head: true })
+      .eq('needs_review', true);
+    const { count: uncategorised } = await supabaseAdmin
+      .from('transactions')
+      .select('*', { count: 'exact', head: true })
+      .is('category_id', null);
+    console.log(
+      `  Review queue: ${flagged ?? 0} flagged for review, ${uncategorised ?? 0} uncategorised` +
+        ((flagged ?? 0) > 0 ? ' → run the finance-recategorise skill to clear' : ''),
+    );
+  } catch (e) {
+    console.warn('  Review summary skipped:', e instanceof Error ? e.message : e);
+  }
+
   const secs = ((Date.now() - started) / 1000).toFixed(1);
   console.log(
     `[${new Date().toISOString()}] Done in ${secs}s — imported ${imported} across ` +

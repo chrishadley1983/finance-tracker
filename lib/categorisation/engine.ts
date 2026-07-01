@@ -67,11 +67,62 @@ export interface CategorisationStats {
 // =============================================================================
 
 const ENGINE_CONFIG = {
-  similarityThreshold: 0.5, // Minimum similarity score for "similar" match
-  similarMinCount: 2, // Minimum similar transactions to boost confidence
-  aiConfidenceThreshold: 0.6, // Below this, consider AI fallback
+  similarityThreshold: 0.3, // Absolute floor — below this a similar match is noise
+  similarStrongSimilarity: 0.65, // Strong (auto-trust) match needs at least this…
+  similarStrongAgreement: 3, // …and this many of the top-5 agreeing on the category
   maxAIBatchSize: 10, // Max transactions per AI batch call
 };
+
+/**
+ * Rows categorised with confidence below this are applied best-effort but
+ * flagged `needs_review` by the import paths.
+ */
+export const CONFIDENCE_REVIEW_THRESHOLD = 0.8;
+
+/**
+ * Resolve the top similar matches into a candidate categorisation.
+ *
+ * The category is the MAJORITY category among matches (not the single best
+ * match — one high-scoring wrong precedent must not outvote three agreeing
+ * ones). Strong = majority agreement + decent similarity → trusted.
+ * Weak = best guess only; callers should prefer AI and flag for review.
+ */
+function resolveSimilarMatch(
+  similarMatches: SimilarMatch[]
+): (CategorisationResult & { strong: boolean }) | null {
+  if (similarMatches.length === 0) return null;
+
+  const commonCategory = getMostCommonCategory(similarMatches);
+  if (!commonCategory) return null;
+
+  const rep = similarMatches.find((m) => m.categoryId === commonCategory.categoryId);
+  if (!rep || rep.similarity < ENGINE_CONFIG.similarityThreshold) return null;
+
+  const strong =
+    commonCategory.count >= ENGINE_CONFIG.similarStrongAgreement &&
+    rep.similarity >= ENGINE_CONFIG.similarStrongSimilarity;
+
+  const confidence = strong
+    ? Math.min(0.95, rep.similarity + 0.05 * commonCategory.count)
+    : Math.min(0.6, rep.similarity);
+
+  return {
+    categoryId: rep.categoryId,
+    categoryName: rep.categoryName,
+    source: 'similar',
+    confidence,
+    strong,
+    matchDetails: `${strong ? 'Similar' : 'Weakly similar'} to "${rep.description.slice(0, 50)}" (${Math.round(rep.similarity * 100)}% match, ${commonCategory.count}/${similarMatches.length} agree)`,
+    alternatives: similarMatches
+      .filter((m) => m.categoryId !== rep.categoryId)
+      .slice(0, 3)
+      .map((m) => ({
+        categoryId: m.categoryId,
+        categoryName: m.categoryName,
+        confidence: m.similarity,
+      })),
+  };
+}
 
 // =============================================================================
 // SINGLE TRANSACTION CATEGORISATION
@@ -97,33 +148,15 @@ export async function categoriseTransaction(
     };
   }
 
-  // Strategy 2: Look for similar transactions
+  // Strategy 2: Look for similar transactions. Strong (majority-agreement)
+  // matches are trusted; weak ones are kept only as a fallback if AI is
+  // unavailable.
   const similarMatches = await findSimilarTransactions(transaction.description, 5);
+  const similar = resolveSimilarMatch(similarMatches);
 
-  if (similarMatches.length > 0) {
-    const bestMatch = similarMatches[0];
-    const commonCategory = getMostCommonCategory(similarMatches);
-
-    // Boost confidence if multiple similar transactions agree on category
-    let confidence = bestMatch.similarity;
-    if (commonCategory && commonCategory.count >= ENGINE_CONFIG.similarMinCount) {
-      confidence = Math.min(1, confidence + 0.1 * commonCategory.count);
-    }
-
-    if (confidence >= ENGINE_CONFIG.similarityThreshold) {
-      return {
-        categoryId: bestMatch.categoryId,
-        categoryName: bestMatch.categoryName,
-        source: 'similar',
-        confidence,
-        matchDetails: `Similar to "${bestMatch.description}" (${Math.round(bestMatch.similarity * 100)}% match)`,
-        alternatives: similarMatches.slice(1, 4).map((m) => ({
-          categoryId: m.categoryId,
-          categoryName: m.categoryName,
-          confidence: m.similarity,
-        })),
-      };
-    }
+  if (similar?.strong) {
+    const { strong: _strong, ...result } = similar;
+    return result;
   }
 
   // Strategy 3: AI fallback (if available and warranted)
@@ -149,8 +182,15 @@ export async function categoriseTransaction(
       };
     } catch (error) {
       console.warn('AI categorisation failed:', error);
-      // Fall through to "none" result
+      // Fall through to weak-similar / "none" result
     }
+  }
+
+  // Strategy 4: weak similar guess — applied but low confidence, so import
+  // paths flag it for review instead of trusting it silently.
+  if (similar) {
+    const { strong: _strong, ...result } = similar;
+    return result;
   }
 
   // No categorisation found
@@ -203,36 +243,23 @@ export async function categoriseMultiple(
     }
   }
 
-  // Step 2: Similar transaction lookup for unmatched
+  // Step 2: Similar transaction lookup for unmatched. Strong matches are
+  // final; weak ones are remembered as fallbacks and passed on to AI.
+  const weakSimilar = new Map<number, CategorisationResult>();
   for (const i of needsSimilarLookup) {
     const similarMatches = await findSimilarTransactions(transactions[i].description, 5);
+    const similar = resolveSimilarMatch(similarMatches);
 
-    if (similarMatches.length > 0) {
-      const bestMatch = similarMatches[0];
-      const commonCategory = getMostCommonCategory(similarMatches);
-
-      let confidence = bestMatch.similarity;
-      if (commonCategory && commonCategory.count >= ENGINE_CONFIG.similarMinCount) {
-        confidence = Math.min(1, confidence + 0.1 * commonCategory.count);
-      }
-
-      if (confidence >= ENGINE_CONFIG.similarityThreshold) {
-        results[i] = {
-          categoryId: bestMatch.categoryId,
-          categoryName: bestMatch.categoryName,
-          source: 'similar',
-          confidence,
-          matchDetails: `Similar to "${bestMatch.description.slice(0, 50)}..." (${Math.round(bestMatch.similarity * 100)}% match)`,
-          alternatives: similarMatches.slice(1, 4).map((m) => ({
-            categoryId: m.categoryId,
-            categoryName: m.categoryName,
-            confidence: m.similarity,
-          })),
-        };
-        continue;
-      }
+    if (similar?.strong) {
+      const { strong: _strong, ...result } = similar;
+      results[i] = result;
+      continue;
     }
 
+    if (similar) {
+      const { strong: _strong, ...result } = similar;
+      weakSimilar.set(i, result);
+    }
     needsAI.push(i);
   }
 
@@ -268,7 +295,7 @@ export async function categoriseMultiple(
               alternatives: aiResult.alternatives,
             };
           } else {
-            results[i] = {
+            results[i] = weakSimilar.get(i) ?? {
               categoryId: null,
               categoryName: null,
               source: 'none',
@@ -280,10 +307,10 @@ export async function categoriseMultiple(
       } catch (error) {
         console.warn('Batch AI categorisation failed:', error);
 
-        // Fill remaining with "none"
+        // Fall back to weak similar guesses, then "none"
         for (const i of needsAI) {
           if (!results[i]) {
-            results[i] = {
+            results[i] = weakSimilar.get(i) ?? {
               categoryId: null,
               categoryName: null,
               source: 'none',
@@ -294,9 +321,9 @@ export async function categoriseMultiple(
         }
       }
     } else {
-      // No AI available or not enough quota
+      // No AI available or not enough quota — weak similar guesses beat nothing
       for (const i of needsAI) {
-        results[i] = {
+        results[i] = weakSimilar.get(i) ?? {
           categoryId: null,
           categoryName: null,
           source: 'none',

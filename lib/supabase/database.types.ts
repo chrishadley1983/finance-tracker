@@ -897,11 +897,13 @@ export type Database = {
         Row: {
           account_id: string
           amount: number
+          categorisation_confidence: number | null
           categorisation_source: Database["finance"]["Enums"]["categorisation_source"]
           category_id: string | null
           created_at: string
           date: string
           description: string
+          engine_source: string | null
           hsbc_transaction_id: string | null
           id: string
           is_validated: boolean
@@ -910,11 +912,13 @@ export type Database = {
         Insert: {
           account_id: string
           amount: number
+          categorisation_confidence?: number | null
           categorisation_source?: Database["finance"]["Enums"]["categorisation_source"]
           category_id?: string | null
           created_at?: string
           date: string
           description: string
+          engine_source?: string | null
           hsbc_transaction_id?: string | null
           id?: string
           is_validated?: boolean
@@ -923,11 +927,13 @@ export type Database = {
         Update: {
           account_id?: string
           amount?: number
+          categorisation_confidence?: number | null
           categorisation_source?: Database["finance"]["Enums"]["categorisation_source"]
           category_id?: string | null
           created_at?: string
           date?: string
           description?: string
+          engine_source?: string | null
           hsbc_transaction_id?: string | null
           id?: string
           is_validated?: boolean
