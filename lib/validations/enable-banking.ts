@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
 export const startAuthSchema = z.object({
-  aspspName: z.string().min(1).default('HSBC'),
+  // HSBC UK personal current-account connector (see enablebanking.com coverage
+  // page → HSBC UK Bank Plc → connectors). The generic "HSBC" is not a valid
+  // GB connector name.
+  aspspName: z.string().min(1).default('HSBCUKPersonal'),
   aspspCountry: z.string().length(2).default('GB'),
 });
 export type StartAuthInput = z.infer<typeof startAuthSchema>;
