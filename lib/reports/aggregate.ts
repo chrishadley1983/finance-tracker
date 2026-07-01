@@ -13,6 +13,7 @@ import type {
   MonthlyTrendItem,
   FireScenarioProgress,
   PriorMonthData,
+  HolidayFireData,
 } from './types';
 import { generateTakeaways } from './takeaways';
 import { classifyAmount } from './classify';
@@ -161,6 +162,16 @@ export async function aggregateMonthlyReport(
     },
   );
 
+  // Holiday (non-essential) split + FIRE impact
+  const holidayFire = await buildHolidayFire(
+    income,
+    expenses,
+    actualByCategory,
+    firePortfolio,
+    fireScenarios,
+    priorReportResult,
+  );
+
   // Build report data (without takeaways first)
   const reportData: MonthlyReportData = {
     year,
@@ -180,6 +191,7 @@ export async function aggregateMonthlyReport(
     firePortfolio,
     fireScenarios,
     priorMonth: priorReportResult,
+    holidayFire,
     takeaways: [],
     ideas: [],
   };
@@ -195,6 +207,67 @@ export async function aggregateMonthlyReport(
 // =============================================================================
 // Helper queries
 // =============================================================================
+
+/**
+ * Holiday (non-essential) spend split + FIRE impact.
+ *
+ * Holiday spend = net actuals of every category in the "Holidays" group
+ * (refunds and trip contributions net off, matching the headline totals).
+ * FIRE impact grounds this month's saving/spending in scenario progress:
+ * how many percentage points of each target this month's net savings buys,
+ * and how the portfolio moved vs the prior report.
+ */
+async function buildHolidayFire(
+  income: number,
+  expenses: number,
+  actualByCategory: Map<string, number>,
+  firePortfolio: number,
+  fireScenarios: FireScenarioProgress[],
+  prior: PriorMonthData | null,
+): Promise<HolidayFireData | null> {
+  const { data: holidayCats, error } = await supabaseAdmin
+    .from('categories')
+    .select('id, name, category_groups!inner(name)')
+    .eq('category_groups.name', 'Holidays');
+  if (error || !holidayCats || holidayCats.length === 0) return null;
+
+  const holidayCategories = holidayCats
+    .map((c: { id: string; name: string }) => ({
+      name: c.name,
+      net: actualByCategory.get(c.id) || 0,
+    }))
+    .filter((c) => c.net !== 0)
+    .sort((a, b) => b.net - a.net);
+
+  const holidaySpend = holidayCategories.reduce((sum, c) => sum + c.net, 0);
+  const expensesExHoliday = expenses - holidaySpend;
+  const monthSavings = income - expenses;
+
+  const priorFire = prior?.firePortfolio ?? null;
+  const firePortfolioChange = priorFire !== null ? firePortfolio - priorFire : null;
+
+  const scenarioImpacts = fireScenarios.map((s) => ({
+    name: s.name,
+    progressPct: s.progressPct,
+    progressDeltaPp:
+      priorFire !== null && s.targetAmount > 0
+        ? ((firePortfolio - priorFire) / s.targetAmount) * 100
+        : null,
+    monthSavingsPp: s.targetAmount > 0 ? (monthSavings / s.targetAmount) * 100 : 0,
+  }));
+
+  return {
+    holidayCategories,
+    holidaySpend,
+    holidayPctOfExpenses: expenses > 0 ? (holidaySpend / expenses) * 100 : 0,
+    expensesExHoliday,
+    savingsRateExHoliday: income > 0 ? ((income - expensesExHoliday) / income) * 100 : 0,
+    monthSavings,
+    firePortfolioChange,
+    scenarioImpacts,
+    holidayForgoneAnnualIncome: Math.max(0, holidaySpend) * 0.04,
+  };
+}
 
 async function fetchNetWorthForMonth(
   year: number,
@@ -506,6 +579,7 @@ async function fetchPriorReport(
       expenses: Number(rd.expenses) || 0,
       savingsRate: Number(rd.savings_rate) || 0,
       overBudgetCount: 0,
+      firePortfolio: rd.fire_portfolio != null ? Number(rd.fire_portfolio) : null,
     };
   } catch {
     return null;
@@ -523,6 +597,9 @@ export async function saveMonthlyReport(data: MonthlyReportData, html?: string):
     expenses: data.expenses,
     savings_rate: data.savingsRate,
     fire_portfolio: data.firePortfolio,
+    holiday_spend: data.holidayFire?.holidaySpend ?? null,
+    expenses_ex_holiday: data.holidayFire?.expensesExHoliday ?? null,
+    savings_rate_ex_holiday: data.holidayFire?.savingsRateExHoliday ?? null,
     wealth_breakdown: Object.fromEntries(data.wealthBreakdown.map((w) => [w.type, w.total])),
     budget_total: data.budgetComparisons.reduce((sum, c) => sum + c.budget, 0),
     top_categories: data.budgetComparisons
