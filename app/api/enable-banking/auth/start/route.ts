@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { startAuthorization, isEnableBankingConfigured, EnableBankingError } from '@/lib/enable-banking';
+import { startAuthorization, getAspsps, isEnableBankingConfigured, EnableBankingError } from '@/lib/enable-banking';
 import { startAuthSchema } from '@/lib/validations/enable-banking';
 import { ZodError } from 'zod';
 
@@ -30,6 +30,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const { aspspName, aspspCountry } = startAuthSchema.parse(body);
 
+    // Resolve the exact connector name from the live ASPSP list when possible
+    // (authoritative once the app is active). Falls back to the provided/default
+    // name while the app is still inactive (/aspsps 403s in restricted mode).
+    let connectorName = aspspName;
+    try {
+      const banks = await getAspsps(aspspCountry);
+      const preferred =
+        banks.find((b) => b.name === aspspName) ||
+        banks.find((b) => /hsbc/i.test(b.name) && /personal/i.test(b.name)) ||
+        banks.find((b) => /hsbc/i.test(b.name) && (b.psu_types?.includes('personal') ?? false));
+      if (preferred) connectorName = preferred.name;
+    } catch {
+      /* app not active yet — use the default; startAuthorization will surface it */
+    }
+
     const state = randomUUID();
     const validUntil = new Date();
     validUntil.setDate(validUntil.getDate() + CONSENT_DAYS);
@@ -37,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Record the pending authorization so the callback can find it by state.
     const { error: insErr } = await supabaseAdmin.from('enable_banking_sessions').insert({
       session_id: state, // temporary; replaced with the real session id on callback
-      aspsp_name: aspspName,
+      aspsp_name: connectorName,
       aspsp_country: aspspCountry,
       status: 'pending',
       valid_until: validUntil.toISOString(),
@@ -49,7 +64,7 @@ export async function POST(request: NextRequest) {
     let auth;
     try {
       auth = await startAuthorization({
-        aspspName,
+        aspspName: connectorName,
         aspspCountry,
         redirectUrl: callbackUrl(request),
         state,
