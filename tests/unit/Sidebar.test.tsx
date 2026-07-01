@@ -72,13 +72,14 @@ describe('Sidebar', () => {
       render(<Sidebar isOpen={true} onClose={mockOnClose} />);
 
       const links = screen.getAllByRole('link');
-      expect(links.length).toBe(13);
+      expect(links.length).toBe(14);
 
       const hrefs = links.map(link => link.getAttribute('href'));
       expect(hrefs).toContain('/');
       expect(hrefs).toContain('/accounts');
       expect(hrefs).toContain('/transactions');
       expect(hrefs).toContain('/import');
+      expect(hrefs).toContain('/settings/bank-sync');
       expect(hrefs).toContain('/review');
       expect(hrefs).toContain('/categories');
       expect(hrefs).toContain('/budgets');

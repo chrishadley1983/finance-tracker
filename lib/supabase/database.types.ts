@@ -18,6 +18,8 @@ export type Database = {
         Row: {
           color: string | null
           created_at: string
+          enable_banking_account_uid: string | null
+          enable_banking_session_id: string | null
           exclude_from_snapshots: boolean | null
           hsbc_account_id: string | null
           icon: string | null
@@ -28,17 +30,21 @@ export type Database = {
           is_active: boolean
           is_archived: boolean | null
           last_import_at: string | null
+          last_sync_at: string | null
           name: string
           notes: string | null
           opening_balance: number | null
           provider: string
           sort_order: number | null
+          sync_enabled: boolean
           type: Database["finance"]["Enums"]["account_type"]
           updated_at: string
         }
         Insert: {
           color?: string | null
           created_at?: string
+          enable_banking_account_uid?: string | null
+          enable_banking_session_id?: string | null
           exclude_from_snapshots?: boolean | null
           hsbc_account_id?: string | null
           icon?: string | null
@@ -49,17 +55,21 @@ export type Database = {
           is_active?: boolean
           is_archived?: boolean | null
           last_import_at?: string | null
+          last_sync_at?: string | null
           name: string
           notes?: string | null
           opening_balance?: number | null
           provider: string
           sort_order?: number | null
+          sync_enabled?: boolean
           type: Database["finance"]["Enums"]["account_type"]
           updated_at?: string
         }
         Update: {
           color?: string | null
           created_at?: string
+          enable_banking_account_uid?: string | null
+          enable_banking_session_id?: string | null
           exclude_from_snapshots?: boolean | null
           hsbc_account_id?: string | null
           icon?: string | null
@@ -70,13 +80,62 @@ export type Database = {
           is_active?: boolean
           is_archived?: boolean | null
           last_import_at?: string | null
+          last_sync_at?: string | null
           name?: string
           notes?: string | null
           opening_balance?: number | null
           provider?: string
           sort_order?: number | null
+          sync_enabled?: boolean
           type?: Database["finance"]["Enums"]["account_type"]
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounts_enable_banking_session_id_fkey"
+            columns: ["enable_banking_session_id"]
+            isOneToOne: false
+            referencedRelation: "enable_banking_sessions"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      enable_banking_sessions: {
+        Row: {
+          aspsp_country: string | null
+          aspsp_name: string | null
+          created_at: string
+          id: string
+          psu_type: string | null
+          raw: Json | null
+          session_id: string
+          status: string
+          updated_at: string
+          valid_until: string
+        }
+        Insert: {
+          aspsp_country?: string | null
+          aspsp_name?: string | null
+          created_at?: string
+          id?: string
+          psu_type?: string | null
+          raw?: Json | null
+          session_id: string
+          status?: string
+          updated_at?: string
+          valid_until: string
+        }
+        Update: {
+          aspsp_country?: string | null
+          aspsp_name?: string | null
+          created_at?: string
+          id?: string
+          psu_type?: string | null
+          raw?: Json | null
+          session_id?: string
+          status?: string
+          updated_at?: string
+          valid_until?: string
         }
         Relationships: []
       }

@@ -14,6 +14,7 @@ import {
 } from '@/components/dashboard';
 import { useDashboardData } from '@/lib/hooks/useDashboardData';
 import { PetWidget } from '@/components/pets/PetWidget';
+import { SyncButton } from '@/components/enable-banking';
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<TimeframePeriod>('last_month');
@@ -44,13 +45,15 @@ export default function DashboardPage() {
         />
 
         {/* Timeframe Selector */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <TimeframeSelector
             value={period}
             onChange={handleTimeframeChange}
             customStart={customStart}
             customEnd={customEnd}
           />
+
+          <SyncButton label="Sync bank" />
         </div>
 
         {/* Error state */}
