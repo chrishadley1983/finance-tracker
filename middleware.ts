@@ -30,8 +30,13 @@ export async function middleware(request: NextRequest) {
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login');
 
-  // All non-auth, non-api pages are protected
-  const isProtectedRoute = !isAuthPage && !request.nextUrl.pathname.startsWith('/api/');
+  // Publicly accessible pages (no login required) — e.g. the legal pages
+  // linked from the Enable Banking application registration.
+  const isPublicPage = ['/privacy', '/terms'].some((p) => request.nextUrl.pathname.startsWith(p));
+
+  // All non-auth, non-public, non-api pages are protected
+  const isProtectedRoute =
+    !isAuthPage && !isPublicPage && !request.nextUrl.pathname.startsWith('/api/');
 
   // Redirect unauthenticated users to login
   if (!user && isProtectedRoute) {
