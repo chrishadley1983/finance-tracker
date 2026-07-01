@@ -2,25 +2,25 @@
 
 import { useState } from 'react';
 
-interface EbAccountOption {
+interface TlAccountOption {
   uid: string;
   name: string;
-  product: string | null;
+  kind: 'account' | 'card';
   currency: string | null;
-  iban: string | null;
+  detail: string | null;
 }
 
 interface FinanceAccountOption {
   id: string;
   name: string;
   type: string;
-  enable_banking_account_uid: string | null;
+  truelayer_account_id: string | null;
 }
 
 interface AccountLinkPanelProps {
-  sessionRowId: string;
-  aspsp: string | null;
-  ebAccounts: EbAccountOption[];
+  connectionRowId: string;
+  provider: string | null;
+  tlAccounts: TlAccountOption[];
   financeAccounts: FinanceAccountOption[];
   /** Called after each successful link so the parent can refresh /status. */
   onLinked: () => void;
@@ -34,19 +34,19 @@ interface RowState {
 }
 
 /**
- * Renders one row per Enable Banking account returned on the session and lets
+ * Renders one row per TrueLayer account returned on the connection and lets
  * the user map it onto one of their Finance Tracker accounts.
  */
 export function AccountLinkPanel({
-  sessionRowId,
-  aspsp,
-  ebAccounts,
+  connectionRowId,
+  provider,
+  tlAccounts,
   financeAccounts,
   onLinked,
 }: AccountLinkPanelProps) {
   const [rows, setRows] = useState<Record<string, RowState>>(() =>
     Object.fromEntries(
-      ebAccounts.map((eb) => [eb.uid, { financeAccountId: '', isLinking: false, error: null, linked: false }])
+      tlAccounts.map((tl) => [tl.uid, { financeAccountId: '', isLinking: false, error: null, linked: false }])
     )
   );
 
@@ -54,43 +54,43 @@ export function AccountLinkPanel({
     setRows((prev) => ({ ...prev, [uid]: { ...prev[uid], ...patch } }));
   };
 
-  const handleLink = async (ebAccountUid: string) => {
-    const row = rows[ebAccountUid];
+  const handleLink = async (truelayerAccountId: string) => {
+    const row = rows[truelayerAccountId];
     if (!row?.financeAccountId) {
-      updateRow(ebAccountUid, { error: 'Choose an account to link' });
+      updateRow(truelayerAccountId, { error: 'Choose an account to link' });
       return;
     }
 
-    updateRow(ebAccountUid, { isLinking: true, error: null });
+    updateRow(truelayerAccountId, { isLinking: true, error: null });
     try {
-      const response = await fetch('/api/enable-banking/link', {
+      const response = await fetch('/api/truelayer/link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sessionRowId,
+          connectionRowId,
           financeAccountId: row.financeAccountId,
-          ebAccountUid,
+          truelayerAccountId,
         }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         throw new Error(data.error || 'Failed to link account');
       }
-      updateRow(ebAccountUid, { isLinking: false, linked: true });
+      updateRow(truelayerAccountId, { isLinking: false, linked: true });
       onLinked();
     } catch (err) {
-      updateRow(ebAccountUid, {
+      updateRow(truelayerAccountId, {
         isLinking: false,
         error: err instanceof Error ? err.message : 'Failed to link account',
       });
     }
   };
 
-  if (ebAccounts.length === 0) {
+  if (tlAccounts.length === 0) {
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
         <p className="text-sm text-amber-800">
-          No accounts were returned by {aspsp || 'your bank'}. Try reconnecting.
+          No accounts were returned by {provider || 'your bank'}. Try reconnecting.
         </p>
       </div>
     );
@@ -99,27 +99,28 @@ export function AccountLinkPanel({
   return (
     <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-4">
       <div>
-        <h3 className="text-sm font-semibold text-emerald-900">Connected to {aspsp || 'your bank'}</h3>
+        <h3 className="text-sm font-semibold text-emerald-900">Connected to {provider || 'your bank'}</h3>
         <p className="text-sm text-emerald-700 mt-0.5">
           Choose which Finance Tracker account each bank account maps to.
         </p>
       </div>
 
       <div className="space-y-3">
-        {ebAccounts.map((eb) => {
-          const row = rows[eb.uid];
-          // Hide accounts already linked to a *different* EB account.
+        {tlAccounts.map((tl) => {
+          const row = rows[tl.uid];
+          // Hide accounts already linked to a *different* TrueLayer account.
           const availableFinanceAccounts = financeAccounts.filter(
-            (fa) => !fa.enable_banking_account_uid || fa.enable_banking_account_uid === eb.uid
+            (fa) => !fa.truelayer_account_id || fa.truelayer_account_id === tl.uid
           );
 
           return (
-            <div key={eb.uid} className="bg-white rounded-lg border border-slate-200 p-3">
+            <div key={tl.uid} className="bg-white rounded-lg border border-slate-200 p-3">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="min-w-[10rem]">
-                  <p className="text-sm font-medium text-slate-900">{eb.name}</p>
+                  <p className="text-sm font-medium text-slate-900">{tl.name}</p>
                   <p className="text-xs text-slate-500">
-                    {[eb.product, eb.currency, eb.iban].filter(Boolean).join(' • ') || 'Bank account'}
+                    {[tl.kind === 'card' ? 'Card' : 'Account', tl.currency, tl.detail].filter(Boolean).join(' • ') ||
+                      'Bank account'}
                   </p>
                 </div>
 
@@ -134,7 +135,7 @@ export function AccountLinkPanel({
                   <div className="flex items-center gap-2 flex-1">
                     <select
                       value={row?.financeAccountId ?? ''}
-                      onChange={(e) => updateRow(eb.uid, { financeAccountId: e.target.value, error: null })}
+                      onChange={(e) => updateRow(tl.uid, { financeAccountId: e.target.value, error: null })}
                       className="text-sm px-2 py-1.5 border border-slate-300 rounded flex-1 min-w-[10rem] focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Select account…</option>
@@ -145,7 +146,7 @@ export function AccountLinkPanel({
                       ))}
                     </select>
                     <button
-                      onClick={() => handleLink(eb.uid)}
+                      onClick={() => handleLink(tl.uid)}
                       disabled={row?.isLinking}
                       className="text-sm px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >

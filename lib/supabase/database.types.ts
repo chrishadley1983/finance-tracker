@@ -37,6 +37,8 @@ export type Database = {
           provider: string
           sort_order: number | null
           sync_enabled: boolean
+          truelayer_account_id: string | null
+          truelayer_connection_id: string | null
           type: Database["finance"]["Enums"]["account_type"]
           updated_at: string
         }
@@ -62,6 +64,8 @@ export type Database = {
           provider: string
           sort_order?: number | null
           sync_enabled?: boolean
+          truelayer_account_id?: string | null
+          truelayer_connection_id?: string | null
           type: Database["finance"]["Enums"]["account_type"]
           updated_at?: string
         }
@@ -87,6 +91,8 @@ export type Database = {
           provider?: string
           sort_order?: number | null
           sync_enabled?: boolean
+          truelayer_account_id?: string | null
+          truelayer_connection_id?: string | null
           type?: Database["finance"]["Enums"]["account_type"]
           updated_at?: string
         }
@@ -97,8 +103,57 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "enable_banking_sessions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_truelayer_connection_id_fkey"
+            columns: ["truelayer_connection_id"]
+            isOneToOne: false
+            referencedRelation: "truelayer_connections"
+            referencedColumns: ["id"]
           }
         ]
+      }
+      truelayer_connections: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          id: string
+          provider_id: string | null
+          provider_name: string | null
+          raw: Json | null
+          refresh_token: string | null
+          scope: string | null
+          status: string
+          token_expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          provider_id?: string | null
+          provider_name?: string | null
+          raw?: Json | null
+          refresh_token?: string | null
+          scope?: string | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          provider_id?: string | null
+          provider_name?: string | null
+          raw?: Json | null
+          refresh_token?: string | null
+          scope?: string | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       enable_banking_sessions: {
         Row: {
