@@ -10,7 +10,7 @@
  * barrel deliberately excludes it; only API routes + the local script import it).
  */
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { categoriseMultiple } from '@/lib/categorisation';
+import { categoriseMultiple, CONFIDENCE_REVIEW_THRESHOLD } from '@/lib/categorisation';
 import {
   planReconcile,
   type ExistingDbRow,
@@ -167,19 +167,23 @@ export async function syncAccount(
   const plan = planReconcile(mapped, existing, { dateToleranceDays: opts.dateToleranceDays });
 
   // 4. Auto-categorise new rows.
-  let categorised: Array<{ categoryId: string | null; source: string }> = [];
+  let categorised: Array<{ categoryId: string | null; source: string; confidence: number }> = [];
   if (plan.toInsert.length > 0) {
     const results = await categoriseMultiple(
       plan.toInsert.map((t) => ({ date: t.date, description: t.description, amount: t.amount })),
     );
-    categorised = results.map((r) => ({ categoryId: r.categoryId, source: r.source }));
+    categorised = results.map((r) => ({
+      categoryId: r.categoryId,
+      source: r.source,
+      confidence: r.confidence,
+    }));
   }
 
   // 5. Insert (batched); hsbc_transaction_id carries the TrueLayer reference.
   let imported = 0;
   if (plan.toInsert.length > 0) {
     const rows = plan.toInsert.map((t, i) => {
-      const cat = categorised[i] ?? { categoryId: null, source: 'none' };
+      const cat = categorised[i] ?? { categoryId: null, source: 'none', confidence: 0 };
       return {
         account_id: financeAccountId,
         date: t.date,
@@ -187,8 +191,11 @@ export async function syncAccount(
         description: t.description,
         category_id: cat.categoryId,
         categorisation_source: mapCategorisationSource(cat.source),
+        engine_source: cat.source,
+        categorisation_confidence: cat.categoryId ? cat.confidence : null,
         hsbc_transaction_id: t.entryReference ?? null,
-        needs_review: !cat.categoryId,
+        // Low-confidence guesses are applied best-effort but must be reviewed.
+        needs_review: !cat.categoryId || cat.confidence < CONFIDENCE_REVIEW_THRESHOLD,
       };
     });
     const CHUNK = 500;

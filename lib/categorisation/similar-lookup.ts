@@ -105,6 +105,8 @@ async function findSimilarByTokens(
     `
     )
     .not('category_id', 'is', null)
+    // Unreviewed guesses must not become precedents for new guesses.
+    .eq('needs_review', false)
     .order('date', { ascending: false })
     .limit(500); // Get recent transactions for matching
 

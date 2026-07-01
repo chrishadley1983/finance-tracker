@@ -6,6 +6,7 @@
  */
 
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { normaliseDescription } from './normalise';
 
 // =============================================================================
 // TYPES
@@ -94,12 +95,13 @@ export function clearRulesCache(): void {
 export async function matchExactRule(description: string): Promise<RuleMatch | null> {
   const rules = await getRules();
   const normalizedDesc = description.toLowerCase().trim();
+  const merchantDesc = normaliseDescription(description);
 
   for (const rule of rules) {
     if (rule.match_type !== 'exact') continue;
 
     const normalizedPattern = rule.pattern.toLowerCase().trim();
-    if (normalizedDesc === normalizedPattern) {
+    if (normalizedDesc === normalizedPattern || merchantDesc === normalizedPattern) {
       return {
         ruleId: rule.id,
         categoryId: rule.category_id,
@@ -121,6 +123,7 @@ export async function matchExactRule(description: string): Promise<RuleMatch | n
 export async function matchPatternRule(description: string): Promise<RuleMatch | null> {
   const rules = await getRules();
   const normalizedDesc = description.toLowerCase().trim();
+  const merchantDesc = normaliseDescription(description);
 
   let bestMatch: RuleMatch | null = null;
 
@@ -131,7 +134,12 @@ export async function matchPatternRule(description: string): Promise<RuleMatch |
 
     if (rule.match_type === 'contains') {
       const normalizedPattern = rule.pattern.toLowerCase().trim();
-      isMatch = normalizedDesc.includes(normalizedPattern);
+      // Raw text catches legacy label rules; normalised text catches mined
+      // merchant rules ("aldi tonbridge") behind processor prefixes/refs.
+      // Normalised matching is token-bounded so "aldi" can't hit "vivaldi".
+      isMatch =
+        normalizedDesc.includes(normalizedPattern) ||
+        ` ${merchantDesc} `.includes(` ${normalizedPattern} `);
     } else if (rule.match_type === 'regex') {
       try {
         const regex = new RegExp(rule.pattern, 'i');
@@ -153,8 +161,13 @@ export async function matchPatternRule(description: string): Promise<RuleMatch |
         confidence: Number(rule.confidence),
       };
 
-      // Keep highest confidence match
-      if (!bestMatch || match.confidence > bestMatch.confidence) {
+      // Keep highest confidence match; prefer the more specific (longer)
+      // pattern on ties so "amazon prime" beats "amazon".
+      if (
+        !bestMatch ||
+        match.confidence > bestMatch.confidence ||
+        (match.confidence === bestMatch.confidence && match.pattern.length > bestMatch.pattern.length)
+      ) {
         bestMatch = match;
       }
     }
@@ -207,11 +220,13 @@ export async function matchRulesBatch(
   for (let i = 0; i < descriptions.length; i++) {
     const description = descriptions[i];
     const normalizedDesc = description.toLowerCase().trim();
+    const merchantDesc = normaliseDescription(description);
     let match: RuleMatch | null = null;
 
     // Try exact match first
     for (const rule of exactRules) {
-      if (normalizedDesc === rule.pattern.toLowerCase().trim()) {
+      const pattern = rule.pattern.toLowerCase().trim();
+      if (normalizedDesc === pattern || merchantDesc === pattern) {
         match = {
           ruleId: rule.id,
           categoryId: rule.category_id,
@@ -227,7 +242,8 @@ export async function matchRulesBatch(
     // Try contains match
     if (!match) {
       for (const rule of containsRules) {
-        if (normalizedDesc.includes(rule.pattern.toLowerCase().trim())) {
+        const pattern = rule.pattern.toLowerCase().trim();
+        if (normalizedDesc.includes(pattern) || ` ${merchantDesc} `.includes(` ${pattern} `)) {
           const candidate: RuleMatch = {
             ruleId: rule.id,
             categoryId: rule.category_id,
@@ -236,7 +252,11 @@ export async function matchRulesBatch(
             matchType: 'contains',
             confidence: Number(rule.confidence),
           };
-          if (!match || candidate.confidence > match.confidence) {
+          if (
+            !match ||
+            candidate.confidence > match.confidence ||
+            (candidate.confidence === match.confidence && candidate.pattern.length > match.pattern.length)
+          ) {
             match = candidate;
           }
         }

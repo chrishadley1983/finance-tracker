@@ -11,10 +11,13 @@ export {
   clearRulesCache,
   clearCategoriesCache,
   checkAIAvailability,
+  CONFIDENCE_REVIEW_THRESHOLD,
   type ParsedTransaction,
   type CategorisationResult,
   type CategorisationStats,
 } from './engine';
+
+export { normaliseDescription, merchantKey, isMineablePattern } from './normalise';
 
 export {
   matchRule,
