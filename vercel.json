@@ -3,7 +3,7 @@
   "framework": "nextjs",
   "crons": [
     {
-      "path": "/api/enable-banking/cron",
+      "path": "/api/truelayer/cron",
       "schedule": "0 6 * * *"
     }
   ]

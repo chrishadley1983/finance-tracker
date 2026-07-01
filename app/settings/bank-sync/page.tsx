@@ -12,9 +12,8 @@ interface StatusAccount {
   linked: boolean;
   syncEnabled: boolean;
   lastSyncAt: string | null;
-  aspsp: string | null;
-  sessionValid: boolean;
-  sessionValidUntil: string | null;
+  provider: string | null;
+  connectionActive: boolean;
   needsReconsent: boolean;
 }
 
@@ -24,25 +23,23 @@ interface StatusResponse {
 }
 
 interface LinkResponse {
-  session: {
+  connection: {
     id: string;
-    aspsp: string | null;
-    country: string | null;
+    provider: string | null;
     status: string;
-    validUntil: string | null;
   };
-  ebAccounts: Array<{
+  tlAccounts: Array<{
     uid: string;
     name: string;
-    product: string | null;
+    kind: 'account' | 'card';
     currency: string | null;
-    iban: string | null;
+    detail: string | null;
   }>;
   financeAccounts: Array<{
     id: string;
     name: string;
     type: string;
-    enable_banking_account_uid: string | null;
+    truelayer_account_id: string | null;
   }>;
 }
 
@@ -51,17 +48,15 @@ interface SyncResultRow {
   accountName: string;
   imported: number;
   alreadyPresent: number;
-  pendingSkipped: number;
   fetched: number;
   dateRange: { from: string; to: string };
-  ebBalance: { amount: number; currency: string; type: string } | null;
+  balance: { available: number; current: number; currency: string } | null;
   error?: string;
 }
 
 interface SyncTotals {
   imported: number;
   alreadyPresent: number;
-  pendingSkipped: number;
 }
 
 function formatDate(dateString: string | null) {
@@ -133,7 +128,7 @@ function BankSyncPageContent() {
     setStatusLoading(true);
     setStatusError(null);
     try {
-      const response = await fetch('/api/enable-banking/status');
+      const response = await fetch('/api/truelayer/status');
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         throw new Error(data.error || 'Failed to load bank sync status');
@@ -152,20 +147,20 @@ function BankSyncPageContent() {
 
   // Handle redirect back from the bank consent flow.
   useEffect(() => {
-    const ebStatus = searchParams.get('status');
+    const tlStatus = searchParams.get('status');
 
-    if (ebStatus === 'error') {
+    if (tlStatus === 'error') {
       setUrlErrorMessage(searchParams.get('message') || 'Something went wrong connecting your bank account.');
       return;
     }
 
-    if (ebStatus === 'linked') {
-      const sessionRowId = searchParams.get('session');
-      if (!sessionRowId) return;
+    if (tlStatus === 'linked') {
+      const connectionRowId = searchParams.get('connection');
+      if (!connectionRowId) return;
 
       setLinkLoading(true);
       setLinkError(null);
-      fetch(`/api/enable-banking/link?session=${encodeURIComponent(sessionRowId)}`)
+      fetch(`/api/truelayer/link?connection=${encodeURIComponent(connectionRowId)}`)
         .then(async (response) => {
           const data = await response.json().catch(() => ({}));
           if (!response.ok) {
@@ -186,7 +181,7 @@ function BankSyncPageContent() {
     setIsConnecting(true);
     setConnectError(null);
     try {
-      const response = await fetch('/api/enable-banking/auth/start', {
+      const response = await fetch('/api/truelayer/auth/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -213,7 +208,7 @@ function BankSyncPageContent() {
 
   const handleUnlink = async (financeAccountId: string) => {
     try {
-      const response = await fetch('/api/enable-banking/link', {
+      const response = await fetch('/api/truelayer/link', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ financeAccountId }),
@@ -234,7 +229,7 @@ function BankSyncPageContent() {
     setGlobalSyncResults(null);
     setGlobalSyncTotals(null);
     try {
-      const response = await fetch('/api/enable-banking/sync', {
+      const response = await fetch('/api/truelayer/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -261,7 +256,7 @@ function BankSyncPageContent() {
     <AppLayout title="Bank Sync">
       <div className="max-w-3xl mx-auto space-y-6">
         <p className="text-sm text-slate-500">
-          Connect your bank via Open Banking (Enable Banking) to automatically import transactions.
+          Connect your bank via Open Banking (TrueLayer) to automatically import transactions.
         </p>
 
         {/* Not configured banner */}
@@ -282,9 +277,9 @@ function BankSyncPageContent() {
                 />
               </svg>
               <div>
-                <h3 className="text-sm font-medium text-amber-800">Enable Banking is not configured</h3>
+                <h3 className="text-sm font-medium text-amber-800">TrueLayer is not configured</h3>
                 <p className="text-sm text-amber-700 mt-1">
-                  Bank sync isn&apos;t set up for this app yet. Ask an admin to configure Enable Banking credentials.
+                  Bank sync isn&apos;t set up for this app yet. Ask an admin to configure TrueLayer credentials.
                 </p>
               </div>
             </div>
@@ -323,7 +318,7 @@ function BankSyncPageContent() {
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">Connect a bank account</h2>
                 <p className="text-slate-500 text-sm mt-1">
-                  Start a secure Open Banking connection with your bank (defaults to HSBC).
+                  Start a secure Open Banking connection with your bank (defaults to all UK banks — pick HSBC on the next screen).
                 </p>
               </div>
               <button
@@ -341,7 +336,7 @@ function BankSyncPageContent() {
                     />
                   </svg>
                 )}
-                {isConnecting ? 'Redirecting…' : 'Connect HSBC account'}
+                {isConnecting ? 'Redirecting…' : 'Connect bank'}
               </button>
             </div>
             {connectError && <p className="text-sm text-red-600 mt-3">{connectError}</p>}
@@ -367,9 +362,9 @@ function BankSyncPageContent() {
         )}
         {linkData && (
           <AccountLinkPanel
-            sessionRowId={linkData.session.id}
-            aspsp={linkData.session.aspsp}
-            ebAccounts={linkData.ebAccounts}
+            connectionRowId={linkData.connection.id}
+            provider={linkData.connection.provider}
+            tlAccounts={linkData.tlAccounts}
             financeAccounts={linkData.financeAccounts}
             onLinked={handleLinked}
           />
@@ -404,12 +399,6 @@ function BankSyncPageContent() {
                 <p className="text-sm text-slate-700">
                   Imported <span className="font-semibold">{globalSyncTotals.imported}</span> ·{' '}
                   <span className="font-semibold">{globalSyncTotals.alreadyPresent}</span> already up to date
-                  {globalSyncTotals.pendingSkipped > 0 && (
-                    <>
-                      {' '}
-                      · <span className="font-semibold">{globalSyncTotals.pendingSkipped}</span> pending skipped
-                    </>
-                  )}
                 </p>
                 {globalSyncResults && globalSyncResults.length > 0 && (
                   <ul className="mt-2 space-y-1">
@@ -421,7 +410,6 @@ function BankSyncPageContent() {
                         ) : (
                           <span>
                             {r.imported} imported · {r.alreadyPresent} already present
-                            {r.pendingSkipped > 0 && ` · ${r.pendingSkipped} pending skipped`}
                           </span>
                         )}
                       </li>
@@ -462,7 +450,7 @@ function BankSyncPageContent() {
                       <p className="text-sm font-semibold text-slate-900">{account.name}</p>
                       {account.linked ? (
                         <p className="text-xs text-slate-500 mt-0.5">
-                          {account.aspsp || 'Linked'} · Last synced: {formatRelativeTime(account.lastSyncAt)}
+                          {account.provider || 'Linked'} · Last synced: {formatRelativeTime(account.lastSyncAt)}
                         </p>
                       ) : (
                         <p className="text-xs text-slate-400 mt-0.5">Not linked</p>
@@ -470,10 +458,10 @@ function BankSyncPageContent() {
                       {account.linked && (
                         <p className="text-xs mt-1">
                           {account.needsReconsent ? (
-                            <span className="text-red-600 font-medium">Consent expired — reconnect</span>
+                            <span className="text-red-600 font-medium">Reconnect needed</span>
                           ) : (
                             <span className="text-emerald-700">
-                              Consent valid until {formatDate(account.sessionValidUntil) || 'unknown'}
+                              Connected via {account.provider || 'your bank'}
                             </span>
                           )}
                         </p>

@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 interface SyncTotals {
   imported: number;
   alreadyPresent: number;
-  pendingSkipped: number;
 }
 
 interface SyncButtonProps {
@@ -20,8 +19,8 @@ const DEFAULT_CLASS_NAME =
   'text-sm px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5';
 
 /**
- * Fire-and-forget sync trigger for Enable Banking. Safe to render even when
- * Enable Banking isn't configured — the error simply surfaces on click.
+ * Fire-and-forget sync trigger for TrueLayer. Safe to render even when
+ * TrueLayer isn't configured — the error simply surfaces on click.
  */
 export function SyncButton({ accountId, label, className }: SyncButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +51,7 @@ export function SyncButton({ accountId, label, className }: SyncButtonProps) {
     setNotConfigured(false);
 
     try {
-      const response = await fetch('/api/enable-banking/sync', {
+      const response = await fetch('/api/truelayer/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(accountId ? { accountId } : {}),
@@ -62,7 +61,7 @@ export function SyncButton({ accountId, label, className }: SyncButtonProps) {
 
       if (response.status === 503) {
         setNotConfigured(true);
-        setError(data.error || 'Enable Banking is not configured');
+        setError(data.error || 'TrueLayer is not configured');
         scheduleClear();
         return;
       }
@@ -71,10 +70,8 @@ export function SyncButton({ accountId, label, className }: SyncButtonProps) {
         throw new Error(data.error || 'Sync failed');
       }
 
-      const totals: SyncTotals = data.totals ?? { imported: 0, alreadyPresent: 0, pendingSkipped: 0 };
-      const parts = [`Imported ${totals.imported}`, `${totals.alreadyPresent} already up to date`];
-      if (totals.pendingSkipped > 0) parts.push(`${totals.pendingSkipped} pending skipped`);
-      setResult(parts.join(' • '));
+      const totals: SyncTotals = data.totals ?? { imported: 0, alreadyPresent: 0 };
+      setResult(`Imported ${totals.imported} • ${totals.alreadyPresent} already up to date`);
       scheduleClear();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sync failed');
