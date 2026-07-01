@@ -46,14 +46,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Failed to create session: ${insErr.message}` }, { status: 500 });
     }
 
-    const auth = await startAuthorization({
-      aspspName,
-      aspspCountry,
-      redirectUrl: callbackUrl(request),
-      state,
-      validUntil: validUntil.toISOString(),
-      psuType: 'personal',
-    });
+    let auth;
+    try {
+      auth = await startAuthorization({
+        aspspName,
+        aspspCountry,
+        redirectUrl: callbackUrl(request),
+        state,
+        validUntil: validUntil.toISOString(),
+        psuType: 'personal',
+      });
+    } catch (e) {
+      // Don't leave an orphaned pending row behind on failure.
+      await supabaseAdmin
+        .from('enable_banking_sessions')
+        .delete()
+        .eq('session_id', state)
+        .eq('status', 'pending');
+      throw e;
+    }
 
     return NextResponse.json({ url: auth.url, state });
   } catch (error) {
@@ -61,6 +72,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Validation error', details: error.issues }, { status: 400 });
     }
     if (error instanceof EnableBankingError) {
+      // Production apps start in "restricted mode" and can't self-activate via
+      // their own API. The owner must first link their account once in the
+      // Enable Banking control panel ("Activate by linking accounts"), after
+      // which this flow works. Surface that as actionable guidance.
+      const notActive =
+        error.status === 403 ||
+        (error.body &&
+          typeof error.body === 'object' &&
+          /not active/i.test(String((error.body as { message?: unknown }).message ?? '')));
+      if (notActive) {
+        return NextResponse.json(
+          {
+            error:
+              'Your Enable Banking app isn’t active yet. Activate it once by linking your HSBC account in the Enable Banking control panel (enablebanking.com/cp/applications → "Activate by linking accounts"), then return here to connect.',
+            code: 'APP_NOT_ACTIVE',
+            controlPanelUrl: 'https://enablebanking.com/cp/applications',
+          },
+          { status: 409 },
+        );
+      }
       return NextResponse.json({ error: error.message, code: error.code }, { status: error.status || 502 });
     }
     console.error('POST /api/enable-banking/auth/start error:', error);
