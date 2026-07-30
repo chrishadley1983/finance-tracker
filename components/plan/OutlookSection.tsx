@@ -60,9 +60,10 @@ export function OutlookSection() {
         phase: b.label,
         HB: avg((r) => r.hb),
         'State pensions': avg((r) => r.statePension),
-        'Chris pension': avg((r) => r.chrisPensionDraw),
+        'Gilt rungs (ISA)': avg((r) => r.ladderDraw),
+        'Gilt rungs (SIPP)': avg((r) => (r.year <= 2045 ? r.chrisPensionDraw : 0)),
+        'Chris SIPP drawdown': avg((r) => (r.year > 2045 ? r.chrisPensionDraw : 0)),
         'Abby pension': avg((r) => r.abbyPensionDraw),
-        'Gilt rungs': avg((r) => r.ladderDraw),
         'ISA / cash': avg((r) => r.isaDraw),
       };
     });
@@ -208,8 +209,9 @@ export function OutlookSection() {
                 <Tooltip formatter={(v) => gbp(Number(v))} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="HB" stackId="a" fill={PALETTE.amber} />
-                <Bar dataKey="Gilt rungs" stackId="a" fill={PALETTE.grey} />
-                <Bar dataKey="Chris pension" stackId="a" fill={PALETTE.navy} />
+                <Bar dataKey="Gilt rungs (ISA)" stackId="a" fill={PALETTE.grey} />
+                <Bar dataKey="Gilt rungs (SIPP)" stackId="a" fill="#5d7392" />
+                <Bar dataKey="Chris SIPP drawdown" stackId="a" fill={PALETTE.navy} />
                 <Bar dataKey="Abby pension" stackId="a" fill={PALETTE.blue} />
                 <Bar dataKey="ISA / cash" stackId="a" fill="#c3ccd8" />
                 <Bar dataKey="State pensions" stackId="a" fill={PALETTE.green} radius={[3, 3, 0, 0]} />
@@ -219,9 +221,10 @@ export function OutlookSection() {
         </div>
       </div>
       <p className="text-xs text-slate-400 mt-3">
-        Today&apos;s money throughout. Early exits assume HB stops at retirement. &ldquo;Gilt rungs&rdquo; are the
-        non-pension ladder maturing (to 2045); the 2041&ndash;45 rungs live inside Chris&apos;s SIPP, so they appear
-        as &ldquo;Chris pension&rdquo; here &mdash; same ladder, second wrapper.
+        Today&apos;s money throughout. Early exits assume HB stops at retirement. The wrapper matters for tax:
+        ISA money out (grey, pale) is never taxed; SIPP money out (navy family, incl. the 2041&ndash;45 rungs
+        and allowance-filling slices) is taxable income that the sim draws inside personal allowances and
+        tax-free cash &mdash; which is why the tax tile above reads &pound;0.
       </p>
     </section>
   );
