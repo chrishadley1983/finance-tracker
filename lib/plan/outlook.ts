@@ -110,12 +110,18 @@ export interface DrawdownResult {
   totalTax: number;
   pensionWithdrawn: number;
   effectiveTaxRate: number; // tax ÷ pension withdrawals
+  /** First year the money cannot fully fund the spend (null = never before 2075). */
+  depletedYear: number | null;
   fundingByYear: Array<{
     year: number;
     hb: number;
     statePension: number;
     chrisPensionDraw: number;
     abbyPensionDraw: number;
+    /** Non-pension draw in ladder years (≤ 2045): the maturing gilt rungs. */
+    ladderDraw: number;
+    /** Non-pension draw after the ladder ends: ISA / cash. */
+    isaDraw: number;
     nonPensionDraw: number;
     tax: number;
   }>;
@@ -140,6 +146,7 @@ export function drawdownSim(opts: OutlookOptions): DrawdownResult {
   let totalTax = 0;
   let pensionWithdrawn = 0;
   let firstTaxedYear: number | null = null;
+  let depletedYear: number | null = null;
   const fundingByYear: DrawdownResult['fundingByYear'] = [];
 
   for (let year = opts.retireYear; year <= DATES.simulationEndYear; year++) {
@@ -163,6 +170,8 @@ export function drawdownSim(opts: OutlookOptions): DrawdownResult {
       statePension: sp.C + sp.A,
       chrisPensionDraw: 0,
       abbyPensionDraw: 0,
+      ladderDraw: 0,
+      isaDraw: 0,
       nonPensionDraw: 0,
       tax: 0,
     };
@@ -197,12 +206,14 @@ export function drawdownSim(opts: OutlookOptions): DrawdownResult {
         if (p === 'C') row.chrisPensionDraw += s;
         else row.abbyPensionDraw += s;
       }
-      // 3) Non-pension.
+      // 3) Non-pension: the maturing gilt rungs in ladder years, ISA/cash after.
       if (need > 0) {
         const t = Math.min(need, NP);
         NP -= t;
         need -= t;
         row.nonPensionDraw += t;
+        if (year <= 2045) row.ladderDraw += t;
+        else row.isaDraw += t;
       }
       // 4) Taxed pension draws (crystallised first, then UFPLS beyond PA).
       for (const p of ['C', 'A'] as const) {
@@ -227,6 +238,7 @@ export function drawdownSim(opts: OutlookOptions): DrawdownResult {
           else row.abbyPensionDraw += gross;
         }
       }
+      if (need > 1 && depletedYear === null) depletedYear = year;
     } else {
       NP += -need; // surplus recycled
     }
@@ -247,6 +259,7 @@ export function drawdownSim(opts: OutlookOptions): DrawdownResult {
     abbyPensionAt92,
     nonPensionAt92: NP,
     firstTaxedYear,
+    depletedYear,
     totalTax,
     pensionWithdrawn,
     effectiveTaxRate: pensionWithdrawn > 0 ? totalTax / pensionWithdrawn : 0,

@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   Cell,
   Legend,
+  LabelList,
 } from 'recharts';
 import { drawdownSim, sustainableSpend, potsAtExit, DEFAULT_OUTLOOK } from '@/lib/plan/outlook';
 import { PALETTE } from '@/lib/plan/constants';
@@ -31,10 +32,15 @@ export function OutlookSection() {
 
   const byYear = useMemo(
     () =>
-      [2031, 2032, 2033, 2034, 2035].map((y) => ({
-        year: String(y),
-        surplus: Math.round(drawdownSim({ ...opts, retireYear: y }).surplusAt92),
-      })),
+      [2031, 2032, 2033, 2034, 2035].map((y) => {
+        const r = drawdownSim({ ...opts, retireYear: y });
+        return {
+          year: String(y),
+          surplus: Math.round(r.surplusAt92),
+          label: r.depletedYear ? `runs out ~${r.depletedYear}` : gbpK(r.surplusAt92),
+          depleted: r.depletedYear !== null,
+        };
+      }),
     [opts]
   );
 
@@ -56,7 +62,8 @@ export function OutlookSection() {
         'State pensions': avg((r) => r.statePension),
         'Chris pension': avg((r) => r.chrisPensionDraw),
         'Abby pension': avg((r) => r.abbyPensionDraw),
-        'ISA / cash': avg((r) => r.nonPensionDraw),
+        'Gilt rungs': avg((r) => r.ladderDraw),
+        'ISA / cash': avg((r) => r.isaDraw),
       };
     });
   }, [sim, retireYear]);
@@ -67,7 +74,9 @@ export function OutlookSection() {
         The outlook
       </h2>
       <p className="text-sm text-slate-500 mb-3">
-        The plan&apos;s deterministic models, live. Everything recomputes client-side — nothing leaves the page.
+        The plan&apos;s models, live &mdash; everything recomputes client-side. These are <em>deterministic</em>
+        projections: they assume the chosen real return arrives smoothly every year (the plan&apos;s
+        cautious-case convention), not the mean or median of market simulations.
       </p>
 
       <div className="flex flex-wrap gap-x-8 gap-y-3 mb-4 text-sm">
@@ -163,21 +172,31 @@ export function OutlookSection() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-          <div className="text-sm text-slate-600 mb-1">What&apos;s left at 92, by retirement year (this scenario)</div>
+          <div className="text-sm text-slate-600 mb-1">
+            If we retired in year&hellip; what&apos;s left at 92 (under this scenario&apos;s settings)
+          </div>
           <div className="h-56" data-testid="early-retirement-chart">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={byYear} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
+              <BarChart data={byYear} margin={{ top: 18, right: 8, bottom: 0, left: 8 }}>
                 <XAxis dataKey="year" tickLine={false} axisLine={{ stroke: '#cbd5e1' }} fontSize={12} />
                 <YAxis tickFormatter={(v: number) => gbpK(v)} tickLine={false} axisLine={false} fontSize={11} width={52} />
                 <Tooltip formatter={(v) => gbp(Number(v))} />
                 <Bar dataKey="surplus" radius={[3, 3, 0, 0]}>
+                  <LabelList dataKey="label" position="top" style={{ fontSize: 10, fill: '#475569' }} />
                   {byYear.map((d) => (
-                    <Cell key={d.year} fill={Number(d.year) === retireYear ? PALETTE.navy : PALETTE.blue} />
+                    <Cell
+                      key={d.year}
+                      fill={d.depleted ? PALETTE.amber : Number(d.year) === retireYear ? PALETTE.navy : PALETTE.blue}
+                    />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Each bar is a separate what-if: retire that year, keep every other setting. Amber = the money
+            runs out before 92 at this spend level.
+          </p>
         </div>
         <div>
           <div className="text-sm text-slate-600 mb-1">Who funds each year of spending (average by phase)</div>
@@ -189,9 +208,10 @@ export function OutlookSection() {
                 <Tooltip formatter={(v) => gbp(Number(v))} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="HB" stackId="a" fill={PALETTE.amber} />
+                <Bar dataKey="Gilt rungs" stackId="a" fill={PALETTE.grey} />
                 <Bar dataKey="Chris pension" stackId="a" fill={PALETTE.navy} />
                 <Bar dataKey="Abby pension" stackId="a" fill={PALETTE.blue} />
-                <Bar dataKey="ISA / cash" stackId="a" fill={PALETTE.grey} />
+                <Bar dataKey="ISA / cash" stackId="a" fill="#c3ccd8" />
                 <Bar dataKey="State pensions" stackId="a" fill={PALETTE.green} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -199,8 +219,9 @@ export function OutlookSection() {
         </div>
       </div>
       <p className="text-xs text-slate-400 mt-3">
-        Today&apos;s money throughout. Early exits assume HB stops at retirement; the sim compounds forgone
-        wealth to 92, so each year earlier costs more than the July doc&apos;s £100k/yr sketch suggested.
+        Today&apos;s money throughout. Early exits assume HB stops at retirement. &ldquo;Gilt rungs&rdquo; are the
+        non-pension ladder maturing (to 2045); the 2041&ndash;45 rungs live inside Chris&apos;s SIPP, so they appear
+        as &ldquo;Chris pension&rdquo; here &mdash; same ladder, second wrapper.
       </p>
     </section>
   );
