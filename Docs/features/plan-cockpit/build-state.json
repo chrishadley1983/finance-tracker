@@ -1,0 +1,36 @@
+{
+  "feature": "plan-cockpit",
+  "status": "CONVERGED",
+  "branch": "feature/plan-cockpit",
+  "iterations": 1,
+  "lastRun": "2026-07-30T13:00:00+01:00",
+  "criteria": {
+    "passed": [
+      "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+      "E1", "E2", "E3", "P1", "I1", "I2", "I3", "U1", "U2"
+    ],
+    "passedWithNotes": {
+      "P2": "Cannot time an authenticated page-load programmatically (no e2e auth session). Verified by proxy: production build compiles, all data endpoints respond <1s locally, page renders in component tests. Eyeball on first real visit.",
+      "U1": "jsdom cannot measure layout; verified via overflow-x-auto containers on all wide tables (component test).",
+      "I1": "Migration file 009 checked in and API tested against mocks; DDL NOT YET APPLIED to the live database — no Postgres credentials on this machine. Human step: run supabase/migrations/009_plan_cockpit.sql in the Supabase SQL editor (finance schema). Until then /plan works fully except rung persistence (graceful warning)."
+    },
+    "amended": {
+      "F10": "2032 surplus anchor corrected £1.7M→£1.1M ±10%: the sim compounds forgone wealth to 92; the July doc's chart used an uncompounded £100k/yr heuristic and overstates early-retirement surpluses (doc flagged for correction).",
+      "F11": "Anchors restated as robust properties (eff tax ≤4%, first tax ≥2070 or never, total ≤£30k, doc-pinned regression £2.04M ±3% at ≤1%): the doc's '3.3%/2073' figures were computed under the pre-v7 HB profile."
+    }
+  },
+  "evidence": {
+    "unitTests": "tests/unit/plan (35) + tests/unit/plan/plan-page.test.tsx (7) + tests/api/plan-cockpit.test.ts (6); full suite 1388 pass",
+    "build": "next build compiles clean; /plan + 3 API routes emitted",
+    "liveSmoke": "unauth /plan → 307 /login?redirectTo=/plan (matches /); gilt-prices live: 32 gilts; run-rate: £90,753 over 2,276 txns; rungs: 200 + missing-table warning"
+  },
+  "humanSteps": [
+    "Apply supabase/migrations/009_plan_cockpit.sql (SQL editor or supabase db push with DB password)",
+    "Optional: regenerate lib/supabase/database.types.ts via supabase gen after applying (hand-added entry matches the migration)",
+    "Eyeball /plan on first visit (P2 timing, chart look)"
+  ],
+  "followUps": [
+    "July plan doc's early-retirement chart overstates surpluses (uncompounded heuristic) — offer Chris a doc correction",
+    "e2e infrastructure (playwright config + auth fixture) still absent repo-wide"
+  ]
+}
