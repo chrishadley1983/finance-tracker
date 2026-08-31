@@ -63,7 +63,7 @@ function callClaudeCli(prompt: string): Promise<string> {
 
     const proc = spawn(
       'claude',
-      ['-p', '--output-format', 'text', '--max-turns', '1', '--model', 'claude-sonnet-4-20250514'],
+      ['-p', '--output-format', 'text', '--max-turns', '1', '--model', 'claude-sonnet-5'],
       { env, shell: true, timeout: 60_000 },
     );
 

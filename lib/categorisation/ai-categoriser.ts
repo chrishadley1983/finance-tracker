@@ -27,7 +27,7 @@ export type AICategorisationResult = AICategorisationResultType;
 // =============================================================================
 
 const AI_CONFIG = {
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-5',
   maxTokens: 2048,
   timeout: 30000,
   maxBatchSize: 10,
