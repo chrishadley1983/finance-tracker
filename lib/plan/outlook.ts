@@ -14,6 +14,9 @@ import {
   SPEND,
   PAYSLIP,
   CHILD_BENEFIT,
+  RETURNS,
+  HICBC,
+  LADDER,
 } from './constants';
 import { pivotYear, takeHomeNominal } from './pivot';
 
@@ -29,9 +32,9 @@ export interface OutlookOptions {
 
 export const DEFAULT_OUTLOOK: OutlookOptions = {
   retireYear: DATES.planRetirementYear,
-  realReturn: 0.02,
+  realReturn: RETURNS.realEquityPlanning,
   retirementSpend: SPEND.retirementTarget,
-  aniTarget: 60_000,
+  aniTarget: HICBC.lowerThreshold, // modelled to the £60k line; operated to HICBC.defaultTarget
   hbPostRetirement: INCOME.hbPostRetirement,
 };
 
@@ -219,7 +222,7 @@ export function drawdownSim(opts: OutlookOptions): DrawdownResult {
         NP -= t;
         need -= t;
         row.nonPensionDraw += t;
-        if (year <= 2045) row.ladderDraw += t;
+        if (year <= LADDER.lastYear) row.ladderDraw += t;
         else row.isaDraw += t;
       }
       // 4) Taxed pension draws (crystallised first, then UFPLS beyond PA).

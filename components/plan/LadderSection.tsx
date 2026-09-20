@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { buildLadder } from '@/lib/plan/ladder';
-import { PALETTE, type GiltPrice } from '@/lib/plan/constants';
+import { PALETTE, POTS, type GiltPrice } from '@/lib/plan/constants';
 import type { BucketTotals } from '@/lib/plan/buckets';
 import { gbp, gbpK } from './format';
 
@@ -38,8 +38,8 @@ export function LadderSection({ prices, pricesStale, pricesAsOf, rungs, buckets,
   const split = buckets
     ? [
         { label: 'Gilt ladder (bought)', value: boughtCost, color: PALETTE.navy },
-        { label: 'Equities & other', value: Math.max(0, buckets.total - boughtCost - 55_000), color: PALETTE.blue },
-        { label: 'Cash buffer', value: 55_000, color: PALETTE.grey },
+        { label: 'Equities & other', value: Math.max(0, buckets.total - boughtCost - POTS.cashBuffer), color: PALETTE.blue },
+        { label: 'Cash buffer', value: POTS.cashBuffer, color: PALETTE.grey },
       ]
     : [];
   const splitTotal = split.reduce((s, p) => s + p.value, 0);

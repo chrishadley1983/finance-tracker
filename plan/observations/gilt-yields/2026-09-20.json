@@ -1,0 +1,17 @@
+{
+  "asOf": "2026-09-20",
+  "source": "dividenddata.co.uk real yields, 17–20 Sep 2026 (used by scripts/ifa-e-yearly.mjs until phase 2 reads live prices)",
+  "note": "One row per ladder rung. mult 1.5 = the gilt also carries half of the 2043 target (no 2043 linker). Coupon is the annual coupon rate; yld is the real yield to maturity.",
+  "rungs": [
+    { "y": 2035, "w": "isa", "epic": "TR35", "cpn": 0.01125, "yld": 0.0177, "mult": 1 },
+    { "y": 2036, "w": "isa", "epic": "TG36", "cpn": 0.00125, "yld": 0.0189, "mult": 1 },
+    { "y": 2037, "w": "isa", "epic": "TR37", "cpn": 0.01125, "yld": 0.0198, "mult": 1 },
+    { "y": 2038, "w": "isa", "epic": "T38", "cpn": 0.0175, "yld": 0.0205, "mult": 1 },
+    { "y": 2039, "w": "isa", "epic": "TG39", "cpn": 0.00125, "yld": 0.0213, "mult": 1 },
+    { "y": 2040, "w": "isa", "epic": "TR40", "cpn": 0.00625, "yld": 0.0215, "mult": 1 },
+    { "y": 2041, "w": "sipp", "epic": "T41", "cpn": 0.00125, "yld": 0.0219, "mult": 1 },
+    { "y": 2042, "w": "sipp", "epic": "T42A", "cpn": 0.00625, "yld": 0.0225, "mult": 1.5 },
+    { "y": 2044, "w": "sipp", "epic": "T44", "cpn": 0.00125, "yld": 0.0233, "mult": 1.5 },
+    { "y": 2045, "w": "sipp", "epic": "TR45", "cpn": 0.00625, "yld": 0.0236, "mult": 1 }
+  ]
+}

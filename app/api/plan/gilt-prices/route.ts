@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { parseGiltTable } from '@/lib/plan/gilt-parser';
-import { FALLBACK_GILT_PRICES, type GiltPrice } from '@/lib/plan/constants';
+import { FALLBACK_GILT_PRICES, FALLBACK_GILT_PRICES_AS_OF, type GiltPrice } from '@/lib/plan/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +37,6 @@ export async function GET() {
       // Criterion E1: serve the last good data, flagged stale.
       return NextResponse.json({ asOf: new Date(cache.at).toISOString(), stale: true, source: 'stale-cache', gilts: cache.gilts });
     }
-    return NextResponse.json({ asOf: '2026-07-29T13:00:00Z', stale: true, source: 'fallback', gilts: FALLBACK_GILT_PRICES });
+    return NextResponse.json({ asOf: FALLBACK_GILT_PRICES_AS_OF, stale: true, source: 'fallback', gilts: FALLBACK_GILT_PRICES });
   }
 }

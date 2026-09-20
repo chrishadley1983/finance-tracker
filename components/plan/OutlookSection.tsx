@@ -13,14 +13,14 @@ import {
   LabelList,
 } from 'recharts';
 import { drawdownSim, sustainableSpend, potsAtExit, DEFAULT_OUTLOOK } from '@/lib/plan/outlook';
-import { PALETTE } from '@/lib/plan/constants';
+import { PALETTE, SPEND, INCOME, DATES, RETURNS } from '@/lib/plan/constants';
 import { gbp, gbpK } from './format';
 
 export function OutlookSection() {
-  const [retireYear, setRetireYear] = useState<number>(2035);
-  const [realReturn, setRealReturn] = useState<number>(0.02);
-  const [spend, setSpend] = useState<number>(60_000);
-  const [hb, setHb] = useState<number>(13_000);
+  const [retireYear, setRetireYear] = useState<number>(DATES.planRetirementYear);
+  const [realReturn, setRealReturn] = useState<number>(RETURNS.realEquityPlanning);
+  const [spend, setSpend] = useState<number>(SPEND.retirementTarget);
+  const [hb, setHb] = useState<number>(INCOME.hbPostRetirement);
 
   const opts = useMemo(
     () => ({ ...DEFAULT_OUTLOOK, retireYear, realReturn, retirementSpend: spend, hbPostRetirement: hb }),
@@ -122,7 +122,7 @@ export function OutlookSection() {
             min={30_000}
             max={120_000}
             value={spend}
-            onChange={(e) => setSpend(Number(e.target.value) || 60_000)}
+            onChange={(e) => setSpend(Number(e.target.value) || SPEND.retirementTarget)}
             className="w-28 rounded border border-slate-200 px-2 py-0.5 tabular-nums"
           />
         </div>

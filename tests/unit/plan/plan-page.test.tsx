@@ -77,7 +77,7 @@ describe('/plan page (criteria U2, F2, F3, F12, P1, E2, F7)', () => {
     mockApis();
     render(<PlanPage />);
     await waitFor(() => expect(screen.getByText('£71,000')).toBeInTheDocument());
-    expect(screen.getByText(/vs the £69,500 plan line/)).toBeInTheDocument();
+    expect(screen.getByText(/vs the £70,000 plan line/)).toBeInTheDocument(); // spend.planLine from plan/assumptions.json
     expect(screen.getAllByText('£274k').length).toBeGreaterThan(0); // Abby pension bucket card
   });
 

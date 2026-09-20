@@ -146,8 +146,8 @@ Everything lives in git under `plan/` as JSON/Markdown/CSV/self-contained HTML (
 
 | # | Phase | Effort | De-risks |
 |---|---|---|---|
-| 0 | Commit everything untracked (Docs plan files, ifa scripts, AVC calculator) under `plan/runs/*-FROZEN` and `plan/archive/`; tag `plan-pre-refactor-2026-09-20`. | 2 h | Loss of the evidence base; a diffable baseline. |
-| 1 | `assumptions.json` + schema + loader (DERIVED enforcement, freshness) + `plan:check` + `tools/set.mjs`; `constants.ts` becomes a shim; `spend.planLine: 70000` as DECISION; no-literal lint tests. | 6–8 h | One home with provenance; catches 69.5k-vs-70k and the April footer today. |
+| 0 ✅ 20 Sep | Commit everything untracked (Docs plan files, ifa scripts, AVC calculator) under `plan/runs/*-FROZEN` and `plan/archive/`; tag `plan-pre-refactor-2026-09-20`. | 2 h | Loss of the evidence base; a diffable baseline. |
+| 1 ✅ 20 Sep | `assumptions.json` + schema + loader (DERIVED enforcement, freshness) + `plan:check` + `tools/set.mjs`; `constants.ts` becomes a shim; `spend.planLine: 70000` as DECISION; no-literal lint tests. Also done: the ledger model and AVC calculator read the JSON; pots rebased to the 1 Sep 2026 snapshots (June `POTS_BASELINE` retired); fallback gilt prices moved to `observations/`. | 6–8 h | One home with provenance; catches 69.5k-vs-70k and the April footer today. |
 | 2 | Extract `plan/engine/*.mjs` with injection; port `ifa-e-yearly` → `ledger.mjs` fed by `pivotProgramme`; `run-standalone.mjs`; components import the engine; seed `golden.json`; migration cross-check test. | 8–10 h | The live AVC-array drift; cockpit vs script disagreement; determinism. |
 | 3 | Observation adapters; payslip JSONs Apr/Aug/Sep 2026; `tools/avc.mjs`, `tools/order-sheet.mjs`; delete ad-hoc DB scripts. | 4–6 h | "Measured" spend ≠ tracker; the `snapshot_date` bug class. |
 | 4 | Renderers with data-key discipline; doc==model tests; self-contained HTML; `knownLimitations` block in every doc. | 8–10 h | Nothing hand-typed; the "£108k + £8k" and "42% FACT" class. |

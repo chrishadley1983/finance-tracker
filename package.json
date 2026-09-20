@@ -16,7 +16,10 @@
     "sync:bank": "tsx scripts/sync-truelayer.ts",
     "mine:rules": "tsx scripts/mine-merchant-rules.ts",
     "report:month": "tsx scripts/generate-monthly-report.ts",
-    "refresh-shiller": "tsx scripts/refresh-shiller-data.ts"
+    "refresh-shiller": "tsx scripts/refresh-shiller-data.ts",
+    "plan:check": "tsx scripts/plan-check.ts",
+    "plan:set": "node plan/tools/set.mjs",
+    "plan:ledger": "node scripts/ifa-e-yearly.mjs"
   },
   "repository": {
     "type": "git",

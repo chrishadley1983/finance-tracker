@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { SPEND, POTS_BASELINE } from '@/lib/plan/constants';
 import { computeRunRate } from '@/lib/plan/spend';
 import { bucketTotals } from '@/lib/plan/buckets';
 
@@ -24,7 +25,7 @@ describe('spending run-rate (criterion F3)', () => {
     ]);
     expect(r.trailing12moSpend).toBe(1_000);
     expect(r.excludedTotal).toBe(1_050);
-    expect(r.vsPlanLine).toBe(1_000 - 69_500);
+    expect(r.vsPlanLine).toBe(1_000 - SPEND.planLine); // plan line comes from plan/assumptions.json
   });
 });
 
@@ -48,12 +49,15 @@ describe('pot buckets (criteria F2, F9)', () => {
     expect(b.asOf).toBe('2026-07-01');
   });
 
-  it('falls back to the June 2026 baseline with no snapshots (F2/E2)', () => {
+  it('falls back to the assumptions-file baseline (1 Sep 2026 pots) with no snapshots (F2/E2)', () => {
     const b = bucketTotals([]);
     expect(b.isBaseline).toBe(true);
-    expect(b.chrisPension).toBe(624_954);
-    expect(b.abbyPension).toBe(272_948);
-    expect(b.accessible).toBe(709_000);
+    // DERIVED in plan/assumptions.json from the per-account snapshot values
+    expect(b.chrisPension).toBe(POTS_BASELINE.chrisPension);
+    expect(b.chrisPension).toBe(439_574 + 193_081);
+    expect(b.abbyPension).toBe(POTS_BASELINE.abbyPension);
+    expect(b.accessible).toBe(POTS_BASELINE.nonPension);
+    expect(b.accessible).toBe(276_716 + 312_573 + 119_924 + 1_960);
   });
 
   it('routes unknown pension accounts by name; unknown other types to accessible', () => {

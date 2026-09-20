@@ -29,3 +29,8 @@ Still known-wrong in BOTH versions (to be carried as knownLimitations into the e
   under this ledger's tax rules.
 - Personal allowance and thresholds held real forever; IHT on pensions from Apr 2027 unmodelled; platform
   and dealing fees unmodelled; crypto treated as equity.
+
+Phase 1 note (20 Sep 2026, later): `scripts/ifa-e-yearly.mjs` now reads `plan/assumptions.json` and
+`plan/observations/gilt-yields/2026-09-20.json`; its outputs match the revised HTML within rounding
+(exact budgets £519,516 / £389,874 instead of 519.5k / 389.9k). The HTML is not regenerated again;
+generated documents arrive in phase 4.

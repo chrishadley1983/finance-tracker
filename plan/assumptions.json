@@ -1,0 +1,922 @@
+{
+  "schemaVersion": 1,
+  "preparedOn": "2026-09-20",
+  "moneyBasis": "Sep 2026 pounds unless a unit says nominal",
+  "entries": {
+    "payslip.asOf": {
+      "value": "2026-08",
+      "unit": "payslip month",
+      "status": "FACT",
+      "source": "Abby payslip Aug 2026 (tax month 05)",
+      "asOf": "2026-08-31",
+      "reviewBy": "2026-10-15",
+      "cadence": "monthly",
+      "triggers": [
+        "payslip"
+      ]
+    },
+    "payslip.basicAnnual": {
+      "value": 73837.8,
+      "unit": "GBP/yr nominal",
+      "status": "FACT",
+      "source": "Abby payslip Aug 2026: basic £6,153.15/mo x 12",
+      "asOf": "2026-08-31",
+      "reviewBy": "2026-10-15",
+      "cadence": "monthly",
+      "triggers": [
+        "payslip",
+        "job-change"
+      ],
+      "history": [
+        {
+          "value": 69900,
+          "asOf": "2026-04-30",
+          "supersededOn": "2026-09-20",
+          "why": "pay rise landed since April (+5.6%); found by the 20 Sep audit"
+        }
+      ]
+    },
+    "payslip.carAllowance": {
+      "value": 6500,
+      "unit": "GBP/yr nominal",
+      "status": "FACT",
+      "source": "Abby payslip: £541.67/mo, not pensionable, assumed flat",
+      "asOf": "2026-08-31",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "payslip",
+        "job-change"
+      ]
+    },
+    "payslip.medicalBik": {
+      "value": 1330,
+      "unit": "GBP/yr nominal",
+      "status": "FACT",
+      "source": "Abby payslip: £110.83/mo payrolled benefit; note tax code 1117L also codes out £1,400 (double-taxed ~£560/yr, to square via self-assessment)",
+      "asOf": "2026-08-31",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "payslip"
+      ]
+    },
+    "payslip.bonusRate": {
+      "value": 0.05,
+      "unit": "fraction of basic",
+      "status": "GUESS",
+      "source": "5% assumed; bonus confirmed sacrificeable (Chris, 20 Sep 2026). True up in January when known",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-01-31",
+      "cadence": "annual",
+      "triggers": [
+        "bonus-confirmed"
+      ]
+    },
+    "payslip.existingEeRate": {
+      "value": 0.045,
+      "unit": "fraction of basic",
+      "status": "FACT",
+      "source": "Abby payslip: 4.5% employee salary sacrifice on basic (shows inside Pension ER)",
+      "asOf": "2026-08-31",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "payslip"
+      ]
+    },
+    "payslip.employerRate": {
+      "value": 0.11,
+      "unit": "fraction of basic",
+      "status": "FACT",
+      "source": "Abby payslip: Accenture 11% on basic; no match on AVCs assumed",
+      "asOf": "2026-08-31",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "payslip",
+        "job-change"
+      ]
+    },
+    "payslip.payGrowth": {
+      "value": 0.02,
+      "unit": "per year, basic only",
+      "status": "GUESS",
+      "source": "planning assumption (Amendment 1); Apr→Aug 2026 actual was +5.6%",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "job-change"
+      ]
+    },
+    "tax.personalAllowance": {
+      "value": 12570,
+      "unit": "GBP nominal",
+      "status": "FACT",
+      "source": "gov.uk income tax rates 2026/27; frozen to Apr 2031 (Autumn Budget 2025)",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.basicRateBand": {
+      "value": 37700,
+      "unit": "GBP nominal",
+      "status": "FACT",
+      "source": "gov.uk 2026/27: 20% band above the allowance; frozen to Apr 2031",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.higherRateFloor": {
+      "value": 50270,
+      "unit": "GBP nominal",
+      "status": "FACT",
+      "source": "gov.uk 2026/27: personal allowance + basic-rate band",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.basicRate": {
+      "value": 0.2,
+      "status": "FACT",
+      "source": "gov.uk 2026/27",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.higherRate": {
+      "value": 0.4,
+      "status": "FACT",
+      "source": "gov.uk 2026/27",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.payeAllowance": {
+      "value": 11179,
+      "unit": "GBP nominal",
+      "status": "CHECK",
+      "source": "Abby tax code 1117L (Apr and Aug 2026 payslips both reconcile to it). Should be 1257L less the payrolled medical only once — query with HMRC",
+      "asOf": "2026-08-31",
+      "reviewBy": "2027-01-31",
+      "cadence": "tax-year",
+      "triggers": [
+        "payslip",
+        "april"
+      ]
+    },
+    "tax.niMainRate": {
+      "value": 0.08,
+      "status": "FACT",
+      "source": "gov.uk employee Class 1 2026/27, between primary threshold and UEL",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.niUpperRate": {
+      "value": 0.02,
+      "status": "FACT",
+      "source": "gov.uk employee Class 1 2026/27, above UEL",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.niPrimaryThreshold": {
+      "value": 12570,
+      "unit": "GBP nominal",
+      "status": "FACT",
+      "source": "gov.uk 2026/27",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.niUpperEarningsLimit": {
+      "value": 50270,
+      "unit": "GBP nominal",
+      "status": "FACT",
+      "source": "gov.uk 2026/27",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.reliefAbove": {
+      "value": 0.42,
+      "unit": "relief per £1 sacrificed above the higher-rate floor",
+      "status": "FACT",
+      "source": "40% income tax + 2% employee NI on salary-sacrificed pay above £50,270 (2026/27). BREAKS Apr 2029: salary-sacrifice NIC cap (Autumn Budget 2025) removes the 2% on the excess over £2k/yr → 0.40; the model must branch by tax year from 2029/30",
+      "asOf": "2026-04-06",
+      "reviewBy": "2029-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.reliefBelow": {
+      "value": 0.28,
+      "unit": "relief per £1 sacrificed below the higher-rate floor",
+      "status": "FACT",
+      "source": "20% income tax + 8% employee NI (2026/27)",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "hicbc.lowerThreshold": {
+      "value": 60000,
+      "unit": "GBP nominal adjusted net income",
+      "status": "FACT",
+      "source": "gov.uk High Income Child Benefit Charge from Apr 2024; not indexed",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "hicbc.upperThreshold": {
+      "value": 80000,
+      "unit": "GBP nominal adjusted net income",
+      "status": "FACT",
+      "source": "gov.uk HICBC: fully withdrawn at £80,000",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "hicbc.taperPerStep": {
+      "value": 0.01,
+      "status": "FACT",
+      "source": "gov.uk HICBC: 1% of the benefit per £200 of income over the lower threshold",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "hicbc.stepSize": {
+      "value": 200,
+      "unit": "GBP",
+      "status": "FACT",
+      "source": "gov.uk HICBC taper step",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "hicbc.operatingTarget": {
+      "value": 59500,
+      "unit": "GBP nominal adjusted net income",
+      "status": "DECISION",
+      "source": "plan/decisions.md — Amendment 1 (30 Jul 2026): operate £500 under the £60k line against payroll noise; reaffirmed 20 Sep 2026",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-01-31",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "payslip"
+      ]
+    },
+    "childBenefit.annual2026": {
+      "value": 2337.4,
+      "unit": "GBP/yr nominal, two children",
+      "status": "FACT",
+      "source": "gov.uk rates from Apr 2026: £27.05 eldest + £17.90 second, x 52 (uprated 3.8% from £26.05/£17.25). Claim reinstated Sep 2026; 12 weeks arrears received 4 Sep",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april"
+      ]
+    },
+    "childBenefit.uprating": {
+      "value": 0.02,
+      "unit": "per year",
+      "status": "GUESS",
+      "source": "CPI assumption for the programme sums",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april"
+      ]
+    },
+    "childBenefit.emmieEndsAug": {
+      "value": 2035,
+      "unit": "year",
+      "status": "FACT",
+      "source": "Child Benefit runs to the 31 Aug after A-levels finish, not 18; Emmie finishes Year 13 summer 2035",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "kid-milestone"
+      ]
+    },
+    "childBenefit.maxEndsAug": {
+      "value": 2037,
+      "unit": "year",
+      "status": "FACT",
+      "source": "As above; Max finishes Year 13 summer 2037",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "kid-milestone"
+      ]
+    },
+    "pivot.years": {
+      "value": 9,
+      "unit": "tax years",
+      "status": "DECISION",
+      "source": "plan/decisions.md — Amendment 1: programme 2026/27 to 2034/35, ending at retirement June 2035",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "job-change",
+        "retirement-date"
+      ]
+    },
+    "pivot.firstTaxYear": {
+      "value": 2026,
+      "unit": "tax year starting",
+      "status": "DECISION",
+      "source": "plan/decisions.md — AVC started on the September 2026 payslip (decided 20 Sep 2026)",
+      "asOf": "2026-09-20",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "payslip"
+      ]
+    },
+    "pots.chrisIiIsa": {
+      "value": 276716,
+      "unit": "GBP",
+      "status": "FACT",
+      "source": "finance.wealth_snapshots 2026-09-01, CH ISA",
+      "asOf": "2026-09-01",
+      "reviewBy": "2026-10-15",
+      "cadence": "monthly",
+      "triggers": [
+        "snapshot"
+      ]
+    },
+    "pots.abbyVanguardIsa": {
+      "value": 312573,
+      "unit": "GBP",
+      "status": "FACT",
+      "source": "finance.wealth_snapshots 2026-09-01, Abby S&S ISA",
+      "asOf": "2026-09-01",
+      "reviewBy": "2026-10-15",
+      "cadence": "monthly",
+      "triggers": [
+        "snapshot"
+      ]
+    },
+    "pots.chrisIiSipp": {
+      "value": 439574,
+      "unit": "GBP",
+      "status": "FACT",
+      "source": "finance.wealth_snapshots 2026-09-01, Chris II SIPP Pension",
+      "asOf": "2026-09-01",
+      "reviewBy": "2026-10-15",
+      "cadence": "monthly",
+      "triggers": [
+        "snapshot"
+      ]
+    },
+    "pots.chrisAccenturePension": {
+      "value": 193081,
+      "unit": "GBP",
+      "status": "FACT",
+      "source": "finance.wealth_snapshots 2026-09-01, Chris Accenture Pens (Plan E doc rounded to 192,659)",
+      "asOf": "2026-09-01",
+      "reviewBy": "2026-10-15",
+      "cadence": "monthly",
+      "triggers": [
+        "snapshot"
+      ]
+    },
+    "pots.abbyAccentureDc": {
+      "value": 282921,
+      "unit": "GBP",
+      "status": "FACT",
+      "source": "finance.wealth_snapshots 2026-09-01, Abby Accenture Pension",
+      "asOf": "2026-09-01",
+      "reviewBy": "2026-10-15",
+      "cadence": "monthly",
+      "triggers": [
+        "snapshot"
+      ]
+    },
+    "pots.otherSavings": {
+      "value": 119924,
+      "unit": "GBP",
+      "status": "FACT",
+      "source": "finance.wealth_snapshots 2026-09-01, Other Savings (cash buffer + crypto)",
+      "asOf": "2026-09-01",
+      "reviewBy": "2026-10-15",
+      "cadence": "monthly",
+      "triggers": [
+        "snapshot"
+      ]
+    },
+    "pots.accentureShares": {
+      "value": 1960,
+      "unit": "GBP",
+      "status": "FACT",
+      "source": "finance.wealth_snapshots 2026-09-01, Accenture Shares",
+      "asOf": "2026-09-01",
+      "reviewBy": "2026-10-15",
+      "cadence": "monthly",
+      "triggers": [
+        "snapshot"
+      ]
+    },
+    "pots.cashBuffer": {
+      "value": 66000,
+      "unit": "GBP",
+      "status": "CHECK",
+      "source": "Plan E ledger split of Other Savings: ~£66k cash, ~£54k crypto (1 BTC, 6 ETH). Not separately snapshotted",
+      "asOf": "2026-09-01",
+      "reviewBy": "2026-12-31",
+      "cadence": "quarterly",
+      "triggers": [
+        "snapshot"
+      ]
+    },
+    "pots.crypto": {
+      "formula": "pots.otherSavings - pots.cashBuffer",
+      "status": "DERIVED",
+      "derivedBy": "loader",
+      "note": "the rest of Other Savings; modelled as equity for return purposes, never drawn in the planning case"
+    },
+    "pots.chrisPension": {
+      "formula": "sum(pots.chrisIiSipp, pots.chrisAccenturePension)",
+      "status": "DERIVED",
+      "derivedBy": "loader",
+      "note": "was POTS_BASELINE.chrisPension 624,954 at 9 Jun 2026"
+    },
+    "pots.abbyPension": {
+      "formula": "pots.abbyAccentureDc",
+      "status": "DERIVED",
+      "derivedBy": "loader",
+      "note": "was POTS_BASELINE.abbyPension 272,948 at 9 Jun 2026"
+    },
+    "pots.nonPension": {
+      "formula": "sum(pots.chrisIiIsa, pots.abbyVanguardIsa, pots.otherSavings, pots.accentureShares)",
+      "status": "DERIVED",
+      "derivedBy": "loader",
+      "note": "was POTS_BASELINE.nonPension 709,000 at 9 Jun 2026, whose own comment summed to 690.5k"
+    },
+    "pots.total": {
+      "formula": "sum(pots.chrisPension, pots.abbyPension, pots.nonPension)",
+      "status": "DERIVED",
+      "derivedBy": "loader"
+    },
+    "accounts.bucketMap": {
+      "value": {
+        "Chris II SIPP Pension": "chrisPension",
+        "Chris Accenture Pens": "chrisPension",
+        "Abby Accenture Pension": "abbyPension",
+        "Abby S&S ISA": "accessible",
+        "CH ISA": "accessible",
+        "Cash Position": "accessible",
+        "Other Savings": "accessible",
+        "HSBC Global Money Account": "accessible",
+        "HSBC Joint Current Account": "accessible",
+        "Accenture Shares": "accessible",
+        "House Net Worth": "excluded",
+        "Investment Contributions": "excluded",
+        "Business Stock": "excluded",
+        "HSBC Credit Card": "excluded"
+      },
+      "status": "FACT",
+      "source": "finance.accounts names as of Sep 2026 → plan buckets; unlisted accounts fall back by type",
+      "asOf": "2026-09-20",
+      "reviewBy": "2027-03-31",
+      "cadence": "event",
+      "triggers": [
+        "new-account"
+      ]
+    },
+    "spend.planLine": {
+      "value": 70000,
+      "unit": "GBP/yr real, household, to June 2035",
+      "status": "DECISION",
+      "source": "plan/decisions.md — 20 Sep 2026: plan on £70k (the tracker shows ~£77–85k on the cockpit definition; 2026 was a heavy holiday year). Was 69,500 from the June plan, never reproducible from the tracker",
+      "asOf": "2026-09-20",
+      "reviewBy": "2027-01-31",
+      "cadence": "quarterly",
+      "triggers": [
+        "quarterly"
+      ],
+      "history": [
+        {
+          "value": 69500,
+          "asOf": "2026-06-09",
+          "supersededOn": "2026-09-20",
+          "why": "June run-rate figure could not be reproduced; replaced by a decision"
+        }
+      ]
+    },
+    "spend.retirementTarget": {
+      "value": 60000,
+      "unit": "GBP/yr real, flat for life from June 2035",
+      "status": "DECISION",
+      "source": "plan/decisions.md — June 2026 plan, reaffirmed 20 Sep 2026 as the floor plan (£70k is the 2%-real case only)",
+      "asOf": "2026-06-09",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
+      ]
+    },
+    "spend.excludedCategories": {
+      "value": [
+        "Home improvement",
+        "Extension",
+        "Lego Out",
+        "Work Travel"
+      ],
+      "status": "DECISION",
+      "source": "plan/decisions.md — categories excluded from the run-rate (one-offs, business, reimbursed); cockpit definition",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-01-31",
+      "cadence": "quarterly",
+      "triggers": [
+        "quarterly"
+      ]
+    },
+    "spend.nineYearSavingsDrawBudget": {
+      "value": 8000,
+      "unit": "GBP real over 2026–2035",
+      "status": "GUESS",
+      "source": "Amendment 1 at £25k HB and £69.5k spend. Stale: on the 20 Sep inputs (HB ~£19k, spend £70k+) the draw is £40k–£130k; see plan/decisions.md",
+      "asOf": "2026-07-30",
+      "reviewBy": "2026-12-31",
+      "cadence": "quarterly",
+      "triggers": [
+        "quarterly"
+      ]
+    },
+    "income.hbPreRetirement": {
+      "value": 25000,
+      "unit": "GBP/yr TAKE-HOME (≈£29.4k profit at 26% marginal)",
+      "status": "DECISION",
+      "source": "plan/decisions.md — Amendment 1 target, kept 20 Sep 2026 while Chris works to close the gap (2026 tracking ~£19k profit / ~£17.4k take-home; £5k side income planned). Shortfalls come from the reserve, never the AVC",
+      "asOf": "2026-09-20",
+      "reviewBy": "2026-12-31",
+      "cadence": "quarterly",
+      "triggers": [
+        "quarterly",
+        "hb-trend"
+      ]
+    },
+    "income.hbPostRetirement": {
+      "value": 13000,
+      "unit": "GBP/yr real, June 2035 to Nov 2040, then 0",
+      "status": "GUESS",
+      "source": "Amendment 1: HB continues inside Chris's personal allowance until his pension opens",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
+      ]
+    },
+    "income.abbyTakeHomeYear1": {
+      "formula": "engine:takeHomeNominal(0, extraSacrifice at hicbc target 60000)",
+      "status": "DERIVED",
+      "derivedBy": "engine",
+      "note": "≈ £43,498 incl. bonus at a £60k ANI landing; independent of basic. Cross-checked by tests/unit/plan/assumptions.test.ts"
+    },
+    "dates.planRetirementYear": {
+      "value": 2035,
+      "unit": "year (June)",
+      "status": "DECISION",
+      "source": "plan/decisions.md — June 2026 plan: both stop June 2035 when Max finishes Year 11",
+      "asOf": "2026-06-09",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
+      ]
+    },
+    "dates.chrisPensionAccessYear": {
+      "value": 2040,
+      "unit": "year (Nov)",
+      "status": "FACT",
+      "source": "Chris born Nov 1983; normal minimum pension age 57 from 6 Apr 2028 (Finance Act 2022). Check whether the II SIPP carries a protected age of 55",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "budget"
+      ]
+    },
+    "dates.abbyPensionAccessYear": {
+      "value": 2043,
+      "unit": "year (Aug)",
+      "status": "FACT",
+      "source": "Abby born Aug 1986; NMPA 57",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "budget"
+      ]
+    },
+    "dates.chrisStatePensionYear": {
+      "value": 2051,
+      "unit": "year (Nov, age 68); first full tax year 2052",
+      "status": "FACT",
+      "source": "Pensions Act 2007: SPA 68 for those born on/after 6 Apr 1978; the 2017 proposal to bring it forward was never legislated",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "budget"
+      ]
+    },
+    "dates.abbyStatePensionYear": {
+      "value": 2054,
+      "unit": "year (Aug, age 68); first full tax year 2055",
+      "status": "FACT",
+      "source": "Pensions Act 2007",
+      "asOf": "2026-07-30",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "budget"
+      ]
+    },
+    "dates.simulationEndYear": {
+      "value": 2075,
+      "unit": "year (Chris 92)",
+      "status": "DECISION",
+      "source": "plan/decisions.md — model horizon",
+      "asOf": "2026-06-09",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
+      ]
+    },
+    "statePension.annualEach": {
+      "value": 12548,
+      "unit": "GBP/yr real",
+      "status": "FACT",
+      "source": "Full new state pension 2026/27: £241.30/wk x 52 (uprated 4.8% Apr 2026). Forecasts not yet pulled; assume full records",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april"
+      ]
+    },
+    "drawdown.tfcCapEach": {
+      "value": 268275,
+      "unit": "GBP NOMINAL (frozen)",
+      "status": "FACT",
+      "source": "Lump sum allowance from Apr 2024, frozen in cash. The model still treats it as real — see knownLimitations tfc-nominal-cap",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "drawdown.ufplsTaxableFraction": {
+      "value": 0.75,
+      "status": "FACT",
+      "source": "UFPLS: 25% tax-free, 75% taxable",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "ladder.firstYear": {
+      "value": 2035,
+      "unit": "year",
+      "status": "DECISION",
+      "source": "plan/decisions.md — Plan E: first rung matures Sep 2035",
+      "asOf": "2026-09-03",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "retirement-date"
+      ]
+    },
+    "ladder.lastYear": {
+      "value": 2045,
+      "unit": "year",
+      "status": "DECISION",
+      "source": "plan/decisions.md — Plan E: eleven rungs 2035–2045; the 2046+ extension was cancelled by Amendment 1",
+      "asOf": "2026-09-03",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "ratchet"
+      ]
+    },
+    "ladder.abbyIiIsaTransfer": {
+      "value": 242800,
+      "unit": "GBP",
+      "status": "DECISION",
+      "source": "plan/decisions.md — Plan E: about £243k transfers from Abby's Vanguard ISA to a new II ISA for rungs 2038–40; the rest stays in equity at Vanguard. Sizing by budget means this figure does not move with yields",
+      "asOf": "2026-09-03",
+      "reviewBy": "2026-12-31",
+      "cadence": "event",
+      "triggers": [
+        "rung-bought"
+      ]
+    },
+    "ladder.sippEquityRetained": {
+      "value": 49700,
+      "unit": "GBP",
+      "status": "DECISION",
+      "source": "plan/decisions.md — Plan E: about £50k of Chris's II SIPP stays in equity; the rest buys rungs 2041–45",
+      "asOf": "2026-09-03",
+      "reviewBy": "2026-12-31",
+      "cadence": "event",
+      "triggers": [
+        "rung-bought"
+      ]
+    },
+    "ladder.isaBudgetReal": {
+      "formula": "sum(pots.chrisIiIsa, ladder.abbyIiIsaTransfer)",
+      "status": "DERIVED",
+      "derivedBy": "loader",
+      "note": "ISA money for rungs 2035–40 (must be ISA: the only pot reachable before Nov 2040). Plan E doc rounded to 519.5k"
+    },
+    "ladder.sippBudgetReal": {
+      "formula": "pots.chrisIiSipp - ladder.sippEquityRetained",
+      "status": "DERIVED",
+      "derivedBy": "loader",
+      "note": "SIPP money for rungs 2041–45, mature inside the SIPP. Plan E doc rounded to 389.9k"
+    },
+    "ladder.budgetReal": {
+      "formula": "sum(ladder.isaBudgetReal, ladder.sippBudgetReal)",
+      "status": "DERIVED",
+      "derivedBy": "loader",
+      "note": "Plan E: the ladder is sized by this money, never by a £/yr target. Each rung's REDEMPTION is what the budget buys at live prices (~£99k ISA / ~£106k SIPP at Sep 2026 yields); coupons are the top-up, not part of the rung"
+    },
+    "returns.realEquity.planning": {
+      "value": 0.02,
+      "unit": "per year real",
+      "status": "GUESS",
+      "source": "planning case; deliberately close to what index-linked gilts guarantee today (2.0–2.4% real)",
+      "asOf": "2026-06-09",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
+      ]
+    },
+    "returns.realEquity.better": {
+      "value": 0.04,
+      "unit": "per year real",
+      "status": "GUESS",
+      "source": "the long-run global equity average, shown as the upside case",
+      "asOf": "2026-06-09",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
+      ]
+    },
+    "returns.cashReal": {
+      "value": 0.005,
+      "unit": "per year real",
+      "status": "GUESS",
+      "source": "Plan E ledger",
+      "asOf": "2026-09-03",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
+      ]
+    },
+    "ledger.cashFloor": {
+      "value": 30000,
+      "unit": "GBP real",
+      "status": "DECISION",
+      "source": "plan/decisions.md — Plan E: cash is not drawn below this before a taxed pension draw",
+      "asOf": "2026-09-03",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
+      ]
+    },
+    "ledger.isaAllowanceCouple": {
+      "value": 40000,
+      "unit": "GBP/yr nominal",
+      "status": "FACT",
+      "source": "2 x £20,000 adult ISA allowance (2026/27)",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    }
+  },
+  "knownLimitations": [
+    {
+      "id": "tfc-nominal-cap",
+      "raised": "2026-09-20",
+      "fixBy": "2027-06-01",
+      "text": "Tax-free cash is modelled as a cumulative real allowance of £268,275 each, with no 25%-of-crystallised-pot limit. The lump sum allowance is frozen in cash (≈£195k real by 2041) and 25% of each pot is ≈£200k, so the model over-counts tax-free money by about £145k real. Lifetime drawdown tax is about £44k at 2% real and £115k at 0%, not ≈£0.",
+      "impact": "tax narrative only; survival unaffected"
+    },
+    {
+      "id": "thresholds-held-real",
+      "raised": "2026-09-20",
+      "text": "Personal allowance, basic-rate band and state pension are held constant in real terms for the whole simulation. The allowance is frozen in cash to April 2031 (≈£11.5k real by then); the state pension is uprated by the triple lock. Small, opposite-signed biases.",
+      "impact": "≈£0.5k/yr of tax from 2041"
+    },
+    {
+      "id": "iht-not-modelled",
+      "raised": "2026-09-20",
+      "text": "Pensions join the estate for inheritance tax from April 2027. The planning case leaves roughly £1.8M in pensions at 2075, implying IHT of the order of £850k plus beneficiary income tax. Drawing to the basic-rate band from 2041 should become the planning case; it is not yet.",
+      "impact": "dominant tax in every path; not a spending risk"
+    },
+    {
+      "id": "nic-cap-2029",
+      "raised": "2026-09-20",
+      "fixBy": "2029-04-06",
+      "text": "From April 2029 salary-sacrificed pension contributions above £2,000/yr attract employee and employer NIC, so relief on the excess falls from 42% to 40% (about £3.7k over the remaining programme) and Accenture may restructure the AVC facility. The pivot model uses 42% throughout.",
+      "impact": "≈£3.7k take-home; scheme-availability risk unquantified"
+    },
+    {
+      "id": "ledger-avc-array-manual",
+      "raised": "2026-09-20",
+      "fixBy": "2026-12-31",
+      "text": "Until phase 2 folds the ledger model into plan/engine, scripts/ifa-e-yearly.mjs re-implements the AVC schedule arithmetic of lib/plan/pivot.ts from the same assumptions. npm run plan:check and a unit test compare the two; it is still two implementations.",
+      "impact": "drift risk only"
+    },
+    {
+      "id": "fees-and-crypto",
+      "raised": "2026-09-20",
+      "text": "Platform and dealing fees (~£8k to 2045) are unmodelled; crypto (~£54k) is treated as equity at 2% real and never drawn; the sustainable-spend column in the ledger document is the 3 Sep outlook figure and £70k/yr does not survive the flat-0% case under the ledger's tax rules.",
+      "impact": "small"
+    }
+  ]
+}

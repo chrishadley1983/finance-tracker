@@ -1,70 +1,95 @@
 /**
- * Plan Cockpit constants.
+ * Plan Cockpit constants — a thin shim over plan/assumptions.json.
  *
- * Origin: plan/runs/2026-07-30-amendment-1/investment-plan-amendment-1-2026-07.md (the July 2026, FROZEN; payslip rebased to Aug 2026 on 20 Sep — see plan/decisions.md; this file is superseded by plan/assumptions.json in phase 1
- * plan) and Abby's April 2026 payslip. Values are in today's (mid-2026) money
- * unless noted. These are plan assumptions, not live data — edit here, not in
- * the UI.
+ * Every number here is read from plan/assumptions.json through the loader in
+ * plan/inputs/assumptions.mjs, which validates provenance and recomputes the
+ * DERIVED entries. Do not add literals to this file: change the JSON (with
+ * `node plan/tools/set.mjs <key> <value> --source ... --asof ...`) and the
+ * cockpit, the models and the documents all move together.
+ *
+ * Origin of the values: plan/runs/2026-07-30-amendment-1 (FROZEN) rebased to
+ * the Aug 2026 payslip and the 1 Sep 2026 snapshots on 20 Sep 2026 — see
+ * plan/decisions.md. This shim is retired in phase 2 when the engine moves to
+ * plan/engine and components import it directly.
  */
 
+import assumptionsFile from '../../plan/assumptions.json';
+import fallbackPrices from '../../plan/observations/gilt-prices/2026-07-29.json';
+import { buildAssumptions } from '../../plan/inputs/assumptions.mjs';
+
+const A = buildAssumptions(assumptionsFile as never).values;
+
+export const ASSUMPTIONS_PREPARED_ON: string = assumptionsFile.preparedOn;
+export const KNOWN_LIMITATIONS = assumptionsFile.knownLimitations;
+
 // ---------------------------------------------------------------------------
-// Abby's payslip (rebased to August 2026) and pivot mechanics
+// Abby's payslip and pivot mechanics
 // ---------------------------------------------------------------------------
 export const PAYSLIP = {
-  asOf: '2026-08', // payslip the basic is taken from (was Apr 2026: £69,900)
-  basicAnnual: 73_837.8, // £6,153.15/mo — rise landed since April (+5.6%)
-  carAllowance: 6_500, // £541.67/mo, not pensionable, assumed flat
-  medicalBik: 1_330, // £110.83/mo, taxed via payroll, assumed flat
-  bonusRate: 0.05, // of basic; assumed sacrificeable
-  existingEeRate: 0.045, // current salary-sacrifice, basic only
-  employerRate: 0.11, // Accenture, basic only; no match on AVCs assumed
-  payGrowth: 0.02, // per year, basic only
+  asOf: A.payslip.asOf as string,
+  basicAnnual: A.payslip.basicAnnual as number,
+  carAllowance: A.payslip.carAllowance as number,
+  medicalBik: A.payslip.medicalBik as number,
+  bonusRate: A.payslip.bonusRate as number,
+  existingEeRate: A.payslip.existingEeRate as number,
+  employerRate: A.payslip.employerRate as number,
+  payGrowth: A.payslip.payGrowth as number,
 } as const;
 
 export const TAX = {
-  higherRateFloor: 50_270, // taxable income above this saves 40% + 2% NI
-  reliefAbove: 0.42,
-  reliefBelow: 0.28, // 20% tax + 8% NI
-  personalAllowance: 12_570,
-  basicRate: 0.2,
-  // PAYE detail used to derive take-home from the payslip (2026/27, frozen to 2031)
-  higherRate: 0.4,
-  basicRateBand: 37_700, // taxable income above the allowance charged at 20%
-  payeAllowance: 11_179, // Abby's code 1117L (medical coded out as well as payrolled)
-  niMainRate: 0.08, // employee NI between PT and UEL
-  niUpperRate: 0.02, // above UEL
-  niPrimaryThreshold: 12_570,
-  niUpperEarningsLimit: 50_270,
+  higherRateFloor: A.tax.higherRateFloor as number,
+  reliefAbove: A.tax.reliefAbove as number,
+  reliefBelow: A.tax.reliefBelow as number,
+  personalAllowance: A.tax.personalAllowance as number,
+  basicRate: A.tax.basicRate as number,
+  higherRate: A.tax.higherRate as number,
+  basicRateBand: A.tax.basicRateBand as number,
+  payeAllowance: A.tax.payeAllowance as number,
+  niMainRate: A.tax.niMainRate as number,
+  niUpperRate: A.tax.niUpperRate as number,
+  niPrimaryThreshold: A.tax.niPrimaryThreshold as number,
+  niUpperEarningsLimit: A.tax.niUpperEarningsLimit as number,
 } as const;
 
 export const HICBC = {
-  lowerThreshold: 60_000, // full child benefit below this ANI (frozen)
-  upperThreshold: 80_000, // none above this
-  taperPerStep: 0.01, // 1% of CB per £200 over
-  stepSize: 200,
-  defaultTarget: 59_500, // operate £500 under the line
+  lowerThreshold: A.hicbc.lowerThreshold as number,
+  upperThreshold: A.hicbc.upperThreshold as number,
+  taperPerStep: A.hicbc.taperPerStep as number,
+  stepSize: A.hicbc.stepSize as number,
+  defaultTarget: A.hicbc.operatingTarget as number,
 } as const;
 
 export const CHILD_BENEFIT = {
-  annual2026: 2_337.4, // £27.05 + £17.90 per week, two children (2026/27)
-  uprating: 0.02, // CPI assumption
-  // Payable while in full-time education:
-  emmieEndsAug: 2035,
-  maxEndsAug: 2037,
+  annual2026: A.childBenefit.annual2026 as number,
+  uprating: A.childBenefit.uprating as number,
+  emmieEndsAug: A.childBenefit.emmieEndsAug as number,
+  maxEndsAug: A.childBenefit.maxEndsAug as number,
 } as const;
 
 /** Pivot programme years: 2026/27 (index 0) to 2034/35 (index 8). */
-export const PIVOT_YEARS = 9;
-export const PIVOT_FIRST_TAX_YEAR = 2026; // "2026/27"
+export const PIVOT_YEARS: number = A.pivot.years;
+export const PIVOT_FIRST_TAX_YEAR: number = A.pivot.firstTaxYear;
 
 // ---------------------------------------------------------------------------
-// Pots and buckets (June 2026 verified baseline)
+// Pots and buckets (1 Sep 2026 snapshots; pension/non-pension totals DERIVED)
 // ---------------------------------------------------------------------------
+export const POTS = {
+  chrisIiIsa: A.pots.chrisIiIsa as number,
+  abbyVanguardIsa: A.pots.abbyVanguardIsa as number,
+  chrisIiSipp: A.pots.chrisIiSipp as number,
+  chrisAccenturePension: A.pots.chrisAccenturePension as number,
+  abbyAccentureDc: A.pots.abbyAccentureDc as number,
+  otherSavings: A.pots.otherSavings as number,
+  accentureShares: A.pots.accentureShares as number,
+  cashBuffer: A.pots.cashBuffer as number,
+  crypto: A.pots.crypto as number,
+} as const;
+
 export const POTS_BASELINE = {
-  asOf: '2026-06-09',
-  chrisPension: 624_954, // SIPP £434,584 + old Accenture £190,370
-  abbyPension: 272_948,
-  nonPension: 709_000, // ISAs £581.5k + crypto £54k + cash/NS&I £55k (derived)
+  asOf: '2026-09-01',
+  chrisPension: A.pots.chrisPension as number,
+  abbyPension: A.pots.abbyPension as number,
+  nonPension: A.pots.nonPension as number,
 } as const;
 
 /**
@@ -73,78 +98,61 @@ export const POTS_BASELINE = {
  * abbyPension : chrisPension); property/tracking/credit/other → excluded;
  * everything else → accessible.
  */
-export const ACCOUNT_BUCKETS: Record<string, 'chrisPension' | 'abbyPension' | 'accessible' | 'excluded'> = {
-  'Chris II SIPP Pension': 'chrisPension',
-  'Chris Accenture Pens': 'chrisPension',
-  'Abby Accenture Pension': 'abbyPension',
-  'Abby S&S ISA': 'accessible',
-  'CH ISA': 'accessible',
-  'Cash Position': 'accessible',
-  'Other Savings': 'accessible',
-  'HSBC Global Money Account': 'accessible',
-  'HSBC Joint Current Account': 'accessible',
-  'Accenture Shares': 'accessible',
-  'House Net Worth': 'excluded',
-  'Investment Contributions': 'excluded',
-  'Business Stock': 'excluded',
-  'HSBC Credit Card': 'excluded',
-};
+export const ACCOUNT_BUCKETS: Record<string, 'chrisPension' | 'abbyPension' | 'accessible' | 'excluded'> =
+  A.accounts.bucketMap;
 
 // ---------------------------------------------------------------------------
-// Spending
+// Spending and income
 // ---------------------------------------------------------------------------
 export const SPEND = {
-  planLine: 69_500, // run-rate the plan holds to 2035
-  retirementTarget: 60_000,
+  planLine: A.spend.planLine as number,
+  retirementTarget: A.spend.retirementTarget as number,
   /** Categories excluded from the run-rate (one-offs, business, reimbursed). */
-  excludedCategories: ['Home improvement', 'Extension', 'Lego Out', 'Work Travel'] as readonly string[],
-  nineYearSavingsDrawBudget: 8_000, // at £25k HB target
+  excludedCategories: A.spend.excludedCategories as readonly string[],
+  nineYearSavingsDrawBudget: A.spend.nineYearSavingsDrawBudget as number,
 } as const;
 
 export const INCOME = {
-  hbPreRetirement: 25_000, // take-home target to Jun 2035
-  hbPostRetirement: 13_000, // to Nov 2040 (Chris pension access), then 0
-  abbyTakeHomeYear1: 43_500, // at £60k ANI target, incl. bonus
+  hbPreRetirement: A.income.hbPreRetirement as number,
+  hbPostRetirement: A.income.hbPostRetirement as number,
 } as const;
 
 // ---------------------------------------------------------------------------
-// Key dates
+// Key dates, state pension, drawdown
 // ---------------------------------------------------------------------------
 export const DATES = {
-  planRetirementYear: 2035, // June 2035
-  chrisPensionAccessYear: 2040, // Nov 2040 (age 57)
-  abbyPensionAccessYear: 2043, // Aug 2043 (age 57)
-  chrisStatePensionYear: 2051, // Nov 2051 (68) — first full tax year 2052
-  abbyStatePensionYear: 2054, // Aug 2054 (68) — first full tax year 2055
-  simulationEndYear: 2075, // Chris 92
+  planRetirementYear: A.dates.planRetirementYear as number,
+  chrisPensionAccessYear: A.dates.chrisPensionAccessYear as number,
+  abbyPensionAccessYear: A.dates.abbyPensionAccessYear as number,
+  chrisStatePensionYear: A.dates.chrisStatePensionYear as number,
+  abbyStatePensionYear: A.dates.abbyStatePensionYear as number,
+  simulationEndYear: A.dates.simulationEndYear as number,
 } as const;
 
 export const STATE_PENSION = {
-  annualEach: 12_548, // 2026/27 full nSP, real
+  annualEach: A.statePension.annualEach as number,
 } as const;
 
 export const DRAWDOWN = {
-  tfcCapEach: 268_275, // tax-free cash (LSA), frozen real
-  ufplsTaxableFraction: 0.75,
+  tfcCapEach: A.drawdown.tfcCapEach as number,
+  ufplsTaxableFraction: A.drawdown.ufplsTaxableFraction as number,
+} as const;
+
+export const RETURNS = {
+  realEquityPlanning: A.returns.realEquity.planning as number,
+  realEquityBetter: A.returns.realEquity.better as number,
+  cashReal: A.returns.cashReal as number,
 } as const;
 
 // ---------------------------------------------------------------------------
-// Gilt ladder
+// Gilt ladder — sized by budget (Plan E), never by a £/yr target
 // ---------------------------------------------------------------------------
 export const LADDER = {
-  firstYear: 2035,
-  lastYear: 2045,
-  /**
-   * Plan E (3 Sep 2026, decision 20 Sep 2026): the ladder is sized by the money
-   * committed to it, not by a per-year target. Each rung's REDEMPTION is whatever
-   * the budget buys at live prices (~£98k real at Sep 2026 yields); coupons
-   * (~£7k/yr falling to ~£3k) arrive on top and are the top-up, not part of the
-   * rung. Never size at a fixed £/yr — the June £60k default produced order
-   * sheets for the wrong ladder.
-   */
-  budgetReal: 909_400, // Chris II ISA 276.7k + Abby II ISA 242.8k + Chris II SIPP 389.9k
-  isaBudgetReal: 519_500, // rungs 2035–40 (must be ISA money: reachable before Nov 2040)
-  sippBudgetReal: 389_900, // rungs 2041–45, mature inside the SIPP
+  firstYear: A.ladder.firstYear as number,
+  lastYear: A.ladder.lastYear as number,
+  budgetReal: A.ladder.budgetReal as number,
+  isaBudgetReal: A.ladder.isaBudgetReal as number,
+  sippBudgetReal: A.ladder.sippBudgetReal as number,
 } as const;
 
 export interface GiltPrice {
@@ -159,26 +167,14 @@ export interface GiltPrice {
 }
 
 /**
- * Static fallback prices captured 2026-07-29 (dividenddata.co.uk).
+ * Static fallback prices (plan/observations/gilt-prices/2026-07-29.json).
  * Used only when live fetch fails with no cache (criterion E1).
  */
-export const FALLBACK_GILT_PRICES: GiltPrice[] = [
-  { epic: 'T33', name: '0 3/4% Index-linked Treasury Gilt 2033', coupon: '0.75%', maturity: '22-Nov-2033', matYear: 2033, clean: 94.86, dirty: 105.966, realYield: 1.494 },
-  { epic: 'TRTQ', name: '0 3/4% Index-linked Treasury Gilt 2034', coupon: '0.75%', maturity: '22-Mar-2034', matYear: 2034, clean: 93.81, dirty: 168.198, realYield: 1.613 },
-  { epic: 'TR35', name: '1 1/8% Index-linked Treasury Gilt 2035', coupon: '1.125%', maturity: '22-Sep-2035', matYear: 2035, clean: 94.52, dirty: 100.83, realYield: 1.77 },
-  { epic: 'TG36', name: '0 1/8% Index-linked Treasury Gilt 2036', coupon: '0.125%', maturity: '22-Nov-2036', matYear: 2036, clean: 83.49, dirty: 133.33, realYield: 1.9 },
-  { epic: 'TR37', name: '1 1/8% Index-linked Treasury Gilt 2037', coupon: '1.125%', maturity: '22-Nov-2037', matYear: 2037, clean: 91.17, dirty: 187.62, realYield: 2.0 },
-  { epic: 'T38', name: '1 3/4% Index-linked Treasury Gilt 2038', coupon: '1.75%', maturity: '22-Sep-2038', matYear: 2038, clean: 96.47, dirty: 101.39, realYield: 2.08 },
-  { epic: 'TG39', name: '0 1/8% Index-linked Treasury Gilt 2039', coupon: '0.125%', maturity: '22-Mar-2039', matYear: 2039, clean: 77.4, dirty: 108.36, realYield: 2.18 },
-  { epic: 'TR40', name: '0 5/8% Index-linked Treasury Gilt 2040', coupon: '0.625%', maturity: '22-Mar-2040', matYear: 2040, clean: 81.15, dirty: 156.06, realYield: 2.23 },
-  { epic: 'T41', name: '0 1/8% Index-linked Treasury Gilt 2041', coupon: '0.125%', maturity: '10-Aug-2041', matYear: 2041, clean: 72.8, dirty: 108.02, realYield: 2.27 },
-  { epic: 'T42A', name: '0 5/8% Index-linked Treasury Gilt 2042', coupon: '0.625%', maturity: '22-Nov-2042', matYear: 2042, clean: 76.9, dirty: 150.49, realYield: 2.34 },
-  { epic: 'T44', name: '0 1/8% Index-linked Treasury Gilt 2044', coupon: '0.125%', maturity: '22-Mar-2044', matYear: 2044, clean: 65.62, dirty: 114.83, realYield: 2.44 },
-  { epic: 'TR45', name: '0 5/8% Index-linked Treasury Gilt 2045', coupon: '0.625%', maturity: '22-Mar-2045', matYear: 2045, clean: 72.76, dirty: 83.24, realYield: 2.46 },
-];
+export const FALLBACK_GILT_PRICES: GiltPrice[] = fallbackPrices.gilts;
+export const FALLBACK_GILT_PRICES_AS_OF: string = fallbackPrices.asOf;
 
 // ---------------------------------------------------------------------------
-// Chart palette (matches the July plan document)
+// Chart palette (matches the July plan document) — presentation, not a planning number
 // ---------------------------------------------------------------------------
 export const PALETTE = {
   navy: '#14467d',

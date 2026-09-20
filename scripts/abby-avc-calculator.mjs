@@ -10,9 +10,16 @@
 // payslip "Taxable pay" already includes it) + any non-payroll income
 // (savings interest / dividends in her name) − further sacrifice.
 
+// Phase 1 (20 Sep 2026): the target, relief rate and existing sacrifice come from
+// plan/assumptions.json so this tool and the /plan cockpit cannot disagree. The
+// payslip YTD figures below stay here until phase 3 moves them to
+// plan/observations/payslips/. This tool folds into plan/tools/avc.mjs in phase 2.
+import { readAssumptionsFile } from '../plan/inputs/assumptions.mjs';
+const A = (await readAssumptionsFile()).values;
+
 const CONFIG = {
   taxYear: '2026/27',
-  targetANI: 59_500,            // operate £500 under the £60,000 cliff
+  targetANI: A.hicbc.operatingTarget, // operate £500 under the £60,000 cliff (hicbc.operatingTarget)
   // --- from the latest payslip (Aug 2026, Tax Month 05) ---
   ytdTaxable: 33_621.44,        // "Taxable Pay" YTD — after sacrifice, incl. BIK
   monthlyBasic: 6_153.15,       // current basic (rise landed since April)
@@ -26,8 +33,8 @@ const CONFIG = {
   extraAvcAlreadyTaken: 0,      // £ of AVC sacrificed so far this year
   // --- mechanics ---
   avcPctIsInteger: true,
-  netCostRate: 0.58,            // £ take-home lost per £1 sacrificed (40% tax + 2% NI)
-  existingSacrificePct: 0.045,
+  netCostRate: 1 - A.tax.reliefAbove, // £ take-home lost per £1 sacrificed (1 − 42%: 40% tax + 2% NI)
+  existingSacrificePct: A.payslip.existingEeRate,
   nmwAnnualFloor: 26_510,       // 40h × £12.71 (NMW 21+, Apr 2026) × 52.14 — re-index every April; was 25,500 (2025/26 rate)
 };
 

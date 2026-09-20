@@ -49,3 +49,18 @@ drawdown model, plus reconciliation of the spend and income lines to the tracker
 - The spend/reserve scenario runs earlier on 20 Sep (£60/70/80k × reserve intact/spent) were made before this fix;
   they understate Abby's DC by ~£45k at 2035 and will be re-run as part of the queued scenario modelling.
 - Architecture plan for the drift-proof rebuild: `Docs/plan-single-source-of-truth-2026-09-20.md`.
+
+## Phase 1 complete, 20 Sep 2026 (single home for planning numbers)
+
+- `plan/assumptions.json` created: 70 entries, each FACT / CHECK / GUESS / DECISION with source, as-of and
+  review-by dates, or DERIVED with a formula the loader recomputes (a hand-typed value is rejected).
+  `spend.planLine` is recorded as the 20 Sep DECISION (£70,000; history keeps the June £69,500).
+- Pots are now the 1 Sep 2026 per-account snapshots; the June `POTS_BASELINE` (chrisPension 624,954 /
+  abbyPension 272,948 / nonPension 709,000, whose own comment summed to 690.5k) is retired. Consequence in
+  the cockpit outlook at 2% real: pots at 2035 £2.29M (Chris £756k, Abby £705k), surplus at 92 £2.21M.
+- `lib/plan/constants.ts` is a shim over the JSON; `scripts/ifa-e-yearly.mjs` and
+  `scripts/abby-avc-calculator.mjs` read it too. `npm run plan:check` validates, reports freshness and
+  cross-checks the ledger's AVC schedule and budgets against `lib/plan/pivot.ts`. Tests: 54 green,
+  including a no-literal lint over `lib/plan` and `components/plan` (JSX prose £-figures allowed until phase 6).
+- Ledger planning case from the JSON (2% real): 2035 £2.28M, 2045 £2.20M, 2075 £2.21M — unchanged from the
+  20 Sep revision within rounding (budgets are now exact sums: ISA £519,516, SIPP £389,874).
