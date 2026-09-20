@@ -134,7 +134,17 @@ export const DRAWDOWN = {
 export const LADDER = {
   firstYear: 2035,
   lastYear: 2045,
-  targetPerYearReal: 60_000,
+  /**
+   * Plan E (3 Sep 2026, decision 20 Sep 2026): the ladder is sized by the money
+   * committed to it, not by a per-year target. Each rung's REDEMPTION is whatever
+   * the budget buys at live prices (~£98k real at Sep 2026 yields); coupons
+   * (~£7k/yr falling to ~£3k) arrive on top and are the top-up, not part of the
+   * rung. Never size at a fixed £/yr — the June £60k default produced order
+   * sheets for the wrong ladder.
+   */
+  budgetReal: 909_400, // Chris II ISA 276.7k + Abby II ISA 242.8k + Chris II SIPP 389.9k
+  isaBudgetReal: 519_500, // rungs 2035–40 (must be ISA money: reachable before Nov 2040)
+  sippBudgetReal: 389_900, // rungs 2041–45, mature inside the SIPP
 } as const;
 
 export interface GiltPrice {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { buildLadder } from '@/lib/plan/ladder';
+import { buildLadder, sizeByBudget } from '@/lib/plan/ladder';
 import { parseGiltTable } from '@/lib/plan/gilt-parser';
-import { FALLBACK_GILT_PRICES } from '@/lib/plan/constants';
+import { FALLBACK_GILT_PRICES, LADDER } from '@/lib/plan/constants';
 
 describe('ladder sizing (criterion F6)', () => {
   const plan = buildLadder(FALLBACK_GILT_PRICES);
@@ -11,17 +11,34 @@ describe('ladder sizing (criterion F6)', () => {
     for (let y = 2035; y <= 2045; y++) expect(years.has(y)).toBe(true);
   });
 
-  it('TR40 anchor: face £31,204 ±1%, cost £48,696 ±1%', () => {
-    const tr40 = plan.byGilt.find((g) => g.epic === 'TR40')!;
+  it('default sizing is by the £909.4k budget: total cost = budget ±0.5%, redemption £90–110k/yr', () => {
+    expect(Math.abs(plan.totals.estCost - LADDER.budgetReal) / LADDER.budgetReal).toBeLessThan(0.005);
+    const perYear = sizeByBudget(FALLBACK_GILT_PRICES, LADDER.budgetReal);
+    expect(perYear).toBeGreaterThan(90_000);
+    expect(perYear).toBeLessThan(110_000);
+    for (const a of plan.allocations.filter((x) => x.note === '')) expect(a.realAmount).toBeCloseTo(perYear, 0);
+  });
+
+  it('cost per £1 real redemption is clean/100 (coupon-inclusive); the old fixed £60k/yr ladder still anchors on TR40', () => {
+    const sixty = buildLadder(FALLBACK_GILT_PRICES, { amountPerYear: 60_000 });
+    const tr40 = sixty.byGilt.find((g) => g.epic === 'TR40')!;
     expect(Math.abs(tr40.face - 31_204) / 31_204).toBeLessThan(0.01);
     expect(Math.abs(tr40.estCost - 48_696) / 48_696).toBeLessThan(0.01);
+    expect(sixty.totals.estCost).toBeLessThan(0.7 * LADDER.budgetReal);
+  });
+
+  it('ISA bridge (2035–40) sized on its own £519.5k budget lands within 10% of the whole-ladder redemption', () => {
+    const isa = sizeByBudget(FALLBACK_GILT_PRICES, LADDER.isaBudgetReal, { firstYear: 2035, lastYear: 2040 });
+    const all = sizeByBudget(FALLBACK_GILT_PRICES, LADDER.budgetReal);
+    expect(Math.abs(isa - all) / all).toBeLessThan(0.1);
   });
 
   it('2043 splits 50/50 across the 2042 and 2044 gilts', () => {
     const split = plan.allocations.filter((a) => a.targetYear === 2043);
     expect(split).toHaveLength(2);
     expect(split.map((a) => a.epic).sort()).toEqual(['T42A', 'T44']);
-    for (const a of split) expect(a.realAmount).toBe(30_000);
+    const perYear = sizeByBudget(FALLBACK_GILT_PRICES, LADDER.budgetReal);
+    for (const a of split) expect(a.realAmount).toBeCloseTo(perYear / 2, 0);
   });
 
   it('per-gilt cost = face/100 × dirty; totals are sums', () => {

@@ -1,7 +1,8 @@
 /**
  * Gilt ladder sizing. Ports scripts/gilt-ladder.mjs (do not rewrite there
  * without mirroring here). Sizing counts redemption only — coupons along the
- * way are deliberate surplus.
+ * way are the top-up, not part of the rung. Default sizing is BY BUDGET
+ * (LADDER.budgetReal): redemption per year = what the money buys at live prices.
  */
 
 import { LADDER, type GiltPrice } from './constants';
@@ -72,13 +73,41 @@ function allocate(prices: GiltPrice[], year: number, amount: number): RungAlloca
   return [make(nearest, amount, `no ${year} linker — nearest is ${nearest.matYear}`)];
 }
 
+/**
+ * Real cost of £1 of real redemption for a target year, given the gilt(s) that
+ * cover it. For a linker, cost = face/100 × dirty and face = real/indexRatio,
+ * so cost per £1 real = dirty/(100 × indexRatio) = clean/100 — the coupon
+ * stream is what makes clean differ from the zero-coupon price.
+ */
+function costPerRealPound(prices: GiltPrice[], year: number): number {
+  return allocate(prices, year, 1).reduce((s, a) => s + a.estCost, 0);
+}
+
+/**
+ * Redemption per year that a real budget buys across the target years —
+ * the Plan E sizing rule. Returns 0 when no gilt can be allocated.
+ */
+export function sizeByBudget(
+  prices: GiltPrice[],
+  budgetReal: number,
+  opts: { firstYear?: number; lastYear?: number } = {}
+): number {
+  const firstYear = opts.firstYear ?? LADDER.firstYear;
+  const lastYear = opts.lastYear ?? LADDER.lastYear;
+  let costPerPoundAllYears = 0;
+  for (let y = firstYear; y <= lastYear; y++) costPerPoundAllYears += costPerRealPound(prices, y);
+  return costPerPoundAllYears > 0 ? budgetReal / costPerPoundAllYears : 0;
+}
+
 export function buildLadder(
   prices: GiltPrice[],
-  opts: { firstYear?: number; lastYear?: number; amountPerYear?: number } = {}
+  opts: { firstYear?: number; lastYear?: number; amountPerYear?: number; budgetReal?: number } = {}
 ): LadderPlan {
   const firstYear = opts.firstYear ?? LADDER.firstYear;
   const lastYear = opts.lastYear ?? LADDER.lastYear;
-  const amount = opts.amountPerYear ?? LADDER.targetPerYearReal;
+  // Default: size by the committed budget (Plan E), never a fixed £/yr.
+  const amount =
+    opts.amountPerYear ?? sizeByBudget(prices, opts.budgetReal ?? LADDER.budgetReal, { firstYear, lastYear });
 
   const allocations: RungAllocation[] = [];
   for (let y = firstYear; y <= lastYear; y++) {
