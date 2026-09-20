@@ -12,8 +12,10 @@ import {
   DRAWDOWN,
   INCOME,
   SPEND,
+  PAYSLIP,
+  CHILD_BENEFIT,
 } from './constants';
-import { pivotYear } from './pivot';
+import { pivotYear, takeHomeNominal } from './pivot';
 
 export interface OutlookOptions {
   retireYear: number; // June of this year, 2031–2035
@@ -45,9 +47,11 @@ function annuity(n: number, g: number): number {
 /** Real pre-retirement cash surplus(+)/deficit(−) for working-year index i (0 = 2026/27), at £25k HB. */
 function workingYearCashDelta(i: number, aniTarget: number): number {
   const y = pivotYear(i, aniTarget);
-  const extraReal = y.extraSacrifice / Math.pow(1.02, i); // deflate nominal to today's £
-  const takeHomeReal = 53_988 - 0.58 * extraReal; // £43.5k at £18.1k sacrifice
-  const income = takeHomeReal + 2_337 + INCOME.hbPreRetirement;
+  // Net pay after the year's sacrifice, derived from PAYSLIP via PAYE maths
+  // (was a hard-coded 53_988 - 0.58 x extra from the April 2026 payslip),
+  // deflated to today's money at the assumed 2% pay growth.
+  const takeHomeReal = takeHomeNominal(i, y.extraSacrifice) / Math.pow(1 + PAYSLIP.payGrowth, i);
+  const income = takeHomeReal + CHILD_BENEFIT.annual2026 + INCOME.hbPreRetirement;
   return income - SPEND.planLine;
 }
 
@@ -70,8 +74,11 @@ export function potsAtExit(opts: OutlookOptions): PotsAtExit {
   for (let i = 0; i < n; i++) {
     const growTo = Math.pow(1 + r, n - 0.5 - i); // mid-year contributions
     const y = pivotYear(i, opts.aniTarget);
-    const extraReal = y.extraSacrifice / Math.pow(1.02, i);
-    abbyPension += (10_834 + extraReal) * growTo;
+    const extraReal = y.extraSacrifice / Math.pow(1 + PAYSLIP.payGrowth, i);
+    // Existing employer 11% + employee 4.5% on basic (real-constant at 2% growth),
+    // derived from PAYSLIP rather than the old hard-coded 10_834 (April basis).
+    const existingReal = PAYSLIP.basicAnnual * (PAYSLIP.employerRate + PAYSLIP.existingEeRate);
+    abbyPension += (existingReal + extraReal) * growTo;
     nonPension += workingYearCashDelta(i, opts.aniTarget) * growTo;
   }
   return { chrisPension, abbyPension, nonPension, total: chrisPension + abbyPension + nonPension };

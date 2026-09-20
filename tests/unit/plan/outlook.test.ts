@@ -4,11 +4,12 @@ import { potsAtExit, sustainableSpend, drawdownSim, DEFAULT_OUTLOOK } from '@/li
 describe('outlook models (criteria F10, F11, E3)', () => {
   const base = DEFAULT_OUTLOOK;
 
-  it('pots at 2035 baseline: Chris ~£747k, Abby ~£648k, total £2.2M ±3%', () => {
+  it('pots at 2035 baseline: Chris ~£747k, Abby ~£693k (Aug-2026 payslip), total £2.27M ±3%', () => {
+    // Abby was £648k on the April payslip; +5.6% basic adds ~£4.4k/yr of sacrifice + £0.6k of existing contributions
     const p = potsAtExit(base);
     expect(Math.abs(p.chrisPension - 747_000) / 747_000).toBeLessThan(0.01);
-    expect(Math.abs(p.abbyPension - 648_000) / 648_000).toBeLessThan(0.01);
-    expect(Math.abs(p.total - 2_220_000) / 2_220_000).toBeLessThan(0.03);
+    expect(Math.abs(p.abbyPension - 693_000) / 693_000).toBeLessThan(0.01);
+    expect(Math.abs(p.total - 2_270_000) / 2_270_000).toBeLessThan(0.03);
   });
 
   it('sustainable spend at 2035 baseline is £95–100k', () => {
@@ -17,14 +18,14 @@ describe('outlook models (criteria F10, F11, E3)', () => {
     expect(s).toBeLessThan(100_000);
   });
 
-  it('surplus at 92, baseline = £2.0M ±5%', () => {
+  it('surplus at 92, baseline = £2.17M ±5% (was £2.0M on the April payslip)', () => {
     const r = drawdownSim(base);
-    expect(Math.abs(r.surplusAt92 - 2_000_000) / 2_000_000).toBeLessThan(0.05);
+    expect(Math.abs(r.surplusAt92 - 2_170_000) / 2_170_000).toBeLessThan(0.05);
   });
 
-  it('retire 2032: surplus ≈ £1.1M ±10% (sim compounds forgone wealth — supersedes doc chart)', () => {
+  it('retire 2032: surplus ≈ £1.18M ±10% (sim compounds forgone wealth — supersedes doc chart)', () => {
     const r = drawdownSim({ ...base, retireYear: 2032 });
-    expect(Math.abs(r.surplusAt92 - 1_100_000) / 1_100_000).toBeLessThan(0.1);
+    expect(Math.abs(r.surplusAt92 - 1_180_000) / 1_180_000).toBeLessThan(0.1);
   });
 
   it('retire 2032: sustainable spend ≈ £80k ±3%', () => {

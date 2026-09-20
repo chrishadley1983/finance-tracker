@@ -8,10 +8,11 @@
  */
 
 // ---------------------------------------------------------------------------
-// Abby's payslip (April 2026) and pivot mechanics
+// Abby's payslip (rebased to August 2026) and pivot mechanics
 // ---------------------------------------------------------------------------
 export const PAYSLIP = {
-  basicAnnual: 69_900, // £5,825/mo
+  asOf: '2026-08', // payslip the basic is taken from (was Apr 2026: £69,900)
+  basicAnnual: 73_837.8, // £6,153.15/mo — rise landed since April (+5.6%)
   carAllowance: 6_500, // £541.67/mo, not pensionable, assumed flat
   medicalBik: 1_330, // £110.83/mo, taxed via payroll, assumed flat
   bonusRate: 0.05, // of basic; assumed sacrificeable
@@ -26,6 +27,14 @@ export const TAX = {
   reliefBelow: 0.28, // 20% tax + 8% NI
   personalAllowance: 12_570,
   basicRate: 0.2,
+  // PAYE detail used to derive take-home from the payslip (2026/27, frozen to 2031)
+  higherRate: 0.4,
+  basicRateBand: 37_700, // taxable income above the allowance charged at 20%
+  payeAllowance: 11_179, // Abby's code 1117L (medical coded out as well as payrolled)
+  niMainRate: 0.08, // employee NI between PT and UEL
+  niUpperRate: 0.02, // above UEL
+  niPrimaryThreshold: 12_570,
+  niUpperEarningsLimit: 50_270,
 } as const;
 
 export const HICBC = {

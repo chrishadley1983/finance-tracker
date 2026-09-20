@@ -55,6 +55,29 @@ function reliefOnSacrifice(aniBefore: number, extraSacrifice: number): number {
   return above * TAX.reliefAbove + below * TAX.reliefBelow;
 }
 
+/**
+ * Abby's annual net pay for a given cash pay (after all sacrifice) and taxable
+ * pay (cash + payrolled BIK). PAYE at her tax code, employee NI on cash pay
+ * only. Reconciles the Apr and Aug 2026 payslips to within 40p.
+ */
+export function netPay(cashPay: number, taxablePay: number): number {
+  const taxable = Math.max(0, taxablePay - TAX.payeAllowance);
+  const tax =
+    TAX.basicRate * Math.min(taxable, TAX.basicRateBand) +
+    TAX.higherRate * Math.max(0, taxable - TAX.basicRateBand);
+  const ni =
+    TAX.niMainRate * Math.max(0, Math.min(cashPay, TAX.niUpperEarningsLimit) - TAX.niPrimaryThreshold) +
+    TAX.niUpperRate * Math.max(0, cashPay - TAX.niUpperEarningsLimit);
+  return cashPay - tax - ni;
+}
+
+/** Nominal net pay in a programme year at a given extra sacrifice (bonus included). */
+export function takeHomeNominal(yearIndex: number, extraSacrifice: number): number {
+  const basic = PAYSLIP.basicAnnual * Math.pow(1 + PAYSLIP.payGrowth, yearIndex);
+  const cash = basic * (1 - PAYSLIP.existingEeRate) + basic * PAYSLIP.bonusRate + PAYSLIP.carAllowance - extraSacrifice;
+  return netPay(cash, cash + PAYSLIP.medicalBik);
+}
+
 export function pivotYear(yearIndex: number, targetAni: number): PivotYear {
   const growth = Math.pow(1 + PAYSLIP.payGrowth, yearIndex);
   const basic = PAYSLIP.basicAnnual * growth;
