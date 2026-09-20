@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Our Financial Plan, and one proposed change</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: #1a2332; font-size: 10.5pt; line-height: 1.55; margin: 0; }
+  h1 { font-size: 21pt; margin: 0 0 2px; color: #0f2a4a; font-weight: normal; }
+  h2 { font-size: 14pt; color: #0f2a4a; margin: 26px 0 8px; page-break-after: avoid; font-weight: normal; border-bottom: 1px solid #cfd8e3; padding-bottom: 4px; }
+  .part { font-family: Helvetica, Arial, sans-serif; font-size: 9.5pt; letter-spacing: 2px; color: #8a97a8; text-transform: uppercase; margin: 30px 0 -16px; page-break-after: avoid; }
+  p { margin: 7px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+  th { background: #eef4fb; color: #0f2a4a; text-align: left; padding: 5px 8px; font-family: Helvetica, Arial, sans-serif; font-size: 8.5pt; border-bottom: 1.5px solid #b9cce4; }
+  td { border-bottom: 1px solid #e6ebf2; padding: 4.5px 8px; vertical-align: top; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .banner { border-left: 5px solid #0f2a4a; background: #f7f9fc; padding: 16px 22px; margin-bottom: 20px; }
+  .banner .sub { color: #5a6b80; font-size: 9.5pt; margin-top: 6px; }
+  .callout { background: #f2f7fc; border-radius: 6px; padding: 9px 14px; margin: 10px 0; page-break-inside: avoid; }
+  .warn { background: #fdf6ec; border-radius: 6px; padding: 9px 14px; margin: 10px 0; page-break-inside: avoid; }
+  .small { font-size: 8.5pt; color: #5a6b80; }
+  .pagebreak { page-break-before: always; }
+  ul, ol { margin: 6px 0 6px 22px; padding: 0; }
+  li { margin: 3.5px 0; }
+  .fig { page-break-inside: avoid; margin: 12px 0; }
+  .fig .cap { font-size: 8.5pt; color: #5a6b80; margin-top: 3px; }
+  .fig svg text { font-family: Helvetica, Arial, sans-serif; }
+  .tiles { display: flex; gap: 10px; margin: 12px 0; page-break-inside: avoid; }
+  .tile { flex: 1; background: #f7f9fc; border-radius: 6px; padding: 9px 10px; text-align: center; }
+  .tile .big { font-family: Helvetica, Arial, sans-serif; font-size: 12.5pt; font-weight: bold; color: #0f2a4a; font-variant-numeric: tabular-nums; }
+  .tile .lab { font-size: 8pt; color: #5a6b80; font-family: Helvetica, Arial, sans-serif; margin-top: 2px; }
+  .cards { display: flex; gap: 14px; margin: 10px 0; page-break-inside: avoid; }
+  .card { flex: 1; border: 1px solid #dfe6ee; border-radius: 8px; overflow: hidden; }
+  .card .hd { background: #f7f9fc; font-family: Helvetica, Arial, sans-serif; font-size: 8.5pt; font-weight: bold; color: #0f2a4a; padding: 6px 10px; border-bottom: 1px solid #e6ebf2; }
+  .card .row { display: flex; justify-content: space-between; padding: 3.5px 10px; font-size: 9pt; border-bottom: 1px solid #f2f5f9; }
+  .card .row.dim { color: #9aa6b5; }
+  .card .row.hl-amber { background: #fdf6ec; font-weight: bold; }
+  .card .row.hl-navy { background: #f2f7fc; font-weight: bold; }
+  .card .row.hl-green { background: #eff8f2; font-weight: bold; }
+  .card .row .v { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <h1>Our Financial Plan, and one proposed change</h1>
+  <div class="sub">Part One: the plan we set in June 2026, in brief. Part Two: a proposed addition — not yet decided; undoing it later means setting one payroll field back to zero.<br>
+  Prepared 27 July 2026, corrected 30 July (early-exit chart, drawdown tax) with Claude, from Abby's April payslip and our account data. Not regulated financial advice.</div>
+</div>
+
+<!-- ================================================================ -->
+<div class="part">Part One — The Plan (June 2026)</div>
+<h2>Where we are</h2>
+
+<table>
+<tr><th>Pot</th><th class="num">Value (Jun 2026)</th><th>Access</th></tr>
+<tr><td>Chris SIPP + old Accenture pension</td><td class="num">£624,954</td><td>Nov 2040 (57)</td></tr>
+<tr><td>Abby Accenture pension (+£10.8k/yr via payroll)</td><td class="num">£272,948</td><td>Aug 2043 (57)</td></tr>
+<tr><td>ISAs (half II, half Vanguard)</td><td class="num">£581,541</td><td>Anytime</td></tr>
+<tr><td>Crypto + cash/NS&amp;I</td><td class="num">~£109,000</td><td>Anytime</td></tr>
+<tr><td><b>Total</b> (house £697k excluded)</td><td class="num"><b>~£1.59M</b></td><td></td></tr>
+</table>
+
+<p>Income ~£94k/yr (Abby's salary, HB at a £25k target, her payroll pension — we no longer count the annual Cottrell payment). Spending runs at £69.5k/yr — about £51k of life plus £18.5k of holidays — against a £60k retirement target. We save ~£22k/yr.</p>
+
+<h2 class="pagebreak">The plan in three moves</h2>
+<ol>
+<li><b>Buy the retirement directly.</b> A ladder of index-linked gilts, one maturing each year 2035–2045, pays us £60k (in today's money) every year no matter what markets do. Cost: <b>~£498k</b>. Full explanation on the next page.</li>
+<li><b>Let the rest grow.</b> ~£1M stays in global equities. Its only required job is the years after the ladder ends, net of two state pensions — a very low bar.</li>
+<li><b>Ratchet.</b> Once a year, if the equity pot has grown well past what the plan still needs from it (~25% ahead of target), sell the excess and buy more certainty: top up the cash buffer, then the spare 2041 rung, then rungs for earlier years if we fancy retiring sooner. It only works one way — we never sell gilts to buy shares after a crash.</li>
+</ol>
+
+<div class="fig">
+<svg width="680" height="120" viewBox="0 0 680 120">
+  <text x="10" y="16" font-size="9" font-weight="bold" fill="#0f2a4a">WHAT THE MONEY DOES (≈ £1.59M)</text>
+  <rect x="10" y="28" width="209" height="36" fill="#14467d" rx="3"/>
+  <text x="114" y="45" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">Gilt ladder ~£498k</text>
+  <text x="114" y="57" font-size="7.5" fill="#b9cce4" text-anchor="middle">pays £60k/yr, 2035–2045, guaranteed</text>
+  <rect x="221" y="28" width="420" height="36" fill="#3a6ea5" rx="3"/>
+  <text x="431" y="45" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">Growth ~£1.0M — global equities</text>
+  <text x="431" y="57" font-size="7.5" fill="#dbe6f2" text-anchor="middle">funds the 2050s onward; upside</text>
+  <rect x="643" y="28" width="30" height="36" fill="#8a97a8" rx="3"/>
+  <text x="658" y="49" font-size="7" font-weight="bold" fill="#fff" text-anchor="middle">cash</text>
+  <text x="10" y="90" font-size="8" fill="#5a6b80">Cash = 12 months' spending. With the ladder in place, a bad market decade changes the size of our surplus, not whether we eat.</text>
+</svg>
+</div>
+
+<h2 class="pagebreak">The gilt ladder, in one page</h2>
+
+<p>An index-linked gilt is a loan to the UK government that repays with inflation added: buy one maturing in 2037 and, come 2037, back comes the money in 2037 purchasing power, plus interest along the way. The ladder is eleven of them, one maturing each year from 2035 to 2045, each sized to hand us £60k in today's money in its year.</p>
+
+<p>Holding to maturity is the whole trick. Gilt <i>prices</i> wobble daily, but a rung held to the end pays exactly what it promised, with HM Government on the other side. This is the retirement bought outright, rather than a bet that markets deliver it. And the window to build it is open now: after-inflation yields at these maturities are 1.6–2.3% — five years ago they were negative and this ladder couldn't be built at any sensible price.</p>
+
+<div class="fig">
+<svg width="680" height="210" viewBox="0 0 680 210">
+  <text x="340" y="16" font-size="9" font-weight="bold" fill="#0f2a4a" text-anchor="middle">ELEVEN RUNGS — each pays £60,000 (today's money) in its year</text>
+  <line x1="55" y1="135" x2="655" y2="135" stroke="#8a97a8" stroke-width="1"/>
+  <rect x="60" y="45" width="44" height="90" fill="#8a97a8" rx="2"/><text x="82" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2035</text><text x="82" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£52k</text>
+  <rect x="114" y="45" width="44" height="90" fill="#8a97a8" rx="2"/><text x="136" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2036</text><text x="136" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£51k</text>
+  <rect x="168" y="45" width="44" height="90" fill="#8a97a8" rx="2"/><text x="190" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2037</text><text x="190" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£49k</text>
+  <rect x="222" y="45" width="44" height="90" fill="#8a97a8" rx="2"/><text x="244" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2038</text><text x="244" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£48k</text>
+  <rect x="276" y="45" width="44" height="90" fill="#8a97a8" rx="2"/><text x="298" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2039</text><text x="298" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£46k</text>
+  <rect x="330" y="45" width="44" height="90" fill="#8a97a8" rx="2"/><text x="352" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2040</text><text x="352" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£45k</text>
+  <rect x="384" y="45" width="44" height="90" fill="#14467d" rx="2"/><text x="406" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2041</text><text x="406" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£44k</text>
+  <rect x="438" y="45" width="44" height="90" fill="#14467d" rx="2"/><text x="460" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2042</text><text x="460" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£43k</text>
+  <rect x="492" y="45" width="44" height="90" fill="#14467d" rx="2"/><text x="514" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2043</text><text x="514" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£41k</text>
+  <rect x="546" y="45" width="44" height="90" fill="#14467d" rx="2"/><text x="568" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2044</text><text x="568" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£40k</text>
+  <rect x="600" y="45" width="44" height="90" fill="#14467d" rx="2"/><text x="622" y="38" font-size="7.5" fill="#5a6b80" text-anchor="middle">2045</text><text x="622" y="148" font-size="7" fill="#5a6b80" text-anchor="middle">£39k</text>
+  <line x1="62" y1="156" x2="372" y2="156" stroke="#8a97a8" stroke-width="1.5"/>
+  <text x="217" y="169" font-size="8" font-weight="bold" fill="#5a6b80" text-anchor="middle">held in the ISA — these years arrive before pensions unlock</text>
+  <line x1="386" y1="156" x2="642" y2="156" stroke="#14467d" stroke-width="1.5"/>
+  <text x="514" y="169" font-size="8" font-weight="bold" fill="#14467d" text-anchor="middle">held in Chris's SIPP — opens Nov 2040, just in time</text>
+  <text x="340" y="187" font-size="8" fill="#5a6b80" text-anchor="middle">Cost under each rung: what £60k of that year costs today — the far rungs are cheaper because the interest compounds longer. Total ~£498k.</text>
+  <text x="340" y="201" font-size="8" fill="#5a6b80" text-anchor="middle">Same ladder, two wrappers — so charts later in this document show "Chris pension" funding 2041–45. That's the ladder, in its second home.</text>
+</svg>
+</div>
+
+<p>Why that wrapper split, and not more in the ISA? Because ISA money is the <i>only</i> money that can fund 2035–40 — both pensions are locked until Chris turns 57 in Nov 2040. So the scarce ISA space goes only where nothing else works, and the moment the SIPP opens, its rungs take over. That's the more tax-efficient order, not less: the SIPP rungs were bought with pre-tax pounds (40% relief on the way in) and come out against our personal allowances at almost no tax.</p>
+
+<p>What can go wrong: the government not paying (remoter than the bank failing); needing to sell a rung early, which happens at that day's price rather than the promised one — fine, just not guaranteed. Inflation is handled by construction. That's the list.</p>
+
+<h2 class="pagebreak">The timeline</h2>
+<p><b>Both of us stop work in June 2035</b> (Max finishes Year 11) — Chris 51, Abby 48. HB carries on at ~£13k/yr until Chris's pension opens in Nov 2040: the profits sit inside his personal allowance so carry no tax, his NI stamp comes free (profits above £7,105 earn the year automatically), and the rest is holiday pocket money. It stops once pension withdrawals want that allowance instead. We spend £60k/yr. Pensions unlock at 57 (2040 / 2043); state pensions at 68 (2051 / 2054, £12.5k each).</p>
+
+<div class="fig">
+<svg width="680" height="210" viewBox="0 0 680 210">
+  <line x1="50" y1="170" x2="640" y2="170" stroke="#8a97a8" stroke-width="1"/>
+  <text x="50" y="184" font-size="7.5" fill="#5a6b80" text-anchor="middle">2026</text>
+  <text x="146" y="184" font-size="7.5" fill="#5a6b80" text-anchor="middle">2031</text>
+  <text x="243" y="184" font-size="7.5" fill="#5a6b80" text-anchor="middle">2036</text>
+  <text x="339" y="184" font-size="7.5" fill="#5a6b80" text-anchor="middle">2041</text>
+  <text x="436" y="184" font-size="7.5" fill="#5a6b80" text-anchor="middle">2046</text>
+  <text x="533" y="184" font-size="7.5" fill="#5a6b80" text-anchor="middle">2051</text>
+  <text x="629" y="184" font-size="7.5" fill="#5a6b80" text-anchor="middle">2056</text>
+  <line x1="233" y1="28" x2="233" y2="170" stroke="#0f2a4a" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="233" y="20" font-size="8.5" fill="#0f2a4a" font-weight="bold" text-anchor="middle">RETIRE — Jun 2035</text>
+  <rect x="50" y="30" width="226" height="14" fill="#2e9d5b" opacity="0.85" rx="2"/>
+  <text x="163" y="40" font-size="7.5" fill="#fff" text-anchor="middle" font-weight="bold">child benefit years — Emmie to Aug 2035 · Max to Aug 2037</text>
+  <text x="46" y="80" font-size="8.5" fill="#3a6ea5" font-weight="bold" text-anchor="end">ABBY</text>
+  <line x1="50" y1="77" x2="640" y2="77" stroke="#e6ebf2" stroke-width="1"/>
+  <rect x="56" y="70" width="177" height="14" fill="#3a6ea5" rx="2"/>
+  <text x="144" y="80" font-size="7.5" fill="#fff" text-anchor="middle" font-weight="bold">salary — and the AVC change, if we do it</text>
+  <circle cx="389" cy="77" r="5" fill="#3a6ea5"/>
+  <text x="389" y="63" font-size="8" fill="#3a6ea5" font-weight="bold" text-anchor="middle">pension access — Aug 2043 (57)</text>
+  <circle cx="601" cy="77" r="5" fill="#2e9d5b"/>
+  <text x="601" y="63" font-size="8" fill="#1c7a3d" font-weight="bold" text-anchor="middle">state pension 2054</text>
+  <text x="46" y="130" font-size="8.5" fill="#14467d" font-weight="bold" text-anchor="end">CHRIS</text>
+  <line x1="50" y1="127" x2="640" y2="127" stroke="#e6ebf2" stroke-width="1"/>
+  <rect x="233" y="120" width="98" height="14" fill="#c77c1b" rx="2"/>
+  <text x="282" y="130" font-size="7.5" fill="#fff" text-anchor="middle" font-weight="bold">HB ~£13k/yr</text>
+  <circle cx="335" cy="127" r="5" fill="#14467d"/>
+  <text x="335" y="113" font-size="8" fill="#14467d" font-weight="bold" text-anchor="middle">pension access — Nov 2040 (57)</text>
+  <circle cx="543" cy="127" r="5" fill="#2e9d5b"/>
+  <text x="540" y="146" font-size="8" fill="#1c7a3d" font-weight="bold" text-anchor="middle">state pension 2051</text>
+  <text x="640" y="205" font-size="8" fill="#5a6b80" text-anchor="end">gilt ladder pays £60k/yr from 2035 · state pensions £25.1k/yr joint from 2054</text>
+</svg>
+</div>
+
+<h2 class="pagebreak">Watchlist &amp; open jobs from June</h2>
+<ul>
+<li><b>Spending</b> needs to land at £60k by 2035 — mostly a holidays question, and the kids leave home in the late 2030s.</li>
+<li><b>Abby's salary carries everything until 2035.</b> The ladder and buffer are the backstop if it stops early.</li>
+</ul>
+<p><b>Still to do from June:</b></p>
+<ul>
+<li><b>Buy ladder tranche 1</b> (~£150k): sell LS80 in the II ISA and buy the 2035–37 rungs. Shortest rungs first — they're the hardest to replace if yields fall.</li>
+<li><b>Pull both state pension forecasts</b> (gov.uk): tells us exactly how many NI years we each still need, which sets how long HB has to keep earning stamps.</li>
+<li><b>Get L&amp;G's answers in writing</b> on Chris's old Accenture pot — no exit penalty, no special benefits being given up — then transfer it into the SIPP, where individual gilts can actually be bought.</li>
+<li><b>Exit crypto</b> (~£54k): move it to Chris first (transfers between spouses are free of capital gains tax), sell within his 18% CGT band rather than Abby's 24%, proceeds into the ISA.</li>
+</ul>
+
+<!-- ================================================================ -->
+<div class="part pagebreak">Part Two — The Proposal</div>
+<h2>Going under the £60k child benefit line</h2>
+
+<p>One field changes on Abby's payslip: the pension <b>AVC%</b>, currently 0, gets set each April so her taxable income lands just under <b>£60,000</b> — the line below which we qualify for full child benefit.</p>
+
+<div class="fig">
+<div class="cards">
+  <div class="card">
+    <div class="hd">PAYSLIP — TODAY (April 2026)</div>
+    <div class="row dim"><span>Basic pay</span><span class="v">£5,825.00</span></div>
+    <div class="row dim"><span>Car allowance</span><span class="v">£541.67</span></div>
+    <div class="row dim"><span>SS Pension (her 4.5%)</span><span class="v">−£262.12</span></div>
+    <div class="row hl-green"><span>Pension AVC %</span><span class="v">0.0000</span></div>
+    <div class="row dim"><span>Tax paid</span><span class="v">−£1,484.86</span></div>
+    <div class="row dim"><span>Employee NIC</span><span class="v">−£289.59</span></div>
+    <div class="row hl-amber"><span>Net pay</span><span class="v">£4,330.10</span></div>
+    <div class="row hl-navy"><span>"Pension ER" (into her pot)</span><span class="v">£902.87</span></div>
+  </div>
+  <div class="card">
+    <div class="hd">PAYSLIP — WITH THE PIVOT (year 1)</div>
+    <div class="row dim"><span>Basic pay</span><span class="v">£5,825.00</span></div>
+    <div class="row dim"><span>Car allowance</span><span class="v">£541.67</span></div>
+    <div class="row dim"><span>SS Pension (her 4.5%)</span><span class="v">−£262.12</span></div>
+    <div class="row hl-green"><span>Pension AVC % — <b>the one change</b></span><span class="v">~26% (≈£1,507)</span></div>
+    <div class="row dim"><span>Tax paid</span><span class="v">≈ −£880</span></div>
+    <div class="row dim"><span>Employee NIC</span><span class="v">≈ −£259</span></div>
+    <div class="row hl-amber"><span>Net pay</span><span class="v">≈ £3,456</span></div>
+    <div class="row hl-navy"><span>"Pension ER" (into her pot)</span><span class="v">≈ £2,409</span></div>
+  </div>
+</div>
+<div class="cap">Grey lines don't change. "Pension ER" shows everything entering the pot — salary sacrifice counts as employer-paid, so Abby's own contributions appear inside it. Still all hers.</div>
+</div>
+
+<p>Net pay drops £874/mo:</p>
+
+<div class="fig">
+<svg width="680" height="120" viewBox="0 0 680 120">
+  <text x="10" y="18" font-size="9" fill="#5a6b80">EVERY £1.00 OF TAKE-HOME GIVEN UP…</text>
+  <rect x="10" y="30" width="120" height="34" fill="#8a97a8" rx="3"/>
+  <text x="70" y="51" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">£1.00</text>
+  <text x="70" y="78" font-size="8" fill="#5a6b80" text-anchor="middle">take-home forgone</text>
+  <path d="M145 47 L205 47" stroke="#0f2a4a" stroke-width="2"/>
+  <path d="M205 47 l-8 -5 v10 z" fill="#0f2a4a"/>
+  <text x="175" y="40" font-size="8" fill="#5a6b80" text-anchor="middle">becomes</text>
+  <rect x="220" y="30" width="344" height="34" fill="#3a6ea5" rx="3"/>
+  <text x="392" y="51" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">£1.72 → her pension</text>
+  <rect x="566" y="30" width="38" height="34" fill="#2e9d5b" rx="3"/>
+  <text x="585" y="51" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">19p</text>
+  <text x="585" y="78" font-size="8" fill="#2e9d5b" text-anchor="middle">child benefit</text>
+  <text x="392" y="78" font-size="8" fill="#5a6b80" text-anchor="middle">the £1.00 + the 40% tax and 2% NI that no longer apply</text>
+  <text x="622" y="51" font-size="13" font-weight="bold" fill="#0f2a4a">= £1.91</text>
+  <text x="10" y="108" font-size="8" fill="#5a6b80">Just arithmetic.</text>
+</svg>
+</div>
+
+<div class="tiles">
+  <div class="tile"><div class="big">£273k → £648k</div><div class="lab">Abby's pot by 2035</div></div>
+  <div class="tile"><div class="big">+£22.8k</div><div class="lab">child benefit kept</div></div>
+  <div class="tile"><div class="big">Reversible</div><div class="lab">any April</div></div>
+</div>
+
+<p>Part One already works without this — it just moves money we were going to save anyway into a wrapper that nearly doubles it. And doing nothing has a deadline: Abby's income crosses £80,000 by 2028, after which the child benefit question is dead anyway.</p>
+
+<div class="warn"><b>Worth doing this week either way: claim child benefit.</b> We've never claimed, claims only backdate 3 months, and even now we'd keep ~10% (~£230/yr). gov.uk/child-benefit.</div>
+
+<h2 class="pagebreak">How the trap works</h2>
+
+<p>Above £60,000 of income (tested per person on the higher earner, so Chris's HB income is irrelevant), child benefit is clawed back 1% per £200, gone at £80,000. Pension contributions don't count as income — so enough AVC puts Abby back under the line, and the tax system pays 42p of every sacrificed pound:</p>
+
+<div class="fig">
+<svg width="680" height="235" viewBox="0 0 680 235">
+  <line x1="60" y1="180" x2="640" y2="180" stroke="#8a97a8" stroke-width="1"/>
+  <line x1="60" y1="40" x2="60" y2="180" stroke="#8a97a8" stroke-width="1"/>
+  <text x="60" y="196" font-size="8" fill="#5a6b80" text-anchor="middle">£50k</text>
+  <text x="226" y="196" font-size="8" fill="#5a6b80" text-anchor="middle">£60k</text>
+  <text x="392" y="196" font-size="8" fill="#5a6b80" text-anchor="middle">£70k</text>
+  <text x="557" y="196" font-size="8" fill="#5a6b80" text-anchor="middle">£80k</text>
+  <text x="52" y="44" font-size="8" fill="#5a6b80" text-anchor="end">£2,337</text>
+  <text x="52" y="183" font-size="8" fill="#5a6b80" text-anchor="end">£0</text>
+  <text x="20" y="115" font-size="8" fill="#5a6b80" transform="rotate(-90 20 115)" text-anchor="middle">child benefit kept /yr</text>
+  <path d="M60 40 L226 40 L557 180 L640 180" stroke="#14467d" stroke-width="2.5" fill="none"/>
+  <line x1="226" y1="40" x2="226" y2="180" stroke="#8a97a8" stroke-width="0.75" stroke-dasharray="3,3"/>
+  <line x1="557" y1="40" x2="557" y2="180" stroke="#8a97a8" stroke-width="0.75" stroke-dasharray="3,3"/>
+  <circle cx="524" cy="167" r="4.5" fill="#c77c1b"/>
+  <text x="556" y="100" font-size="8.5" fill="#c77c1b" font-weight="bold" text-anchor="middle">Abby today ≈ £78k</text>
+  <text x="556" y="110" font-size="8" fill="#c77c1b" text-anchor="middle">keeps ~£230/yr</text>
+  <line x1="545" y1="115" x2="527" y2="160" stroke="#c77c1b" stroke-width="0.75"/>
+  <circle cx="572" cy="180" r="4.5" fill="#a33"/>
+  <text x="600" y="164" font-size="8.5" fill="#a33" font-weight="bold" text-anchor="middle">2028 with no change: £0</text>
+  <line x1="595" y1="168" x2="576" y2="177" stroke="#a33" stroke-width="0.75"/>
+  <circle cx="217" cy="40" r="4.5" fill="#2e9d5b"/>
+  <text x="200" y="30" font-size="8.5" fill="#2e9d5b" font-weight="bold" text-anchor="middle">target £59,500: full £2,337 + buffer</text>
+  <text x="392" y="222" font-size="8" fill="#5a6b80" text-anchor="middle">Abby's income as HMRC counts it (pay + taxable benefits − pension)</text>
+</svg>
+<div class="cap">At stake to Aug 2035 (Emmie) and Aug 2037 (Max — his last two years come free once Abby's retired anyway). Between £60–80k each extra £1 earned loses ~54p all-in.</div>
+</div>
+
+<div class="fig">
+<svg width="680" height="240" viewBox="0 0 680 240">
+  <line x1="50" y1="200" x2="650" y2="200" stroke="#8a97a8" stroke-width="1"/>
+  <line x1="50" y1="200" x2="50" y2="25" stroke="#8a97a8" stroke-width="1"/>
+  <line x1="50" y1="73" x2="650" y2="73" stroke="#2e9d5b" stroke-width="1.25" stroke-dasharray="5,3"/>
+  <text x="648" y="68" font-size="8.5" fill="#2e9d5b" font-weight="bold" text-anchor="end">£60,000 — the child benefit line</text>
+  <rect x="75" y="28" width="95" height="172" fill="#0f2a4a" rx="3"/>
+  <text x="122" y="22" font-size="9" font-weight="bold" fill="#0f2a4a" text-anchor="middle">£81.2k package</text>
+  <text x="122" y="118" font-size="8" fill="#fff" text-anchor="middle">basic + bonus +</text>
+  <text x="122" y="128" font-size="8" fill="#fff" text-anchor="middle">car allowance + medical</text>
+  <rect x="195" y="28" width="95" height="45" fill="#3a6ea5" rx="3"/>
+  <text x="242" y="50" font-size="8.5" font-weight="bold" fill="#fff" text-anchor="middle">−£21.2k</text>
+  <text x="242" y="61" font-size="8" fill="#fff" text-anchor="middle">into her pension</text>
+  <rect x="315" y="73" width="95" height="127" fill="#0f2a4a" rx="3"/>
+  <text x="362" y="67" font-size="9" font-weight="bold" fill="#0f2a4a" text-anchor="middle">£60.0k</text>
+  <text x="362" y="135" font-size="8" fill="#fff" text-anchor="middle">what HMRC counts</text>
+  <text x="362" y="145" font-size="8" fill="#fff" text-anchor="middle">for the CB test</text>
+  <rect x="435" y="73" width="95" height="35" fill="#8a97a8" rx="3"/>
+  <text x="482" y="89" font-size="8.5" font-weight="bold" fill="#fff" text-anchor="middle">−£16.5k</text>
+  <text x="482" y="100" font-size="8" fill="#fff" text-anchor="middle">tax, NI &amp; medical</text>
+  <rect x="555" y="108" width="95" height="92" fill="#2e9d5b" rx="3"/>
+  <text x="602" y="102" font-size="9" font-weight="bold" fill="#1c7a3d" text-anchor="middle">£43.5k take-home</text>
+  <line x1="170" y1="28" x2="195" y2="28" stroke="#cfd8e3" stroke-width="1"/>
+  <line x1="290" y1="73" x2="315" y2="73" stroke="#cfd8e3" stroke-width="1"/>
+  <line x1="410" y1="73" x2="435" y2="73" stroke="#cfd8e3" stroke-width="1"/>
+  <line x1="530" y1="108" x2="555" y2="108" stroke="#cfd8e3" stroke-width="1"/>
+  <text x="350" y="226" font-size="8" fill="#5a6b80" text-anchor="middle">Year 1, to scale. HMRC counts the £60k column; take-home is £3,456/mo × 12 plus the bonus month.</text>
+</svg>
+</div>
+
+<p>We'd aim at <b>£59,500</b>, leaving a £500 buffer against payroll noise. Peak pension input is £42.8k against the £60k annual allowance, so there's room throughout.</p>
+
+<h2 class="pagebreak">What we get, what it costs</h2>
+
+<table>
+<tr><th>Over the nine years to retirement</th><th class="num">£</th></tr>
+<tr><td>Extra into Abby's pension</td><td class="num"><b>+215,700</b></td></tr>
+<tr><td>Take-home given up</td><td class="num">−125,100</td></tr>
+<tr><td>Child benefit kept</td><td class="num"><b>+22,800</b></td></tr>
+</table>
+
+<div class="fig">
+<svg width="680" height="205" viewBox="0 0 680 205">
+  <text x="10" y="16" font-size="9" font-weight="bold" fill="#0f2a4a">POTS AT RETIREMENT — June 2035, today's money, cautious 2% real growth</text>
+  <text x="150" y="40" font-size="8.5" fill="#5a6b80" text-anchor="end">Chris pensions</text>
+  <rect x="160" y="30" width="331" height="11" fill="#b9cce4" rx="2"/>
+  <text x="497" y="39" font-size="8" fill="#8a97a8">£625k today</text>
+  <rect x="160" y="43" width="396" height="14" fill="#14467d" rx="2"/>
+  <text x="562" y="54" font-size="8.5" font-weight="bold" fill="#0f2a4a">£747k</text>
+  <text x="150" y="82" font-size="8.5" fill="#5a6b80" text-anchor="end"><tspan font-weight="bold">Abby pension</tspan></text>
+  <rect x="160" y="72" width="145" height="11" fill="#b9cce4" rx="2"/>
+  <text x="311" y="81" font-size="8" fill="#8a97a8">£273k today</text>
+  <rect x="160" y="85" width="344" height="18" fill="#3a6ea5" rx="2"/>
+  <text x="510" y="98" font-size="9.5" font-weight="bold" fill="#0f2a4a">£648k — ×2.4 in real terms</text>
+  <text x="150" y="128" font-size="8.5" fill="#5a6b80" text-anchor="end">Non-pension (ladder, ISAs, cash)</text>
+  <rect x="160" y="118" width="376" height="11" fill="#b9cce4" rx="2"/>
+  <text x="542" y="127" font-size="8" fill="#8a97a8">£709k today</text>
+  <rect x="160" y="131" width="435" height="14" fill="#8a97a8" rx="2"/>
+  <text x="601" y="142" font-size="8.5" font-weight="bold" fill="#0f2a4a">£820k</text>
+  <line x1="160" y1="160" x2="160" y2="25" stroke="#cfd8e3" stroke-width="1"/>
+  <text x="10" y="180" font-size="9" fill="#0f2a4a"><tspan font-weight="bold">Household: £1.61M → £2.21M</tspan> (£2.50M if markets manage 4% real).</text>
+  <text x="10" y="196" font-size="8" fill="#5a6b80">Abby's pot goes from smallest to near parity with Chris's — doubling our tax-free withdrawal room in retirement.</text>
+</svg>
+</div>
+
+<p>Saving the £125k in ISAs instead — same funds, no pension wrapper — starts 91% behind and would need <b>16.7%/yr real</b> returns to catch up by 2035, or 7.4%/yr by the time Abby's pension unlocks. Our planning assumption is 2%.</p>
+
+<table>
+<tr><th>The options</th><th></th></tr>
+<tr><td>Do nothing</td><td>Child benefit £0 by 2028; Abby's pot £433k not £648k at 2035. Part One still works — this just leaves ~£90k+ unclaimed</td></tr>
+<tr><td>Halfway (to £70k)</td><td>Half the payslip cut, half the benefit, and every £ over £60k still loses ~54p. Only useful as a fallback in a tight year</td></tr>
+<tr><td><b>Under the line (to ~£59,500)</b></td><td><b>Full benefit and full relief; easy to undo</b></td></tr>
+</table>
+
+<h2 class="pagebreak">Can we still afford our life?</h2>
+
+<table>
+<tr><th>Year 1, monthly</th><th class="num">£/mo</th></tr>
+<tr><td>Abby take-home (new)</td><td class="num">3,456</td></tr>
+<tr><td>Child benefit</td><td class="num">195</td></tr>
+<tr><td>HB — £25k/yr target</td><td class="num">2,083</td></tr>
+<tr><td>Bonus month, averaged</td><td class="num">~170</td></tr>
+<tr><td><b>Total in</b></td><td class="num"><b>~5,904</b></td></tr>
+<tr><td>Spending (£69.5k/yr)</td><td class="num">5,790</td></tr>
+</table>
+<p>The spending number is measured, not guessed — it's the tracker's categorised actuals over the last eighteen months: about £51k/yr of ordinary life plus £18.5k of holidays. With HB at £25k the first few years run a small surplus; deficits creep in from around 2029 as the frozen £60k line forces the sacrifice up, and the nine years net out at only <b>~£8k from savings</b>.</p>
+
+<div class="fig">
+<svg width="680" height="265" viewBox="0 0 680 265">
+  <line x1="55" y1="215" x2="650" y2="215" stroke="#8a97a8" stroke-width="1"/>
+  <line x1="55" y1="215" x2="55" y2="20" stroke="#8a97a8" stroke-width="1"/>
+  <line x1="55" y1="34.3" x2="640" y2="34.3" stroke="#a33" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="638" y="29" font-size="8.5" fill="#a33" font-weight="bold" text-anchor="end">spending £69.5k/yr</text>
+  <g>
+    <rect x="70" y="101.9" width="46" height="113.1" fill="#3a6ea5"/><rect x="70" y="95.8" width="46" height="6.1" fill="#2e9d5b"/><rect x="70" y="30.8" width="46" height="65.0" fill="#c77c1b"/>
+    <text x="93" y="228" font-size="7.5" fill="#5a6b80" text-anchor="middle">26/27</text>
+  </g>
+  <g>
+    <rect x="134" y="103.4" width="46" height="111.6" fill="#3a6ea5"/><rect x="134" y="97.4" width="46" height="6.1" fill="#2e9d5b"/><rect x="134" y="32.3" width="46" height="65.0" fill="#c77c1b"/>
+    <text x="157" y="228" font-size="7.5" fill="#5a6b80" text-anchor="middle">27/28</text>
+  </g>
+  <g>
+    <rect x="198" y="104.9" width="46" height="110.1" fill="#3a6ea5"/><rect x="198" y="98.9" width="46" height="6.1" fill="#2e9d5b"/><rect x="198" y="33.8" width="46" height="65.0" fill="#c77c1b"/>
+    <text x="221" y="228" font-size="7.5" fill="#5a6b80" text-anchor="middle">28/29</text>
+  </g>
+  <g>
+    <rect x="262" y="106.4" width="46" height="108.6" fill="#3a6ea5"/><rect x="262" y="100.4" width="46" height="6.1" fill="#2e9d5b"/><rect x="262" y="35.3" width="46" height="65.0" fill="#c77c1b"/>
+    <text x="285" y="228" font-size="7.5" fill="#5a6b80" text-anchor="middle">29/30</text>
+  </g>
+  <g>
+    <rect x="326" y="107.9" width="46" height="107.1" fill="#3a6ea5"/><rect x="326" y="101.8" width="46" height="6.1" fill="#2e9d5b"/><rect x="326" y="36.8" width="46" height="65.0" fill="#c77c1b"/>
+    <text x="349" y="228" font-size="7.5" fill="#5a6b80" text-anchor="middle">30/31</text>
+  </g>
+  <g>
+    <rect x="390" y="109.3" width="46" height="105.7" fill="#3a6ea5"/><rect x="390" y="103.2" width="46" height="6.1" fill="#2e9d5b"/><rect x="390" y="38.2" width="46" height="65.0" fill="#c77c1b"/>
+    <text x="413" y="228" font-size="7.5" fill="#5a6b80" text-anchor="middle">31/32</text>
+  </g>
+  <g>
+    <rect x="454" y="110.7" width="46" height="104.3" fill="#3a6ea5"/><rect x="454" y="104.6" width="46" height="6.1" fill="#2e9d5b"/><rect x="454" y="39.6" width="46" height="65.0" fill="#c77c1b"/>
+    <text x="477" y="228" font-size="7.5" fill="#5a6b80" text-anchor="middle">32/33</text>
+  </g>
+  <g>
+    <rect x="518" y="112.1" width="46" height="102.9" fill="#3a6ea5"/><rect x="518" y="106.0" width="46" height="6.1" fill="#2e9d5b"/><rect x="518" y="41.0" width="46" height="65.0" fill="#c77c1b"/>
+    <text x="541" y="228" font-size="7.5" fill="#5a6b80" text-anchor="middle">33/34</text>
+  </g>
+  <g>
+    <rect x="582" y="113.4" width="46" height="101.6" fill="#3a6ea5"/><rect x="582" y="107.3" width="46" height="6.1" fill="#2e9d5b"/><rect x="582" y="42.3" width="46" height="65.0" fill="#c77c1b"/>
+    <text x="605" y="228" font-size="7.5" fill="#5a6b80" text-anchor="middle">34/35</text>
+  </g>
+  <text x="93" y="162" font-size="7.5" fill="#fff" text-anchor="middle" font-weight="bold">Abby</text>
+  <text x="93" y="66" font-size="7.5" fill="#fff" text-anchor="middle" font-weight="bold">HB</text>
+  <text x="345" y="243" font-size="8" fill="#5a6b80" text-anchor="middle">■ <tspan fill="#3a6ea5" font-weight="bold">Abby take-home</tspan> &#160; ■ <tspan fill="#2e9d5b" font-weight="bold">child benefit</tspan> &#160; ■ <tspan fill="#c77c1b" font-weight="bold">HB £25k</tspan></text>
+  <text x="345" y="258" font-size="8.5" fill="#0f2a4a" text-anchor="middle" font-weight="bold">Early years run a small surplus; the later slivers net to ~£8k from savings over nine years.</text>
+  <text x="47" y="218" font-size="8" fill="#5a6b80" text-anchor="end">£0</text>
+</svg>
+</div>
+
+<p>Roughly: Abby's pay covers day-to-day life, HB the holidays with a little to spare (£25k against the £18.5k we spend on them), savings the creep. If HB comes in under target in any year, the shortfall comes out of savings — deliberately, because that's the outcome-efficient move: trimming the AVC instead gives up £1.91 of pension and benefit to free 58p of cash. The AVC dial is for genuine emergencies, not lean years.</p>
+
+<h2 class="pagebreak">What if things change?</h2>
+<table>
+<tr><th>Scenario</th><th>What happens</th></tr>
+<tr><td>Abby changes jobs</td><td>Recalculate one number next April — or stop</td></tr>
+<tr><td>Redundancy</td><td>Income falls under £60k → AVC off, full child benefit kept automatically. It cancels itself exactly when we'd want the money</td></tr>
+<tr><td>We hate it in 2029</td><td>AVC% → 0; payslip back to normal next month; Part One carries on untouched</td></tr>
+<tr><td>Rules change</td><td>Renewed every April, so we react then. The frozen threshold cuts both ways — it's also what kills do-nothing by 2028</td></tr>
+<tr><td>We miss the target by £2k</td><td>Lose ~10% of the benefit</td></tr>
+</table>
+<p>The catch: <b>each year's contributions are locked until Abby is 57</b> (Aug 2043). That's fine because the 2035–2043 bridge is funded from what we already have — this money was never part of it.</p>
+
+<h2 class="pagebreak">Running it, and getting it back out</h2>
+
+<div class="callout"><b>The April routine:</b> expected package (basic + bonus + car allowance + medical − the 4.5%) minus <b>£59,500</b> = the year's extra sacrifice; divide by basic for the AVC%. In January, when the bonus is known, nudge the last payslips if we're drifting. That's it.</div>
+
+<table>
+<tr><th>Tax year</th><th class="num">AVC % to set</th><th class="num">Extra sacrifice</th><th class="num">Take-home cut</th><th class="num">CB kept</th><th class="num">Net cost /yr</th></tr>
+<tr><td>2026/27</td><td class="num"><b>~26%</b></td><td class="num">18,080</td><td class="num">−10,486</td><td class="num">+2,337</td><td class="num">−8,149</td></tr>
+<tr><td>2027/28</td><td class="num"><b>~27%</b></td><td class="num">19,484</td><td class="num">−11,301</td><td class="num">+2,384</td><td class="num">−8,917</td></tr>
+<tr><td>2028/29</td><td class="num"><b>~29%</b></td><td class="num">20,918</td><td class="num">−12,132</td><td class="num">+2,432</td><td class="num">−9,700</td></tr>
+<tr><td>2029/30</td><td class="num"><b>~30%</b></td><td class="num">22,379</td><td class="num">−12,980</td><td class="num">+2,480</td><td class="num">−10,500</td></tr>
+<tr><td>2030/31</td><td class="num"><b>~32%</b></td><td class="num">23,870</td><td class="num">−13,845</td><td class="num">+2,530</td><td class="num">−11,315</td></tr>
+<tr><td>2031/32</td><td class="num"><b>~33%</b></td><td class="num">25,391</td><td class="num">−14,727</td><td class="num">+2,581</td><td class="num">−12,146</td></tr>
+<tr><td>2032/33</td><td class="num"><b>~34%</b></td><td class="num">26,942</td><td class="num">−15,627</td><td class="num">+2,632</td><td class="num">−12,994</td></tr>
+<tr><td>2033/34</td><td class="num"><b>~36%</b></td><td class="num">28,525</td><td class="num">−16,544</td><td class="num">+2,685</td><td class="num">−13,859</td></tr>
+<tr><td>2034/35</td><td class="num"><b>~37%</b></td><td class="num">30,138</td><td class="num">−17,480</td><td class="num">+2,739</td><td class="num">−14,742</td></tr>
+<tr><td><b>Σ</b></td><td></td><td class="num"><b>215,728</b></td><td class="num"><b>−125,122</b></td><td class="num"><b>+22,800</b></td><td></td></tr>
+</table>
+<p class="small">Assumes 2% pay rises, a 5% bonus, frozen thresholds. Modelled to £60,000, operated to £59,500. Start: April 2027, unless the portal makes a September start painless (that means ~£2,600/mo over the remaining payslips to save this year's benefit).</p>
+
+<p><b>And on the way out?</b> We simulated retirement year by year to 2075, drawing tax-smart — pension slices to fill both personal allowances from the moment each unlocks, then tax-free cash and the non-pension pot, taxed withdrawals last. Under the assumptions we’ve adopted (HB £25k then £13k), the savings pot outlasts the whole simulation and <b>total drawdown tax before 92 rounds to zero</b>. 42% relief in; essentially nothing out.</p>
+
+<div class="fig">
+<svg width="680" height="235" viewBox="0 0 680 235">
+  <text x="10" y="16" font-size="9" font-weight="bold" fill="#0f2a4a">WHO FUNDS THE £60,000 IN EACH PHASE (stylised; column widths ∝ years)</text>
+  <rect x="40" y="77" width="73" height="115.5" fill="#8a97a8"/><rect x="40" y="42.5" width="73" height="32.5" fill="#c77c1b"/>
+  <text x="76" y="130" font-size="7.5" fill="#fff" text-anchor="middle">gilt ladder</text><text x="76" y="140" font-size="7.5" fill="#fff" text-anchor="middle">(ISA rungs)</text>
+  <text x="76" y="62" font-size="7" fill="#fff" text-anchor="middle">HB ~£13k</text>
+  <text x="76" y="205" font-size="7.5" fill="#5a6b80" text-anchor="middle">2035–40</text>
+  <rect x="115" y="42.5" width="43" height="108" fill="#8a97a8"/><rect x="115" y="150.5" width="43" height="42" fill="#14467d"/>
+  <text x="136" y="205" font-size="7.5" fill="#5a6b80" text-anchor="middle">2041–43</text>
+  <rect x="160" y="42.5" width="118" height="66" fill="#8a97a8"/><rect x="160" y="108.5" width="118" height="42" fill="#3a6ea5"/><rect x="160" y="150.5" width="118" height="42" fill="#14467d"/>
+  <text x="219" y="172" font-size="7.5" fill="#fff" text-anchor="middle">Chris pension — 0% tax</text>
+  <text x="219" y="130" font-size="7.5" fill="#fff" text-anchor="middle">Abby pension — 0% tax</text>
+  <text x="219" y="80" font-size="7.5" fill="#fff" text-anchor="middle">ISA / tax-free cash</text>
+  <text x="219" y="205" font-size="7.5" fill="#5a6b80" text-anchor="middle">2044–51</text>
+  <rect x="280" y="42.5" width="43" height="76.75" fill="#8a97a8"/><rect x="280" y="119.25" width="43" height="42" fill="#3a6ea5"/><rect x="280" y="161.25" width="43" height="31.25" fill="#2e9d5b"/>
+  <text x="301" y="205" font-size="7.5" fill="#5a6b80" text-anchor="middle">2052–54</text>
+  <rect x="325" y="42.5" width="313" height="87.25" fill="#8a97a8"/><rect x="325" y="129.75" width="313" height="62.75" fill="#2e9d5b"/>
+  <text x="481" y="165" font-size="8" fill="#fff" text-anchor="middle" font-weight="bold">two state pensions — £25.1k/yr</text>
+  <text x="481" y="90" font-size="8" fill="#fff" text-anchor="middle">non-pension pot, then pension slices</text>
+  <text x="481" y="205" font-size="7.5" fill="#5a6b80" text-anchor="middle">2055–2075</text>
+    <text x="345" y="226" font-size="8" fill="#5a6b80" text-anchor="middle">■ navy: Chris pension · ■ blue: Abby pension · ■ grey: ladder / ISA / tax-free cash · ■ amber: HB · ■ green: state pensions</text>
+</svg>
+<div class="cap">The 2041–45 gilt rungs live inside Chris's SIPP, so their payouts appear as "Chris pension" — same ladder, second wrapper. The narrow columns are staggered starts: 2041–43, his pension open before hers; 2052–54, his state pension started before hers, with her pension and savings filling the gap.</div>
+</div>
+
+<h2 class="pagebreak">What it does to Part One</h2>
+<table>
+<tr><th>Part One piece</th><th>What changes</th><th>Why</th></tr>
+<tr><td>Gilt ladder 2035–2045 + build schedule</td><td><b>Nothing</b></td><td>It was always funded from existing assets, not new savings</td></tr>
+<tr><td>Ladder extension 2046–2051 (~£216k)</td><td><b>Cancelled</b></td><td>The new savings that would have bought it go into Abby's pension instead — and by 2046 over £1.5M of pension is unlocked, so those years no longer need gilts</td></tr>
+<tr><td>New cash savings</td><td>£22.3k/yr → <b>~£0</b>, plus ~£8k drawn over the nine years (at the £25k HB target)</td><td>The take-home is redirected into the pension</td></tr>
+<tr><td>Ratchet rule</td><td>Same rule, new shopping list: cash buffer first, then the spare 2041 rung (~£44k)</td><td>The extension rungs it used to buy no longer exist; the spare rung is insurance in case pension age moves to 58</td></tr>
+<tr><td>Retirement date, £60k spend, everything else</td><td><b>Nothing</b></td><td>—</td></tr>
+</table>
+
+<h2 class="pagebreak">The outlook at 2035</h2>
+
+<p>What retirement can actually support, in today's money:</p>
+<table>
+<tr><td><b>Guaranteed, whatever markets do</b></td><td>£60k/yr to 2045 (the ladder), then £25.1k/yr of state pensions from 2054 — plus whatever the growth pot has become</td></tr>
+<tr><td><b>Sustainable spend, cautious case (2% real)</b></td><td><b>~£95–100k/yr</b> for life</td></tr>
+<tr><td><b>Sustainable spend, better case (4% real)</b></td><td>~£115k/yr</td></tr>
+<tr><td><b>What we've planned</b></td><td>£60k/yr — the gap is the safety margin, and eventually the kids' inheritance</td></tr>
+</table>
+<p class="small">Rule of thumb: each £10k/yr of permanent extra spending uses roughly £250–300k of the surplus. On the cautious case we could afford three or four of those.</p>
+
+<p>What stands behind it if things go wrong after 2035:</p>
+<table>
+<tr><th>Risk</th><th>What's behind it</th></tr>
+<tr><td>A terrible market decade in the 2030s</td><td>The ladder pays regardless; the growth pot isn't needed until the 2050s, so it has 15–20 years to recover</td></tr>
+<tr><td>Inflation spike</td><td>The ladder and both state pensions are inflation-linked — the floor is real, not nominal</td></tr>
+<tr><td>Pension age moves 57 → 58</td><td>The spare 2041 rung (first call on the ratchet) covers the stretched year</td></tr>
+<tr><td>One of us dies</td><td>Pensions pass to the survivor free of income tax (before 75); the ladder and ISAs simply continue; nominations kept current</td></tr>
+<tr><td>Very long lives, or care costs</td><td>Annuity rates from age ~60 can lock in more guaranteed income if we want it; the house (£697k) is the reserve we never count</td></tr>
+</table>
+
+<p><b>And if we brought retirement forward?</b> Because markets have been kind, or redundancy, or illness in the family, or we simply feel ready — and assuming HB stops at the same time. The price of each year earlier is roughly one year's spending from the taxable side (£65–70k) plus that year's pension contributions forgone — and because that money then misses forty years of growth, it shows up as <b>~£250–270k less at 92</b> per year brought forward.</p>
+
+<div class="fig">
+<svg width="680" height="250" viewBox="0 0 680 250">
+  <text x="340" y="16" font-size="9" font-weight="bold" fill="#0f2a4a" text-anchor="middle">RETIRING EARLIER — what's left at 92 (today's money, cautious case)</text>
+  <line x1="70" y1="170" x2="630" y2="170" stroke="#8a97a8" stroke-width="1"/>
+  <rect x="90" y="30" width="80" height="140" fill="#14467d" rx="3"/>
+  <text x="130" y="26" font-size="9" font-weight="bold" fill="#0f2a4a" text-anchor="middle">£2.1M</text>
+  <text x="130" y="184" font-size="8" fill="#0f2a4a" text-anchor="middle" font-weight="bold">Jun 2035 — the plan</text>
+  <rect x="200" y="61" width="80" height="109" fill="#3a6ea5" rx="3"/>
+  <text x="240" y="57" font-size="9" font-weight="bold" fill="#0f2a4a" text-anchor="middle">£1.6M</text>
+  <text x="240" y="184" font-size="8" fill="#5a6b80" text-anchor="middle">2034</text>
+  <rect x="310" y="78" width="80" height="92" fill="#3a6ea5" rx="3"/>
+  <text x="350" y="74" font-size="9" font-weight="bold" fill="#0f2a4a" text-anchor="middle">£1.4M</text>
+  <text x="350" y="184" font-size="8" fill="#5a6b80" text-anchor="middle">2033</text>
+  <rect x="420" y="96" width="80" height="74" fill="#3a6ea5" rx="3"/>
+  <text x="460" y="92" font-size="9" font-weight="bold" fill="#0f2a4a" text-anchor="middle">£1.1M</text>
+  <text x="460" y="184" font-size="8" fill="#5a6b80" text-anchor="middle">2032</text>
+  <rect x="530" y="113" width="80" height="57" fill="#3a6ea5" rx="3"/>
+  <text x="570" y="109" font-size="9" font-weight="bold" fill="#0f2a4a" text-anchor="middle">£0.85M</text>
+  <text x="570" y="184" font-size="8" fill="#5a6b80" text-anchor="middle">2031</text>
+  <text x="620" y="100" font-size="8" fill="#5a6b80" text-anchor="end" transform="rotate(-90 620 100)"></text>
+  <rect x="90" y="196" width="520" height="17" fill="#2e9d5b" rx="3"/>
+  <text x="350" y="208" font-size="8.5" font-weight="bold" fill="#fff" text-anchor="middle">the £60k/yr floor — identical in every case (ladder + state pensions)</text>
+  <text x="340" y="226" font-size="8" fill="#5a6b80" text-anchor="middle">~£250–270k per year earlier — the missing money would have compounded for 40 years.</text>
+  <text x="340" y="238" font-size="8" fill="#5a6b80" text-anchor="middle">The 2034 step is steeper because we assume HB stops at an early exit. The floor never moves.</text>
+</svg>
+</div>
+
+<p>What those bars mean for spending, and what actually gets riskier:</p>
+<table>
+<tr><th>If we retired</th><th class="num">Surplus at 92</th><th class="num">Could sustainably spend</th><th class="num">Headroom over the £60k plan</th></tr>
+<tr><td>Jun 2035 — the plan</td><td class="num">£2.1M</td><td class="num">~£95–100k/yr</td><td class="num">+£35–40k/yr</td></tr>
+<tr><td>2033</td><td class="num">£1.4M</td><td class="num">~£88–93k/yr</td><td class="num">+£28–33k/yr</td></tr>
+<tr><td>2031</td><td class="num">£0.85M</td><td class="num">~£80–85k/yr</td><td class="num">+£20–25k/yr</td></tr>
+</table>
+<p>So even four years early, the sustainable spend stays £20k+ clear of what we've planned. The extra risk is practical rather than financial: the bridge before Chris's pension stretches (five years becomes nine, so more rungs must come from the ISA side, thinning the liquid margin), more pre-pension years sit exposed to any rule change, and a few more NI stamp years need covering. All manageable — which is the point.</p>
+
+<p>The mechanics are the ratchet pointed backwards: buy the missing early rungs (2034, 2033…) out of the growth pot, exactly as we'd have bought the later ones. Two things soften it further: with salaries gone, income drops under £60k, so full child benefit returns with no sacrifice needed for as long as the kids qualify; and if the trigger is redundancy, the payoff funds a good chunk of the extra years by itself. Early exit costs a few NI stamp years (fixable for a few hundred pounds each) and shrinks the surplus — which also shrinks the inheritance-tax problem we'd otherwise be managing (pensions join the estate from April 2027; drawing at 15% in our 70s beats leaving 40% to HMRC — a conversation for the someday list). The honest constraint on going early isn't money; it's whether we're ready.</p>
+
+<h2 class="pagebreak">Risks, and the to-do list</h2>
+<ul>
+<li><b>Rule changes</b> — pension age to 58, tax-free-cash reform, or a household-based child benefit test (floated in 2024, dropped). Any of these trims the deal; none reverses it — the 42% relief is ~85% of the value. We react at the next April.</li>
+<li><b>More of our wealth in Abby's name</b> — also fixes today's imbalance (£625k vs £273k).</li>
+<li><b>Death before 2035</b> — pensions pass to the survivor free of income tax (before 75) and spouse transfers carry no IHT. The beneficiary nomination forms on all four pots need refreshing regardless — this month's job.</li>
+</ul>
+<ul>
+<li><b>This week:</b> claim child benefit.</li>
+<li><b>Abby, in the portal:</b> confirm death-in-service/redundancy/bonus are based on pre-sacrifice salary (the check that matters) · is the bonus sacrificeable? · any match on AVCs? · query tax code 1117L with HMRC (medical may be taxed twice — ~£560/yr).</li>
+<li><b>Chris:</b> both state pension forecasts · beneficiary nominations.</li>
+<li><b>If we're in:</b> ~26% from April 2027, then the April/January routine to 2035.</li>
+<li><b>Someday:</b> the IHT conversation · Abby into HB before 2035 for her last few NI years (£14k of profit gets both stamps free; even £5k split between us plus £380 of voluntary NI works).</li>
+</ul>
+
+<h2 class="pagebreak">What the numbers assume</h2>
+<p class="small">FACT = documented · CHECK = verifiable, pending · GUESS = assumption.</p>
+<table>
+<tr><th>Assumption</th><th>Value</th><th></th></tr>
+<tr><td>Payslip basis</td><td>Apr 2026: basic £5,825/mo · car £541.67 · medical £110.83 · 4.5%/11% sacrifice · net £4,330.10 · code 1117L</td><td>FACT</td></tr>
+<tr><td>Pay growth / bonus / match</td><td>2%/yr on basic; 5% bonus, sacrificeable; no match on AVCs</td><td>GUESS / CHECK</td></tr>
+<tr><td>Child benefit</td><td>£2,337/yr (two kids), CPI-uprated; thresholds £60–80k <b>frozen to 2035</b> — our biggest guess; Emmie to Aug 2035, Max to Aug 2037</td><td>FACT + GUESS</td></tr>
+<tr><td>Sacrifice economics</td><td>Every £ saves 42% (all above £50,270 — true throughout); peak input £42.8k vs £60k allowance</td><td>FACT</td></tr>
+<tr><td>Returns</td><td>2% real everywhere (cautious case); 4% real as the better case</td><td>GUESS</td></tr>
+<tr><td>Spending / income</td><td>£69.5k/yr to 2035 then £60k (tracker actuals: ~£51k life + £18.5k holidays); HB £25k/yr target to 2035 (shortfalls funded from savings, not by trimming the AVC), then ~£13k/yr until Chris's pension opens (Nov 2040) — no tax within his personal allowance, stamp free above £7,105 — then £0; Cottrell not counted</td><td>GUESS</td></tr>
+<tr><td>Drawdown</td><td>Tax thresholds hold real value after 2035; tax-free cash cap £268,275 each; simulated to 2075</td><td>GUESS</td></tr>
+<tr><td>State pensions</td><td>£12,548 each (real) from 2051/2054, both 68, records complete (Chris full ~52–54 via HB stamps; Abby similar + 2–3 stamp years)</td><td>CHECK — forecasts unpulled</td></tr>
+<tr><td>Pension access</td><td>57 (Nov 2040 / Aug 2043); 58 is the risk case; pensions join the estate for IHT Apr 2027</td><td>Current law</td></tr>
+</table>
+<p class="small"><b>Sources:</b> Abby's April 2026 payslip · gov.uk (checked 27 Jul 2026) · June 2026 plan (account values verified 1–9 Jun) · modelling 27 Jul 2026, reproducible from session scripts.</p>
+
+</body>
+</html>

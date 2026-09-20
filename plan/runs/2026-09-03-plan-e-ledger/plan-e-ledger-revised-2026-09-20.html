@@ -1,0 +1,212 @@
+<title>Plan E Ledger</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  --paper:#F5F7F3; --paper2:#ECF0EA; --ink:#1B2622; --muted:#5F6B65; --rule:#CFD7D0;
+  --gilt:#1E6B67; --gilt-soft:#DCEBE9; --eq:#A6761F; --eq-soft:#F3E7CF; --warn:#8A3B2E;
+  --tot:#EAEFE9;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#131917; --paper2:#1B2321; --ink:#E4EAE5; --muted:#98A59E; --rule:#2C3733;
+  --gilt:#5BBDB6; --gilt-soft:#173A38; --eq:#D8A84B; --eq-soft:#3A2E14; --warn:#E08A7A; --tot:#1F2A27;
+}}
+:root[data-theme="dark"]{
+  --paper:#131917; --paper2:#1B2321; --ink:#E4EAE5; --muted:#98A59E; --rule:#2C3733;
+  --gilt:#5BBDB6; --gilt-soft:#173A38; --eq:#D8A84B; --eq-soft:#3A2E14; --warn:#E08A7A; --tot:#1F2A27;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.5;margin:0}
+main{max-width:1100px;margin:0 auto;padding:40px 24px 80px}
+h1,h2,h3{font-family:Bitter,Georgia,"Times New Roman",serif;font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:2.1rem;line-height:1.15}
+h2{font-size:1.45rem;margin-top:56px;padding-top:18px;border-top:2px solid var(--ink)}
+h3{font-size:1.1rem;margin-top:26px}
+p,li{max-width:68ch}
+p{margin:12px 0}
+.lede{font-size:1.15rem;color:var(--muted);max-width:60ch}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+header{display:flex;flex-direction:column;gap:10px}
+.meta{display:flex;flex-wrap:wrap;gap:24px;margin-top:8px;font-size:.92rem;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:28px 0 0}
+.tile{padding:14px 16px;border-left:3px solid var(--rule);background:var(--paper2)}
+.tile.g{border-color:var(--gilt)} .tile.e{border-color:var(--eq)}
+.tile .n{font-family:Bitter,serif;font-size:1.6rem;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile .l{font-size:.85rem;color:var(--muted);margin-top:4px}
+.scroll{overflow-x:auto;margin:16px 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap;vertical-align:top}
+th{font-weight:600}
+thead th{font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--ink);vertical-align:bottom}
+th[scope=row],td:first-child,th.left,td.left{text-align:left}
+td.wrap{white-space:normal;min-width:22ch}
+td.g,th.g{color:var(--gilt)} td.e,th.e{color:var(--eq)}
+td.tot{font-weight:600;background:var(--tot)}
+td.sep,th.sep{border-left:2px solid var(--rule)}
+tr.ret th,tr.ret td{border-top:2px solid var(--gilt)}
+tr.gap th,tr.gap td{border-top:2px dashed var(--rule)}
+tr.group th{background:var(--paper2);text-align:center;color:var(--ink);letter-spacing:.06em;font-size:.75rem;border-bottom:1px solid var(--rule)}
+tr.group th.left{text-align:left}
+.key{display:flex;gap:18px;flex-wrap:wrap;font-size:.88rem;color:var(--muted);margin-top:8px}
+.key span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+.key .kg::before{background:var(--gilt)} .key .ke::before{background:var(--eq)}
+.key .kn::before{display:none}
+.note{font-size:.92rem;color:var(--muted);max-width:75ch}
+.warnbox{border-left:3px solid var(--warn);padding:10px 16px;background:var(--paper2);max-width:75ch;margin:18px 0}
+ul{padding-left:20px} li{margin:6px 0}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 20px;max-width:80ch;font-size:.95rem}
+dt{font-weight:600;white-space:nowrap} dd{margin:0;color:var(--ink)}
+@media (max-width:640px){dl{grid-template-columns:1fr} dt{margin-top:8px}}
+</style>
+<main>
+<header>
+  <div class="eyebrow">Household plan · working assumption since 31 Aug 2026 · revised 20 Sep 2026 after audit (real-linker cash flows, live yields, row-year fix)</div>
+  <h1>Plan E: the flat gilt ladder, account by account, year by year</h1>
+  <p class="lede">What each pot becomes, what pays for what from June 2035, and how the numbers move in the planning case. Everything is in today's money.</p>
+  <div class="meta"><span>Balances <b>1 Sep 2026</b></span><span>Retire <b>Jun 2035</b> (Max finishes Year 11)</span><span>Spend <b>£60k/yr</b> real</span><span>Model <b>2% real equity; gilts at the 17–20 Sep 2026 curve (2.0% real on the ISA rungs, 2.3% on the SIPP rungs)</b></span></div>
+</header>
+
+<div class="tiles">
+  <div class="tile g"><div class="n">£909k</div><div class="l">Index-linked gilt ladder, 11 rungs 2035–45</div></div>
+  <div class="tile g"><div class="n">£99k</div><div class="l">Redeemed by each ISA rung 2035–40 (£106k per SIPP rung 2041–45), inflation-proof, plus about £6.8k a year of coupons on top</div></div>
+  <div class="tile e"><div class="n">£652k</div><div class="l">Equity sleeve, left to grow to 2046 and beyond</div></div>
+  <div class="tile"><div class="n">£120k</div><div class="l">Cash buffer and crypto, untouched by the plan</div></div>
+</div>
+
+<h2>1. Where the money sits today, and what it becomes</h2>
+<p>Total investable £1,627k on 1 Sep. Only Chris's II accounts and part of Abby's Vanguard ISA change. Abby's pension, Chris's Accenture pension and the savings stay as they are.</p>
+<div class="scroll"><table>
+<thead><tr><th class="left">Account</th><th>Now £</th><th class="left">Under Plan E</th><th class="g">Ladder £k</th><th class="e">Equity £k</th><th>Other £k</th></tr></thead>
+<tbody>
+<tr><td>Chris II ISA</td><td>276,716</td><td class="left wrap">Sell LifeStrategy, buy rungs 2035, 2036, 2037 plus a slice of 2038</td><td class="g">276.7</td><td class="e">–</td><td>–</td></tr>
+<tr><td>Abby Vanguard ISA</td><td>312,573</td><td class="left wrap">About £243k transfers to a new Abby II ISA for rungs 2038, 2039, 2040. The rest stays in VS100 at Vanguard</td><td class="g">242.8</td><td class="e">69.8</td><td>–</td></tr>
+<tr><td>Chris II SIPP</td><td>439,574</td><td class="left wrap">Sell LifeStrategy, buy rungs 2041–45. About £50k stays in equity</td><td class="g">389.9</td><td class="e">49.7</td><td>–</td></tr>
+<tr><td>Chris Accenture pension (L&amp;G)</td><td>192,659</td><td class="left wrap">Stays at L&amp;G. Switched 3 Sep from the Drawdown Focus lifestyle to 100% Global Equity Tracker (B6W3, 0.11%)</td><td class="g">–</td><td class="e">192.7</td><td>–</td></tr>
+<tr><td>Abby Accenture DC (L&amp;G)</td><td>282,921</td><td class="left wrap">Stays 100% equity. Amendment 1 salary sacrifice lands here until 2035</td><td class="g">–</td><td class="e">282.9</td><td>–</td></tr>
+<tr><td>Other savings</td><td>119,924</td><td class="left wrap">As is: about £66k cash buffer, about £54k crypto (1 BTC, 6 ETH)</td><td class="g">–</td><td class="e">–</td><td>119.9</td></tr>
+<tr><td>Accenture shares</td><td>1,960</td><td class="left wrap">Fold into equity when convenient</td><td class="g">–</td><td class="e">2.0</td><td>–</td></tr>
+<tr><td class="left"><b>Total</b></td><td><b>1,626,327</b></td><td></td><td class="g"><b>909.4</b></td><td class="e"><b>597.1</b></td><td><b>119.9</b></td></tr>
+</tbody></table></div>
+<p class="note">The equity sleeve the model calls £652k is the £597k above plus the £54k of crypto, which it treats as equity for return purposes. The house (about £697k) sits outside every number on this page.</p>
+
+<h2>2. The investment types</h2>
+<h3>Index-linked gilt ladder, £909k</h3>
+<p>One UK index-linked gilt maturing each year from 2035 to 2045. Each rung is bought now, held to maturity, and pays out its inflation-adjusted value in the year it matures. The ladder balances in section 3 are held-to-maturity values accruing at the locked real yield, not market prices, which is why they rise steadily to 2035. Rungs for 2035–40 must be ISA money because that is the only pot reachable before Chris's pension opens in Nov 2040. Rungs for 2041–45 sit in the SIPP and mature inside it. Costs below are at the 17–20 Sep 2026 curve and are what each gilt actually costs on II for that redemption: the price includes the coupon stream, so the earlier "£108k a rung for £909k" (a zero-coupon figure) was never buyable and the coupons were counted twice in the words. Each rung now redeems £98.7k real in the ISAs and £106.3k in the SIPP, and the coupons, about £6.8k a year while the ladder is whole falling to under £1k by 2044, are paid separately into the wrapper that holds the gilt and are the top-up, not part of the rung. Same money as before; a different shape, with more arriving early.</p>
+<div class="scroll"><table>
+<thead><tr><th>Matures</th><th class="left">Wrapper</th><th class="left">Gilt</th><th>Cost £k</th><th>Redeems £k real</th><th class="left">Note</th></tr></thead>
+<tbody>
+<tr><td>2035</td><td class="left">Chris II ISA</td><td class="left">TR35</td><td>93</td><td>99</td><td class="left"></td></tr>
+<tr><td>2036</td><td class="left">Chris II ISA</td><td class="left">TG36</td><td>83</td><td>99</td><td class="left"></td></tr>
+<tr><td>2037</td><td class="left">Chris II ISA</td><td class="left">TR37</td><td>90</td><td>99</td><td class="left"></td></tr>
+<tr><td>2038</td><td class="left">Chris ISA £9k + Abby II ISA £77k</td><td class="left">T38</td><td>96</td><td>99</td><td class="left">Split across the two ISAs</td></tr>
+<tr><td>2039</td><td class="left">Abby II ISA</td><td class="left">TG39</td><td>76</td><td>99</td><td class="left"></td></tr>
+<tr><td>2040</td><td class="left">Abby II ISA</td><td class="left">TR40</td><td>81</td><td>99</td><td class="left"></td></tr>
+<tr><td>2041</td><td class="left">Chris II SIPP</td><td class="left">T41</td><td>78</td><td>106</td><td class="left">Matures inside the SIPP</td></tr>
+<tr><td>2042</td><td class="left">Chris II SIPP</td><td class="left">T42A</td><td>86</td><td>106</td><td class="left">Also holds half of 2043</td></tr>
+<tr><td>2043</td><td class="left">Chris II SIPP</td><td class="left">no 2043 linker</td><td>78</td><td>106</td><td class="left">Half in T42A, half in T44; early half parked in money market for a year</td></tr>
+<tr><td>2044</td><td class="left">Chris II SIPP</td><td class="left">T44</td><td>69</td><td>106</td><td class="left">Also holds the other half of 2043</td></tr>
+<tr><td>2045</td><td class="left">Chris II SIPP</td><td class="left">TR45</td><td>78</td><td>106</td><td class="left"></td></tr>
+<tr><td class="left"><b>Total</b></td><td></td><td></td><td><b>909</b></td><td><b>1,124</b></td><td class="left">Plus coupons of about £6.8k/yr real from 2027 while the ladder is whole, falling to under £1k by 2044 — paid into the wrapper holding the gilt; reinvested in equity before 2035, part of the year's cash after</td></tr>
+</tbody></table></div>
+
+<h3>Equity sleeve, £652k</h3>
+<p>Global equity trackers only: VS100 or LS100 at II and Vanguard, the L&amp;G Global Equity Tracker in both Accenture pensions. It is not touched until 2046 in the planning case. From 2035 the ladder pays more than the household spends. Because each rung matures inside its wrapper, the surplus never leaves the ISA in 2035–40 and never leaves the SIPP in 2041–45, so it is reinvested in equity there with no new allowance needed. The sleeve rebuilds itself from guaranteed money rather than from market returns. Abby's salary sacrifice adds roughly £33k rising to £46k a year to her DC pot until 2035 (Aug 2026 payslip basis).</p>
+
+<h3>Cash and crypto, £120k</h3>
+<p>About £66k of savings is the buffer for lean Hadley Bricks years, cars and roof-type costs before 2035. The standing rule is that shortfalls come from here, never from trimming Abby's salary sacrifice. The crypto is held as a separate bet. Exiting it across two tax years was the June intention and is still a decision to make on its own.</p>
+
+<h2>3. Year by year in the planning case</h2>
+<p>Real £k throughout. Row 2026 is the 1 Sep 2026 balances; each later row is September of that year, after that year's rung has matured. The left block is where the money sits, the right block is what came in and what it paid for. The teal line marks retirement in June 2035. The state pensions arrive at 68: Chris in 2052, Abby in 2055.</p>
+<div class="key"><span class="kg">Gilt ladder</span><span class="ke">Equity</span><span class="kn">Pension equity = Chris II SIPP remainder plus his Accenture pot</span></div>
+<div class="scroll"><table>
+<thead>
+<tr class="group"><th></th><th colspan="8">Where the money sits, end of year</th><th colspan="7" class="sep">Income and what it paid for</th></tr>
+<tr><th>Year</th><th class="g">Ladder in ISAs</th><th class="g">Ladder in SIPP</th><th class="e">Pension equity</th><th class="e">Abby DC</th><th class="e">ISA equity</th><th>GIA</th><th>Cash + crypto</th><th>Total</th><th class="sep g">Rung + coupons paid</th><th>Hadley Bricks</th><th>State pension</th><th>Pension draws</th><th>Tax-free cash</th><th>Income tax</th><th>Surplus reinvested</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">2026</th><td class="g">520</td><td class="g">390</td><td class="e">242</td><td class="e">283</td><td class="e">70</td><td>–</td><td>120</td><td class="tot">1,627</td><td class="sep g">–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2027</th><td class="g">525</td><td class="g">397</td><td class="e">249</td><td class="e">322</td><td class="e">76</td><td>–</td><td>121</td><td class="tot">1,693</td><td class="sep g">7</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2028</th><td class="g">531</td><td class="g">404</td><td class="e">256</td><td class="e">363</td><td class="e">82</td><td>–</td><td>123</td><td class="tot">1,762</td><td class="sep g">7</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2029</th><td class="g">537</td><td class="g">411</td><td class="e">263</td><td class="e">407</td><td class="e">89</td><td>–</td><td>124</td><td class="tot">1,834</td><td class="sep g">7</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2030</th><td class="g">543</td><td class="g">419</td><td class="e">271</td><td class="e">453</td><td class="e">95</td><td>–</td><td>126</td><td class="tot">1,909</td><td class="sep g">7</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2031</th><td class="g">549</td><td class="g">426</td><td class="e">278</td><td class="e">502</td><td class="e">102</td><td>–</td><td>127</td><td class="tot">1,987</td><td class="sep g">7</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2032</th><td class="g">555</td><td class="g">434</td><td class="e">286</td><td class="e">553</td><td class="e">109</td><td>–</td><td>129</td><td class="tot">2,068</td><td class="sep g">7</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2033</th><td class="g">561</td><td class="g">442</td><td class="e">293</td><td class="e">607</td><td class="e">116</td><td>–</td><td>130</td><td class="tot">2,152</td><td class="sep g">7</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2034</th><td class="g">568</td><td class="g">450</td><td class="e">301</td><td class="e">664</td><td class="e">123</td><td>–</td><td>132</td><td class="tot">2,240</td><td class="sep g">7</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr class="ret"><th scope="row">2035</th><td class="g">476</td><td class="g">458</td><td class="e">309</td><td class="e">723</td><td class="e">182</td><td>–</td><td>134</td><td class="tot">2,284</td><td class="sep g">104</td><td>13</td><td>–</td><td>–</td><td>–</td><td>0.1</td><td>56</td></tr>
+<tr><th scope="row">2036</th><td class="g">383</td><td class="g">467</td><td class="e">317</td><td class="e">738</td><td class="e">241</td><td>–</td><td>135</td><td class="tot">2,283</td><td class="sep g">102</td><td>13</td><td>–</td><td>–</td><td>–</td><td>0.1</td><td>55</td></tr>
+<tr><th scope="row">2037</th><td class="g">288</td><td class="g">475</td><td class="e">326</td><td class="e">753</td><td class="e">301</td><td>–</td><td>137</td><td class="tot">2,282</td><td class="sep g">102</td><td>13</td><td>–</td><td>–</td><td>–</td><td>0.1</td><td>55</td></tr>
+<tr><th scope="row">2038</th><td class="g">193</td><td class="g">484</td><td class="e">334</td><td class="e">768</td><td class="e">361</td><td>–</td><td>139</td><td class="tot">2,281</td><td class="sep g">101</td><td>13</td><td>–</td><td>–</td><td>–</td><td>0.1</td><td>54</td></tr>
+<tr><th scope="row">2039</th><td class="g">97</td><td class="g">493</td><td class="e">343</td><td class="e">783</td><td class="e">421</td><td>–</td><td>140</td><td class="tot">2,280</td><td class="sep g">99</td><td>13</td><td>–</td><td>–</td><td>–</td><td>0.1</td><td>52</td></tr>
+<tr><th scope="row">2040</th><td class="g">–</td><td class="g">503</td><td class="e">352</td><td class="e">799</td><td class="e">481</td><td>–</td><td>142</td><td class="tot">2,279</td><td class="sep g">99</td><td>13</td><td>–</td><td>–</td><td>–</td><td>0.1</td><td>52</td></tr>
+<tr><th scope="row">2041</th><td class="g">–</td><td class="g">406</td><td class="e">407</td><td class="e">815</td><td class="e">491</td><td>–</td><td>144</td><td class="tot">2,265</td><td class="sep g">108</td><td>–</td><td>–</td><td>13</td><td>47</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2042</th><td class="g">–</td><td class="g">307</td><td class="e">463</td><td class="e">831</td><td class="e">501</td><td>–</td><td>146</td><td class="tot">2,250</td><td class="sep g">108</td><td>–</td><td>–</td><td>13</td><td>47</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2043</th><td class="g">–</td><td class="g">207</td><td class="e">532</td><td class="e">835</td><td class="e">511</td><td>–</td><td>147</td><td class="tot">2,235</td><td class="sep g">107</td><td>–</td><td>–</td><td>25</td><td>35</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2044</th><td class="g">–</td><td class="g">105</td><td class="e">603</td><td class="e">839</td><td class="e">521</td><td>–</td><td>149</td><td class="tot">2,219</td><td class="sep g">107</td><td>–</td><td>–</td><td>25</td><td>35</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2045</th><td class="g">–</td><td class="g">–</td><td class="e">674</td><td class="e">843</td><td class="e">531</td><td>–</td><td>151</td><td class="tot">2,203</td><td class="sep g">107</td><td>–</td><td>–</td><td>25</td><td>35</td><td>–</td><td>–</td></tr>
+<tr class="gap"><th scope="row">2046</th><td class="g">–</td><td class="g">–</td><td class="e">640</td><td class="e">848</td><td class="e">542</td><td>–</td><td>153</td><td class="tot">2,186</td><td class="sep g">–</td><td>–</td><td>–</td><td>25</td><td>35</td><td>–</td><td>–</td></tr>
+<tr class="gap"><th scope="row">2050</th><td class="g">–</td><td class="g">–</td><td class="e">605</td><td class="e">758</td><td class="e">587</td><td>–</td><td>161</td><td class="tot">2,114</td><td class="sep g">–</td><td>–</td><td>–</td><td>25</td><td>35</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2055</th><td class="g">–</td><td class="g">–</td><td class="e">654</td><td class="e">614</td><td class="e">636</td><td>–</td><td>172</td><td class="tot">2,080</td><td class="sep g">–</td><td>–</td><td>25</td><td>–</td><td>23</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2060</th><td class="g">–</td><td class="g">–</td><td class="e">722</td><td class="e">678</td><td class="e">521</td><td>–</td><td>184</td><td class="tot">2,109</td><td class="sep g">–</td><td>–</td><td>25</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2065</th><td class="g">–</td><td class="g">–</td><td class="e">797</td><td class="e">748</td><td class="e">394</td><td>–</td><td>197</td><td class="tot">2,140</td><td class="sep g">–</td><td>–</td><td>25</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2070</th><td class="g">–</td><td class="g">–</td><td class="e">879</td><td class="e">825</td><td class="e">253</td><td>–</td><td>211</td><td class="tot">2,174</td><td class="sep g">–</td><td>–</td><td>25</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><th scope="row">2075</th><td class="g">–</td><td class="g">–</td><td class="e">970</td><td class="e">911</td><td class="e">98</td><td>–</td><td>227</td><td class="tot">2,212</td><td class="sep g">–</td><td>–</td><td>25</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+</tbody></table></div>
+<p class="note">Reading 2035–40: each ISA rung redeems about £99k inside the ISA and the ISA gilts still outstanding pay about £4.8k of coupons on top, £47k leaves it to cover spending after Hadley Bricks, and the rest (about £56k in 2035, less later as the coupons fall away) stays in the ISA as equity, which is why ISA equity climbs and GIA stays empty. Before 2035 the coupons (about £6.8k a year across both wrappers) are reinvested in equity where they land. Reading 2041–45: the SIPP rungs mature inside the pension, so they show as pension equity growing rather than as cash arriving. Spending in those years is covered by a £12.6k draw inside Chris's personal allowance plus tax-free cash. Years 2047 to 2049 are omitted as they are near-identical to 2046, and after 2050 the table shows every fifth year.</p>
+
+<div class="warnbox"><b>What the flat-2% tail hides.</b> Because the drawdown rule takes only what fits inside the personal allowances, the pensions are never drawn down and reach about £1.88M by 2075. That is efficient for income tax, with about £500 paid across forty years, but it leaves a large estate for inheritance tax and beneficiary tax. From the mid-2050s the sensible move is to draw the pensions up to the basic-rate band and gift or ISA the excess. That decision is parked, not forgotten.</div>
+
+<h2>4. Other return worlds</h2>
+<p>The table above is one path: 2% real from equities every year. Below is the same plan under flat 0% and 4% real, and then what the plan did across every rolling start in the US market record since 1881, first for all starts and then for starts at valuations like today's.</p>
+<h3>Flat return, deterministic</h3>
+<div class="scroll"><table>
+<thead><tr><th class="left">Equity real return, every year</th><th>Total at 2035</th><th>Total at 2045</th><th>Total at 2075</th><th>Sustainable spend</th></tr></thead>
+<tbody>
+<tr><td class="left">0% (a lost half-century)</td><td>£2.12M</td><td>£1.71M</td><td>£0.43M</td><td>£71k*</td></tr>
+<tr><td class="left"><b>2% (planning case)</b></td><td><b>£2.28M</b></td><td><b>£2.20M</b></td><td><b>£2.21M</b></td><td><b>£94k*</b></td></tr>
+<tr><td class="left">4% (the long-run average)</td><td>£2.47M</td><td>£2.87M</td><td>£6.68M</td><td>£126k*</td></tr>
+</tbody></table></div>
+<p class="note">Even at 0% real for fifty years the plan funds £60k to age 92 with the house untouched and £428k left. Income tax in that world rises to about £56k in total, because pensions get drawn at 20% late on. *Sustainable-spend column is the 3 Sep outlook figure, not re-run; the 20 Sep audit found £70k/yr does NOT survive the 0% world under this ledger's tax rules (cash exhausted around 2073), so treat £60k as the floor plan and £70k as the 2% case only.</p>
+
+<h3>History replayed</h3>
+<div class="scroll"><table>
+<thead><tr><th class="left">Outcome</th><th>Worst</th><th>5th pct</th><th>Median</th><th>95th pct</th></tr></thead>
+<tbody>
+<tr class="group"><th colspan="5" class="left">All 1,514 monthly starts, 1881–2007</th></tr>
+<tr><td class="left">Total at 2035</td><td>£1.69M</td><td>£1.93M</td><td>£2.66M</td><td>£4.28M</td></tr>
+<tr><td class="left">Total at 2045</td><td>£1.46M</td><td>£1.96M</td><td>£3.96M</td><td>£8.77M</td></tr>
+<tr><td class="left">Sustainable spend</td><td>£75k</td><td>£89k</td><td>£139k</td><td>£256k</td></tr>
+<tr class="group"><th colspan="5" class="left">34 starts with CAPE at or above 35, like today</th></tr>
+<tr><td class="left">Total at 2035</td><td>£1.69M</td><td>£1.72M</td><td>£1.98M</td><td>£2.32M</td></tr>
+<tr><td class="left">Total at 2045</td><td>£2.92M</td><td>£2.96M</td><td>£3.20M</td><td>£3.50M</td></tr>
+<tr><td class="left">Sustainable spend</td><td>£110k</td><td>£111k</td><td>£116k</td><td>£122k</td></tr>
+</tbody></table></div>
+<p class="note">Sustainable spend means the highest flat real spend from 2035 that runs the investments to zero at age 92 on that exact path, before tax, with no flexibility. It is a hindsight number for comparing designs. The one figure to hold onto is the worst case: £75k, against a plan to spend £60k. Each window uses 19 years of real history then 2% flat, so the later decades are an assumption.</p>
+
+<h2>5. Assumptions</h2>
+<dl>
+<dt>Money</dt><dd>All figures in Sep 2026 pounds. Balances from the tracker on 1 Sep 2026.</dd>
+<dt>Gilt ladder</dt><dd>Priced at the 17–20 Sep 2026 curve (portfolio real IRR 2.01% ISA rungs, 2.29% SIPP rungs), coupon-inclusive, sized by the money committed: £519.5k of ISA money buys £98.7k of redemption a year 2035–40, £389.9k of SIPP money buys £106.3k a year 2041–45. Coupons paid out annually and reinvested in-wrapper; rungs held to maturity. Re-price on the day; each rung moves a few £k per 0.25% of yield. Order sheets: <code>node scripts/gilt-ladder.mjs --budget 519500 --years 2035-2040</code> and <code>--budget 389900 --years 2041-2045</code>.</dd>
+<dt>Equities</dt><dd>2% real a year in the planning case. Global tracker exposure throughout. Crypto is modelled as equity.</dd>
+<dt>Cash</dt><dd>0.5% real. Buffer held at a £30k floor before any taxed pension draw.</dd>
+<dt>Saving to 2035</dt><dd>Only Abby's salary sacrifice is credited, £33.5k rising to £46.2k a year into her DC pot (Aug 2026 payslip basis; was £28.9k–£40.9k on the April payslip). The rest of the household is treated as breakeven, which is the Amendment 1 cash-flow view with Hadley Bricks at £25k. Anything saved beyond that is margin.</dd>
+<dt>Spending</dt><dd>£60k real from June 2035, flat for life. About £51k of it is the base and the rest is holidays.</dd>
+<dt>Hadley Bricks</dt><dd>£13k a year from retirement to Nov 2040, tax-free inside Chris's personal allowance, then nil.</dd>
+<dt>Pension access</dt><dd>Chris Nov 2040 at 57, Abby Aug 2043 at 57. Drawdown is phased: taxable draws to fill each personal allowance, then tax-free cash, then ISA, then GIA, then cash, then taxed pension at 20% as a last resort.</dd>
+<dt>State pension</dt><dd>£12.5k each at 68: Chris from 2052, Abby from 2055. Both assumed to reach full records.</dd>
+<dt>Tax</dt><dd>Personal allowance £12,570 and basic-rate limit £50,270 held flat in real terms, which is conservative. Tax-free cash capped at £268,275 each. That cap is frozen in cash terms, so the model is generous on it by roughly a third by the 2050s.</dd>
+<dt>Surplus</dt><dd>In 2035–40 the surplus stays inside the ISA where the rung matured. In 2041–45 it stays inside the SIPP. After that anything left goes into ISAs up to £40k a year, then a general account, where dividend and gains drag is not modelled.</dd>
+<dt>Not counted</dt><dd>The house, any inheritance, Hadley Bricks after 2040, Abby's bonus, Child Benefit after 2035, and any rule changes to pension age, tax-free cash or state pension age.</dd>
+</dl>
+
+<h2>6. Still to do before buying</h2>
+<ul>
+<li><s>Re-price all eleven rungs at live yields.</s> Done 20 Sep 2026 (this revision). The £243k Abby transfer stands; the ladder is sized to the money, so the transfer figure does not move with yields — the redemption per rung does.</li>
+<li>Agree the design with Abby. Plan E is the working assumption, not yet the adopted plan.</li>
+<li>Abby opens an II ISA and starts the partial cash transfer from Vanguard. Sell LifeStrategy in Chris's II ISA and SIPP.</li>
+<li>Buy shortest rungs first, 2035–37 from Chris's ISA, then Abby's 2038–40, then the SIPP's 2041–45.</li>
+<li>Check the target retirement age on the L&amp;G account and whether the Accenture scheme offers in-scheme drawdown at 57. Neither is urgent.</li>
+<li>Decide the crypto exit on its own merits.</li>
+<li>Pull both state pension forecasts and settle Abby's NI route for 2035 to 2054.</li>
+</ul>
+</main>

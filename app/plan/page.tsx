@@ -84,7 +84,7 @@ export default function PlanPage() {
     <AppLayout title="Plan">
       <div className="mx-auto max-w-5xl space-y-10 pb-16">
         <div>
-          <p className="text-sm text-slate-500" title="Full write-up: Docs/investment-plan-amendment-1-2026-07.pdf">
+          <p className="text-sm text-slate-500" title="Full write-up: plan/runs/2026-07-30-amendment-1/investment-plan-amendment-1-2026-07.pdf (frozen; see plan/decisions.md for what has moved since)">
             The July 2026 plan, live: pots, the pension pivot, the gilt ladder and the outlook.
           </p>
         </div>

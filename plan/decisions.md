@@ -1,0 +1,51 @@
+# Plan decisions log — 20 September 2026
+
+Outcome of the pre-action audit of Amendment 1 (30 Jul 2026) and the Plan E ledger (3 Sep 2026).
+Audit method: independent re-derivation of the AVC/HICBC tax maths and of the gilt-ladder and
+drawdown model, plus reconciliation of the spend and income lines to the tracker.
+
+## Decisions (Chris, 20 Sep 2026)
+
+| Topic | Decision |
+|---|---|
+| Spend line | Plan on **£70k/yr** for now (tracker shows £77–80k on the cockpit definition; 2026 was a heavy holiday year). Address for 2027, or lift Chris-side income to match. Follow-up model: Chris at £20k take-home. |
+| HB income | Keep working to close the gap (Micro 1 work, other HB extensions). Plan books £25k *take-home* (= ~£29.4k profit); 2026 is tracking ~£19k profit. |
+| Ladder sizing | **Buy ~£98k of redemption per rung within the £909k** and treat coupons (~£7k/yr falling to ~£3k) as the top-up. Do NOT chase £108k redemptions (would need ~£569k in the ISA bridge, ~£50k more from Abby's Vanguard). Preference: keep more in equity / untied money. Re-price at live yields before ordering; retire the £60k defaults in the app/scripts before anyone prints an order sheet. |
+| AVC start | Started on the **September 2026 payslip**, set from the August payslip (55% catch-up). Chris to send the September payslip at month end; recompute Oct–Mar and the January true-up. Child Benefit is being paid gross — the September start is what decides whether 2026/27's £2,337 is kept or clawed back. |
+| Pay input | Rebased `PAYSLIP.basicAnnual` to £73,837.80 (Aug 2026). Outlook take-home and existing contributions now derived from the payslip, not hard-coded. |
+| 2029 salary-sacrifice NIC cap | Noted (relief on excess over £2k falls 42% → 40%; Accenture may restructure). Address in 2029. |
+| Tax-free cash / lifetime tax | Model over-counts TFC by ~£145k real (nominal-frozen LSA, no 25%-of-pot cap). "Lifetime tax ≈ £0" should read ~£44k (2% real). Survival unaffected. Not fixed in code. |
+| £70k at 0% real | Fails ~2073 in the ledger model; accepted as an extreme stress case, not a forecast. |
+| Assumptions confirmed | No death-in-service/redundancy cover assumed (external contingencies instead); bonus IS sacrificeable; full state pension for both; nominations to do; assume 57 on II; tax code 1117L double-tax (~£560/yr) to be squared up via self-assessment. |
+
+## Still open
+
+- Send September payslip → recompute AVC% for Oct–Mar (NMW floor now £26,510; a one-payslip slip breaches — fallback is bonus sacrifice).
+- Beneficiary nominations on all four pots.
+- Follow-up model: Chris £20k take-home vs £70k spend.
+
+## Fixed later on 20 Sep 2026 (ladder shape)
+
+- `scripts/ifa-e-yearly.mjs` now models real linkers: per-wrapper redemption sized by budget at the
+  17–20 Sep 2026 curve (ISA rungs £98.7k/yr at 2.01% IRR; SIPP rungs £106.3k/yr at 2.29%), coupons
+  paid out annually (~£6.8k/yr to 2035, reinvested in-wrapper) and the row-year off-by-one fixed
+  (row 2026 = 1 Sep 2026 balances). Planning case now (after also rebasing the AVC array to the Aug payslip, £33.5k→£46.2k/yr incl. payroll): 2035 £2.28M, 2045 £2.20M, 2075 £2.21M;
+  0%: £2.12M / £1.71M / £0.43M; 4%: £2.47M / £2.87M / £6.68M.
+- `Docs/plan-e-ledger-2026-09-03.html` regenerated from it (tiles, rung table, year table, sensitivity,
+  assumptions, to-do). The `.pdf` sibling is now STALE — re-export if it is shared.
+- App: `LADDER.targetPerYearReal` (£60k) removed; `LADDER.budgetReal` 909.4k (+ ISA 519.5k / SIPP 389.9k)
+  and `sizeByBudget()` in `lib/plan/ladder.ts`; `buildLadder()` defaults to budget sizing so the
+  /plan cockpit shows ~£101.6k redemption per year at fallback prices. `scripts/gilt-ladder.mjs`
+  defaults to `--budget 909400`, prints the coupon top-up row; `--amount` still forces a fixed size.
+- Order sheets to use on the day: `node scripts/gilt-ladder.mjs --budget 519500 --years 2035-2040`
+  and `node scripts/gilt-ladder.mjs --budget 389900 --years 2041-2045`.
+
+## Second-pass fix, 20 Sep 2026 evening
+
+- The architecture review found `ifa-e-yearly.mjs` still carried the April-basis AVC array (18.08→30.138) after the
+  payslip rebase. Replaced with `pivotProgramme(60_000)` output on the Aug payslip (22.037→34.775, + £11.445k
+  payroll) and the ledger regenerated again. This is exactly the drift class the single-source-of-truth work removes;
+  until then the array MUST be kept equal to `lib/plan/pivot.ts`.
+- The spend/reserve scenario runs earlier on 20 Sep (£60/70/80k × reserve intact/spent) were made before this fix;
+  they understate Abby's DC by ~£45k at 2035 and will be re-run as part of the queued scenario modelling.
+- Architecture plan for the drift-proof rebuild: `Docs/plan-single-source-of-truth-2026-09-20.md`.

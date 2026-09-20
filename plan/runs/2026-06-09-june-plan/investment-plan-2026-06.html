@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Hadley Household Retirement &amp; Investment Plan — June 2026</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: #1a2332; font-size: 10.5pt; line-height: 1.5; margin: 0; }
+  h1 { font-size: 22pt; margin: 0 0 4px; color: #0f2a4a; }
+  h2 { font-size: 14pt; color: #0f2a4a; border-bottom: 2.5px solid #0f2a4a; padding-bottom: 3px; margin: 26px 0 10px; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; color: #14467d; margin: 16px 0 6px; page-break-after: avoid; }
+  p { margin: 6px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+  th { background: #0f2a4a; color: #fff; text-align: left; padding: 5px 7px; font-family: Helvetica, Arial, sans-serif; font-size: 8.5pt; }
+  td { border-bottom: 1px solid #cfd8e3; padding: 4.5px 7px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f4f7fb; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .cover { background: #0f2a4a; color: #fff; padding: 28px 30px; border-radius: 6px; margin-bottom: 22px; }
+  .cover h1 { color: #fff; }
+  .cover .sub { color: #b9cce4; font-family: Helvetica, Arial, sans-serif; font-size: 9.5pt; margin-top: 8px; }
+  .callout { background: #eef4fb; border-left: 4px solid #14467d; padding: 9px 14px; margin: 10px 0; }
+  .warn { background: #fdf3e7; border-left: 4px solid #c77c1b; padding: 9px 14px; margin: 10px 0; }
+  .risk { background: #fbeeee; border-left: 4px solid #a33; padding: 9px 14px; margin: 10px 0; }
+  .good { color: #1c7a3d; font-weight: bold; }
+  .bad { color: #a33; font-weight: bold; }
+  .small { font-size: 8.5pt; color: #5a6b80; }
+  .toc td { border: none; padding: 2px 6px; }
+  .pagebreak { page-break-before: always; }
+  ul, ol { margin: 6px 0 6px 22px; padding: 0; }
+  li { margin: 3px 0; }
+  .sig { margin-top: 6px; font-style: italic; color: #5a6b80; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Retirement &amp; Investment Plan</h1>
+  <div class="sub">Chris Hadley (b. 10 Nov 1983) &amp; Abby Hadley (b. 5 Aug 1986) · Prepared 9–10 June 2026<br>
+  Objective: minimise the likelihood of failing to fund £60,000/yr (real) from June 2035, accepting reduced upside<br>
+  Status: <b>PROPOSAL — nothing executed.</b> Analysis prepared with Claude (finance-tracker), grounded in live account data and June 2026 market data. Not regulated financial advice.</div>
+</div>
+
+<table class="toc">
+<tr><td>1. Executive summary</td><td>5. Withdrawal &amp; tax plan (2035 → 2054+)</td></tr>
+<tr><td>2. Current position — pots, income, spending</td><td>6. Risk profile — modelled upside &amp; downside</td></tr>
+<tr><td>3. Assumptions (complete register)</td><td>7. Key risks, ranked, with your acceptances</td></tr>
+<tr><td>4. Investment plan (now → 52)</td><td>8. Gaps in knowledge &amp; concerns &nbsp;·&nbsp; 9. Actions &nbsp;·&nbsp; 10. Method &amp; sources</td></tr>
+</table>
+
+<h2>1 · Executive summary</h2>
+<p><b>A guaranteed 2% real return to 2035 is not purchasable.</b> The risk-free real rate (index-linked gilts held to maturity) is ~1.6% at the 2035 maturity. From a US Shiller CAPE of ~40, history puts the odds of equities beating 2.1%/yr real over 9 years at roughly <b>1-in-4</b>. The current ~87%-risk-asset portfolio therefore makes the retirement date a market bet.</p>
+<p><b>But the actual goal — £60k/yr of spending from June 2035 — can be substantially locked,</b> because index-linked gilt real yields (1.6–2.3% at 2035–2045 maturities, June 2026) currently sit at or above the plan's required return at exactly the right maturities. The plan:</p>
+<ol>
+<li><b>FLOOR:</b> buy an index-linked gilt ladder paying £60k (today's money) in every year 2035–2045. Cost: <b>~£498k</b> (31% of investable assets). Extend to 2051 (~£216k more) by ~2029. Held to maturity: immune to markets, inflation-linked, backed by HM Government.</li>
+<li><b>GROWTH:</b> ~£1.0M stays in global equities. Its job shrinks to funding the years after 2046 net of two state pensions — a bar it clears in <b>100% of historical high-valuation starts</b> (and 99.6% of all 1,502 twenty-year windows since 1881).</li>
+<li><b>RATCHET:</b> every June, bank equity strength into more locked years. One-way; never re-risk.</li>
+<li><b>Free wins:</b> state-pension repair via part-time HB (Chris) and a decision needed for Abby; tax-free withdrawal sequencing worth ~£0 tax until the 2050s; crypto exit at 18% not 24%; deferred Accenture pot transfer.</li>
+</ol>
+<div class="callout"><b>The trade you accepted:</b> in median markets the plan reaches ~£2.7M by 2035 instead of ~£3.0M; at the 90th percentile ~£4.2M instead of ~£5.1M. In exchange, the bottom quarter of outcomes — where the current portfolio delivers £37k/yr instead of £60k — is eliminated for 2035–2045 outright, and for 2046+ in every high-valuation start in 155 years of data.</div>
+
+<h2>2 · Current position — what this plan is built on (verified 1–9 June 2026)</h2>
+<table>
+<tr><th>Pot</th><th>Platform / scheme</th><th class="num">Value</th><th>Current holdings</th><th>Accessible</th></tr>
+<tr><td>Chris SIPP</td><td>Interactive Investor</td><td class="num">£434,584</td><td>50:50 Vanguard LS80 / LS100 (~90% equity)</td><td>Nov 2040 (57)</td></tr>
+<tr><td>Chris Accenture DC (deferred)</td><td>L&amp;G-administered</td><td class="num">£190,370</td><td>"Moderate risk" global fund</td><td>Nov 2040; transferable</td></tr>
+<tr><td>Abby Accenture DC (active)</td><td>L&amp;G-administered</td><td class="num">£272,948</td><td>Same default style; +£900/mo salary sacrifice</td><td>Aug 2043 (57)</td></tr>
+<tr><td>Chris ISA</td><td>Interactive Investor</td><td class="num">~£273,037</td><td>50:50 LS80/LS100</td><td>Anytime</td></tr>
+<tr><td>Abby ISA</td><td>Vanguard Investor</td><td class="num">~£308,504</td><td>50:50 LS80/LS100</td><td>Anytime</td></tr>
+<tr><td>Crypto (1 BTC + 6 ETH)</td><td>Unwrapped</td><td class="num">~£54,000</td><td>BTC ~£46.4k, ETH ~£1.24k each (9 Jun)</td><td>Anytime (CGT)</td></tr>
+<tr><td>Cash saver @4.5% / NS&amp;I Green Bond / cash</td><td>—</td><td class="num">~£55,000</td><td>£30k + £20k + balance</td><td>Anytime / term</td></tr>
+<tr><td><b>Investable total</b></td><td></td><td class="num"><b>~£1.59M</b></td><td><b>~83% equity + 3% crypto + 14% other</b></td><td></td></tr>
+<tr><td class="small">Excluded: house £697k (reserve of last resort), HB business stock ~£25k, Accenture shares ~£2k</td><td></td><td></td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Cash-flow item (validated line-by-line, Jan–May 2026)</th><th class="num">£/yr</th></tr>
+<tr><td>Abby take-home (base £4,330/mo; Feb bonuses on top)</td><td class="num">52,000</td></tr>
+<tr><td>Hadley Bricks drawings (£500/wk)</td><td class="num">26,000</td></tr>
+<tr><td>Abby pension, payroll-direct (counts as income and savings)</td><td class="num">10,800</td></tr>
+<tr><td>Cottrell (annual, each April — confirmed recurring)</td><td class="num">3,000</td></tr>
+<tr><td><b>Recurring household income</b></td><td class="num"><b>91,800</b></td></tr>
+<tr><td>Current spending run-rate (sign-aware; ex-holiday baseline ~£51k)</td><td class="num">69,500</td></tr>
+<tr><td><b>Savings rate</b> (rising to ~£31.8k if spend hits £60k)</td><td class="num"><b>~22,300 (24%)</b></td></tr>
+</table>
+<table>
+<tr><th>Key date (current law, verified vs gov.uk June 2026)</th><th>Date</th><th>Note</th></tr>
+<tr><td>Retirement — Max finishes Year 11</td><td><b>June 2035</b></td><td>Chris 51½, Abby 48</td></tr>
+<tr><td>Chris private pension access (57)</td><td>Nov 2040</td><td>Rise to 58 floated, never legislated</td></tr>
+<tr><td>Abby private pension access (57)</td><td>Aug 2043</td><td></td></tr>
+<tr><td>Chris state pension — <b>age 68</b></td><td>Nov 2051</td><td>£12,548/yr each (2026/27 full nSP); joint £25.1k</td></tr>
+<tr><td>Abby state pension — <b>age 68</b></td><td>Aug 2054</td><td>SPA review live; could be accelerated</td></tr>
+</table>
+
+<h2 class="pagebreak">3 · Assumptions — complete register</h2>
+<table>
+<tr><th>#</th><th>Assumption</th><th>Value</th><th>Basis / confidence</th></tr>
+<tr><td>A1</td><td>Target spend, real, for life</td><td>£60,000/yr</td><td>Your decision (9 Jun 2026). Run-rate is £69.5k — gap must close (§7 R1)</td></tr>
+<tr><td>A2</td><td>Retirement date</td><td>Jun 2035</td><td>Max finishes Y11. Decision</td></tr>
+<tr><td>A3</td><td>Floor returns</td><td>1.6–2.3% real, locked</td><td>ILG yields 9 Jun 2026 (single-sourced — verify at dealing, §8 G1)</td></tr>
+<tr><td>A4</td><td>Growth sleeve modelling</td><td>US monthly real returns 1871–2026</td><td>Shiller dataset. ⚠ US-only data has survivorship optimism vs a global sleeve — partially offset by sleeve's actual 48% non-US weighting</td></tr>
+<tr><td>A5</td><td>Inflation protection</td><td>ILGs link RPI→CPIH (Feb 2030, confirmed)</td><td>CPIH ≈ your inflation ±; wedge currently ~0</td></tr>
+<tr><td>A6</td><td>Savings to 2035</td><td>£22.3k/yr</td><td>Validated actuals; assumes Abby's income persists (§7 R2)</td></tr>
+<tr><td>A7</td><td>State pensions</td><td>£25.1k/yr joint from 68 (2051/2054)</td><td>Current law + complete NI records (repair plan §4.6; Abby route open)</td></tr>
+<tr><td>A8</td><td>HB after 2035</td><td>Part-time, at least NI-stamp level (~£7.1k+ profits)</td><td>Your decision (10 Jun). £20k/yr scenario = pure upside, not relied on</td></tr>
+<tr><td>A9</td><td>University costs</td><td>Covered by Emmie's &amp; Max's JISAs</td><td>Your confirmation (10 Jun); balances unverified (§8 G7)</td></tr>
+<tr><td>A10</td><td>House</td><td>£697k, excluded; assumed mortgage-free</td><td>No mortgage line in spending data — unconfirmed (§8 G6)</td></tr>
+<tr><td>A11</td><td>Longevity horizon</td><td>Abby to 95 (2081)</td><td>Annuity option (§5.4) covers beyond</td></tr>
+<tr><td>A12</td><td>Tax system</td><td>2026/27 rules; PA frozen to 2028 then indexed; ISA/pension wrappers persist</td><td>Legislative risk §7 R3 (incl. pensions into IHT from Apr 2027 — announced)</td></tr>
+<tr><td>A13</td><td>Crypto, business stock</td><td>Exit crypto ~£54k; HB stock not retirement capital</td><td>Decisions 9–10 Jun</td></tr>
+<tr><td>A14</td><td>Platform access</td><td>II deals individual ILGs (phone); Vanguard cannot</td><td>Verified vs ii.co.uk; fee detail to confirm (§8 G3)</td></tr>
+</table>
+
+<h2>4 · Investment plan — now to 52 (June 2035)</h2>
+<h3>4.1 Target structure</h3>
+<table>
+<tr><th>Sleeve</th><th class="num">Amount</th><th class="num">%</th><th>Instruments</th><th>Job</th></tr>
+<tr><td>ILG ladder 2035–2045</td><td class="num">£498k</td><td class="num">31%</td><td>11 index-linked gilts, one per spending year, held to maturity</td><td>Pays £60k real/yr, years 1–11 of retirement</td></tr>
+<tr><td>Ladder extension 2046–2051</td><td class="num">~£216k</td><td class="num">→13%</td><td>Long ILGs ~2.3% real, phased to ~2029</td><td>Years 12–17, to Chris's state pension</td></tr>
+<tr><td>Growth</td><td class="num">~£1.00M→£0.85M</td><td class="num">63→53%</td><td>Global equity (consolidate LS80→LS100; bond sleeve redundant once floor exists)</td><td>Everything after 2046/2051; upside</td></tr>
+<tr><td>Cash / MMF</td><td class="num">~£60–80k</td><td class="num">~5%</td><td>4.5% saver, NS&amp;I, MMF (~3.7%)</td><td>12+ months' spending buffer</td></tr>
+<tr><td>Crypto</td><td class="num">£0</td><td class="num">0%</td><td>Exit per 4.5</td><td>—</td></tr>
+</table>
+<h3>4.2 The ladder, rung by rung (indicative, 9 June 2026 yields)</h3>
+<table>
+<tr><th>Pays out</th><th>Indicative gilt</th><th class="num">Real yield</th><th class="num">Cost per £60k</th><th>Wrapper</th></tr>
+<tr><td>2035</td><td>1⅛% IL Treasury Gilt 22 Sep 2035</td><td class="num">1.60%</td><td class="num">£52.0k</td><td rowspan="6"><b>II ISA</b> — bridge years, pre-pension-access. Total ~£291k ≈ the existing II ISA</td></tr>
+<tr><td>2036</td><td>0⅛% IL 22 Nov 2036</td><td class="num">1.72%</td><td class="num">£50.6k</td></tr>
+<tr><td>2037</td><td>split 2036/2039 maturities*</td><td class="num">~1.80%</td><td class="num">£49.3k</td></tr>
+<tr><td>2038</td><td>split 2036/2039 maturities*</td><td class="num">~1.89%</td><td class="num">£47.9k</td></tr>
+<tr><td>2039</td><td>0⅛% IL 22 Mar 2039</td><td class="num">~1.98%</td><td class="num">£46.4k</td></tr>
+<tr><td>2040</td><td>0⅝% IL 22 Mar 2040</td><td class="num">2.07%</td><td class="num">£45.0k</td></tr>
+<tr><td>2041</td><td>0⅛% IL 10 Aug 2041</td><td class="num">~2.12%</td><td class="num">£43.8k</td><td rowspan="5"><b>II SIPP</b> — accessible from Nov 2040 ✓. Total ~£207k</td></tr>
+<tr><td>2042</td><td>0⅝% IL 22 Nov 2042</td><td class="num">~2.17%</td><td class="num">£42.5k</td></tr>
+<tr><td>2043</td><td>0⅛% IL 22 Mar 2044 (adj.)</td><td class="num">~2.21%</td><td class="num">£41.4k</td></tr>
+<tr><td>2044</td><td>0⅛% IL 22 Mar 2044</td><td class="num">~2.26%</td><td class="num">£40.2k</td></tr>
+<tr><td>2045</td><td>0⅝% IL 22 Mar 2045</td><td class="num">2.30%</td><td class="num">£39.0k</td></tr>
+<tr><td><b>Total</b></td><td></td><td></td><td class="num"><b>~£498k</b></td><td></td></tr>
+</table>
+<p class="small">*Not every calendar year has an ILG; missing years are covered by weighting adjacent maturities. Exact gilt selection at dealing against the live DMO list; yields single-sourced (giltsyield.com, 9 Jun 2026) — cross-check with II's bond desk. Maturity-date details for ~2039–2044 rungs are indicative.</p>
+<h3>4.3 Build sequence</h3>
+<ol>
+<li><b>Tranche 1 (weeks 2–6):</b> sell LS80 in II ISA → buy 2035–2037 rungs (~£150k). Shortest rungs first — they're the least replaceable.</li>
+<li><b>Tranches 2–4 (by ~Q1 2027):</b> complete 2038–2040 (ISA) and 2041–2045 (SIPP). Phasing over 6–9 months averages the yield entry; don't stretch longer — every month at 87% risk from CAPE 40 is the risk you've chosen not to carry.</li>
+<li><b>Q3–Q4 2026:</b> transfer Chris ACN £190k → II SIPP (after L&amp;G written confirmations). Consolidate Vanguard ISA LS80→LS100 (stays as growth; second platform = deliberate resilience). Check Abby's L&amp;G menu for an ILG index fund (~50% switch if available — its long duration roughly matches her 2043+ access).</li>
+<li><b>2026–2029:</b> extension rungs 2046–2051 from new savings (£11.5k/yr ISA), crypto proceeds, and ratchet sales.</li>
+</ol>
+<h3>4.4 The ratchet (mechanical, written down)</h3>
+<div class="callout">Each June: if growth sleeve &gt; 1.25 × PV(unfunded future spending net of state pensions and existing rungs) → sell growth, fund the next rung(s). Otherwise do nothing. Never sell ladder to buy equities. Suspend only if the next unfunded year is ≥12 years away and ILG real yields &lt; 0.5%.</div>
+<h3>4.5 Crypto exit (~£54k)</h3>
+<ol><li>Establish base costs (gain size drives the schedule).</li><li>Interspousal transfer to Chris — CGT-free; he's basic-rate (18% vs Abby's 24%), with ~£24k of band headroom.</li><li>Use both £3k annual exemptions; split across 2026/27 + 2027/28 if gains are large.</li><li>Proceeds → ISA allowances (£20k each) → ladder rungs.</li></ol>
+<h3>4.6 State-pension repair</h3>
+<p><b>Chris — solved by decision (10 Jun):</b> HB continues part-time ≥ NI-stamp level. Profits above £7,105 (2026/27 SPT) = automatic qualifying year; below, voluntary Class 2 ~£190/yr.
+<b>Abby — open decision:</b> her record stops in 2035 with ~20 years to SPA. Options: (1) bring her into HB as partner/employee above the LEL (~£6.5k/yr) — stamp nearly free; (2) voluntary Class 3, £957/yr — each year buys ~£358/yr index-linked for life (payback &lt;3 years; annuity-equivalent value ~£7–9k). Either way: <b>pull both NI forecasts now</b> — Chris has pre-2016 contracting-out uncertainty; plan from the forecast, not the year-count.</p>
+
+<h2 class="pagebreak">5 · Withdrawal &amp; tax plan — 52 to the state pensions and beyond</h2>
+<h3>5.1 Year-by-year funding map</h3>
+<table>
+<tr><th>Years</th><th>Spending funded by</th><th>Tax position</th><th class="num">Est. tax/yr</th></tr>
+<tr><td>2035 – Nov 2040</td><td>ISA ladder rungs (£60k matures annually in II ISA)</td><td>ISA proceeds tax-free; gilt gains CGT-exempt anyway. HB part-time profits inside Chris's personal allowance</td><td class="num">~£0</td></tr>
+<tr><td>Nov 2040 – Aug 2043</td><td>SIPP rungs 2041–43 mature; begin Chris pension drawdown</td><td>Draw Chris pension ≈ personal allowance (£12,570) each year via UFPLS/drawdown — 25% TFC element + 0%-band income. Use-it-or-lose-it. Balance from ISA</td><td class="num">~£0</td></tr>
+<tr><td>Aug 2043 – Nov 2051</td><td>Extension rungs 2044–51 (SIPP) + both pensions open</td><td>Two personal allowances ≈ £25k/yr of pension money out at 0%; remainder from TFC entitlements and ISA. (Each 25% TFC stays under the £268,275 LSA cap)</td><td class="num">~£0–1k</td></tr>
+<tr><td>Nov 2051 – Aug 2054</td><td>Chris SP £12.5k + portfolio £47.5k</td><td>SP fills Chris's PA; his further pension draws taxed at 20%; prefer ISA/TFC for the excess</td><td class="num">~£1–3k</td></tr>
+<tr><td>Aug 2054 →</td><td>Joint SPs £25.1k + portfolio ~£35k</td><td>SPs fill both PAs; ~£35k drawn as mix of taxable pension (20%) and tax-free ISA</td><td class="num">~£2–4k</td></tr>
+</table>
+<p>Lifetime income-tax cost of funding £60k/yr on this sequencing is roughly <b>2–5p in the pound from the mid-2050s and ~zero before</b> — because the bridge is ISA-funded by construction and both personal allowances are deliberately filled from pensions every year from 2040. This is the quiet second benefit of holding the bridge rungs in ISAs.</p>
+<h3>5.2 Sequencing rules</h3>
+<ul>
+<li><b>Spend taxable-last:</b> ISA rungs (forced, 2035–40) → pension-within-allowance (2040+) → TFC chunks → taxable pension → ISA capital last for flexibility.</li>
+<li><b>Crystallise gradually</b> (UFPLS or phased drawdown), not all at once — preserves TFC optionality and stays under tax bands. Note the recurring Budget rumours about capping tax-free cash: a reason not to leave crystallisation too late into the 2040s (watch item, not actionable now).</li>
+<li><b>MPAA:</b> once Chris flexibly accesses taxable pension income (2040+), his pension contributions cap at £10k/yr — irrelevant under this plan (no contributions planned post-2035).</li>
+<li><b>Ratchet continues in retirement:</b> each rung spent is one year off the runway; each good equity year adds one at the far end. Target ≥10-year funded runway at all times. After a bad equity year, don't extend — the runway IS the sequence-risk insurance.</li>
+</ul>
+<h3>5.3 Inheritance tax (announced change — affects this plan)</h3>
+<div class="warn">From <b>April 2027</b> (announced Oct 2024 Budget; legislation in progress), unused pension funds fall into the estate for IHT. With house + portfolio, your estate will exceed the combined NRBs. Implications: (1) the old logic of "preserve pensions, spend ISAs, pensions pass IHT-free" is dead — this plan's pension-first drawdown from 2040 is already the right shape; (2) spouse-to-spouse remains exempt — the exposure is on second death; (3) gifting capacity opens up post-2040 once the floor is secure. Not modelled further here; revisit ~2030.</div>
+<h3>5.4 The annuity option (evaluate at Abby's 57th, Aug 2043)</h3>
+<p>At June 2026 rates a joint-life RPI-linked annuity at ~60 pays ~4.3–4.5% per £100k (estimated from published single-life RPI and joint-level ratios — get real quotes). If rates remain near this in 2043–48, annuitising ~£700–800k of pension would lock the entire post-2054 residual (~£35k/yr) plus all longevity risk, making the plan market-proof for life. It is an option, not a dependency — the ladder + state pensions may already suffice. Trigger to revisit: joint RPI-linked rate ≥ ~4.5% while the growth sleeve is above its ratchet threshold.</p>
+
+<h2 class="pagebreak">6 · Risk profile — modelled upside and downside (real data, not assumptions)</h2>
+<p class="small">Method: every rolling 9-year monthly window in the Shiller dataset (1,634 windows, 1881–2026), simulating both portfolios month-by-month with contributions: <b>Current</b> = 87% equity / 13% bonds, £1.578M + £22.3k/yr. <b>Proposed</b> = £498k floor locked at 1.93% IRR + £1.02M equity + £60k cash + contributions locked at 2.2%. "CAPE≥30 starts" = the 57 windows beginning at valuations like today's (1929 and dot-com eras). All values real, today's money. Scripts in repo: <code>scripts/ifa-plan-simulation.mjs</code>, <code>ifa-cape-challenge.mjs</code>, <code>ifa-floor-growth-analysis.mjs</code>.</p>
+<h3>6.1 Portfolio at June 2035 — full distribution</h3>
+<table>
+<tr><th rowspan="2">Percentile</th><th colspan="2">All history (n=1,634)</th><th colspan="2">High-valuation starts, CAPE≥30 (n=57)</th></tr>
+<tr><th class="num">Current 87% eq</th><th class="num">Proposed</th><th class="num">Current 87% eq</th><th class="num">Proposed</th></tr>
+<tr><td>p5 (bad)</td><td class="num">£1.44M</td><td class="num">£1.68M</td><td class="num bad">£1.22M</td><td class="num">£1.43M</td></tr>
+<tr><td>p10</td><td class="num">£1.62M</td><td class="num">£1.79M</td><td class="num">£1.27M</td><td class="num">£1.47M</td></tr>
+<tr><td>p25</td><td class="num">£2.29M</td><td class="num">£2.22M</td><td class="num">£1.56M</td><td class="num">£1.69M</td></tr>
+<tr><td>p50 (median)</td><td class="num">£2.99M</td><td class="num">£2.71M</td><td class="num">£1.77M</td><td class="num">£1.83M</td></tr>
+<tr><td>p75</td><td class="num">£3.88M</td><td class="num">£3.33M</td><td class="num">£2.17M</td><td class="num">£2.12M</td></tr>
+<tr><td>p90 (boom)</td><td class="num good">£5.14M</td><td class="num">£4.18M</td><td class="num">£2.31M</td><td class="num">£2.22M</td></tr>
+</table>
+<p><b>Reading it honestly:</b> the headline portfolio numbers look similar — the floor's real work doesn't show in this table, because what it changes is not the 2035 <i>value</i> but what the bad outcomes <i>mean</i>:</p>
+<h3>6.2 What the downside actually looks like</h3>
+<table>
+<tr><th>Scenario (from CAPE≥30 starts)</th><th>Current portfolio</th><th>Proposed plan</th></tr>
+<tr><td><b>p5 outcome</b></td><td class="bad">£1.22M → supports ~£37k/yr at a 3.03% withdrawal rate. Retirement delayed or spending cut ~40%</td><td class="good">Ladder pays £60k/yr 2035–2045 in full, regardless. Growth sleeve (~£0.56M at p5) has a 10–20 yr runway to recover before it is needed</td></tr>
+<tr><td><b>Worst single window</b> (Oct 1999 start: −6.3%/yr for 9 yrs)</td><td class="bad">~£1.05–1.25M; plan fails badly</td><td class="good">£60k/yr 2035–45 untouched; post-2046 partially exposed (see 6.3)</td></tr>
+<tr><td><b>Post-2046 funding test</b> (growth must reach £1.10M by 2046)</td><td>—</td><td class="good">Funded in <b>100% of the 57 high-CAPE starts</b> (worst: £1.12M) and 99.6% of all 1,502 twenty-year windows (worst ever: £0.98M — a ~11% shortfall, against which the £697k house and HB income stand entirely outside the plan)</td></tr>
+<tr><td><b>Deterministic stress</b>: 2% real flat forever</td><td>Marginal; sequence-dependent</td><td class="good">Never depletes; portfolio ~£1.9M+ at 68, growth thereafter (modelled 9 Jun)</td></tr>
+</table>
+<h3>6.3 Modelled upside (what you forgo)</h3>
+<p>Median all-history outcome: proposed £2.71M vs current £2.99M at 2035 (−9%); boom case £4.18M vs £5.14M (−19%). In every scenario above ~p30 you'd have been richer staying put. That is the insurance premium, and it is paid <i>only</i> in the states of the world where you didn't need the insurance. Upside that survives the plan: ratchet converts strong markets into a floor reaching 2051+ years early, growth sleeve compounding into your 70s, HB profits, triple-lock drift, and the house.</p>
+<h3>6.4 Residual failure modes (what the data cannot rule out)</h3>
+<ul>
+<li><b>UK sovereign default on index-linked debt</b> — no modern precedent; would coincide with collapse of every alternative plan too.</li>
+<li><b>Japan 1990–2010 analogue on a global portfolio</b> — equities at &lt;−0.7%/yr real for 20+ years has never occurred in US data (worst −0.2%); it did occur in single-country Japan. The sleeve's ~52% US / 23% UK / 25% other spread is the mitigation; it is not a guarantee.</li>
+<li><b>CPIH materially understating your personal inflation</b> — rung payouts drift below real needs; ratchet margin and spending flex absorb modest drift.</li>
+<li><b>Legislation</b> — NMPA to 58, SPA acceleration, wrapper/tax changes (§7 R3).</li>
+</ul>
+
+<h2 class="pagebreak">7 · Key risks, ranked — including your recorded acceptances</h2>
+<table>
+<tr><th>#</th><th>Risk</th><th>Assessment</th><th>Mitigation / acceptance</th></tr>
+<tr><td>R1</td><td><b>Spending stays above £60k</b></td><td>Live now: run-rate £69.5k. Each £5k/yr permanent ≈ £150–200k more capital</td><td><b>Accepted by you (10 Jun)</b>: gap is largely discretionary holiday spend; kids leaving home cuts the base. Caveat kept: kids are home for the first bridge years — track monthly</td></tr>
+<tr><td>R2</td><td><b>Income interruption pre-2035</b></td><td>Abby's £52k is load-bearing for 9 more years</td><td><b>Accepted by you (10 Jun)</b>: redundancy would carry a good payoff; career outlook strong; upside as likely. Backstops: 12-mo cash buffer, rungs sellable at market</td></tr>
+<tr><td>R3</td><td><b>Legislative change</b></td><td>NMPA 57→58 (floated); SPA 68 accelerated/69; TFC cap; ISA reform; pensions into IHT Apr 2027 (announced); triple-lock</td><td>ISA bridge already reaches 2040 with SIPP rungs behind it; consider one spare ISA rung (2041, ~£44k) as NMPA insurance; June reviews track each Budget/SPA review</td></tr>
+<tr><td>R4</td><td><b>Growth sleeve 20-yr failure</b></td><td>Needs &lt;−0.7%/yr real over 20 yrs; never in 155 yrs US data; Japan is the single-market precedent</td><td>Global spread; ratchet banks strength; house + HB outside the plan. <b>Your view (10 Jun): upside less likely at CAPE ~40 — consistent with §6 data</b></td></tr>
+<tr><td>R5</td><td><b>Index basis (RPI→CPIH 2030)</b></td><td>Confirmed, no compensation; priced into yields</td><td>Wedge currently ~0; small margin in rung sizing; ratchet buffer</td></tr>
+<tr><td>R6</td><td><b>Real yields rise after purchase</b></td><td>~50/50; mark-to-market only</td><td>Held-to-maturity discipline; 6–9 month phased entry</td></tr>
+<tr><td>R7</td><td><b>Platform/custody</b></td><td>Low; assets ring-fenced</td><td>Two platforms by design; gilts survive platform failure; FSCS £85k/firm (shortfall), £120k cash/licence</td></tr>
+<tr><td>R8</td><td><b>Death / illness / divorce</b></td><td>Plan assumes both partners, both SPs</td><td>Wills + pension beneficiary nominations (check now); consider term life on Abby to 2035 (~£500k); ISA APS exists</td></tr>
+<tr><td>R9</td><td><b>Annuity rates fall before 2043+ window</b></td><td>Unknowable</td><td>Option, not dependency; ladder extension substitutes</td></tr>
+<tr><td>R10</td><td><b>Longevity beyond 95</b></td><td>Modest</td><td>SPs never expire; annuity option; house</td></tr>
+</table>
+
+<h2>8 · Gaps in knowledge &amp; concerns (nothing hidden)</h2>
+<table>
+<tr><th>#</th><th>Gap / concern</th><th>Why it matters</th></tr>
+<tr><td>G1</td><td>ILG yields single-sourced (giltsyield.com, 9 Jun); BoE official curve not cross-checked; rung maturities ~2039–2044 indicative</td><td>±10–20bp moves ladder cost by ~£5–15k. Verify with II bond desk at dealing</td></tr>
+<tr><td>G2</td><td>L&amp;G/Accenture specifics unconfirmed: protected pension age (as at 11 Feb 2021), exit fees, safeguarded benefits, <b>Abby's fund menu</b></td><td>Gates the £190k transfer and Abby's de-risking option</td></tr>
+<tr><td>G3</td><td>II fee schedule post-Feb 2026 (Core £5.99/mo etc. from third-party review); phone-dealt ILG charges</td><td>Minor cost; confirm before tranche 1</td></tr>
+<tr><td>G4</td><td>NI records: Chris pre-2016 contracting-out; Abby years accrued; <b>Abby's post-2035 route undecided</b></td><td>Up to ~£12.5k/yr of her SP at stake; forecasts are the authority</td></tr>
+<tr><td>G5</td><td>Crypto base costs unknown</td><td>Gain size sets the 1-vs-2-tax-year exit schedule</td></tr>
+<tr><td>G6</td><td>Mortgage-free status assumed, not confirmed</td><td>A live mortgage inside £60k would change everything</td></tr>
+<tr><td>G7</td><td>JISA balances (Emmie, Max) unverified against uni costs</td><td>Shortfall would leak into bridge-year spending</td></tr>
+<tr><td>G8</td><td>Joint RPI annuity rate is my estimate (~4.3–4.5%/£100k at 60) from published singles + joint ratios</td><td>Quote properly at decision time (2043+)</td></tr>
+<tr><td>G9</td><td>Simulation uses US returns for a global sleeve; pre-1926 data quality; only ~2 independent high-CAPE episodes (1929, 2000) behind the n=57 windows</td><td>The "100% funded" result is strong evidence, not proof. Treat as ~"never failed in the data", not "cannot fail"</td></tr>
+<tr><td>G10</td><td>Spending data: 2025 history has known unreconciled duplicates (ignored by decision); £60k target vs £69.5k actual not yet demonstrated</td><td>The plan's biggest behavioural dependency (R1)</td></tr>
+<tr><td>G11</td><td>This is analysis, not regulated advice. The ACN transfer and any annuity merit a one-off fee-only IFA check; an execution error in a £500k gilt programme is worth £500 of professional eyes</td><td>—</td></tr>
+</table>
+
+<h2>9 · Action checklist</h2>
+<table>
+<tr><th>#</th><th>Action</th><th>Owner</th><th>When</th></tr>
+<tr><td>1</td><td>Pull both state pension forecasts + NI records (gov.uk/check-state-pension)</td><td>Chris &amp; Abby</td><td>This month</td></tr>
+<tr><td>2</td><td>Crypto base costs → transfer to Chris → plan 18%-band disposal</td><td>Chris</td><td>This month</td></tr>
+<tr><td>3</td><td>L&amp;G written confirmations (PPA / exit / safeguarded / Abby's menu), both pots</td><td>Chris &amp; Abby</td><td>This month</td></tr>
+<tr><td>4</td><td>Confirm II fees + ILG phone dealing; <b>tranche 1: 2035–2037 rungs in II ISA (~£150k)</b></td><td>Chris</td><td>Weeks 2–6</td></tr>
+<tr><td>5</td><td>JISA balance sanity-check; decide Abby NI route (HB role vs Class 3); confirm mortgage status</td><td>Both</td><td>Q3 2026</td></tr>
+<tr><td>6</td><td>Tranches 2–4: complete bridge (ISA) + 2041–45 rungs (SIPP)</td><td>Chris</td><td>By Q1 2027</td></tr>
+<tr><td>7</td><td>Transfer Chris ACN → II SIPP (after #3)</td><td>Chris</td><td>Q3–Q4 2026</td></tr>
+<tr><td>8</td><td>Vanguard ISA: LS80→LS100; Abby ACN switch if ILG fund exists; wills + beneficiary nominations check</td><td>Both</td><td>Q3 2026</td></tr>
+<tr><td>9</td><td>Extension rungs 2046–2051 (savings, crypto, ratchet)</td><td>Chris</td><td>2026–2029</td></tr>
+<tr><td>10</td><td>Annual June review: ratchet test, spend vs £60k, legislation watch</td><td>Both</td><td>Every June</td></tr>
+</table>
+
+<h2>10 · Method &amp; sources</h2>
+<p class="small">
+<b>Account data:</b> finance-tracker database (Supabase `finance` schema), wealth snapshots 1 Jun 2026, transactions reconciled exactly to HSBC 3 Jun 2026; income validated line-by-line Jan–May 2026.
+<b>Historical modelling:</b> Shiller monthly US real total returns &amp; CAPE, Jan 1871 – Jan 2026 (1,861 months) — `lib/fire/ern/data/shiller-monthly.json`; simulation scripts `scripts/ifa-plan-simulation.mjs`, `ifa-cape-challenge.mjs`, `ifa-floor-growth-analysis.mjs` (in repo, re-runnable).
+<b>Market data (as-of dates):</b> ILG/nominal yields — giltsyield.com &amp; Trading Economics, 9 Jun 2026; Bank Rate 3.75% — BoE MPC Apr 2026; CPI 2.8%/RPI 3.0% — ONS Apr 2026; CAPE 39.8–41.7 — GuruFocus/multpl 8–9 Jun 2026; country CAPEs — Siblis 31 Dec 2025 (stale, flagged); LS factsheets — Vanguard 30 Apr 2026 (UK weight gliding 25→20% by end-Jun 2026); annuities — HL/Retirement Line 1–7 Jun 2026; crypto — CoinGecko/Coinbase 9 Jun 2026; NS&amp;I — nsandi.com 9 Jun 2026; expected returns — GMO 30 Apr 2026, Vanguard VEMO Dec 2025, JPM LTCMA Oct 2025.
+<b>Legislation:</b> gov.uk SPA timetable; Finance Act 2022 (NMPA 57); Commons Library SN05847/SN06546; 2026/27 allowances (£20k ISA, £60k AA, £3k CGT AEA, 18/24% CGT); full nSP £241.30/wk; RPI reform — UKSA/XPS, Feb 2030 confirmed; pensions-into-IHT — announced Oct 2024, due Apr 2027.
+</p>
+<p class="sig">Prepared 9–10 June 2026 by Claude (acting as analytical IFA) for Chris &amp; Abby Hadley. Companion working document: <code>Docs/investment-plan-2026-06.md</code> in the finance-tracker repository. All decisions remain yours; this document is analysis, not regulated financial advice.</p>
+
+</body>
+</html>

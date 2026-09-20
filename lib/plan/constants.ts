@@ -1,7 +1,7 @@
 /**
  * Plan Cockpit constants.
  *
- * Source of truth: Docs/investment-plan-amendment-1-2026-07.md (the July 2026
+ * Origin: plan/runs/2026-07-30-amendment-1/investment-plan-amendment-1-2026-07.md (the July 2026, FROZEN; payslip rebased to Aug 2026 on 20 Sep — see plan/decisions.md; this file is superseded by plan/assumptions.json in phase 1
  * plan) and Abby's April 2026 payslip. Values are in today's (mid-2026) money
  * unless noted. These are plan assumptions, not live data — edit here, not in
  * the UI.

@@ -2,7 +2,7 @@
 
 **Feature:** Plan Cockpit — interactive financial-plan dashboard at `/plan`
 **Defined:** 2026-07-30 · **Iteration budget:** 5
-**Reference for all model numbers:** `Docs/investment-plan-amendment-1-2026-07.md` (the July 2026 plan). Payslip constants from Abby's April 2026 payslip. Where a criterion cites a number, that document is the source of truth.
+**Reference for all model numbers:** `plan/runs/2026-07-30-amendment-1/investment-plan-amendment-1-2026-07.md` (the July 2026 plan, FROZEN). Numeric anchors below are the APRIL-payslip figures and were superseded on 20 Sep 2026 by the Aug payslip rebase — see `plan/decisions.md` and `tests/unit/plan/*.test.ts` for the current anchors. Where a criterion cites a number, that document is the source of truth.
 
 **Problem:** The household plan (pots, pension pivot, gilt ladder, retirement outlook) lives in a static PDF and session models. Chris wants it interactive, live where cheap, and behind the app's existing login rather than on a public page.
 
@@ -108,6 +108,6 @@ Headings "Where we are", "The pivot", "The ladder", "The outlook" all present on
 
 ## Notes for Build
 
-- Models must be pure, dependency-free TS so unit anchors match the session models that produced the July plan (`scripts/` + `Docs/investment-plan-amendment-1-2026-07.md`).
+- Models must be pure, dependency-free TS so unit anchors match the session models that produced the July plan (`plan/archive/2026-decision-scripts/` + `plan/runs/2026-07-30-amendment-1/`).
 - Chart style: follow the plan doc's palette (#14467d, #3a6ea5, #2e9d5b, #c77c1b, #8a97a8) and direct labels.
 - Gilt scraping logic already exists in `scripts/gilt-ladder.mjs` — port, don't rewrite.
