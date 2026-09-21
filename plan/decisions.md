@@ -157,3 +157,14 @@ drawdown model, plus reconciliation of the spend and income lines to the tracker
 - Migration `010_plan_rungs_comment.sql` corrects the rungs table comment (sized by budget); documentation only,
   apply with the next migration push. Done-criteria F4 anchors marked superseded by `plan/derivations`.
   Repo `CLAUDE.md` gained a "Household plan" section stating the four rules and the commands.
+
+## 21 Sep 2026 — run-rate nets credits (decision, Chris)
+
+The trailing-12-month spend used to count gross debits only. Chris: "The netting is required for when we make
+group purchases and people pay us back. The gross spend is invalid." Refunds, reimbursements and contributions
+are filed in the category they offset (the categorisation convention), so `computeRunRate` now subtracts credits
+in spend categories (and in excluded categories for the excluded total) and reports `grossSpend` and
+`creditsNetted` alongside. Effect on the window to 21 Sep 2026: gross £91,167 → **net £84,157** (credits £7,010,
+mostly the Cottrell and parental holiday contributions and the Lalandia refund); still RED against the £70k line
+(+£14,157). Engine version `2026-09-21.net-runrate`; the accepted run 2026-09-21 carries the gross figure in its
+inputs and is left as it is (immutable); the next run diffs against it.

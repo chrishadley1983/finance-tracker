@@ -69,7 +69,9 @@ taxed draws (basic rate on the taxable fraction); surplus recycled to non-pensio
 
 ## spend.mjs
 
-**computeRunRate(a, txns)**: sum of |amount| over debits whose category is not income, not excluded, and not
-in `spend.excludedCategories`; vsPlanLine = spend − planLine. **bucketTotals(a, snapshots)**: latest balance per
+**computeRunRate(a, txns)**: over transactions whose category is not income, not excluded, and not in
+`spend.excludedCategories`: spend = Σ debits − Σ credits (refunds, reimbursements and contributions are filed
+in the category they offset and net against it); vsPlanLine = spend − planLine; grossSpend and creditsNetted
+are returned alongside. Excluded categories are netted the same way for the excludedTotal. **bucketTotals(a, snapshots)**: latest balance per
 account → bucket by `accounts.bucketMap` (pension by name, property/tracking/credit/other excluded,
 else accessible); with no snapshots, the assumptions' pots.

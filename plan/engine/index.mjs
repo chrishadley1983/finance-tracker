@@ -17,7 +17,7 @@ import { buildLadder, couponSchedule } from './ladder.mjs';
 import { runLedger } from './ledger.mjs';
 import { defaultOutlook, potsAtExit, sustainableSpend, drawdownSim } from './outlook.mjs';
 
-export const ENGINE_VERSION = '2026-09-21.phase4';
+export const ENGINE_VERSION = '2026-09-21.net-runrate';
 
 /**
  * @param {{ assumptions: any, giltPrices?: { asOf: string, gilts: any[] }, giltYields?: { asOf: string, rungs: any[] }, payslip?: any, today?: string }} inputs

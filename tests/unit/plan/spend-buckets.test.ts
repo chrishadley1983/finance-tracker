@@ -11,7 +11,7 @@ const cat = (name: string, extra: Partial<{ is_income: boolean; exclude_from_tot
 });
 
 describe('spending run-rate (criterion F3)', () => {
-  it('sums expenses sign-aware and applies the exclusion list', () => {
+  it('sums expenses net of credits and applies the exclusion list', () => {
     const r = computeRunRate([
       { amount: -1_000, category: cat('Groceries') },
       { amount: -500, category: cat('Home improvement') }, // excluded (kitchen)
@@ -20,12 +20,15 @@ describe('spending run-rate (criterion F3)', () => {
       { amount: -50, category: cat('Extension') }, // excluded
       { amount: 2_000, category: cat('Salary', { is_income: true }) }, // income
       { amount: -75, category: cat('Transfers', { exclude_from_totals: true }) },
-      { amount: 120, category: cat('Groceries') }, // refund: positive, skipped
+      { amount: 120, category: cat('Groceries') }, // refund / someone paying us back: NETS against the category (21 Sep 2026)
+      { amount: 30, category: cat('Work Travel') }, // reimbursement in an excluded category: nets the excluded total
       { amount: -40, category: null }, // uncategorised, skipped
     ]);
-    expect(r.trailing12moSpend).toBe(1_000);
-    expect(r.excludedTotal).toBe(1_050);
-    expect(r.vsPlanLine).toBe(1_000 - SPEND.planLine); // plan line comes from plan/assumptions.json
+    expect(r.grossSpend).toBe(1_000);
+    expect(r.creditsNetted).toBe(120);
+    expect(r.trailing12moSpend).toBe(880);
+    expect(r.excludedTotal).toBe(1_050 - 30);
+    expect(r.vsPlanLine).toBe(880 - SPEND.planLine); // plan line comes from plan/assumptions.json
   });
 });
 

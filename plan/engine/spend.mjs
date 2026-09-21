@@ -6,22 +6,26 @@
  */
 
 /**
- * Trailing spend, sign-aware (negative = expense), excluding income, excluded
- * categories and the plan's one-off/business/reimbursed categories. Gross
- * debits only — refunds and credits are not netted (the cockpit definition).
+ * Trailing spend, NET of credits, excluding income, excluded categories and the
+ * plan's one-off/business/reimbursed categories. Refunds, reimbursements and
+ * contributions (someone paying us back for a group purchase, a holiday
+ * contribution, a refunded booking) are filed in the spend category they
+ * offset, so a positive amount in a spend category reduces the spend
+ * (decided 21 Sep 2026 — gross spend overstated the household run-rate).
  * @param {any} a
  * @param {Array<{ amount: number, category: { name: string, is_income: boolean, exclude_from_totals: boolean } | null }>} txns
  */
 export function computeRunRate(a, txns) {
-  let spend = 0, excluded = 0;
+  let gross = 0, credits = 0, excluded = 0, excludedCredits = 0;
   for (const t of txns) {
     const c = t.category;
     if (!c || c.exclude_from_totals || c.is_income) continue;
-    if (t.amount >= 0) continue;
-    const x = Math.abs(t.amount);
-    if (a.spend.excludedCategories.includes(c.name)) excluded += x; else spend += x;
+    const isExcluded = a.spend.excludedCategories.includes(c.name);
+    if (t.amount < 0) { if (isExcluded) excluded += -t.amount; else gross += -t.amount; }
+    else if (t.amount > 0) { if (isExcluded) excludedCredits += t.amount; else credits += t.amount; }
   }
-  return { trailing12moSpend: spend, vsPlanLine: spend - a.spend.planLine, excludedTotal: excluded };
+  const spend = gross - credits;
+  return { trailing12moSpend: spend, grossSpend: gross, creditsNetted: credits, vsPlanLine: spend - a.spend.planLine, excludedTotal: excluded - excludedCredits };
 }
 
 /** @param {any} a @param {string} name @param {string} type */

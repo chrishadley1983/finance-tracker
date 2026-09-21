@@ -16,9 +16,11 @@ export interface SpendTxn {
 }
 
 export interface RunRate {
-  trailing12moSpend: number;
+  trailing12moSpend: number; // net of credits in spend categories
+  grossSpend: number;
+  creditsNetted: number; // refunds / reimbursements / contributions filed against spend categories
   vsPlanLine: number; // positive = over the plan line
-  excludedTotal: number; // what the exclusions removed (for the tooltip)
+  excludedTotal: number; // what the exclusions removed, net (for the tooltip)
 }
 
 export const computeRunRate = (txns: SpendTxn[]): RunRate => engineRunRate(ASSUMPTIONS, txns);
