@@ -28,7 +28,7 @@ export function runLedger(a, yields, opts = {}) {
   const k = (/** @type {number} */ x) => x / 1000;
   const G = opts.G ?? a.returns.realEquity.planning;
   const BASE = opts.baseYear ?? 2026;
-  const PA = k(a.tax.personalAllowance), BASIC = k(a.tax.higherRateFloor), TFC_CAP = k(a.drawdown.tfcCapEach);
+  const PA = k(a.tax.personalAllowance), TFC_CAP = k(a.drawdown.tfcCapEach);
   const SPEND = opts.spend !== undefined ? k(opts.spend) : k(a.spend.retirementTarget);
   const HB = opts.hbPost !== undefined ? k(opts.hbPost) : k(a.income.hbPostRetirement);
   const RETIRE = a.dates.planRetirementYear, END = a.dates.simulationEndYear;

@@ -1,5 +1,4 @@
 // @ts-check
-/* global fetch */
 /**
  * Gilt price observation: live from dividenddata.co.uk, falling back to the
  * newest file in plan/observations/gilt-prices/. The only network call in
