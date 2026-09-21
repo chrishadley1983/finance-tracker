@@ -43,6 +43,7 @@ describe('observation shaping (phase 3)', () => {
     expect(c('HMRC CHILD BENEFIT', 'Other income')).toBe('childBenefit');
     expect(c('COTTRELL IF+JE 26/27 CR', 'Other income')).toBe('cottrellAnnual');
     expect(c('PEOPLE FOR RESEARCPFR-26047-B', 'Other income')).toBe('chrisSideIncome');
+    expect(c('Deel Inc. Micro1 Inc', 'Other income', 'HSBC Joint Current Account', 1089.99)).toBe('chrisSideIncome');
     expect(c('CHQ IN AT 404032', 'Chris Income')).toBe('oneOff');
     expect(c('HADLEY P&SA Max birthday', 'Gift in')).toBe('gifts');
     expect(c('Direct Accenture Pension Contribution', 'Other income', 'Investment Contributions')).toBe('contributions');

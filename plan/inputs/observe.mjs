@@ -57,7 +57,7 @@ export function classifyIncomeSource(t) {
   if (/STRIPE PAYMENTS|SHOPIFY|EBAY COMMERCE/.test(d)) return 'hbSalesCredits';
   if (/CHILD BENEFIT/.test(d)) return 'childBenefit';
   if (/COTTRELL/.test(d)) return 'cottrellAnnual';
-  if (/PEOPLE FOR RESEARC|RESPONDENT|USER INTERVIEWS|MERCOR|PROLIFIC/.test(d)) return 'chrisSideIncome';
+  if (/PEOPLE FOR RESEARC|RESPONDENT|USER INTERVIEWS|MERCOR|PROLIFIC|MICRO1|DEEL INC/.test(d)) return 'chrisSideIncome';
   if (/CHQ IN|TAX REBATE|HMRC REPAY/.test(d)) return 'oneOff';
   if (c === 'gift in' || /HADLEY P&SA|BIRTHDAY/.test(d)) return 'gifts';
   if (c === 'abby income') return 'abbyReimbursement';
