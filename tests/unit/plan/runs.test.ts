@@ -74,7 +74,7 @@ describe('manifests and accepted runs (phase 5)', () => {
   });
   it('offline end-to-end: plan:run writes a complete, manifest-verified run folder', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'plan-runs-'));
-    execFileSync('npx', ['tsx', 'scripts/plan-run.ts', '--offline', '--no-email', '--dir', dir, '--today', '2026-09-21', '--tag', 'test'], { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 50e6 });
+    execFileSync('npx', ['tsx', 'scripts/plan-run.ts', '--offline', '--no-notify', '--no-pdf', '--dir', dir, '--today', '2026-09-21', '--tag', 'test'], { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 50e6 });
     const run = path.join(dir, '2026-09-21-test');
     for (const f of ['inputs.json', 'outputs.json', 'diff.md', 'summary.json', 'manifest.json', 'summary.html', 'ledger.html', 'assumptions.md', 'avc-recipe.md', 'ledger.csv', 'order-sheet-isa.csv', 'order-sheet-sipp.csv', 'emissions.json']) expect(fs.existsSync(path.join(run, f)), f).toBe(true);
     expect(verifyManifest(run).ok).toBe(true);
@@ -84,7 +84,7 @@ describe('manifests and accepted runs (phase 5)', () => {
     // accept it, then a second run diffs against it and is GREEN
     execFileSync('npx', ['tsx', 'scripts/plan-accept.ts', '2026-09-21-test', '--dir', dir, '--note', 'test'], { cwd: root, encoding: 'utf8', shell: true });
     expect(fs.readFileSync(path.join(dir, 'LATEST_ACCEPTED'), 'utf8').trim()).toBe('2026-09-21-test');
-    execFileSync('npx', ['tsx', 'scripts/plan-run.ts', '--offline', '--no-email', '--dir', dir, '--today', '2026-09-21', '--tag', 'again'], { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 50e6 });
+    execFileSync('npx', ['tsx', 'scripts/plan-run.ts', '--offline', '--no-notify', '--no-pdf', '--dir', dir, '--today', '2026-09-21', '--tag', 'again'], { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 50e6 });
     expect(JSON.parse(fs.readFileSync(path.join(dir, '2026-09-21-again', 'summary.json'), 'utf8')).verdict).toBe('GREEN');
   }, 180_000);
 });

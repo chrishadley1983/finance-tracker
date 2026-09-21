@@ -89,5 +89,5 @@ console.log(`\nKnown limitations carried: ${built.knownLimitations.map((l) => l.
     await notifyDiscord(msg);
     notifyEmail({ subject: 'Household plan check: RED', html: `<pre>${msg}</pre>` });
   }
-  process.exit(red ? 1 : 0);
+  process.exitCode = red ? 1 : 0; // not process.exit(): see plan-run.ts
 })();

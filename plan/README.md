@@ -4,7 +4,7 @@ This tree is the single home for the plan: its documents, its decisions, and (fr
 assumptions, engine, renderers and accepted runs. Design: `ARCHITECTURE.md`. Decision log:
 `decisions.md` (append-only).
 
-Status, 21 Sep 2026: **phases 0–6 complete** (phase 7, scenarios and exports, remains). Every planning number lives in `assumptions.json`
+Status, 21 Sep 2026: **phases 0–7 complete.** Every planning number lives in `assumptions.json`
 with provenance; every calculation lives in `engine/` (pure, injected, deterministic); the
 measured inputs come in through `inputs/` — the only code that touches the database or the
 price feed; every document is rendered from a run's outputs by `render/` with no hand-typed
@@ -16,6 +16,8 @@ diffs it against the last accepted run and tells you. `engine/SPEC.md` states ev
 ```
 npm run plan:run                 # live: collect → engine → diff vs accepted → render → plan/runs/<date>/ → notify (exit 1 on RED)
 npm run plan:run -- --check-only # the same without writing a run folder
+                                 # each run folder also holds plan.xlsx (every table as a sheet) and summary.pdf (headless Edge);
+                                 # --no-pdf skips the PDF, --no-notify silences Discord/email (tests), --tag <t> names the folder <date>-<t>
                                  # review plan/runs/<date>/diff.md and summary.html, then:
 npm run plan:accept -- <date> --note "Q4 review"    # verify manifest, mark accepted, point LATEST_ACCEPTED at it, then commit as printed
 ```
@@ -40,7 +42,7 @@ npm run plan:avc            # Abby's AVC% recipe from the newest payslip observa
 npm run plan:payslip -- add --month 2026-09 --tax-month 6 --pay-date 2026-09-28 --basic … --taxable … --ytd-taxable … --net … --avc 55
 npm run plan:order-sheet    # gilt order sheet sized by budget (live prices; --offline; --save; --budget N --years 2035-2040)
 npm run plan:standalone     # runPlan() on the repo's current inputs → outputs JSON (the durability path)
-npm run plan:render         # the documents from the repo's inputs → tmp/plan-render-<date>/ (or --inputs <file> --out <dir>)
+npm run plan:render         # the documents + plan.xlsx from the repo's inputs → tmp/plan-render-<date>/ (or --inputs <file> --out <dir>; --pdf adds summary.pdf)
 ```
 
 **Monthly routine (until the phase-5 job automates it):** when Abby's payslip arrives, `plan:payslip add`

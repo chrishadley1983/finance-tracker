@@ -33,6 +33,8 @@ export async function collectInputs(opts: CollectOptions = {}) {
   const giltYields = yieldsFile ? JSON.parse(fs.readFileSync(path.join(yieldsDir, yieldsFile), 'utf8')) : null;
   const payslip = newestPayslip();
   const giltPrices = await getGiltPrices({ offline: !opts.live || opts.offlinePrices, save: opts.savePrices, log });
+  const shillerPath = path.join(planDir, 'observations', 'market', 'shiller-monthly.json');
+  const shiller: number[][] | null = fs.existsSync(shillerPath) ? JSON.parse(fs.readFileSync(shillerPath, 'utf8')) : null;
 
   const observations: Record<string, unknown> = {
     giltPrices: { asOf: giltPrices.asOf, source: giltPrices.source, live: giltPrices.live, file: giltPrices.file ?? null, count: giltPrices.gilts.length },
@@ -62,8 +64,9 @@ export async function collectInputs(opts: CollectOptions = {}) {
     giltPrices: { asOf: giltPrices.asOf, source: giltPrices.source, gilts: giltPrices.gilts },
     giltYields,
     payslip: payslip?.slip ?? null,
+    shiller: shiller ?? undefined,
     today,
-    observations,
+    observations: { ...observations, shiller: shiller ? { rows: shiller.length, file: 'observations/market/shiller-monthly.json' } : null },
   };
   return { inputs, drift };
 }

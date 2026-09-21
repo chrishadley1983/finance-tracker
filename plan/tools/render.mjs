@@ -13,6 +13,8 @@ import { fileURLToPath } from 'node:url';
 import { runPlan } from '../engine/index.mjs';
 import { assembleInputsFromRepo } from '../engine/run-standalone.mjs';
 import { renderAll } from '../render/render.mjs';
+import { writeWorkbook } from '../render/xlsx.mjs';
+import { htmlToPdf } from '../render/pdf.mjs';
 
 const planDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -26,4 +28,6 @@ fs.mkdirSync(out, { recursive: true });
 for (const [name, text] of Object.entries(docs)) fs.writeFileSync(path.join(out, name), text);
 fs.writeFileSync(path.join(out, 'outputs.json'), JSON.stringify(outputs, null, 1));
 fs.writeFileSync(path.join(out, 'inputs.json'), JSON.stringify(inputs, null, 1));
-console.log(`rendered ${Object.keys(docs).length} documents + inputs/outputs to ${out}`);
+writeWorkbook(outputs, inputs, path.join(out, 'plan.xlsx'), { assumptionsFile });
+if (args.includes('--pdf')) htmlToPdf(path.join(out, 'summary.html'), path.join(out, 'summary.pdf'), console.log);
+console.log(`rendered ${Object.keys(docs).length} documents + plan.xlsx + inputs/outputs to ${out}${args.includes('--pdf') ? ' (+ summary.pdf if Edge printed it)' : ''}`);

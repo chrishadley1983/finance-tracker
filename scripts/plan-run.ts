@@ -25,6 +25,8 @@ import { renderAll } from '../plan/render/render.mjs';
 import { diffRuns, diffToMarkdown, diffToText } from '../plan/inputs/diff.mjs';
 import { writeManifest } from '../plan/inputs/manifest.mjs';
 import { notifyDiscord, notifyEmail } from '../plan/inputs/notify.mjs';
+import { writeWorkbook } from '../plan/render/xlsx.mjs';
+import { htmlToPdf } from '../plan/render/pdf.mjs';
 
 loadEnvConfig(process.cwd(), true);
 const root = path.resolve(__dirname, '..');
@@ -71,24 +73,28 @@ export async function main() {
     fs.writeFileSync(path.join(dir, 'diff.md'), diffMd);
     fs.writeFileSync(path.join(dir, 'summary.json'), JSON.stringify({ runId, today, verdict: diff.verdict, prevId, headline: outputs.ledger?.headline, avcPct: outputs.pivot.avcRecipe?.avcPct ?? null, ladderPerYear: outputs.ladder?.amountPerYear ?? null, sustainableSpend: outputs.outlook.sustainableSpend, potsTotal: (inputs.assumptions as Record<string, any>).pots.total }, null, 2));
     for (const [name, content] of Object.entries(docs)) fs.writeFileSync(path.join(dir, name), content);
+    writeWorkbook(outputs, inputs, path.join(dir, 'plan.xlsx'), { assumptionsFile });
+    if (!args.includes('--no-pdf')) htmlToPdf(path.join(dir, 'summary.html'), path.join(dir, 'summary.pdf'), log);
     writeManifest(dir, { engineVersion: outputs.engineVersion, cwd: root, extra: { runId, verdict: diff.verdict, prevId } });
     log(`  written: ${path.relative(root, dir)} (${Object.keys(docs).length + 5} files)`);
   }
   fs.rmSync(tmpIn, { force: true });
 
-  await notifyDiscord(text + (dir ? `\n${path.relative(root, dir)}` : ''), log);
-  if (diff.verdict === 'RED' && !args.includes('--no-email')) {
+  if (!args.includes('--no-notify')) await notifyDiscord(text + (dir ? `\n${path.relative(root, dir)}` : ''), log);
+  if (diff.verdict === 'RED' && !args.includes('--no-email') && !args.includes('--no-notify')) {
     const summaryHtml = dir ? fs.readFileSync(path.join(dir, 'summary.html'), 'utf8') : `<pre>${text}</pre>`;
     notifyEmail({ subject: `Household plan run ${runId}: RED`, html: `<pre style="font:14px system-ui">${text.replace(/</g, '&lt;')}</pre><hr>` + summaryHtml, attachments: dir ? [path.join(dir, 'diff.md')] : [] }, log);
   }
   log(`done in ${((Date.now() - started) / 1000).toFixed(1)}s — ${diff.verdict}${dir ? `; accept with: npm run plan:accept -- ${runId}` : ''}`);
-  process.exit(diff.verdict === 'RED' ? 1 : 0);
+  // exitCode, not process.exit(): exiting while a fetch handle is still closing trips a libuv assertion on Windows
+  process.exitCode = diff.verdict === 'RED' ? 1 : 0;
 }
 
-main().catch((e) => {
+main().catch(async (e) => {
   console.error(e);
-  notifyDiscord(`Plan run ${runId} FAILED: ${(e as Error).message}`, log).finally(() => {
+  if (!args.includes('--no-notify')) {
+    await notifyDiscord(`Plan run ${runId} FAILED: ${(e as Error).message}`, log);
     notifyEmail({ subject: `Household plan run ${runId}: FAILED`, html: `<pre>${String((e as Error).stack ?? e).replace(/</g, '&lt;')}</pre>` }, log);
-    process.exit(1);
-  });
+  }
+  process.exitCode = 1;
 });

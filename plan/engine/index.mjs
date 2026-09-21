@@ -9,6 +9,7 @@
  *   giltPrices?:  { asOf, gilts[] }                    (plan/observations/gilt-prices/*.json or live)
  *   giltYields?:  { asOf, rungs[] }                    (plan/observations/gilt-yields/*.json)
  *   payslip?:     latest payslip observation            (plan/observations/payslips/*.json)
+ *   shiller?:     monthly [stockBps, bondBps, cape×10] rows (plan/observations/market/shiller-monthly.json) for the replay
  *   today?:       'YYYY-MM-DD'
  * }
  */
@@ -16,11 +17,12 @@ import { pivotProgramme, currentRetune, avcRecipeFromYtd, takeHomeNominal, pivot
 import { buildLadder, couponSchedule } from './ladder.mjs';
 import { runLedger } from './ledger.mjs';
 import { defaultOutlook, potsAtExit, sustainableSpend, drawdownSim } from './outlook.mjs';
+import { runScenarios } from './scenarios.mjs';
 
-export const ENGINE_VERSION = '2026-09-21.net-runrate';
+export const ENGINE_VERSION = '2026-09-21.phase7';
 
 /**
- * @param {{ assumptions: any, giltPrices?: { asOf: string, gilts: any[] }, giltYields?: { asOf: string, rungs: any[] }, payslip?: any, today?: string }} inputs
+ * @param {{ assumptions: any, giltPrices?: { asOf: string, gilts: any[] }, giltYields?: { asOf: string, rungs: any[] }, payslip?: any, shiller?: number[][], today?: string }} inputs
  */
 export function runPlan(inputs) {
   const a = inputs.assumptions;
@@ -35,6 +37,7 @@ export function runPlan(inputs) {
   const gy = inputs.giltYields;
   const ledger = gy ? runLedger(a, gy) : null;
   const ledgerFlat = gy ? [0, a.returns.realEquity.planning, a.returns.realEquity.better].map((G) => { const l = runLedger(a, gy, { G }); return { G, ...l.headline, lifeTax: l.lifeTax }; }) : null;
+  const scenarios = gy ? runScenarios(a, gy, { shiller: inputs.shiller }) : null;
   const outlookOpts = defaultOutlook(a);
   const outlook = { options: outlookOpts, pots: potsAtExit(a, outlookOpts), sustainableSpend: sustainableSpend(a, outlookOpts), drawdown: drawdownSim(a, outlookOpts) };
   return {
@@ -46,7 +49,7 @@ export function runPlan(inputs) {
       avcRecipe: inputs.payslip ? avcRecipeFromYtd(a, inputs.payslip) : null,
     },
     ladder: ladder ? { ...ladder, coupons: couponSchedule(ladder, 2027), pricesAsOf: inputs.giltPrices?.asOf, isa: ladderIsa ? { ...ladderIsa, coupons: couponSchedule(ladderIsa, 2027) } : null, sipp: ladderSipp ? { ...ladderSipp, coupons: couponSchedule(ladderSipp, 2027) } : null } : null,
-    ledger, ledgerFlat, outlook,
+    ledger, ledgerFlat, scenarios, outlook,
     knownLimitations: inputs.assumptions.__knownLimitations ?? [],
   };
 }

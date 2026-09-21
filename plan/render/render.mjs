@@ -100,7 +100,8 @@ ${avc}
 <div class="scroll"><table><thead><tr><th class="left">Tax year</th><th>AVC %</th><th>Extra sacrifice</th><th>Take-home given up</th><th>Child benefit kept</th></tr></thead><tbody>${progRows}</tbody></table></div>
 <h2>How the plan holds up</h2>
 <div class="scroll"><table><thead><tr><th class="left">Equity return, every year</th><th>At retirement</th><th>After the last rung</th><th>At the end</th><th>Lifetime tax</th><th>Cash runs out</th></tr></thead><tbody>${flat}</tbody></table></div>
-<p class="note">Spend ${em.v('inputs.assumptions.spend.retirementTarget', gbpShort(a.spend.retirementTarget))} a year from retirement, state pensions of ${em.v('inputs.assumptions.statePension.annualEach', gbpShort(a.statePension.annualEach))} each from ${em.v('inputs.assumptions.dates.chrisStatePensionYear', yr(a.dates.chrisStatePensionYear))} and ${em.v('inputs.assumptions.dates.abbyStatePensionYear', yr(a.dates.abbyStatePensionYear))}. The full ledger is in <code>ledger.html</code>.</p>
+<p class="note">Spend ${em.v('inputs.assumptions.spend.retirementTarget', gbpShort(a.spend.retirementTarget))} a year from retirement, state pensions of ${em.v('inputs.assumptions.statePension.annualEach', gbpShort(a.statePension.annualEach))} each from ${em.v('inputs.assumptions.dates.chrisStatePensionYear', yr(a.dates.chrisStatePensionYear))} and ${em.v('inputs.assumptions.dates.abbyStatePensionYear', yr(a.dates.abbyStatePensionYear))}. The full ledger, the spend × return grid and the historical replay are in <code>ledger.html</code>.</p>
+${scenariosBlock(em, o, a, false)}
 ${limitationsBlock(em, o.knownLimitations)}
 <h2>Inputs behind this page</h2>
 <dl><dt>Assumptions</dt><dd><code>plan/assumptions.json</code> prepared ${em.t(a.__preparedOn ?? '')} — register in <code>assumptions.md</code></dd>
@@ -140,6 +141,7 @@ export function renderLedger(/** @type {any} */ o, /** @type {any} */ inputs, /*
 <p class="note">Lifetime income tax in this path: ${em.v('ledger.lifeTax', gbpFromK(L.lifeTax))}. The AVC schedule feeding Abby's DC: ${L.avcSchedule.map((/** @type {number} */ x, /** @type {number} */ i) => em.v(`ledger.avcSchedule.${i}`, k1(x))).join(', ')} £k plus payroll ${em.v('ledger.payrollReal', k1(L.payrollReal))} £k a year.</p>
 <h2>Other return worlds</h2>
 <div class="scroll"><table><thead><tr><th class="left">Equity real return, every year</th><th>At retirement</th><th>After the last rung</th><th>At the end</th><th>Lifetime tax</th></tr></thead><tbody>${flat}</tbody></table></div>
+${scenariosBlock(em, o, a, true)}
 ${limitationsBlock(em, o.knownLimitations)}`;
   return { html: page('Plan E ledger', body), emissions: em.list };
 }
@@ -205,6 +207,26 @@ export function renderOrderSheetCsv(/** @type {any} */ o, /** @type {'isa'|'sipp
   P.byGilt.forEach((/** @type {any} */ g, /** @type {number} */ i) => lines.push([g.epic, `"${g.giltName}"`, g.maturity, em.v(`ladder.${w}.byGilt.${i}.dirty`, dec(g.dirty, 2)), em.v(`ladder.${w}.byGilt.${i}.realYield`, dec(g.realYield, 2)), em.v(`ladder.${w}.byGilt.${i}.face`, int(g.face)), em.v(`ladder.${w}.byGilt.${i}.estCost`, int(g.estCost)), em.v(`ladder.${w}.byGilt.${i}.realAmount`, int(g.realAmount)), `"${g.coversYears.join(' ')}"`, `"${g.notes.join('; ')}"`].join(',')));
   lines.push(`TOTAL,,,,,${em.v(`ladder.${w}.totals.face`, int(P.totals.face))},${em.v(`ladder.${w}.totals.estCost`, int(P.totals.estCost))},${em.v(`ladder.${w}.totals.realAmount`, int(P.totals.realAmount))},,"redemption per year ${em.v(`ladder.${w}.amountPerYear`, int(P.amountPerYear))}; prices ${o.ladder.pricesAsOf}"`);
   return { text: lines.join('\n') + '\n', emissions: em.list };
+}
+
+// ---------------------------------------------------------------------------
+// scenarios block (summary + ledger)
+// ---------------------------------------------------------------------------
+function scenariosBlock(/** @type {ReturnType<typeof emitter>} */ em, /** @type {any} */ o, /** @type {any} */ a, full = false) {
+  const S = o.scenarios;
+  if (!S) return '';
+  const ids = Object.keys(S.scenarios);
+  const rows = ids.map((id) => { const s = S.scenarios[id]; const c = s.cases; return `<tr><td class="left wrap">${em.t(s.title)}<br><span class="note">${em.t(s.note)}</span></td>${c.map((/** @type {any} */ x, /** @type {number} */ j) => `<td>${em.v(`scenarios.scenarios.${id}.cases.${j}.atRetirement`, gbpFromK(x.atRetirement))}</td><td>${em.v(`scenarios.scenarios.${id}.cases.${j}.atEnd`, gbpFromK(x.atEnd))}</td><td>${x.firstCashNegative ? `<span class="red">${em.v(`scenarios.scenarios.${id}.cases.${j}.firstCashNegative`, yr(x.firstCashNegative))}</span>` : '<span class="ok">–</span>'}</td>`).join('')}${s.cases[0].preRetirementDraw ? `<td>${em.v(`scenarios.scenarios.${id}.cases.1.preRetirementDraw`, gbpFromK(s.cases[1].preRetirementDraw))}</td>` : '<td>–</td>'}</tr>`; }).join('');
+  const head = S.scenarios[ids[0]].cases.map((/** @type {any} */ x, /** @type {number} */ j) => `<th colspan="3">${em.v(`scenarios.scenarios.${ids[0]}.cases.${j}.G`, pct(x.G, 0))} real</th>`).join('');
+  const sub = S.scenarios[ids[0]].cases.map(() => `<th>At retirement</th><th>At end</th><th>Cash out</th>`).join('');
+  // the grid and the replay only appear in the full (ledger) version — emit nothing for them otherwise
+  const grid = full ? S.grid.map((/** @type {any} */ g, /** @type {number} */ i) => `<tr><td class="left">${em.v(`scenarios.grid.${i}.spend`, gbpShort(g.spend))} a year</td>${g.byReturn.map((/** @type {any} */ c, /** @type {number} */ j) => `<td>${em.v(`scenarios.grid.${i}.byReturn.${j}.atEnd`, gbpFromK(c.atEnd))}${c.firstCashNegative ? ` <span class="red">(${em.v(`scenarios.grid.${i}.byReturn.${j}.firstCashNegative`, yr(c.firstCashNegative))})</span>` : ''}</td>`).join('')}</tr>`).join('') : '';
+  const gridHead = full ? S.returns.map((/** @type {number} */ r, /** @type {number} */ j) => `<th>${em.v(`scenarios.returns.${j}`, pct(r, 0))}</th>`).join('') : '';
+  const R = full ? S.replay : null;
+  const replay = R ? `<h3>Every start in the market record since ${em.v('scenarios.replay.firstStartYear', yr(R.firstStartYear))}</h3><p class="note">The planning case replayed with the equity sleeve following real US equity returns from each start month (${em.v('scenarios.replay.all.starts', int(R.all.starts))} starts of ${em.v('scenarios.replay.yearsPerPath', int(R.yearsPerPath))} years, ${em.v('scenarios.replay.firstStartYear', yr(R.firstStartYear))}–${em.v('scenarios.replay.lastStartYear', yr(R.lastStartYear))}); gilts stay at their locked real yields. Today's CAPE is ${em.v('scenarios.replay.currentCape', dec(R.currentCape, 0))}.</p><div class="scroll"><table><thead><tr><th class="left">Starts</th><th>Count</th><th>Cash ran out</th><th>Worst at end</th><th>5th pct</th><th>Median</th><th>95th pct</th></tr></thead><tbody><tr><td class="left">All</td><td>${em.v('scenarios.replay.all.starts', int(R.all.starts))}</td><td>${em.v('scenarios.replay.all.failRate', pct(R.all.failRate, 1))}</td><td>${em.v('scenarios.replay.all.worst', gbpFromK(R.all.worst))}</td><td>${em.v('scenarios.replay.all.p5', gbpFromK(R.all.p5))}</td><td>${em.v('scenarios.replay.all.p50', gbpFromK(R.all.p50))}</td><td>${em.v('scenarios.replay.all.p95', gbpFromK(R.all.p95))}</td></tr><tr><td class="left">CAPE at start ≥ ${em.v('scenarios.replay.highCape.threshold', int(R.highCape.threshold))} (expensive starts)</td><td>${em.v('scenarios.replay.highCape.starts', int(R.highCape.starts))}</td><td>${em.v('scenarios.replay.highCape.failRate', pct(R.highCape.failRate, 1))}</td><td>${em.v('scenarios.replay.highCape.worst', gbpFromK(R.highCape.worst))}</td><td>${em.v('scenarios.replay.highCape.p5', gbpFromK(R.highCape.p5))}</td><td>${em.v('scenarios.replay.highCape.p50', gbpFromK(R.highCape.p50))}</td><td>${em.v('scenarios.replay.highCape.p95', gbpFromK(R.highCape.p95))}</td></tr></tbody></table></div>` : '';
+  return `<h2>Scenarios</h2><p class="note">Same engine, different knobs. "Cash out" is the first year the cash line goes negative; "reserve draw" is what the pre-retirement cash flow takes from the reserve by ${em.v('inputs.assumptions.dates.planRetirementYear', yr(a.dates.planRetirementYear))}.</p>
+<div class="scroll"><table><thead><tr><th class="left">Scenario</th>${head}<th>Reserve draw</th></tr><tr><th></th>${sub}<th>to retirement</th></tr></thead><tbody>${rows}</tbody></table></div>
+${full ? `<h3>Spend × return: what is left at ${em.v('inputs.assumptions.dates.simulationEndYear', yr(a.dates.simulationEndYear))}</h3><div class="scroll"><table><thead><tr><th class="left">Spend for life</th>${gridHead}</tr></thead><tbody>${grid}</tbody></table></div>${replay}` : ''}`;
 }
 
 /** All documents for a run. */

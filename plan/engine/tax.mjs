@@ -56,20 +56,47 @@ export function childBenefitKept(a, ani, fullAmount) {
 }
 
 /**
+ * The part of a year's total salary sacrifice that attracts NI once the
+ * salary-sacrifice NIC cap applies (Autumn Budget 2025: from 2029/30, pension
+ * salary sacrifice above a.tax.salarySacrificeNicCapThreshold a year is
+ * NI-able). Before the start year, nothing. Applied to the EXTRA sacrifice on
+ * the basis that the existing payroll sacrifice already uses up the threshold.
+ * @param {any} a @param {number} taxYearStart @param {number} extraSacrifice @param {number} existingSacrifice
+ */
+export function nicLiableSacrifice(a, taxYearStart, extraSacrifice, existingSacrifice) {
+  const t = a.tax;
+  if (taxYearStart < t.salarySacrificeNicCapFromTaxYear) return 0;
+  const headroom = Math.max(0, t.salarySacrificeNicCapThreshold - existingSacrifice);
+  return Math.max(0, extraSacrifice - headroom);
+}
+
+/**
  * Marginal relief on sacrificed pay: reliefAbove for pounds where taxable
  * income sits above the higher-rate floor, reliefBelow beneath it. Sacrifice
- * comes off the top, so the part of the band above the floor gets the higher rate.
+ * comes off the top, so the part of the band above the floor gets the higher
+ * rate. From the NIC-cap year the NI element of the relief is lost on the
+ * NI-able part (2% above the UEL, 8% below).
  * @param {any} a
  * @param {number} aniBefore
  * @param {number} extraSacrifice
+ * @param {{ taxYearStart?: number, existingSacrifice?: number }} [ctx]
  */
-export function reliefOnSacrifice(a, aniBefore, extraSacrifice) {
+export function reliefOnSacrifice(a, aniBefore, extraSacrifice, ctx = {}) {
   if (extraSacrifice <= 0) return 0;
   const t = a.tax;
   const bandBottom = aniBefore - extraSacrifice;
   const above = Math.max(0, aniBefore - Math.max(bandBottom, t.higherRateFloor));
   const below = extraSacrifice - above;
-  return above * t.reliefAbove + below * t.reliefBelow;
+  let relief = above * t.reliefAbove + below * t.reliefBelow;
+  if (ctx.taxYearStart !== undefined) {
+    const liable = nicLiableSacrifice(a, ctx.taxYearStart, extraSacrifice, ctx.existingSacrifice ?? 0);
+    if (liable > 0) {
+      // the NI-able pounds sit at the top of the sacrifice band: lose 2% up to `above`, then 8%
+      const liableAbove = Math.min(liable, above), liableBelow = liable - liableAbove;
+      relief -= liableAbove * t.niUpperRate + liableBelow * t.niMainRate;
+    }
+  }
+  return relief;
 }
 
 /** Present value of £1 a year for n years at rate g (ordinary annuity). @param {number} n @param {number} g */

@@ -168,3 +168,42 @@ in spend categories (and in excluded categories for the excluded total) and repo
 mostly the Cottrell and parental holiday contributions and the Lalandia refund); still RED against the £70k line
 (+£14,157). Engine version `2026-09-21.net-runrate`; the accepted run 2026-09-21 carries the gross figure in its
 inputs and is left as it is (immutable); the next run diffs against it.
+
+## Phase 7 complete, 21 Sep 2026 (scenarios, exports, the 2029 NIC cap)
+
+- The ledger engine took the knobs the queued questions needed without changing the accepted numbers (a
+  regression test reproduces run 2026-09-21 exactly): a spend schedule, a per-year return path, a pre-retirement
+  cash-flow line (take-home + child benefit + Cottrell + side income + HB − spend, shortfalls drawn from the
+  reserve in order cash → crypto → Abby ISA → new ISA → GIA), and a third wrapper for extension rungs.
+- `engine/scenarios.mjs` runs the named set at 0% / 2% / 4% real, the spend × return grid, and the Shiller replay.
+  Results at the 21 Sep 2026 yields (£ today's money; "end" = 2075):
+
+  | Scenario | 2035 @2% | End @2% | End @0% | Cash out @0% |
+  |---|---|---|---|---|
+  | Planning case, £60k for life | £2.28M | £2.21M | £0.43M | – |
+  | £70k for life | £2.27M | £1.49M | −£0.05M | 2073 |
+  | £80k for life | £2.26M | £0.72M | −£0.47M | 2066 |
+  | £80k to 2040, then £65k | £2.26M | £1.67M | £0.08M | – |
+  | Reserve (cash + crypto) spent by 2035 | £2.15M | £1.99M | £0.28M | – |
+  | Chris £20k take-home, spend £70k to 2035 | £2.25M | £2.17M | £0.38M | – (reserve draw £35k) |
+  | Chris £20k take-home, spend £80k to 2035 | £2.17M | £2.02M | £0.29M | – (reserve draw £115k) |
+  | Ratchet: Accenture pot (£193k) → 2046–50 rungs | £2.29M | £2.25M | £0.55M | – (rung £54.0k, IRR 2.37%) |
+
+  Reading: the plan only breaks at a permanently flat real market *and* £70k+ for life, and even then not until
+  the 2060s–70s; every other case ends above zero at 0% real. Chris at £20k take-home to 2035 costs the reserve
+  £35k (at £70k spend) or £115k (at £80k) and moves the 2075 figure by under 2% at 2% real. The step-down profile
+  is nearly as robust as £60k flat. Replay over 1,274 full 49-year starts since 1871: no start ran out of cash;
+  median end £22M, 5th percentile £10.6M, worst £7.0M (real US equity returns are far above the 2% planning
+  case; the planning case is deliberately conservative). Only 14 full-length starts have CAPE ≥ 25 (1901,
+  1928–30), all finished above £13M — a thin sample, shown as such.
+- The salary-sacrifice NIC cap (Autumn Budget 2025: sacrifice above £2,000 a year NI-able from 2029/30) is now
+  modelled in the AVC relief and take-home: from 2029/30 the extra sacrifice costs Abby 60% of take-home rather than
+  58% (2% employee NI above the UEL no longer saved). Known limitation `nic-cap-2029` closed. The AVC % recipe
+  is unchanged (it targets the £60k line, not the relief).
+- Exports: every run folder now has `plan.xlsx` (Summary, Ledger, Pivot, Ladder ISA/SIPP, Scenarios, Grid, Replay,
+  Assumptions, Limitations) and `summary.pdf`. Edge's launcher process returns exit 0 before the PDF exists, so
+  `render/pdf.mjs` polls for the file; `plan-run.ts` and `plan-check.ts` set `process.exitCode` instead of calling
+  `process.exit()` (a libuv assertion on Windows when exiting mid-fetch). `--no-notify` and `--no-pdf` flags for
+  tests.
+- Engine version `2026-09-21.phase7`; yields observation `gilt-yields/2026-09-21.json` (with 2046–50 `ext` rungs)
+  supersedes 2026-09-20 for new runs, so rung figures move slightly against the accepted run. Tests: 111 green.

@@ -249,6 +249,32 @@
         "budget"
       ]
     },
+    "tax.salarySacrificeNicCapFromTaxYear": {
+      "value": 2029,
+      "unit": "tax year starting",
+      "status": "FACT",
+      "source": "Autumn Budget 26 Nov 2025: from April 2029 pension salary sacrifice above £2,000 a year attracts employee and employer NIC. Verify the final legislation before 2029/30",
+      "asOf": "2025-11-26",
+      "reviewBy": "2028-12-31",
+      "cadence": "event",
+      "triggers": [
+        "budget",
+        "april"
+      ]
+    },
+    "tax.salarySacrificeNicCapThreshold": {
+      "value": 2000,
+      "unit": "GBP/yr of sacrifice exempt from the cap",
+      "status": "FACT",
+      "source": "Autumn Budget 26 Nov 2025 announcement; the existing 4.5% payroll sacrifice already exceeds it, so the whole AVC is NI-able from 2029/30",
+      "asOf": "2025-11-26",
+      "reviewBy": "2028-12-31",
+      "cadence": "event",
+      "triggers": [
+        "budget",
+        "april"
+      ]
+    },
     "tax.reliefBelow": {
       "value": 0.28,
       "unit": "relief per £1 sacrificed below the higher-rate floor",
@@ -957,8 +983,8 @@
       "id": "nic-cap-2029",
       "raised": "2026-09-20",
       "fixBy": "2029-04-06",
-      "text": "From April 2029 salary-sacrificed pension contributions above £2,000/yr attract employee and employer NIC, so relief on the excess falls from 42% to 40% (about £3.7k over the remaining programme) and Accenture may restructure the AVC facility. The pivot model uses 42% throughout.",
-      "impact": "≈£3.7k take-home; scheme-availability risk unquantified"
+      "text": "From April 2029 salary-sacrificed pension contributions above £2,000/yr attract employee and employer NIC. MODELLED from 21 Sep 2026 (tax.salarySacrificeNicCapFromTaxYear / Threshold): the pivot loses the NI part of the relief on the AVC from 2029/30 (about £3.7k over the programme) and take-home reflects it. NOT modelled: Accenture withdrawing or capping the salary-sacrifice AVC facility once its own 15% employer-NIC saving disappears — confirm the facility survives before relying on 2029/30+ years.",
+      "impact": "≈£3.7k take-home now in the numbers; scheme-availability risk unquantified"
     },
     {
       "id": "fees-and-crypto",

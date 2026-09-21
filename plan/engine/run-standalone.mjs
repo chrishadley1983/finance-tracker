@@ -30,8 +30,10 @@ export function assembleInputsFromRepo() {
   const built = buildAssumptions(file);
   const assumptions = { ...built.values, __preparedOn: built.preparedOn, __knownLimitations: built.knownLimitations };
   const prices = newest('gilt-prices'), yields = newest('gilt-yields'), slip = newest('payslips');
+  const shillerPath = path.join(planDir, 'observations', 'market', 'shiller-monthly.json');
+  const shiller = fs.existsSync(shillerPath) ? JSON.parse(fs.readFileSync(shillerPath, 'utf8')) : null;
   return {
-    assumptions, giltPrices: prices?.data ?? null, giltYields: yields?.data ?? null, payslip: slip?.data ?? null,
+    assumptions, giltPrices: prices?.data ?? null, giltYields: yields?.data ?? null, payslip: slip?.data ?? null, shiller,
     today: new Date().toISOString().slice(0, 10),
     observations: {
       giltPrices: prices ? { asOf: prices.data.asOf, source: prices.data.source, live: false, file: prices.file, count: prices.data.gilts.length } : null,

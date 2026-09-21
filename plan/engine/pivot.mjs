@@ -6,7 +6,7 @@
  *
  * SPEC: plan/engine/SPEC.md §pivot.
  */
-import { netPay, childBenefitKept, reliefOnSacrifice } from './tax.mjs';
+import { netPay, childBenefitKept, reliefOnSacrifice, nicLiableSacrifice } from './tax.mjs';
 
 /**
  * @typedef {{ taxYear: string, yearIndex: number, basic: number, packageTotal: number, aniBefore: number,
@@ -22,7 +22,12 @@ export function takeHomeNominal(a, yearIndex, extraSacrifice) {
   const p = a.payslip;
   const basic = p.basicAnnual * Math.pow(1 + p.payGrowth, yearIndex);
   const cash = basic * (1 - p.existingEeRate) + basic * p.bonusRate + p.carAllowance - extraSacrifice;
-  return netPay(a, cash, cash + p.medicalBik);
+  // From the NIC-cap year, NI is charged as if the NI-able part of the sacrifice were still cash pay.
+  const niExtra = nicLiableSacrifice(a, a.pivot.firstTaxYear + yearIndex, extraSacrifice, basic * p.existingEeRate);
+  const t = a.tax;
+  const ni = (/** @type {number} */ base) => t.niMainRate * Math.max(0, Math.min(base, t.niUpperEarningsLimit) - t.niPrimaryThreshold) + t.niUpperRate * Math.max(0, base - t.niUpperEarningsLimit);
+  const niOnExtra = niExtra > 0 ? ni(cash + niExtra) - ni(cash) : 0;
+  return netPay(a, cash, cash + p.medicalBik) - niOnExtra;
 }
 
 /**
@@ -38,10 +43,10 @@ export function pivotYear(a, yearIndex, targetAni) {
   const aniBefore = packageTotal - basic * p.existingEeRate;
   const extraSacrifice = Math.max(0, aniBefore - targetAni);
   const aniAfter = aniBefore - extraSacrifice;
-  const takeHomeCut = extraSacrifice - reliefOnSacrifice(a, aniBefore, extraSacrifice);
+  const startYear = a.pivot.firstTaxYear + yearIndex;
+  const takeHomeCut = extraSacrifice - reliefOnSacrifice(a, aniBefore, extraSacrifice, { taxYearStart: startYear, existingSacrifice: basic * p.existingEeRate });
   const cbFull = a.childBenefit.annual2026 * Math.pow(1 + a.childBenefit.uprating, yearIndex);
   const cbKept = childBenefitKept(a, aniAfter, cbFull);
-  const startYear = a.pivot.firstTaxYear + yearIndex;
   return {
     taxYear: `${startYear}/${String((startYear + 1) % 100).padStart(2, '0')}`,
     yearIndex, basic, packageTotal, aniBefore, extraSacrifice, aniAfter,
