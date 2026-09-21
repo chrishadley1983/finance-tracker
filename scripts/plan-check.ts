@@ -36,9 +36,9 @@ for (const s of stale) flag(s.level, `${s.key} (${s.status}) was due ${s.reviewB
 const soon = Object.entries(built.entries).filter(([, e]) => e.reviewBy && !stale.find((s) => s.key === (e as never))).map(([k, e]) => ({ k, d: (new Date(e.reviewBy as string).getTime() - today.getTime()) / 86_400_000 })).filter((x) => x.d >= 0 && x.d <= 30);
 for (const x of soon) console.log(`due   ${x.k} in ${Math.ceil(x.d)} days`);
 
-console.log('\nTwo-homes cross-checks (until phase 2):');
+console.log('\nEngine cross-checks (ledger tool vs pivot):');
 try {
-  const out = JSON.parse(execFileSync('node', ['scripts/ifa-e-yearly.mjs', '--json'], { cwd: root, encoding: 'utf8' }));
+  const out = JSON.parse(execFileSync('node', ['plan/tools/ledger.mjs', '--json'], { cwd: root, encoding: 'utf8', maxBuffer: 50e6 }));
   const want = pivotProgramme(built.values.hicbc.lowerThreshold).years.map((y) => y.extraSacrifice / 1000);
   const payroll = (built.values.payslip.basicAnnual * (built.values.payslip.employerRate + built.values.payslip.existingEeRate)) / 1000;
   const arrOk = out.avcSchedule.length === want.length && out.avcSchedule.every((v: number, i: number) => Math.abs(v - want[i]) < 0.001);
@@ -50,7 +50,7 @@ try {
   const r75 = out.rows[out.rows.length - 1];
   console.log(`      ledger planning case: ${r35.year} £${(r35.total / 1000).toFixed(2)}M → ${r75.year} £${(r75.total / 1000).toFixed(2)}M, lifetime tax £${out.lifeTax.toFixed(1)}k`);
 } catch (err) {
-  flag('RED', `could not run scripts/ifa-e-yearly.mjs: ${(err as Error).message.split('\n')[0]}`);
+  flag('RED', `could not run plan/tools/ledger.mjs: ${(err as Error).message.split('\n')[0]}`);
 }
 const th = takeHomeNominal(0, pivotYear(0, built.values.hicbc.lowerThreshold).extraSacrifice);
 flag(Math.abs(th - 43_498) < 60 ? 'OK' : 'AMBER', `income.abbyTakeHomeYear1 (engine) = ${Math.round(th).toLocaleString('en-GB')}`);

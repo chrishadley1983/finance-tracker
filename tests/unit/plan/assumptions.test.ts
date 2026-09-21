@@ -66,8 +66,8 @@ describe('plan/assumptions.json — the single home for planning numbers (phase 
     expect(Math.abs(th - 43_498)).toBeLessThan(60);
   });
 
-  it('the ledger model computes the same AVC schedule as pivot.ts from the same assumptions (two-homes guard until phase 2)', () => {
-    const out = JSON.parse(execFileSync('node', ['scripts/ifa-e-yearly.mjs', '0.02', '--json'], { cwd: root, encoding: 'utf8' }));
+  it('the ledger tool computes the same AVC schedule as the pivot (one engine, two entry points)', () => {
+    const out = JSON.parse(execFileSync('node', ['plan/tools/ledger.mjs', '0.02', '--json'], { cwd: root, encoding: 'utf8', maxBuffer: 50e6 }));
     const want = pivotProgramme(60_000).years.map((y) => y.extraSacrifice / 1000);
     expect(out.avcSchedule).toHaveLength(want.length);
     out.avcSchedule.forEach((v: number, i: number) => expect(Math.abs(v - want[i])).toBeLessThan(0.001));

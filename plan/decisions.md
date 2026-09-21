@@ -64,3 +64,21 @@ drawdown model, plus reconciliation of the spend and income lines to the tracker
   including a no-literal lint over `lib/plan` and `components/plan` (JSX prose £-figures allowed until phase 6).
 - Ledger planning case from the JSON (2% real): 2035 £2.28M, 2045 £2.20M, 2075 £2.21M — unchanged from the
   20 Sep revision within rounding (budgets are now exact sums: ISA £519,516, SIPP £389,874).
+
+## Phase 2 complete, 21 Sep 2026 (one engine)
+
+- `plan/engine/` holds every calculation as pure, injected ES modules: `tax`, `pivot` (incl. the AVC recipe),
+  `ladder` (incl. the price-table parser), `ledger`, `outlook`, `spend`; `index.mjs#runPlan(inputs)` is the single
+  entry point and `run-standalone.mjs` runs it from a saved inputs file with nothing but Node.
+- Before deleting `scripts/ifa-e-yearly.mjs` the engine ledger was compared with it at 0%, 2% and 4% real:
+  every year's total identical to the 0.1k rounding, lifetime tax identical, AVC schedules identical.
+  `scripts/abby-avc-calculator.mjs` → `plan/tools/avc.mjs` (reads `plan/observations/payslips/`);
+  `scripts/gilt-ladder.mjs` → `plan/tools/order-sheet.mjs`.
+- `lib/plan/{pivot,ladder,outlook,spend,buckets,gilt-parser}.ts` are now one-line bindings of the engine to
+  `ASSUMPTIONS`; components and existing tests unchanged in behaviour.
+- Golden hand-derivations seeded (`plan/derivations/golden.json`, 16 anchors, each with its working): payslip
+  reconciliations, pivot year 1 / year 9 / nine-year total, take-home at the £60k line, HICBC steps, CB rate,
+  TR40 rung, sizing-by-budget fixture, annuity factor, NMW floor, the Aug-2026 AVC recipe, the 2027 ledger row.
+- New assumptions: `nmw.hourlyRate` 12.71 (FACT), `nmw.hoursPerWeek` 40 (GUESS), `nmw.annualFloor` DERIVED.
+  Known limitation `ledger-avc-array-manual` closed (no second implementation remains).
+- Tests: 76 green (assumptions, golden, engine, pivot, ladder, outlook, buckets, page).

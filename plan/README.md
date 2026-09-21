@@ -4,10 +4,18 @@ This tree is the single home for the plan: its documents, its decisions, and (fr
 assumptions, engine, renderers and accepted runs. Design: `ARCHITECTURE.md`. Decision log:
 `decisions.md` (append-only).
 
-Status, 20 Sep 2026: **phases 0 and 1 complete.** Every planning number now lives in
-`assumptions.json` with provenance; the cockpit (`lib/plan/constants.ts` is a thin shim over it),
-the ledger model (`scripts/ifa-e-yearly.mjs`) and the AVC calculator all read it. The models
-themselves still live in `lib/plan/*` and `scripts/`; they fold into `plan/engine/` in phase 2.
+Status, 21 Sep 2026: **phases 0–2 complete.** Every planning number lives in `assumptions.json`
+with provenance, and every calculation lives in `engine/` (pure, injected, deterministic). The
+cockpit's `lib/plan/*.ts` are one-line bindings of the engine to the repo's assumptions; the
+operating tools in `tools/` use the same engine. `engine/SPEC.md` states every formula.
+
+```
+npm run plan:check          # validate assumptions, DERIVED values, freshness, engine cross-checks
+npm run plan:ledger         # the Plan E ledger (add 0 / 0.04 for other returns; --json; --spend 70000 --cash 0 --crypto 0)
+npm run plan:avc            # Abby's AVC% recipe from the newest payslip observation
+npm run plan:order-sheet    # gilt order sheet sized by budget (live prices; --offline; --budget N --years 2035-2040)
+npm run plan:standalone     # runPlan() on the repo's current inputs → outputs JSON (the durability path)
+```
 
 ## Changing a number
 
@@ -37,8 +45,10 @@ generated document from phase 4.
 | `archive/2026-adhoc-db-pulls/` | FROZEN — one-off DB pull scripts superseded by `plan/inputs/` in phase 3 |
 | `assumptions.json` / `assumptions.schema.json` | THE home for chosen and quoted numbers, with provenance (phase 1) |
 | `inputs/assumptions.mjs` | loader: validate, recompute DERIVED, freshness report; pure, no filesystem |
-| `observations/gilt-prices/`, `observations/gilt-yields/` | dated market observations used by the ladder tools and the ledger |
-| `tools/set.mjs` | change one assumption safely (`npm run plan:set`) |
+| `engine/` | the plan's arithmetic: `tax`, `pivot`, `ladder`, `ledger`, `outlook`, `spend`; `index.mjs#runPlan(inputs)`; `run-standalone.mjs`; `SPEC.md` (phase 2) |
+| `observations/gilt-prices/`, `gilt-yields/`, `payslips/` | dated measured inputs: market prices/yields and Abby's payslips |
+| `derivations/` | `golden.json` + one note per anchor: values derived by hand OUTSIDE the engine; `tests/unit/plan/golden.test.ts` holds the engine to them |
+| `tools/` | `set.mjs` (change an assumption), `ledger.mjs`, `avc.mjs`, `order-sheet.mjs` |
 | `decisions.md` | append-only log of what was decided, when, and why |
 | `ARCHITECTURE.md` | the drift-proof design and the seven phases |
 

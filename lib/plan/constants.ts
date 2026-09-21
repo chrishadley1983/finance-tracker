@@ -19,6 +19,8 @@ import { buildAssumptions } from '../../plan/inputs/assumptions.mjs';
 
 const A = buildAssumptions(assumptionsFile as never).values;
 
+/** The resolved assumption values — what the engine in plan/engine takes as its first argument. */
+export const ASSUMPTIONS = A;
 export const ASSUMPTIONS_PREPARED_ON: string = assumptionsFile.preparedOn;
 export const KNOWN_LIMITATIONS = assumptionsFile.knownLimitations;
 

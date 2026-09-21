@@ -816,6 +816,42 @@
       "derivedBy": "loader",
       "note": "Plan E: the ladder is sized by this money, never by a £/yr target. Each rung's REDEMPTION is what the budget buys at live prices (~£99k ISA / ~£106k SIPP at Sep 2026 yields); coupons are the top-up, not part of the rung"
     },
+    "nmw.hourlyRate": {
+      "value": 12.71,
+      "unit": "GBP/hour nominal",
+      "status": "FACT",
+      "source": "National Minimum Wage 21+ from 1 Apr 2026 (gov.uk). Salary sacrifice must not take paid basic below NMW; tested per pay period",
+      "asOf": "2026-04-01",
+      "reviewBy": "2027-04-01",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "nmw.hoursPerWeek": {
+      "value": 40,
+      "unit": "hours",
+      "status": "GUESS",
+      "source": "Abby's contracted hours assumed 40 (37.5 would give a floor of £24.9k). CHECK on the contract",
+      "asOf": "2026-09-20",
+      "reviewBy": "2026-12-31",
+      "cadence": "event",
+      "triggers": [
+        "job-change"
+      ]
+    },
+    "nmw.weeklyFloor": {
+      "formula": "nmw.hourlyRate * nmw.hoursPerWeek",
+      "status": "DERIVED",
+      "derivedBy": "loader"
+    },
+    "nmw.annualFloor": {
+      "formula": "nmw.weeklyFloor * 52.14",
+      "status": "DERIVED",
+      "derivedBy": "loader",
+      "note": "post-sacrifice paid basic must stay above this; the AVC recipe flags a breach (~£26.5k at 40h)"
+    },
     "returns.realEquity.planning": {
       "value": 0.02,
       "unit": "per year real",
@@ -904,13 +940,6 @@
       "fixBy": "2029-04-06",
       "text": "From April 2029 salary-sacrificed pension contributions above £2,000/yr attract employee and employer NIC, so relief on the excess falls from 42% to 40% (about £3.7k over the remaining programme) and Accenture may restructure the AVC facility. The pivot model uses 42% throughout.",
       "impact": "≈£3.7k take-home; scheme-availability risk unquantified"
-    },
-    {
-      "id": "ledger-avc-array-manual",
-      "raised": "2026-09-20",
-      "fixBy": "2026-12-31",
-      "text": "Until phase 2 folds the ledger model into plan/engine, scripts/ifa-e-yearly.mjs re-implements the AVC schedule arithmetic of lib/plan/pivot.ts from the same assumptions. npm run plan:check and a unit test compare the two; it is still two implementations.",
-      "impact": "drift risk only"
     },
     {
       "id": "fees-and-crypto",

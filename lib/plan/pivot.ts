@@ -1,10 +1,11 @@
 /**
- * The pivot model: Abby salary-sacrifices to a target adjusted net income
- * (ANI) each tax year, keeping child benefit and 40%+2% relief.
- * Pure functions; all £ nominal for the year in question.
+ * Cockpit binding for the pivot model. The arithmetic lives in
+ * plan/engine/pivot.mjs (pure, injected); this module binds it to the
+ * repo's assumptions so components and tests keep their existing signatures.
  */
-
-import { PAYSLIP, TAX, HICBC, CHILD_BENEFIT, PIVOT_YEARS, PIVOT_FIRST_TAX_YEAR } from './constants';
+import { ASSUMPTIONS } from './constants';
+import * as engine from '../../plan/engine/pivot.mjs';
+import { childBenefitKept as engineCbKept, netPay as engineNetPay } from '../../plan/engine/tax.mjs';
 
 export interface PivotYear {
   taxYear: string; // "2026/27"
@@ -23,111 +24,14 @@ export interface PivotYear {
 
 export interface PivotResult {
   years: PivotYear[];
-  totals: {
-    extraSacrifice: number;
-    takeHomeCut: number;
-    cbKept: number;
-  };
+  totals: { extraSacrifice: number; takeHomeCut: number; cbKept: number };
 }
 
-/** Child benefit kept at a given ANI, for a given full-rate amount. */
-export function childBenefitKept(ani: number, fullAmount: number): number {
-  if (ani <= HICBC.lowerThreshold) return fullAmount;
-  if (ani >= HICBC.upperThreshold) return 0;
-  const steps = Math.floor((ani - HICBC.lowerThreshold) / HICBC.stepSize);
-  const kept = fullAmount * (1 - steps * HICBC.taperPerStep);
-  return Math.max(0, kept);
-}
-
-/**
- * Marginal relief on sacrificed pay: 42% for pounds where taxable income sits
- * above the higher-rate floor, 28% below. Sacrifice comes off the top, so the
- * portion of the sacrifice band above the floor gets 42%.
- */
-function reliefOnSacrifice(aniBefore: number, extraSacrifice: number): number {
-  if (extraSacrifice <= 0) return 0;
-  // Taxable income excludes nothing here (BIK is taxable); the floor applies
-  // to the ANI band the sacrifice passes through.
-  const bandTop = aniBefore;
-  const bandBottom = aniBefore - extraSacrifice;
-  const above = Math.max(0, bandTop - Math.max(bandBottom, TAX.higherRateFloor));
-  const below = extraSacrifice - above;
-  return above * TAX.reliefAbove + below * TAX.reliefBelow;
-}
-
-/**
- * Abby's annual net pay for a given cash pay (after all sacrifice) and taxable
- * pay (cash + payrolled BIK). PAYE at her tax code, employee NI on cash pay
- * only. Reconciles the Apr and Aug 2026 payslips to within 40p.
- */
-export function netPay(cashPay: number, taxablePay: number): number {
-  const taxable = Math.max(0, taxablePay - TAX.payeAllowance);
-  const tax =
-    TAX.basicRate * Math.min(taxable, TAX.basicRateBand) +
-    TAX.higherRate * Math.max(0, taxable - TAX.basicRateBand);
-  const ni =
-    TAX.niMainRate * Math.max(0, Math.min(cashPay, TAX.niUpperEarningsLimit) - TAX.niPrimaryThreshold) +
-    TAX.niUpperRate * Math.max(0, cashPay - TAX.niUpperEarningsLimit);
-  return cashPay - tax - ni;
-}
-
-/** Nominal net pay in a programme year at a given extra sacrifice (bonus included). */
-export function takeHomeNominal(yearIndex: number, extraSacrifice: number): number {
-  const basic = PAYSLIP.basicAnnual * Math.pow(1 + PAYSLIP.payGrowth, yearIndex);
-  const cash = basic * (1 - PAYSLIP.existingEeRate) + basic * PAYSLIP.bonusRate + PAYSLIP.carAllowance - extraSacrifice;
-  return netPay(cash, cash + PAYSLIP.medicalBik);
-}
-
-export function pivotYear(yearIndex: number, targetAni: number): PivotYear {
-  const growth = Math.pow(1 + PAYSLIP.payGrowth, yearIndex);
-  const basic = PAYSLIP.basicAnnual * growth;
-  const bonus = basic * PAYSLIP.bonusRate;
-  const packageTotal = basic + bonus + PAYSLIP.carAllowance + PAYSLIP.medicalBik;
-  const aniBefore = packageTotal - basic * PAYSLIP.existingEeRate;
-  const extraSacrifice = Math.max(0, aniBefore - targetAni);
-  const aniAfter = aniBefore - extraSacrifice;
-  const relief = reliefOnSacrifice(aniBefore, extraSacrifice);
-  const takeHomeCut = extraSacrifice - relief;
-  const cbFull = CHILD_BENEFIT.annual2026 * Math.pow(1 + CHILD_BENEFIT.uprating, yearIndex);
-  const cbKept = childBenefitKept(aniAfter, cbFull);
-  const startYear = PIVOT_FIRST_TAX_YEAR + yearIndex;
-  return {
-    taxYear: `${startYear}/${String((startYear + 1) % 100).padStart(2, '0')}`,
-    yearIndex,
-    basic,
-    packageTotal,
-    aniBefore,
-    extraSacrifice,
-    aniAfter,
-    avcPct: extraSacrifice > 0 ? Math.ceil((extraSacrifice / basic) * 100) : 0,
-    takeHomeCut,
-    cbFull,
-    cbKept,
-    netCost: takeHomeCut - cbKept,
-  };
-}
-
-export function pivotProgramme(targetAni: number): PivotResult {
-  const years = Array.from({ length: PIVOT_YEARS }, (_, i) => pivotYear(i, targetAni));
-  return {
-    years,
-    totals: {
-      extraSacrifice: years.reduce((s, y) => s + y.extraSacrifice, 0),
-      takeHomeCut: years.reduce((s, y) => s + y.takeHomeCut, 0),
-      cbKept: years.reduce((s, y) => s + y.cbKept, 0),
-    },
-  };
-}
-
-/**
- * The April retune recipe for the current UK tax year (or year 0 if the
- * programme hasn't started). Returns null when the programme has ended.
- */
-export function currentRetune(targetAni: number, today: Date = new Date()): PivotYear | null {
-  // UK tax year starting 6 April.
-  const y = today.getFullYear();
-  const taxYearStart = today >= new Date(y, 3, 6) ? y : y - 1;
-  const idx = Math.max(0, taxYearStart - PIVOT_FIRST_TAX_YEAR);
-  if (idx >= PIVOT_YEARS) return null;
-  return pivotYear(idx, targetAni);
-}
+export const childBenefitKept = (ani: number, fullAmount: number): number => engineCbKept(ASSUMPTIONS, ani, fullAmount);
+export const netPay = (cashPay: number, taxablePay: number): number => engineNetPay(ASSUMPTIONS, cashPay, taxablePay);
+export const takeHomeNominal = (yearIndex: number, extraSacrifice: number): number => engine.takeHomeNominal(ASSUMPTIONS, yearIndex, extraSacrifice);
+export const pivotYear = (yearIndex: number, targetAni: number): PivotYear => engine.pivotYear(ASSUMPTIONS, yearIndex, targetAni);
+export const pivotProgramme = (targetAni: number): PivotResult => engine.pivotProgramme(ASSUMPTIONS, targetAni);
+export const currentRetune = (targetAni: number, today: Date = new Date()): PivotYear | null => engine.currentRetune(ASSUMPTIONS, targetAni, today);
+export type AvcRecipe = ReturnType<typeof engine.avcRecipeFromYtd>;
+export const avcRecipeFromYtd = (slip: Parameters<typeof engine.avcRecipeFromYtd>[1]): AvcRecipe => engine.avcRecipeFromYtd(ASSUMPTIONS, slip);

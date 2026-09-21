@@ -1,0 +1,15 @@
+{
+  "taxYear": "2026/27",
+  "taxMonth": 1,
+  "payDate": "2026-04-30",
+  "basicMonthly": 5825.0,
+  "taxablePayMonthly": 6215.38,
+  "ytdTaxable": 6215.38,
+  "netMonthly": 4330.1,
+  "avcPct": 0,
+  "bonusExpected": 3495.0,
+  "bonusSacrificed": false,
+  "otherTaxableIncome": 0,
+  "extraAvcAlreadyTaken": 0,
+  "notes": "The April 2026 payslip Amendment 1 was built on (basic £69,900/yr). Kept for the payslip reconciliation golden (net £4,330.10 at code 1117L)."
+}

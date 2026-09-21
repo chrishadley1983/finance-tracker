@@ -19,7 +19,10 @@
     "refresh-shiller": "tsx scripts/refresh-shiller-data.ts",
     "plan:check": "tsx scripts/plan-check.ts",
     "plan:set": "node plan/tools/set.mjs",
-    "plan:ledger": "node scripts/ifa-e-yearly.mjs"
+    "plan:ledger": "node plan/tools/ledger.mjs",
+    "plan:avc": "node plan/tools/avc.mjs",
+    "plan:order-sheet": "node plan/tools/order-sheet.mjs",
+    "plan:standalone": "node plan/engine/run-standalone.mjs"
   },
   "repository": {
     "type": "git",
