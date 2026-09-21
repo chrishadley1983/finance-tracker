@@ -213,3 +213,11 @@ inputs and is left as it is (immutable); the next run diffs against it.
 Baseline is now `plan/runs/2026-09-21-phase7` (supersedes 2026-09-21). Chris: "I want it accepted at 70k and we
 will work to curb spending to meet it" — the £70k plan line stands; the RED on the trailing-12-month spend
 (£84,157 net) is acknowledged as the target to close, not a reason to move the line.
+
+## 3 Sep 2026 decision, recorded 21 Sep — Chris's Accenture pension stays at L&G
+
+Not previously in this log (it was only in the 3 Sep Plan E ledger notes). The June plan's action "transfer Chris's
+Accenture DC to the ii SIPP" was retired on 3 Sep: the pot stays at L&G and was switched that day from the Drawdown
+Focus lifestyle fund to 100% Global Equity Tracker (B6W3, 0.11%). Chris, 21 Sep: not worth the effort given the
+fund now available. It is part of the growth sleeve in the baseline. The phase 7 "ratchet to 2050" scenario remains
+an option only; choosing it would need a transfer at that time, because L&G cannot hold individual gilts.

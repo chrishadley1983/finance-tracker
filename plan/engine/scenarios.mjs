@@ -38,7 +38,7 @@ export function runScenarios(a, yields, data = {}) {
     reserveSpent: { title: 'Reserve spent before retirement', note: 'cash buffer and crypto both gone by 2035; otherwise the planning case', opts: { cash: 0, crypto: 0 } },
     chris20kPlanLine: { title: `Chris £20k take-home, spend ${planLine / 1000}k, to retirement`, note: 'household cash flow to 2035 with HB + side income at £20k take-home; shortfalls from the reserve', opts: { preRetirement: { spend: planLine, hbTakeHome: 20_000, cottrell: 3_000, sideIncome: 0 } } },
     chris20kPlus10: { title: `Chris £20k take-home, spend ${(planLine + 10_000) / 1000}k, to retirement`, note: 'as above at the 2026 spending pace', opts: { preRetirement: { spend: planLine + 10_000, hbTakeHome: 20_000, cottrell: 3_000, sideIncome: 0 } } },
-    ratchetTo2050: hasExt ? { title: 'Ratchet forward: Accenture pot → 2046–50 rungs', note: 'transfer the L&G Accenture pension into the SIPP and buy five more rungs now (yields as observed); floor extends to 2050', opts: { extension: { budget: a.pots.chrisAccenturePension, fromYear: a.ladder.lastYear + 1, toYear: a.ladder.lastYear + 5, source: 'acn' } } } : /** @type {any} */ (null),
+    ratchetTo2050: hasExt ? { title: 'Ratchet forward: Accenture pot → 2046–50 rungs', note: 'option only — the pot stays at L&G (decision 3 Sep 2026); taking this would mean transferring it to the SIPP to buy five more rungs at the observed yields; floor extends to 2050', opts: { extension: { budget: a.pots.chrisAccenturePension, fromYear: a.ladder.lastYear + 1, toYear: a.ladder.lastYear + 5, source: 'acn' } } } : /** @type {any} */ (null),
   });
   /** @type {Record<string, any>} */
   const scenarios = {};
