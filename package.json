@@ -22,7 +22,9 @@
     "plan:ledger": "node plan/tools/ledger.mjs",
     "plan:avc": "node plan/tools/avc.mjs",
     "plan:order-sheet": "node plan/tools/order-sheet.mjs",
-    "plan:standalone": "node plan/engine/run-standalone.mjs"
+    "plan:standalone": "node plan/engine/run-standalone.mjs",
+    "plan:inputs": "tsx scripts/plan-inputs.ts",
+    "plan:payslip": "node plan/tools/payslip.mjs"
   },
   "repository": {
     "type": "git",

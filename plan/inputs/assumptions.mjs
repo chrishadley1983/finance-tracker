@@ -1,4 +1,5 @@
 // @ts-check
+/* global URL */
 /**
  * Loader for plan/assumptions.json — the single home for planning numbers.
  *

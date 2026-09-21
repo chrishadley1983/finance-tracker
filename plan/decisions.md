@@ -82,3 +82,24 @@ drawdown model, plus reconciliation of the spend and income lines to the tracker
 - New assumptions: `nmw.hourlyRate` 12.71 (FACT), `nmw.hoursPerWeek` 40 (GUESS), `nmw.annualFloor` DERIVED.
   Known limitation `ledger-avc-array-manual` closed (no second implementation remains).
 - Tests: 76 green (assumptions, golden, engine, pivot, ladder, outlook, buckets, page).
+
+## Phase 3 complete, 21 Sep 2026 (observations)
+
+- `plan/inputs/` now holds the only code that reads the database or the price feed: `db.ts` (client),
+  `adapters.ts` (snapshots, trailing-12m run-rate via the engine's `computeRunRate`, income by source,
+  ladder rungs), `gilt-prices.mjs` (live dividenddata with file fallback, `--save` stores an observation),
+  `payslips.mjs`, and `collect.ts#collectInputs()` which assembles the engine's inputs object and a drift
+  report. The shaping is pure (`observe.mjs`) and tested with fixtures; the adapters are thin.
+- `npm run plan:inputs` (live or `--offline`) writes `tmp/plan-inputs-<date>.json` — the file the phase-5 run
+  job will archive as `runs/<date>/inputs.json` — and exits 1 on RED. `npm run plan:check --live` appends the
+  same drift lines. `npm run plan:payslip add …` records a payslip from the PDF, validates it, prints the
+  `plan:set` commands if the basic moved, and the AVC% recipe.
+- New assumption `accounts.potsMap` (FACT): which `pots.*` key each snapshot account refreshes.
+- First live run, 21 Sep 2026: all seven pots match the 1 Sep snapshots to the pound; payslip 24 days old;
+  0 rungs bought; **trailing-12-month gross spend £91,167 vs the £70,000 plan line → RED** (this is the
+  cockpit definition: gross debits, holidays included, home improvement/extension/LEGO/work travel excluded;
+  net of holiday credits it is ≈£85k). Trailing-12m income: Abby £56.8k take-home incl. reimbursements,
+  HB drawings £23.4k, Child Benefit £0.7k (claim only just reinstated), Cottrell £3.3k, side income £80,
+  contributions £8.6k → recurring spendable ≈ £85.4k. The spend RED stands until holidays fall back or the
+  plan line is re-decided; it is the household breakeven question from the 20 Sep review, now measured monthly.
+- Today's live gilt prices saved as `plan/observations/gilt-prices/2026-09-21.json`.

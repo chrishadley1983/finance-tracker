@@ -524,6 +524,25 @@
       "status": "DERIVED",
       "derivedBy": "loader"
     },
+    "accounts.potsMap": {
+      "value": {
+        "CH ISA": "pots.chrisIiIsa",
+        "Abby S&S ISA": "pots.abbyVanguardIsa",
+        "Chris II SIPP Pension": "pots.chrisIiSipp",
+        "Chris Accenture Pens": "pots.chrisAccenturePension",
+        "Abby Accenture Pension": "pots.abbyAccentureDc",
+        "Other Savings": "pots.otherSavings",
+        "Accenture Shares": "pots.accentureShares"
+      },
+      "status": "FACT",
+      "source": "finance.accounts names → the pots.* assumption each snapshot refreshes; plan:inputs reports drift between them",
+      "asOf": "2026-09-21",
+      "reviewBy": "2027-03-31",
+      "cadence": "event",
+      "triggers": [
+        "new-account"
+      ]
+    },
     "accounts.bucketMap": {
       "value": {
         "Chris II SIPP Pension": "chrisPension",

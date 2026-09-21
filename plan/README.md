@@ -4,18 +4,25 @@ This tree is the single home for the plan: its documents, its decisions, and (fr
 assumptions, engine, renderers and accepted runs. Design: `ARCHITECTURE.md`. Decision log:
 `decisions.md` (append-only).
 
-Status, 21 Sep 2026: **phases 0–2 complete.** Every planning number lives in `assumptions.json`
-with provenance, and every calculation lives in `engine/` (pure, injected, deterministic). The
-cockpit's `lib/plan/*.ts` are one-line bindings of the engine to the repo's assumptions; the
-operating tools in `tools/` use the same engine. `engine/SPEC.md` states every formula.
+Status, 21 Sep 2026: **phases 0–3 complete.** Every planning number lives in `assumptions.json`
+with provenance; every calculation lives in `engine/` (pure, injected, deterministic); and the
+measured inputs come in through `inputs/` — the only code that touches the database or the
+price feed. `engine/SPEC.md` states every formula.
 
 ```
-npm run plan:check          # validate assumptions, DERIVED values, freshness, engine cross-checks
+npm run plan:check          # validate assumptions, DERIVED values, freshness, engine cross-checks (--live: + DB drift)
+npm run plan:inputs         # collect assumptions + live observations → tmp/plan-inputs-<date>.json, print the drift report
 npm run plan:ledger         # the Plan E ledger (add 0 / 0.04 for other returns; --json; --spend 70000 --cash 0 --crypto 0)
 npm run plan:avc            # Abby's AVC% recipe from the newest payslip observation
-npm run plan:order-sheet    # gilt order sheet sized by budget (live prices; --offline; --budget N --years 2035-2040)
+npm run plan:payslip -- add --month 2026-09 --tax-month 6 --pay-date 2026-09-28 --basic … --taxable … --ytd-taxable … --net … --avc 55
+npm run plan:order-sheet    # gilt order sheet sized by budget (live prices; --offline; --save; --budget N --years 2035-2040)
 npm run plan:standalone     # runPlan() on the repo's current inputs → outputs JSON (the durability path)
 ```
+
+**Monthly routine (until the phase-5 job automates it):** when Abby's payslip arrives, `plan:payslip add`
+(it prints the `plan:set` commands if the basic moved and the new AVC%); after the 1st-of-month wealth
+snapshot, `plan:inputs` (it flags any pot that drifted from the assumptions and the spend run-rate vs the
+plan line); then `plan:check`.
 
 ## Changing a number
 
@@ -45,6 +52,9 @@ generated document from phase 4.
 | `archive/2026-adhoc-db-pulls/` | FROZEN — one-off DB pull scripts superseded by `plan/inputs/` in phase 3 |
 | `assumptions.json` / `assumptions.schema.json` | THE home for chosen and quoted numbers, with provenance (phase 1) |
 | `inputs/assumptions.mjs` | loader: validate, recompute DERIVED, freshness report; pure, no filesystem |
+| `inputs/observe.mjs` | pure shaping of observations (latest balances → pots keys, income by source, payslip validation, the drift report with the §4 tolerances) |
+| `inputs/db.ts`, `adapters.ts`, `collect.ts` | the DB adapters (snapshots, run-rate, income, rungs) and `collectInputs()` → the engine's inputs object (phase 3) |
+| `inputs/gilt-prices.mjs`, `inputs/payslips.mjs` | the price feed (live with file fallback) and the payslip files |
 | `engine/` | the plan's arithmetic: `tax`, `pivot`, `ladder`, `ledger`, `outlook`, `spend`; `index.mjs#runPlan(inputs)`; `run-standalone.mjs`; `SPEC.md` (phase 2) |
 | `observations/gilt-prices/`, `gilt-yields/`, `payslips/` | dated measured inputs: market prices/yields and Abby's payslips |
 | `derivations/` | `golden.json` + one note per anchor: values derived by hand OUTSIDE the engine; `tests/unit/plan/golden.test.ts` holds the engine to them |

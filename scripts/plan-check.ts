@@ -56,5 +56,20 @@ const th = takeHomeNominal(0, pivotYear(0, built.values.hicbc.lowerThreshold).ex
 flag(Math.abs(th - 43_498) < 60 ? 'OK' : 'AMBER', `income.abbyTakeHomeYear1 (engine) = ${Math.round(th).toLocaleString('en-GB')}`);
 
 console.log(`\nKnown limitations carried: ${built.knownLimitations.map((l) => l.id).join(', ')}`);
-console.log(`\n${red ? 'RED' : amber ? 'AMBER' : 'GREEN'}: ${red} red, ${amber} amber`);
-process.exit(red ? 1 : 0);
+
+(async () => {
+  if (process.argv.includes('--live')) {
+    console.log('\nLive drift (assumptions vs database and price feed):');
+    try {
+      const { collectInputs } = await import('../plan/inputs/collect');
+      const { drift } = await collectInputs({ live: true, offlinePrices: process.argv.includes('--offline-prices'), today: today.toISOString().slice(0, 10) });
+      for (const d of drift.items) flag(d.level, `${d.item}: ${d.detail}`);
+    } catch (err) {
+      flag('RED', `live drift check failed: ${(err as Error).message.split('\n')[0]}`);
+    }
+  } else {
+    console.log('\n(pass --live to compare the assumptions with the database snapshots, run-rate and payslip age)');
+  }
+  console.log(`\n${red ? 'RED' : amber ? 'AMBER' : 'GREEN'}: ${red} red, ${amber} amber`);
+  process.exit(red ? 1 : 0);
+})();

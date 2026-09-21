@@ -15,41 +15,14 @@
  * At dealing time on II: search the EPIC, order in NOMINAL (face) amount; you
  * pay ~the dirty price per £100 face. The £ cost column is a budget, not a quote.
  */
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { readAssumptionsFile } from '../inputs/assumptions.mjs';
-import { buildLadder, couponSchedule, parseGiltTable } from '../engine/ladder.mjs';
+import { getGiltPrices } from '../inputs/gilt-prices.mjs';
+import { buildLadder, couponSchedule } from '../engine/ladder.mjs';
 
-const planDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const opt = (/** @type {string} */ name) => { const i = args.indexOf('--' + name); return i >= 0 ? args[i + 1] : undefined; };
 const a = (await readAssumptionsFile()).values;
-const SRC = 'https://www.dividenddata.co.uk/index-linked-gilts-prices-yields.py';
-const pricesDir = path.join(planDir, 'observations', 'gilt-prices');
-
-/** @returns {Promise<{ asOf: string, source: string, gilts: any[] }>} */
-async function getPrices() {
-  if (!args.includes('--offline')) {
-    try {
-      const res = await fetch(SRC, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-      if (res.ok) {
-        const gilts = parseGiltTable(await res.text());
-        if (gilts.length) {
-          const obs = { asOf: new Date().toISOString(), source: SRC + ' (LSE ~15-min delay)', gilts };
-          if (args.includes('--save')) { const p = path.join(pricesDir, obs.asOf.slice(0, 10) + '.json'); fs.writeFileSync(p, JSON.stringify(obs, null, 2) + '\n'); console.log(`saved ${path.relative(process.cwd(), p)}`); }
-          return obs;
-        }
-      }
-      console.error(`live fetch failed (HTTP ${res.status}); using the newest observation file`);
-    } catch (e) { console.error(`live fetch failed (${/** @type {Error} */ (e).message}); using the newest observation file`); }
-  }
-  const newest = fs.readdirSync(pricesDir).filter((f) => f.endsWith('.json')).sort().pop();
-  if (!newest) throw new Error('no gilt-price observation file');
-  return JSON.parse(fs.readFileSync(path.join(pricesDir, newest), 'utf8'));
-}
-
-const prices = await getPrices();
+const prices = await getGiltPrices({ offline: args.includes('--offline'), save: args.includes('--save'), log: (m) => console.error(m) });
 const years = opt('years') ? opt('years')?.split('-').map(Number) : [a.ladder.firstYear, a.ladder.lastYear];
 const plan = buildLadder(a, prices.gilts, {
   firstYear: years?.[0], lastYear: years?.[1] ?? years?.[0],
@@ -58,7 +31,7 @@ const plan = buildLadder(a, prices.gilts, {
 });
 const fmt = (/** @type {number} */ n) => n.toLocaleString('en-GB', { maximumFractionDigits: 0 });
 console.log(`\nGILT LADDER ORDER SHEET — £${fmt(plan.amountPerYear)} real REDEMPTION per year, years ${plan.firstYear}–${plan.lastYear}${opt('amount') !== undefined ? ' (fixed --amount)' : ` (sized by £${fmt(opt('budget') !== undefined ? Number(opt('budget')) : a.ladder.budgetReal)} budget)`}`);
-console.log(`Prices: ${prices.source ?? 'observation'} as of ${prices.asOf}\n`);
+console.log(`Prices: ${prices.live ? 'LIVE ' : 'observation file ' + (prices.file ?? '')} ${prices.source ?? ''} as of ${prices.asOf}\n`);
 console.log('EPIC   Gilt                                          Maturity      Dirty£   Real yld  Face to order   Est cost £   Covers');
 console.log('-'.repeat(125));
 for (const g of plan.byGilt) console.log(`${g.epic.padEnd(6)} ${g.giltName.padEnd(45)} ${g.maturity.padEnd(13)} ${g.dirty.toFixed(2).padStart(7)} ${String(g.realYield.toFixed(2) + '%').padStart(8)}  £${fmt(g.face).padStart(9)}    £${fmt(g.estCost).padStart(8)}   ${g.coversYears.join(', ')}${g.notes.length ? '  (' + g.notes[0] + ')' : ''}`);
