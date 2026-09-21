@@ -207,3 +207,9 @@ inputs and is left as it is (immutable); the next run diffs against it.
   tests.
 - Engine version `2026-09-21.phase7`; yields observation `gilt-yields/2026-09-21.json` (with 2046–50 `ext` rungs)
   supersedes 2026-09-20 for new runs, so rung figures move slightly against the accepted run. Tests: 111 green.
+
+## 21 Sep 2026 — run 2026-09-21-phase7 accepted (decision, Chris)
+
+Baseline is now `plan/runs/2026-09-21-phase7` (supersedes 2026-09-21). Chris: "I want it accepted at 70k and we
+will work to curb spending to meet it" — the £70k plan line stands; the RED on the trailing-12-month spend
+(£84,157 net) is acknowledged as the target to close, not a reason to move the line.
