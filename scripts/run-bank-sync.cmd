@@ -6,3 +6,8 @@ cd /d "%~dp0.."
 echo. >> bank-sync.log
 echo ==== %DATE% %TIME% ==== >> bank-sync.log
 call npm run sync:bank >> bank-sync.log 2>&1
+rem Household plan: cheap live health check after every sync (assumptions vs the fresh
+rem snapshots, run-rate and payslip age; dead-man on the last accepted run). Notifies on RED.
+echo. >> plan-check.log
+echo ==== %DATE% %TIME% ==== >> plan-check.log
+call npm run plan:check -- --live --notify >> plan-check.log 2>&1

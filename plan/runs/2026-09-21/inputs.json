@@ -1,0 +1,839 @@
+{
+ "assumptions": {
+  "payslip": {
+   "asOf": "2026-08",
+   "basicAnnual": 73837.8,
+   "carAllowance": 6500,
+   "medicalBik": 1330,
+   "bonusRate": 0.05,
+   "existingEeRate": 0.045,
+   "employerRate": 0.11,
+   "payGrowth": 0.02
+  },
+  "tax": {
+   "personalAllowance": 12570,
+   "basicRateBand": 37700,
+   "higherRateFloor": 50270,
+   "basicRate": 0.2,
+   "higherRate": 0.4,
+   "payeAllowance": 11179,
+   "niMainRate": 0.08,
+   "niUpperRate": 0.02,
+   "niPrimaryThreshold": 12570,
+   "niUpperEarningsLimit": 50270,
+   "reliefAbove": 0.42,
+   "reliefBelow": 0.28
+  },
+  "hicbc": {
+   "lowerThreshold": 60000,
+   "upperThreshold": 80000,
+   "taperPerStep": 0.01,
+   "stepSize": 200,
+   "operatingTarget": 59500
+  },
+  "childBenefit": {
+   "annual2026": 2337.4,
+   "uprating": 0.02,
+   "emmieEndsAug": 2035,
+   "maxEndsAug": 2037
+  },
+  "pivot": {
+   "years": 9,
+   "firstTaxYear": 2026
+  },
+  "pots": {
+   "chrisIiIsa": 276716,
+   "abbyVanguardIsa": 312573,
+   "chrisIiSipp": 439574,
+   "chrisAccenturePension": 193081,
+   "abbyAccentureDc": 282921,
+   "otherSavings": 119924,
+   "accentureShares": 1960,
+   "cashBuffer": 66000,
+   "crypto": 53924,
+   "chrisPension": 632655,
+   "abbyPension": 282921,
+   "nonPension": 711173,
+   "total": 1626749
+  },
+  "accounts": {
+   "potsMap": {
+    "CH ISA": "pots.chrisIiIsa",
+    "Abby S&S ISA": "pots.abbyVanguardIsa",
+    "Chris II SIPP Pension": "pots.chrisIiSipp",
+    "Chris Accenture Pens": "pots.chrisAccenturePension",
+    "Abby Accenture Pension": "pots.abbyAccentureDc",
+    "Other Savings": "pots.otherSavings",
+    "Accenture Shares": "pots.accentureShares"
+   },
+   "bucketMap": {
+    "Chris II SIPP Pension": "chrisPension",
+    "Chris Accenture Pens": "chrisPension",
+    "Abby Accenture Pension": "abbyPension",
+    "Abby S&S ISA": "accessible",
+    "CH ISA": "accessible",
+    "Cash Position": "accessible",
+    "Other Savings": "accessible",
+    "HSBC Global Money Account": "accessible",
+    "HSBC Joint Current Account": "accessible",
+    "Accenture Shares": "accessible",
+    "House Net Worth": "excluded",
+    "Investment Contributions": "excluded",
+    "Business Stock": "excluded",
+    "HSBC Credit Card": "excluded"
+   }
+  },
+  "spend": {
+   "planLine": 70000,
+   "retirementTarget": 60000,
+   "excludedCategories": [
+    "Home improvement",
+    "Extension",
+    "Lego Out",
+    "Work Travel"
+   ],
+   "nineYearSavingsDrawBudget": 8000
+  },
+  "income": {
+   "hbPreRetirement": 25000,
+   "hbPostRetirement": 13000
+  },
+  "dates": {
+   "planRetirementYear": 2035,
+   "chrisPensionAccessYear": 2040,
+   "abbyPensionAccessYear": 2043,
+   "chrisStatePensionYear": 2051,
+   "abbyStatePensionYear": 2054,
+   "simulationEndYear": 2075
+  },
+  "statePension": {
+   "annualEach": 12548
+  },
+  "drawdown": {
+   "tfcCapEach": 268275,
+   "ufplsTaxableFraction": 0.75
+  },
+  "ladder": {
+   "firstYear": 2035,
+   "lastYear": 2045,
+   "abbyIiIsaTransfer": 242800,
+   "sippEquityRetained": 49700,
+   "isaBudgetReal": 519516,
+   "sippBudgetReal": 389874,
+   "budgetReal": 909390
+  },
+  "nmw": {
+   "hourlyRate": 12.71,
+   "hoursPerWeek": 40,
+   "weeklyFloor": 508.40000000000003,
+   "annualFloor": 26507.976000000002
+  },
+  "returns": {
+   "realEquity": {
+    "planning": 0.02,
+    "better": 0.04
+   },
+   "cashReal": 0.005
+  },
+  "ledger": {
+   "cashFloor": 30000,
+   "isaAllowanceCouple": 40000
+  },
+  "__preparedOn": "2026-09-20",
+  "__knownLimitations": [
+   {
+    "id": "tfc-nominal-cap",
+    "raised": "2026-09-20",
+    "fixBy": "2027-06-01",
+    "text": "Tax-free cash is modelled as a cumulative real allowance of £268,275 each, with no 25%-of-crystallised-pot limit. The lump sum allowance is frozen in cash (≈£195k real by 2041) and 25% of each pot is ≈£200k, so the model over-counts tax-free money by about £145k real. Lifetime drawdown tax is about £44k at 2% real and £115k at 0%, not ≈£0.",
+    "impact": "tax narrative only; survival unaffected"
+   },
+   {
+    "id": "thresholds-held-real",
+    "raised": "2026-09-20",
+    "text": "Personal allowance, basic-rate band and state pension are held constant in real terms for the whole simulation. The allowance is frozen in cash to April 2031 (≈£11.5k real by then); the state pension is uprated by the triple lock. Small, opposite-signed biases.",
+    "impact": "≈£0.5k/yr of tax from 2041"
+   },
+   {
+    "id": "iht-not-modelled",
+    "raised": "2026-09-20",
+    "text": "Pensions join the estate for inheritance tax from April 2027. The planning case leaves roughly £1.8M in pensions at 2075, implying IHT of the order of £850k plus beneficiary income tax. Drawing to the basic-rate band from 2041 should become the planning case; it is not yet.",
+    "impact": "dominant tax in every path; not a spending risk"
+   },
+   {
+    "id": "nic-cap-2029",
+    "raised": "2026-09-20",
+    "fixBy": "2029-04-06",
+    "text": "From April 2029 salary-sacrificed pension contributions above £2,000/yr attract employee and employer NIC, so relief on the excess falls from 42% to 40% (about £3.7k over the remaining programme) and Accenture may restructure the AVC facility. The pivot model uses 42% throughout.",
+    "impact": "≈£3.7k take-home; scheme-availability risk unquantified"
+   },
+   {
+    "id": "fees-and-crypto",
+    "raised": "2026-09-20",
+    "text": "Platform and dealing fees (~£8k to 2045) are unmodelled; crypto (~£54k) is treated as equity at 2% real and never drawn; the sustainable-spend column in the ledger document is the 3 Sep outlook figure and £70k/yr does not survive the flat-0% case under the ledger's tax rules.",
+    "impact": "small"
+   }
+  ]
+ },
+ "giltPrices": {
+  "asOf": "2026-09-21T07:48:10.596Z",
+  "source": "https://www.dividenddata.co.uk/index-linked-gilts-prices-yields.py (LSE ~15-min delay)",
+  "gilts": [
+   {
+    "epic": "T27",
+    "name": "1 1/4% Index-linked Treasury Gilt 2027",
+    "coupon": "1.25%",
+    "maturity": "22-Nov-2027",
+    "matYear": 2027,
+    "clean": 101.71,
+    "dirty": 220.087,
+    "realYield": -0.211
+   },
+   {
+    "epic": "T28",
+    "name": "0 1/8% Index-linked Treasury Gilt 2028",
+    "coupon": "0.125%",
+    "maturity": "10-Aug-2028",
+    "matYear": 2028,
+    "clean": 99.7,
+    "dirty": 149.351,
+    "realYield": 0.285
+   },
+   {
+    "epic": "T29",
+    "name": "0 1/8% Index-linked Treasury Gilt 2029",
+    "coupon": "0.125%",
+    "maturity": "22-Mar-2029",
+    "matYear": 2029,
+    "clean": 98.31,
+    "dirty": 173.29,
+    "realYield": 0.808
+   },
+   {
+    "epic": "TR31",
+    "name": "0 1/8% Index-linked Treasury Gilt 2031",
+    "coupon": "0.125%",
+    "maturity": "10-Aug-2031",
+    "matYear": 2031,
+    "clean": 95.72,
+    "dirty": 136.371,
+    "realYield": 1.025
+   },
+   {
+    "epic": "T32",
+    "name": "1 1/4% Index-linked Treasury Gilt 2032",
+    "coupon": "1.25%",
+    "maturity": "22-Nov-2032",
+    "matYear": 2032,
+    "clean": 99.71,
+    "dirty": 192.856,
+    "realYield": 1.299
+   },
+   {
+    "epic": "T33",
+    "name": "0 3/4% Index-linked Treasury Gilt 2033",
+    "coupon": "0.75%",
+    "maturity": "22-Nov-2033",
+    "matYear": 2033,
+    "clean": 95.03,
+    "dirty": 107.052,
+    "realYield": 1.483
+   },
+   {
+    "epic": "TRTQ",
+    "name": "0 3/4% Index-linked Treasury Gilt 2034",
+    "coupon": "0.75%",
+    "maturity": "22-Mar-2034",
+    "matYear": 2034,
+    "clean": 93.91,
+    "dirty": 169.799,
+    "realYield": 1.615
+   },
+   {
+    "epic": "TR35",
+    "name": "1 1/8% Index-linked Treasury Gilt 2035",
+    "coupon": "1.125%",
+    "maturity": "22-Sep-2035",
+    "matYear": 2035,
+    "clean": 94.66,
+    "dirty": 101.882,
+    "realYield": 1.769
+   },
+   {
+    "epic": "TG36",
+    "name": "0 1/8% Index-linked Treasury Gilt 2036",
+    "coupon": "0.125%",
+    "maturity": "22-Nov-2036",
+    "matYear": 2036,
+    "clean": 83.71,
+    "dirty": 134.711,
+    "realYield": 1.894
+   },
+   {
+    "epic": "TR37",
+    "name": "1 1/8% Index-linked Treasury Gilt 2037",
+    "coupon": "1.125%",
+    "maturity": "22-Nov-2037",
+    "matYear": 2037,
+    "clean": 91.47,
+    "dirty": 189.929,
+    "realYield": 1.98
+   },
+   {
+    "epic": "T38",
+    "name": "1 3/4% Index-linked Treasury Gilt 2038",
+    "coupon": "1.75%",
+    "maturity": "22-Sep-2038",
+    "matYear": 2038,
+    "clean": 96.81,
+    "dirty": 102.749,
+    "realYield": 2.051
+   },
+   {
+    "epic": "TG39",
+    "name": "0 1/8% Index-linked Treasury Gilt 2039",
+    "coupon": "0.125%",
+    "maturity": "22-Mar-2039",
+    "matYear": 2039,
+    "clean": 78.14,
+    "dirty": 110.225,
+    "realYield": 2.125
+   },
+   {
+    "epic": "TR40",
+    "name": "0 5/8% Index-linked Treasury Gilt 2040",
+    "coupon": "0.625%",
+    "maturity": "22-Mar-2040",
+    "matYear": 2040,
+    "clean": 82.15,
+    "dirty": 159.281,
+    "realYield": 2.156
+   },
+   {
+    "epic": "T41",
+    "name": "0 1/8% Index-linked Treasury Gilt 2041",
+    "coupon": "0.125%",
+    "maturity": "10-Aug-2041",
+    "matYear": 2041,
+    "clean": 73.89,
+    "dirty": 110.368,
+    "realYield": 2.19
+   },
+   {
+    "epic": "T42A",
+    "name": "0 5/8% Index-linked Treasury Gilt 2042",
+    "coupon": "0.625%",
+    "maturity": "22-Nov-2042",
+    "matYear": 2042,
+    "clean": 78.12,
+    "dirty": 154.186,
+    "realYield": 2.246
+   },
+   {
+    "epic": "T44",
+    "name": "0 1/8% Index-linked Treasury Gilt 2044",
+    "coupon": "0.125%",
+    "maturity": "22-Mar-2044",
+    "matYear": 2044,
+    "clean": 68.48,
+    "dirty": 118.25,
+    "realYield": 2.328
+   },
+   {
+    "epic": "TR45",
+    "name": "0 5/8% Index-linked Treasury Gilt 2045",
+    "coupon": "0.625%",
+    "maturity": "22-Mar-2045",
+    "matYear": 2045,
+    "clean": 74.15,
+    "dirty": 85.569,
+    "realYield": 2.357
+   },
+   {
+    "epic": "TR46",
+    "name": "0 1/8% Index-linked Treasury Gilt 2046",
+    "coupon": "0.125%",
+    "maturity": "22-Mar-2046",
+    "matYear": 2046,
+    "clean": 65.04,
+    "dirty": 105.62,
+    "realYield": 2.375
+   },
+   {
+    "epic": "T47",
+    "name": "0 3/4% Index-linked Treasury Gilt 2047",
+    "coupon": "0.75%",
+    "maturity": "22-Nov-2047",
+    "matYear": 2047,
+    "clean": 73.37,
+    "dirty": 148.195,
+    "realYield": 2.355
+   },
+   {
+    "epic": "TG48",
+    "name": "0 1/8% Index-linked Treasury Gilt 2048",
+    "coupon": "0.125%",
+    "maturity": "10-Aug-2048",
+    "matYear": 2048,
+    "clean": 61.7,
+    "dirty": 93.928,
+    "realYield": 2.38
+   },
+   {
+    "epic": "TR49",
+    "name": "1 7/8% Index-linked Treasury Gilt 2049",
+    "coupon": "1.875%",
+    "maturity": "22-Sep-2049",
+    "matYear": 2049,
+    "clean": 91.44,
+    "dirty": 98.565,
+    "realYield": 2.359
+   },
+   {
+    "epic": "TR50",
+    "name": "0 1/2% Index-linked Treasury Gilt 2050",
+    "coupon": "0.5%",
+    "maturity": "22-Mar-2050",
+    "matYear": 2050,
+    "clean": 66.25,
+    "dirty": 130.329,
+    "realYield": 2.384
+   },
+   {
+    "epic": "TG51",
+    "name": "0 1/8% Index-linked Treasury Gilt 2051",
+    "coupon": "0.125%",
+    "maturity": "22-Mar-2051",
+    "matYear": 2051,
+    "clean": 58.26,
+    "dirty": 82.936,
+    "realYield": 2.384
+   },
+   {
+    "epic": "TG52",
+    "name": "0 1/4% Index-linked Treasury Gilt 2052",
+    "coupon": "0.25%",
+    "maturity": "22-Mar-2052",
+    "matYear": 2052,
+    "clean": 59.4,
+    "dirty": 102.85,
+    "realYield": 2.384
+   },
+   {
+    "epic": "TG54",
+    "name": "1 1/4% Index-linked Treasury Gilt 2054",
+    "coupon": "1.25%",
+    "maturity": "22-Nov-2054",
+    "matYear": 2054,
+    "clean": 77.38,
+    "dirty": 85.942,
+    "realYield": 2.353
+   },
+   {
+    "epic": "TR8F",
+    "name": "1 1/4% Index-linked Treasury Gilt 2055",
+    "coupon": "1.25%",
+    "maturity": "22-Nov-2055",
+    "matYear": 2055,
+    "clean": 77.14,
+    "dirty": 168.76,
+    "realYield": 2.335
+   },
+   {
+    "epic": "TR56",
+    "name": "0 1/8% Index-Linked Treasury Gilt 2056",
+    "coupon": "0.125%",
+    "maturity": "22-Nov-2056",
+    "matYear": 2056,
+    "clean": 53.09,
+    "dirty": 83.89,
+    "realYield": 2.286
+   },
+   {
+    "epic": "T58",
+    "name": "0 1/8% Index-linked Treasury Gilt 2058",
+    "coupon": "0.125%",
+    "maturity": "22-Mar-2058",
+    "matYear": 2058,
+    "clean": 52.66,
+    "dirty": 86.171,
+    "realYield": 2.223
+   },
+   {
+    "epic": "T62",
+    "name": "0 3/8% Index-linked Treasury Gilt 2062",
+    "coupon": "0.375%",
+    "maturity": "22-Mar-2062",
+    "matYear": 2062,
+    "clean": 56.17,
+    "dirty": 99.945,
+    "realYield": 2.145
+   },
+   {
+    "epic": "TR65",
+    "name": "0 1/8% Index-linked Treasury Gilt 2065",
+    "coupon": "0.125%",
+    "maturity": "22-Nov-2065",
+    "matYear": 2065,
+    "clean": 48.24,
+    "dirty": 77.535,
+    "realYield": 2.055
+   },
+   {
+    "epic": "T68",
+    "name": "0 1/8% Index-linked Treasury Gilt 2068",
+    "coupon": "0.125%",
+    "maturity": "22-Mar-2068",
+    "matYear": 2068,
+    "clean": 47.44,
+    "dirty": 79.563,
+    "realYield": 1.992
+   },
+   {
+    "epic": "TG73",
+    "name": "0 1/8% Index-linked Treasury Gilt 2073",
+    "coupon": "0.125%",
+    "maturity": "22-Mar-2073",
+    "matYear": 2073,
+    "clean": 49.8,
+    "dirty": 67.637,
+    "realYield": 1.687
+   }
+  ]
+ },
+ "giltYields": {
+  "asOf": "2026-09-20",
+  "source": "dividenddata.co.uk real yields, 17–20 Sep 2026 (used by scripts/ifa-e-yearly.mjs until phase 2 reads live prices)",
+  "note": "One row per ladder rung. mult 1.5 = the gilt also carries half of the 2043 target (no 2043 linker). Coupon is the annual coupon rate; yld is the real yield to maturity.",
+  "rungs": [
+   {
+    "y": 2035,
+    "w": "isa",
+    "epic": "TR35",
+    "cpn": 0.01125,
+    "yld": 0.0177,
+    "mult": 1
+   },
+   {
+    "y": 2036,
+    "w": "isa",
+    "epic": "TG36",
+    "cpn": 0.00125,
+    "yld": 0.0189,
+    "mult": 1
+   },
+   {
+    "y": 2037,
+    "w": "isa",
+    "epic": "TR37",
+    "cpn": 0.01125,
+    "yld": 0.0198,
+    "mult": 1
+   },
+   {
+    "y": 2038,
+    "w": "isa",
+    "epic": "T38",
+    "cpn": 0.0175,
+    "yld": 0.0205,
+    "mult": 1
+   },
+   {
+    "y": 2039,
+    "w": "isa",
+    "epic": "TG39",
+    "cpn": 0.00125,
+    "yld": 0.0213,
+    "mult": 1
+   },
+   {
+    "y": 2040,
+    "w": "isa",
+    "epic": "TR40",
+    "cpn": 0.00625,
+    "yld": 0.0215,
+    "mult": 1
+   },
+   {
+    "y": 2041,
+    "w": "sipp",
+    "epic": "T41",
+    "cpn": 0.00125,
+    "yld": 0.0219,
+    "mult": 1
+   },
+   {
+    "y": 2042,
+    "w": "sipp",
+    "epic": "T42A",
+    "cpn": 0.00625,
+    "yld": 0.0225,
+    "mult": 1.5
+   },
+   {
+    "y": 2044,
+    "w": "sipp",
+    "epic": "T44",
+    "cpn": 0.00125,
+    "yld": 0.0233,
+    "mult": 1.5
+   },
+   {
+    "y": 2045,
+    "w": "sipp",
+    "epic": "TR45",
+    "cpn": 0.00625,
+    "yld": 0.0236,
+    "mult": 1
+   }
+  ]
+ },
+ "payslip": {
+  "taxYear": "2026/27",
+  "taxMonth": 5,
+  "payDate": "2026-08-28",
+  "basicMonthly": 6153.15,
+  "taxablePayMonthly": 6528.76,
+  "ytdTaxable": 33621.44,
+  "netMonthly": 4511.6,
+  "avcPct": 0,
+  "bonusExpected": 3691.89,
+  "bonusSacrificed": false,
+  "otherTaxableIncome": 0,
+  "extraAvcAlreadyTaken": 0,
+  "notes": "Tax month 05. basic × 0.955 + car 541.67 + medical 110.83 = taxable 6,528.76 exactly. YTD taxable is £977.64 above 5 × monthly — an extra taxable item (arrears or one-off), absorbed by the YTD method. Net reconciles to the PAYE model within 12p (code 1117L). bonusExpected = 5% × £73,837.80 (GUESS, true up in January)."
+ },
+ "today": "2026-09-21",
+ "observations": {
+  "giltPrices": {
+   "asOf": "2026-09-21T07:48:10.596Z",
+   "source": "https://www.dividenddata.co.uk/index-linked-gilts-prices-yields.py (LSE ~15-min delay)",
+   "live": true,
+   "file": "2026-09-21.json",
+   "count": 32
+  },
+  "giltYields": {
+   "asOf": "2026-09-20",
+   "file": "2026-09-20.json"
+  },
+  "payslip": {
+   "file": "2026-08.json",
+   "month": "2026-08",
+   "payDate": "2026-08-28",
+   "taxMonth": 5
+  },
+  "snapshots": {
+   "asOf": "2026-09-01",
+   "accounts": [
+    {
+     "name": "Abby Accenture Pension",
+     "type": "pension",
+     "balance": 282921,
+     "date": "2026-09-01"
+    },
+    {
+     "name": "Abby S&S ISA",
+     "type": "isa",
+     "balance": 312573,
+     "date": "2026-09-01"
+    },
+    {
+     "name": "Accenture Shares",
+     "type": "investment",
+     "balance": 1960,
+     "date": "2026-09-01"
+    },
+    {
+     "name": "Business Stock",
+     "type": "other",
+     "balance": 25000,
+     "date": "2026-09-01"
+    },
+    {
+     "name": "CH ISA",
+     "type": "isa",
+     "balance": 276716,
+     "date": "2026-09-01"
+    },
+    {
+     "name": "Chris Accenture Pens",
+     "type": "pension",
+     "balance": 193081,
+     "date": "2026-09-01"
+    },
+    {
+     "name": "Chris II SIPP Pension",
+     "type": "pension",
+     "balance": 439574,
+     "date": "2026-09-01"
+    },
+    {
+     "name": "House Net Worth",
+     "type": "property",
+     "balance": 697000,
+     "date": "2026-09-01"
+    },
+    {
+     "name": "HSBC Credit Card",
+     "type": "credit",
+     "balance": 29.22,
+     "date": "2026-02-03"
+    },
+    {
+     "name": "HSBC Joint Current Account",
+     "type": "current",
+     "balance": 15618.61,
+     "date": "2026-02-01"
+    },
+    {
+     "name": "Other Savings",
+     "type": "savings",
+     "balance": 119924,
+     "date": "2026-09-01"
+    }
+   ],
+   "pots": {
+    "pots.chrisIiIsa": {
+     "value": 276716,
+     "date": "2026-09-01",
+     "account": "CH ISA"
+    },
+    "pots.abbyVanguardIsa": {
+     "value": 312573,
+     "date": "2026-09-01",
+     "account": "Abby S&S ISA"
+    },
+    "pots.chrisIiSipp": {
+     "value": 439574,
+     "date": "2026-09-01",
+     "account": "Chris II SIPP Pension"
+    },
+    "pots.chrisAccenturePension": {
+     "value": 193081,
+     "date": "2026-09-01",
+     "account": "Chris Accenture Pens"
+    },
+    "pots.abbyAccentureDc": {
+     "value": 282921,
+     "date": "2026-09-01",
+     "account": "Abby Accenture Pension"
+    },
+    "pots.otherSavings": {
+     "value": 119924,
+     "date": "2026-09-01",
+     "account": "Other Savings"
+    },
+    "pots.accentureShares": {
+     "value": 1960,
+     "date": "2026-09-01",
+     "account": "Accenture Shares"
+    }
+   },
+   "unmapped": []
+  },
+  "runRate": {
+   "kind": "runRate",
+   "asOf": "2026-09-21",
+   "since": "2025-09-21",
+   "txnCount": 2271,
+   "trailing12moSpend": 91166.51000000004,
+   "vsPlanLine": 21166.51000000004,
+   "excludedTotal": 41037.31999999997
+  },
+  "income": {
+   "kind": "income",
+   "asOf": "2026-09-21",
+   "since": "2025-09-21",
+   "txnCount": 104,
+   "bySource": {
+    "hbDrawings": 22920,
+    "abbySalary": 56554.01,
+    "cottrellAnnual": 3255,
+    "hbSalesCredits": 520.4300000000001,
+    "contributions": 8640,
+    "abbyReimbursement": 256.75,
+    "oneOff": 3436.63,
+    "other": 1090,
+    "gifts": 250,
+    "childBenefit": 719.2,
+    "chrisSideIncome": 80
+   },
+   "total": 97722.02,
+   "abbyTakeHome": 56810.76,
+   "hbDrawings": 23440.43,
+   "childBenefit": 719.2,
+   "cottrell": 3255,
+   "sideIncome": 80,
+   "contributions": 8640,
+   "spendable": 89082.02,
+   "recurring": 85395.39
+  },
+  "rungs": {
+   "kind": "rungs",
+   "asOf": null,
+   "rungs": []
+  }
+ },
+ "drift": {
+  "verdict": "RED",
+  "items": [
+   {
+    "level": "OK",
+    "item": "pots.chrisIiIsa",
+    "detail": "assumed 276,716 vs snapshot 276,716 (2026-09-01, 0.0%)"
+   },
+   {
+    "level": "OK",
+    "item": "pots.abbyVanguardIsa",
+    "detail": "assumed 312,573 vs snapshot 312,573 (2026-09-01, 0.0%)"
+   },
+   {
+    "level": "OK",
+    "item": "pots.chrisIiSipp",
+    "detail": "assumed 439,574 vs snapshot 439,574 (2026-09-01, 0.0%)"
+   },
+   {
+    "level": "OK",
+    "item": "pots.chrisAccenturePension",
+    "detail": "assumed 193,081 vs snapshot 193,081 (2026-09-01, 0.0%)"
+   },
+   {
+    "level": "OK",
+    "item": "pots.abbyAccentureDc",
+    "detail": "assumed 282,921 vs snapshot 282,921 (2026-09-01, 0.0%)"
+   },
+   {
+    "level": "OK",
+    "item": "pots.otherSavings",
+    "detail": "assumed 119,924 vs snapshot 119,924 (2026-09-01, 0.0%)"
+   },
+   {
+    "level": "OK",
+    "item": "pots.accentureShares",
+    "detail": "assumed 1,960 vs snapshot 1,960 (2026-09-01, 0.0%)"
+   },
+   {
+    "level": "RED",
+    "item": "spend.planLine",
+    "detail": "trailing-12m spend 91,167 vs plan line 70,000 (+21,167)"
+   },
+   {
+    "level": "OK",
+    "item": "payslip age",
+    "detail": "newest payslip 2026-08-28 is 24 days old"
+   },
+   {
+    "level": "OK",
+    "item": "payslip.basicAnnual",
+    "detail": "assumption 73,837.8 vs payslip 73,837.8"
+   },
+   {
+    "level": "OK",
+    "item": "ladder rungs",
+    "detail": "0 of 0 bought, cost 0 of budget 909,390"
+   }
+  ]
+ },
+ "freshness": [],
+ "runId": "2026-09-21"
+}

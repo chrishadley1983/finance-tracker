@@ -92,3 +92,7 @@ bank-sync.log
 
 # scratch (recategorisation backups etc.)
 /tmp/
+
+# plan job logs
+/plan-run.log
+/plan-check.log

@@ -25,7 +25,9 @@
     "plan:standalone": "node plan/engine/run-standalone.mjs",
     "plan:inputs": "tsx scripts/plan-inputs.ts",
     "plan:payslip": "node plan/tools/payslip.mjs",
-    "plan:render": "node plan/tools/render.mjs"
+    "plan:render": "node plan/tools/render.mjs",
+    "plan:run": "tsx scripts/plan-run.ts",
+    "plan:accept": "tsx scripts/plan-accept.ts"
   },
   "repository": {
     "type": "git",

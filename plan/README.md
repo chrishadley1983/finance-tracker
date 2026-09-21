@@ -4,12 +4,33 @@ This tree is the single home for the plan: its documents, its decisions, and (fr
 assumptions, engine, renderers and accepted runs. Design: `ARCHITECTURE.md`. Decision log:
 `decisions.md` (append-only).
 
-Status, 21 Sep 2026: **phases 0–4 complete.** Every planning number lives in `assumptions.json`
+Status, 21 Sep 2026: **phases 0–5 complete.** Every planning number lives in `assumptions.json`
 with provenance; every calculation lives in `engine/` (pure, injected, deterministic); the
 measured inputs come in through `inputs/` — the only code that touches the database or the
-price feed; and every document is rendered from a run's outputs by `render/` with no
-hand-typed numbers (each figure is tagged with the outputs path it came from and a test reads
-them all back). `engine/SPEC.md` states every formula.
+price feed; every document is rendered from a run's outputs by `render/` with no hand-typed
+numbers; and `plan:run` does the whole thing on a schedule, writes an immutable run folder,
+diffs it against the last accepted run and tells you. `engine/SPEC.md` states every formula.
+
+## The run cycle
+
+```
+npm run plan:run                 # live: collect → engine → diff vs accepted → render → plan/runs/<date>/ → notify (exit 1 on RED)
+npm run plan:run -- --check-only # the same without writing a run folder
+                                 # review plan/runs/<date>/diff.md and summary.html, then:
+npm run plan:accept -- <date> --note "Q4 review"    # verify manifest, mark accepted, point LATEST_ACCEPTED at it, then commit as printed
+```
+
+Schedule: Task Scheduler `FinanceTracker-PlanRun-Quarterly` runs the full job at 07:30 on 1 Jan / 1 Apr /
+1 Jul / 1 Oct (`scripts/run-plan-check.cmd`, log `plan-run.log`; register with
+`scripts/register-plan-check-task.ps1`). The bank-sync task (weekly + 1st) also runs
+`plan:check --live --notify` after each sync: drift vs the fresh snapshots, payslip age, and a
+dead-man on the accepted run's age (AMBER at 80 days, RED at 100). Notifications: Discord if
+`DISCORD_WEBHOOK_PLAN` is set in `.env.local`; email through the household SMTP config on RED or
+failure. `diff.md` is always on disk whatever the notifications do. Tolerances: `inputs/diff-rules.json`.
+
+An accepted run is immutable: `runs.test.ts` re-hashes every `ACCEPTED.json` folder against its
+manifest. Frozen historical runs (`runs/2026-06-09-…`, `-07-30-…`, `-09-03-…`) predate this and have
+no manifest.
 
 ```
 npm run plan:check          # validate assumptions, DERIVED values, freshness, engine cross-checks (--live: + DB drift)
@@ -62,6 +83,8 @@ generated document from phase 4.
 | `observations/gilt-prices/`, `gilt-yields/`, `payslips/` | dated measured inputs: market prices/yields and Abby's payslips |
 | `derivations/` | `golden.json` + one note per anchor: values derived by hand OUTSIDE the engine; `tests/unit/plan/golden.test.ts` holds the engine to them |
 | `render/` | `render.mjs` (summary.html — the page Abby reads; ledger.html; assumptions.md; avc-recipe.md; ledger.csv; order-sheet CSVs) and `fmt.mjs`; no arithmetic, no literals (phase 4) |
+| `inputs/diff.mjs`, `diff-rules.json`, `manifest.mjs`, `notify.mjs` | run-vs-accepted comparison and its tolerances; sha256 manifests; Discord/email (phase 5) |
+| `runs/<date>/` | one folder per run: `inputs.json`, `outputs.json`, `diff.md`, `summary.json`, the seven documents, `emissions.json`, `manifest.json`, and `ACCEPTED.json` once accepted; `runs/LATEST_ACCEPTED` names the current plan |
 | `tools/` | `set.mjs` (change an assumption), `ledger.mjs`, `avc.mjs`, `order-sheet.mjs` |
 | `decisions.md` | append-only log of what was decided, when, and why |
 | `ARCHITECTURE.md` | the drift-proof design and the seven phases |

@@ -120,3 +120,25 @@ drawdown model, plus reconciliation of the spend and income lines to the tracker
   order-sheet CSVs need no arithmetic in the renderer. Engine version `2026-09-21.phase4`.
 - Tests: 90 green. The frozen 3 Sep/20 Sep ledger HTML stays frozen; from phase 5 the generated
   `ledger.html` in each run folder is the live document.
+
+## Phase 5 complete, 21 Sep 2026 (the run job)
+
+- `npm run plan:run` does the whole cycle: collect live inputs → engine → prove the standalone runner gives
+  byte-identical output → diff against `plan/runs/LATEST_ACCEPTED` with `plan/inputs/diff-rules.json` →
+  render the seven documents → write `plan/runs/<date>/` (inputs, outputs, diff.md, summary.json, documents,
+  emissions, sha256 manifest with engine version and git sha) → notify → exit 1 on RED.
+  `npm run plan:accept -- <date>` verifies the manifest, writes `ACCEPTED.json`, points `LATEST_ACCEPTED` at
+  the run and prints the commit command; the folder is immutable from then on (`runs.test.ts` re-hashes it).
+- Schedule: Task Scheduler `FinanceTracker-PlanRun-Quarterly`, 07:30 on 1 Jan / 1 Apr / 1 Jul / 1 Oct, next
+  run 1 Oct 2026 (`scripts/run-plan-check.cmd` → `plan-run.log`). `scripts/run-bank-sync.cmd` now also runs
+  `plan:check --live --notify` after every bank sync (weekly + 1st): drift vs fresh snapshots, payslip age,
+  and a dead-man on the accepted run's age (AMBER 80 days, RED 100). `sync-truelayer.ts` untouched.
+- Notifications: Discord when `DISCORD_WEBHOOK_PLAN` is set in `.env.local` (not yet set); email through the
+  household SMTP config (Python smtplib) on RED or failure; a failed notification never fails the run.
+- **First live run: `plan/runs/2026-09-21`** — RED: trailing-12-month gross spend £91,167 vs the £70,000
+  plan line (+£21,167); everything else OK (pots exact to the 1 Sep snapshots, payslip 24 days old, AVC 55%,
+  ISA rung £98.7k / SIPP £106.3k, 2035 £2.28M → 2075 £2.21M at 2% real). Not yet accepted: Chris reviews
+  `diff.md` and `summary.html`, then `npm run plan:accept -- 2026-09-21`. Until a run is accepted every
+  later run diffs against nothing and `plan:check` shows AMBER for the missing baseline.
+- Tests: 97 green (adds `runs.test.ts`: diff rules with fixtures, manifest detect-any-change, immutability of
+  accepted runs, offline end-to-end run → accept → second run GREEN).

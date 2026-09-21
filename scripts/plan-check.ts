@@ -58,6 +58,17 @@ flag(Math.abs(th - 43_498) < 60 ? 'OK' : 'AMBER', `income.abbyTakeHomeYear1 (eng
 console.log(`\nKnown limitations carried: ${built.knownLimitations.map((l) => l.id).join(', ')}`);
 
 (async () => {
+  // Dead-man: the last accepted run must not go stale (plan/inputs/diff-rules.json acceptedAgeDays).
+  const rules = JSON.parse(fs.readFileSync(path.join(root, 'plan/inputs/diff-rules.json'), 'utf8'));
+  const latestFile = path.join(root, 'plan/runs/LATEST_ACCEPTED');
+  console.log('\nAccepted run:');
+  if (!fs.existsSync(latestFile)) flag('AMBER', 'no accepted run yet — run npm run plan:run, review plan/runs/<date>/diff.md, then npm run plan:accept -- <date>');
+  else {
+    const id = fs.readFileSync(latestFile, 'utf8').trim();
+    const acc = path.join(root, 'plan/runs', id, 'ACCEPTED.json');
+    const age = fs.existsSync(acc) ? Math.floor((today.getTime() - new Date(JSON.parse(fs.readFileSync(acc, 'utf8')).acceptedOn).getTime()) / 86_400_000) : NaN;
+    flag(isNaN(age) ? 'RED' : age > rules.acceptedAgeDays.red ? 'RED' : age > rules.acceptedAgeDays.amber ? 'AMBER' : 'OK', `last accepted run ${id}, ${isNaN(age) ? 'ACCEPTED.json missing' : age + ' days ago'}`);
+  }
   if (process.argv.includes('--live')) {
     console.log('\nLive drift (assumptions vs database and price feed):');
     try {
@@ -70,6 +81,13 @@ console.log(`\nKnown limitations carried: ${built.knownLimitations.map((l) => l.
   } else {
     console.log('\n(pass --live to compare the assumptions with the database snapshots, run-rate and payslip age)');
   }
-  console.log(`\n${red ? 'RED' : amber ? 'AMBER' : 'GREEN'}: ${red} red, ${amber} amber`);
+  const verdict = red ? 'RED' : amber ? 'AMBER' : 'GREEN';
+  console.log(`\n${verdict}: ${red} red, ${amber} amber`);
+  if (process.argv.includes('--notify') && red) {
+    const { notifyDiscord, notifyEmail } = await import('../plan/inputs/notify.mjs');
+    const msg = `Plan check ${today.toISOString().slice(0, 10)}: RED (${red} red, ${amber} amber) — see plan-check.log`;
+    await notifyDiscord(msg);
+    notifyEmail({ subject: 'Household plan check: RED', html: `<pre>${msg}</pre>` });
+  }
   process.exit(red ? 1 : 0);
 })();
