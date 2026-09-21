@@ -24,5 +24,7 @@ const summary = JSON.parse(fs.readFileSync(path.join(dir, 'summary.json'), 'utf8
 const record = { acceptedOn: new Date().toISOString(), by: opt('by') ?? 'Chris', note: opt('note') ?? '', verdictAtRun: summary.verdict, prevAccepted: fs.existsSync(path.join(runsDir, 'LATEST_ACCEPTED')) ? fs.readFileSync(path.join(runsDir, 'LATEST_ACCEPTED'), 'utf8').trim() : null };
 fs.writeFileSync(path.join(dir, ACCEPTED), JSON.stringify(record, null, 2) + '\n');
 fs.writeFileSync(path.join(runsDir, 'LATEST_ACCEPTED'), runId + '\n');
+// The cockpit imports this at build time (lib/plan/assumptions.ts → LATEST_ACCEPTED).
+fs.writeFileSync(path.join(runsDir, 'latest-accepted.json'), JSON.stringify({ runId, acceptedOn: record.acceptedOn, by: record.by, note: record.note, verdict: summary.verdict, headline: summary.headline ?? null, avcPct: summary.avcPct ?? null, potsTotal: summary.potsTotal ?? null, ladderPerYear: summary.ladderPerYear ?? null, sustainableSpend: summary.sustainableSpend ?? null }, null, 2) + '\n');
 console.log(`accepted ${runId} (${summary.verdict} at run time)${record.prevAccepted ? `, superseding ${record.prevAccepted}` : ''}`);
-console.log(`\nNow commit it:\n  git add ${path.relative(root, dir).replace(/\\/g, '/')} plan/runs/LATEST_ACCEPTED && git commit -m "plan: accept run ${runId}${opt('note') ? ' — ' + opt('note') : ''}"`);
+console.log(`\nNow commit it:\n  git add ${path.relative(root, dir).replace(/\\/g, '/')} plan/runs/LATEST_ACCEPTED plan/runs/latest-accepted.json && git commit -m "plan: accept run ${runId}${opt('note') ? ' — ' + opt('note') : ''}"`);

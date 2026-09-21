@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { buildLadder } from '@/lib/plan/ladder';
-import { PALETTE, POTS, type GiltPrice } from '@/lib/plan/constants';
+import { PALETTE, POTS, type GiltPrice } from '@/lib/plan/assumptions';
 import type { BucketTotals } from '@/lib/plan/buckets';
 import { gbp, gbpK } from './format';
 

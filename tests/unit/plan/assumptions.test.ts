@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import assumptionsFile from '../../../plan/assumptions.json';
 import { buildAssumptions, validateAssumptions, resolveAssumptions, evalFormula, freshness } from '../../../plan/inputs/assumptions.mjs';
 import { pivotProgramme, pivotYear, takeHomeNominal } from '@/lib/plan/pivot';
-import { LADDER, POTS_BASELINE, SPEND, PAYSLIP } from '@/lib/plan/constants';
+import { LADDER, POTS_BASELINE, SPEND, PAYSLIP } from '@/lib/plan/assumptions';
 
 const root = path.resolve(__dirname, '../../..');
 const file = assumptionsFile as never;

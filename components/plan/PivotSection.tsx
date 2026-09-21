@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { pivotProgramme, currentRetune } from '@/lib/plan/pivot';
-import { HICBC } from '@/lib/plan/constants';
+import { HICBC, PAYSLIP } from '@/lib/plan/assumptions';
 import { gbp } from './format';
 
 export function PivotSection() {
@@ -89,8 +89,8 @@ export function PivotSection() {
         </table>
       </div>
       <p className="text-xs text-slate-400 mt-2">
-        Every £1 of take-home given up puts £1.72 in her pension; the child benefit rides on top. Payslip
-        constants from April 2026; 2% pay growth, 5% bonus, thresholds frozen.
+        Every £1 of take-home given up puts £{(programme.totals.extraSacrifice / programme.totals.takeHomeCut).toFixed(2)} in her pension; the child benefit rides on top. Payslip
+        inputs from plan/assumptions.json ({PAYSLIP.asOf} payslip); {Math.round(PAYSLIP.payGrowth * 100)}% pay growth, {Math.round(PAYSLIP.bonusRate * 100)}% bonus, thresholds frozen.
       </p>
     </section>
   );

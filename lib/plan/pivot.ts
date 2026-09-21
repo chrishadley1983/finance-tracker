@@ -3,7 +3,7 @@
  * plan/engine/pivot.mjs (pure, injected); this module binds it to the
  * repo's assumptions so components and tests keep their existing signatures.
  */
-import { ASSUMPTIONS } from './constants';
+import { ASSUMPTIONS } from './assumptions';
 import * as engine from '../../plan/engine/pivot.mjs';
 import { childBenefitKept as engineCbKept, netPay as engineNetPay } from '../../plan/engine/tax.mjs';
 

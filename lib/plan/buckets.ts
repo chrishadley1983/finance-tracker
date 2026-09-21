@@ -3,7 +3,7 @@
  * accessible / Chris pension (Nov 2040) / Abby pension (Aug 2043).
  * The arithmetic lives in plan/engine/spend.mjs.
  */
-import { ASSUMPTIONS } from './constants';
+import { ASSUMPTIONS } from './assumptions';
 import { bucketTotals as engineBucketTotals } from '../../plan/engine/spend.mjs';
 
 export type Bucket = 'accessible' | 'chrisPension' | 'abbyPension';

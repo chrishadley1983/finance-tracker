@@ -3,7 +3,7 @@
  * sign-aware, excluding the plan's one-off/business/reimbursed categories.
  * The arithmetic lives in plan/engine/spend.mjs.
  */
-import { ASSUMPTIONS } from './constants';
+import { ASSUMPTIONS } from './assumptions';
 import { computeRunRate as engineRunRate } from '../../plan/engine/spend.mjs';
 
 export interface SpendTxn {

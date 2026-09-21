@@ -85,7 +85,7 @@ describe('/plan page (criteria U2, F2, F3, F12, P1, E2, F7)', () => {
     mockApis({ failData: true });
     render(<PlanPage />);
     expect(await screen.findByRole('heading', { name: 'Where we are' })).toBeInTheDocument();
-    await waitFor(() => expect(screen.getAllByText(/June 2026 baseline/).length).toBeGreaterThan(0));
+    await waitFor(() => expect(screen.getAllByText(/assumptions baseline/).length).toBeGreaterThan(0)); // pots from plan/assumptions.json when snapshots fail
     expect(screen.getByRole('heading', { name: 'The outlook' })).toBeInTheDocument();
   });
 

@@ -13,7 +13,7 @@ import {
   LabelList,
 } from 'recharts';
 import { drawdownSim, sustainableSpend, potsAtExit, DEFAULT_OUTLOOK } from '@/lib/plan/outlook';
-import { PALETTE, SPEND, INCOME, DATES, RETURNS } from '@/lib/plan/constants';
+import { PALETTE, SPEND, INCOME, DATES, RETURNS } from '@/lib/plan/assumptions';
 import { gbp, gbpK } from './format';
 
 export function OutlookSection() {

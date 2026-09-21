@@ -121,6 +121,19 @@ Finance-Tracker/
 
 ---
 
+## Household plan (`plan/`)
+
+The 50-year household financial plan lives in `plan/` and is drift-proof by construction — read
+`plan/README.md` before touching it. Rules: (1) every planning number lives in `plan/assumptions.json`
+with provenance (FACT/CHECK/GUESS/DECISION/DERIVED — DERIVED entries carry a formula only);
+(2) every calculation lives in `plan/engine/*.mjs` (pure, injected; `lib/plan/*.ts` are one-line
+bindings); (3) documents are rendered from a run's outputs by `plan/render/` — never hand-type a number
+into a plan document; (4) accepted runs in `plan/runs/<date>/` are immutable. Change a number with
+`npm run plan:set -- <key> <value> --source "…" --asof YYYY-MM-DD`, then `npm run plan:check`; material
+changes go through `npm run plan:run` → review → `npm run plan:accept -- <date>` and a line in
+`plan/decisions.md`. Life events: `plan/triggers.md` / `npm run plan:trigger -- <event>`. Frozen material
+under `plan/runs/2026-*-FROZEN`-style folders and `plan/archive/` is never edited.
+
 ## Quick Commands
 
 ```powershell

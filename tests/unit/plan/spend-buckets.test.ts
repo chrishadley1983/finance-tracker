@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SPEND, POTS_BASELINE } from '@/lib/plan/constants';
+import { SPEND, POTS_BASELINE } from '@/lib/plan/assumptions';
 import { computeRunRate } from '@/lib/plan/spend';
 import { bucketTotals } from '@/lib/plan/buckets';
 

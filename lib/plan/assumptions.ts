@@ -1,20 +1,17 @@
 /**
- * Plan Cockpit constants — a thin shim over plan/assumptions.json.
- *
- * Every number here is read from plan/assumptions.json through the loader in
+ * The app's binding to plan/assumptions.json — the single home for planning
+ * numbers. Every value here is read from the JSON through the loader in
  * plan/inputs/assumptions.mjs, which validates provenance and recomputes the
- * DERIVED entries. Do not add literals to this file: change the JSON (with
- * `node plan/tools/set.mjs <key> <value> --source ... --asof ...`) and the
- * cockpit, the models and the documents all move together.
+ * DERIVED entries. There are no literals in this file.
  *
- * Origin of the values: plan/runs/2026-07-30-amendment-1 (FROZEN) rebased to
- * the Aug 2026 payslip and the 1 Sep 2026 snapshots on 20 Sep 2026 — see
- * plan/decisions.md. This shim is retired in phase 2 when the engine moves to
- * plan/engine and components import it directly.
+ * To change a number: `npm run plan:set -- <key> <value> --source ... --asof ...`
+ * (or edit the JSON), then `npm run plan:check`. The cockpit, the engine, the
+ * tools and the generated documents all move together.
  */
 
 import assumptionsFile from '../../plan/assumptions.json';
 import fallbackPrices from '../../plan/observations/gilt-prices/2026-07-29.json';
+import latestAccepted from '../../plan/runs/latest-accepted.json';
 import { buildAssumptions } from '../../plan/inputs/assumptions.mjs';
 
 const A = buildAssumptions(assumptionsFile as never).values;
@@ -24,9 +21,10 @@ export const ASSUMPTIONS = A;
 export const ASSUMPTIONS_PREPARED_ON: string = assumptionsFile.preparedOn;
 export const KNOWN_LIMITATIONS = assumptionsFile.knownLimitations;
 
-// ---------------------------------------------------------------------------
-// Abby's payslip and pivot mechanics
-// ---------------------------------------------------------------------------
+/** The last accepted run (plan/runs/latest-accepted.json, written by plan:accept). */
+export const LATEST_ACCEPTED: { runId: string | null; acceptedOn?: string; verdict?: string; note?: string; headline?: { atRetirement?: number; atLastRung?: number; atEnd?: number }; avcPct?: number | null; potsTotal?: number; ladderPerYear?: number | null } = latestAccepted;
+
+// Named views kept for readability at the call sites; all values come from A.
 export const PAYSLIP = {
   asOf: A.payslip.asOf as string,
   basicAnnual: A.payslip.basicAnnual as number,
@@ -68,13 +66,9 @@ export const CHILD_BENEFIT = {
   maxEndsAug: A.childBenefit.maxEndsAug as number,
 } as const;
 
-/** Pivot programme years: 2026/27 (index 0) to 2034/35 (index 8). */
 export const PIVOT_YEARS: number = A.pivot.years;
 export const PIVOT_FIRST_TAX_YEAR: number = A.pivot.firstTaxYear;
 
-// ---------------------------------------------------------------------------
-// Pots and buckets (1 Sep 2026 snapshots; pension/non-pension totals DERIVED)
-// ---------------------------------------------------------------------------
 export const POTS = {
   chrisIiIsa: A.pots.chrisIiIsa as number,
   abbyVanguardIsa: A.pots.abbyVanguardIsa as number,
@@ -87,29 +81,18 @@ export const POTS = {
   crypto: A.pots.crypto as number,
 } as const;
 
+/** Pension / non-pension totals, DERIVED in the JSON from the per-account snapshot values. */
 export const POTS_BASELINE = {
-  asOf: '2026-09-01',
   chrisPension: A.pots.chrisPension as number,
   abbyPension: A.pots.abbyPension as number,
   nonPension: A.pots.nonPension as number,
 } as const;
 
-/**
- * Account-name → bucket mapping for live wealth snapshots.
- * Unlisted accounts fall back by type: pension → (name contains 'abby' ?
- * abbyPension : chrisPension); property/tracking/credit/other → excluded;
- * everything else → accessible.
- */
-export const ACCOUNT_BUCKETS: Record<string, 'chrisPension' | 'abbyPension' | 'accessible' | 'excluded'> =
-  A.accounts.bucketMap;
+export const ACCOUNT_BUCKETS: Record<string, 'chrisPension' | 'abbyPension' | 'accessible' | 'excluded'> = A.accounts.bucketMap;
 
-// ---------------------------------------------------------------------------
-// Spending and income
-// ---------------------------------------------------------------------------
 export const SPEND = {
   planLine: A.spend.planLine as number,
   retirementTarget: A.spend.retirementTarget as number,
-  /** Categories excluded from the run-rate (one-offs, business, reimbursed). */
   excludedCategories: A.spend.excludedCategories as readonly string[],
   nineYearSavingsDrawBudget: A.spend.nineYearSavingsDrawBudget as number,
 } as const;
@@ -119,9 +102,6 @@ export const INCOME = {
   hbPostRetirement: A.income.hbPostRetirement as number,
 } as const;
 
-// ---------------------------------------------------------------------------
-// Key dates, state pension, drawdown
-// ---------------------------------------------------------------------------
 export const DATES = {
   planRetirementYear: A.dates.planRetirementYear as number,
   chrisPensionAccessYear: A.dates.chrisPensionAccessYear as number,
@@ -131,24 +111,10 @@ export const DATES = {
   simulationEndYear: A.dates.simulationEndYear as number,
 } as const;
 
-export const STATE_PENSION = {
-  annualEach: A.statePension.annualEach as number,
-} as const;
+export const STATE_PENSION = { annualEach: A.statePension.annualEach as number } as const;
+export const DRAWDOWN = { tfcCapEach: A.drawdown.tfcCapEach as number, ufplsTaxableFraction: A.drawdown.ufplsTaxableFraction as number } as const;
+export const RETURNS = { realEquityPlanning: A.returns.realEquity.planning as number, realEquityBetter: A.returns.realEquity.better as number, cashReal: A.returns.cashReal as number } as const;
 
-export const DRAWDOWN = {
-  tfcCapEach: A.drawdown.tfcCapEach as number,
-  ufplsTaxableFraction: A.drawdown.ufplsTaxableFraction as number,
-} as const;
-
-export const RETURNS = {
-  realEquityPlanning: A.returns.realEquity.planning as number,
-  realEquityBetter: A.returns.realEquity.better as number,
-  cashReal: A.returns.cashReal as number,
-} as const;
-
-// ---------------------------------------------------------------------------
-// Gilt ladder — sized by budget (Plan E), never by a £/yr target
-// ---------------------------------------------------------------------------
 export const LADDER = {
   firstYear: A.ladder.firstYear as number,
   lastYear: A.ladder.lastYear as number,
@@ -168,21 +134,9 @@ export interface GiltPrice {
   realYield: number; // %
 }
 
-/**
- * Static fallback prices (plan/observations/gilt-prices/2026-07-29.json).
- * Used only when live fetch fails with no cache (criterion E1).
- */
+/** Static fallback prices (plan/observations/gilt-prices/2026-07-29.json), used only when the live fetch fails with no cache. */
 export const FALLBACK_GILT_PRICES: GiltPrice[] = fallbackPrices.gilts;
 export const FALLBACK_GILT_PRICES_AS_OF: string = fallbackPrices.asOf;
 
-// ---------------------------------------------------------------------------
-// Chart palette (matches the July plan document) — presentation, not a planning number
-// ---------------------------------------------------------------------------
-export const PALETTE = {
-  navy: '#14467d',
-  blue: '#3a6ea5',
-  green: '#2e9d5b',
-  amber: '#c77c1b',
-  grey: '#8a97a8',
-  ink: '#0f2a4a',
-} as const;
+/** Chart palette — presentation, not a planning number. */
+export const PALETTE = { navy: '#14467d', blue: '#3a6ea5', green: '#2e9d5b', amber: '#c77c1b', grey: '#8a97a8', ink: '#0f2a4a' } as const;

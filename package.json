@@ -27,7 +27,8 @@
     "plan:payslip": "node plan/tools/payslip.mjs",
     "plan:render": "node plan/tools/render.mjs",
     "plan:run": "tsx scripts/plan-run.ts",
-    "plan:accept": "tsx scripts/plan-accept.ts"
+    "plan:accept": "tsx scripts/plan-accept.ts",
+    "plan:trigger": "node plan/tools/trigger.mjs"
   },
   "repository": {
     "type": "git",

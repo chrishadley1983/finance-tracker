@@ -2,7 +2,7 @@
  * Cockpit binding for the outlook models (pots at exit, sustainable spend,
  * drawdown simulation). The arithmetic lives in plan/engine/outlook.mjs.
  */
-import { ASSUMPTIONS } from './constants';
+import { ASSUMPTIONS } from './assumptions';
 import * as engine from '../../plan/engine/outlook.mjs';
 
 export interface PotsAtExit {

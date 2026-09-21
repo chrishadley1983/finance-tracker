@@ -8,7 +8,7 @@ import { LadderSection, type RungRecord } from '@/components/plan/LadderSection'
 import { OutlookSection } from '@/components/plan/OutlookSection';
 import { bucketTotals, type BucketTotals } from '@/lib/plan/buckets';
 import type { RunRate } from '@/lib/plan/spend';
-import { FALLBACK_GILT_PRICES, type GiltPrice } from '@/lib/plan/constants';
+import { FALLBACK_GILT_PRICES, LATEST_ACCEPTED, ASSUMPTIONS_PREPARED_ON, type GiltPrice } from '@/lib/plan/assumptions';
 
 export default function PlanPage() {
   const [buckets, setBuckets] = useState<BucketTotals | null>(null);
@@ -27,7 +27,7 @@ export default function PlanPage() {
       const { snapshots } = await res.json();
       setBuckets(bucketTotals(snapshots ?? []));
     } catch {
-      warnings.push('Live snapshots unavailable — showing the June 2026 baseline.');
+      warnings.push('Live snapshots unavailable — showing the pots recorded in plan/assumptions.json.');
       setBuckets(bucketTotals([]));
     }
     try {
@@ -83,10 +83,24 @@ export default function PlanPage() {
   return (
     <AppLayout title="Plan">
       <div className="mx-auto max-w-5xl space-y-10 pb-16">
-        <div>
-          <p className="text-sm text-slate-500" title="Full write-up: plan/runs/2026-07-30-amendment-1/investment-plan-amendment-1-2026-07.pdf (frozen; see plan/decisions.md for what has moved since)">
-            The July 2026 plan, live: pots, the pension pivot, the gilt ladder and the outlook.
+        <div className="space-y-2">
+          <p className="text-sm text-slate-500" title="Numbers come from plan/assumptions.json; documents from plan/runs/<date>/ — see plan/README.md">
+            The household plan, live: pots, the pension pivot, the gilt ladder and the outlook. Every number here is read from
+            plan/assumptions.json (prepared {ASSUMPTIONS_PREPARED_ON}).
           </p>
+          {LATEST_ACCEPTED.runId ? (
+            <p className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+              Accepted plan: run <b>{LATEST_ACCEPTED.runId}</b>
+              {LATEST_ACCEPTED.acceptedOn ? ` (accepted ${LATEST_ACCEPTED.acceptedOn.slice(0, 10)})` : ''}
+              {LATEST_ACCEPTED.headline?.atRetirement ? ` — £${(LATEST_ACCEPTED.headline.atRetirement / 1000).toFixed(2)}M at retirement, £${((LATEST_ACCEPTED.headline.atEnd ?? 0) / 1000).toFixed(2)}M at the end (planning case)` : ''}
+              {LATEST_ACCEPTED.avcPct != null ? `; AVC ${LATEST_ACCEPTED.avcPct}%` : ''}
+              {LATEST_ACCEPTED.note ? ` — ${LATEST_ACCEPTED.note}` : ''}. Live figures below may differ; the run folder is the record.
+            </p>
+          ) : (
+            <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              No accepted plan run yet. Run <code>npm run plan:run</code>, review <code>plan/runs/&lt;date&gt;/diff.md</code>, then <code>npm run plan:accept -- &lt;date&gt;</code>.
+            </p>
+          )}
         </div>
         <WhereWeAre buckets={buckets} runRate={runRate} dataWarning={dataWarning} />
         <PivotSection />

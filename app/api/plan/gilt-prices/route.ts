@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { parseGiltTable } from '@/lib/plan/gilt-parser';
-import { FALLBACK_GILT_PRICES, FALLBACK_GILT_PRICES_AS_OF, type GiltPrice } from '@/lib/plan/constants';
+import { FALLBACK_GILT_PRICES, FALLBACK_GILT_PRICES_AS_OF, type GiltPrice } from '@/lib/plan/assumptions';
 
 export const dynamic = 'force-dynamic';
 

@@ -2,7 +2,7 @@
 
 import type { BucketTotals } from '@/lib/plan/buckets';
 import type { RunRate } from '@/lib/plan/spend';
-import { SPEND } from '@/lib/plan/constants';
+import { SPEND } from '@/lib/plan/assumptions';
 import { gbp, gbpK } from './format';
 
 interface Props {
@@ -42,7 +42,7 @@ export function WhereWeAre({ buckets, runRate, dataWarning }: Props) {
           <span className="text-slate-500">Total investable: </span>
           <span className="font-semibold tabular-nums">{buckets ? gbpK(buckets.total) : '—'}</span>
           {buckets?.isBaseline && (
-            <span className="ml-2 rounded bg-slate-200 px-1.5 py-0.5 text-xs text-slate-600">June 2026 baseline</span>
+            <span className="ml-2 rounded bg-slate-200 px-1.5 py-0.5 text-xs text-slate-600">assumptions baseline</span>
           )}
           {buckets?.asOf && <span className="ml-2 text-xs text-slate-400">snapshots as of {buckets.asOf}</span>}
         </div>

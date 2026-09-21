@@ -142,3 +142,18 @@ drawdown model, plus reconciliation of the spend and income lines to the tracker
   later run diffs against nothing and `plan:check` shows AMBER for the missing baseline.
 - Tests: 97 green (adds `runs.test.ts`: diff rules with fixtures, manifest detect-any-change, immutability of
   accepted runs, offline end-to-end run → accept → second run GREEN).
+
+## Phase 6 complete, 21 Sep 2026 (durability and housekeeping)
+
+- `plan/triggers.md` maps every life event to the assumption keys it touches and what to run;
+  `npm run plan:trigger -- <event>` prints the keys with current values and review dates. A test holds every
+  trigger token in `assumptions.json` to a row in the document.
+- `plan/HOW-TO-RERUN-2040.md`: how to read the accepted plan, re-run it from a run's `inputs.json` with nothing
+  but a JavaScript runtime, update it, and rebuild it from `engine/SPEC.md` if JavaScript itself is gone.
+- `lib/plan/constants.ts` retired → `lib/plan/assumptions.ts` (the app's binding to the JSON, no literals) which
+  also exposes `LATEST_ACCEPTED` from `plan/runs/latest-accepted.json` (written by `plan:accept`). The `/plan`
+  cockpit shows the accepted run, or that none exists yet. Its footer now computes the £-per-£ ratio and cites
+  the payslip month instead of "April 2026".
+- Migration `010_plan_rungs_comment.sql` corrects the rungs table comment (sized by budget); documentation only,
+  apply with the next migration push. Done-criteria F4 anchors marked superseded by `plan/derivations`.
+  Repo `CLAUDE.md` gained a "Household plan" section stating the four rules and the commands.

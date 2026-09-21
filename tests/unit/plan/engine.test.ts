@@ -18,7 +18,7 @@ import * as enginePivot from '../../../plan/engine/pivot.mjs';
 import { pivotProgramme, currentRetune } from '@/lib/plan/pivot';
 import { drawdownSim, DEFAULT_OUTLOOK } from '@/lib/plan/outlook';
 import { buildLadder } from '@/lib/plan/ladder';
-import { ASSUMPTIONS } from '@/lib/plan/constants';
+import { ASSUMPTIONS } from '@/lib/plan/assumptions';
 
 const root = path.resolve(__dirname, '../../..');
 const built = buildAssumptions(assumptionsFile as never);

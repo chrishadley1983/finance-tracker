@@ -21,7 +21,7 @@ Trailing-12-month spend computed sign-aware (expenses only: amount < 0, category
 
 ### F4: Pivot model + slider `AUTO_VERIFY`
 ANI target slider (range £50,270–£80,000, step £250, default £59,500) drives a 9-year table (2026/27–2034/35) of: extra sacrifice, take-home cut, child benefit kept, net cost. Pure function in `lib/plan/pivot.ts`. Unit anchors (±£50 unless stated):
-- target £60,000 → year-1 extra sacrifice £18,080; year-9 £30,138
+- target £60,000 → year-1 extra sacrifice £18,080; year-9 £30,138 _(April-2026 payslip; superseded 20 Sep 2026 by £22,037 / £34,776 on the August payslip — the live anchors are `plan/derivations/golden.json`, held by `tests/unit/plan/golden.test.ts`)_
 - target £60,000 → year-1 CB kept £2,337 (full); cumulative 9-yr sacrifice £215,728 ±£500
 - target £70,000 → year-1 CB kept ≈ 50% of full rate ±2%
 - target £80,000+ → CB kept £0; extra sacrifice still computed (relief-only mode)

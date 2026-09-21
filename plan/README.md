@@ -4,7 +4,7 @@ This tree is the single home for the plan: its documents, its decisions, and (fr
 assumptions, engine, renderers and accepted runs. Design: `ARCHITECTURE.md`. Decision log:
 `decisions.md` (append-only).
 
-Status, 21 Sep 2026: **phases 0–5 complete.** Every planning number lives in `assumptions.json`
+Status, 21 Sep 2026: **phases 0–6 complete** (phase 7, scenarios and exports, remains). Every planning number lives in `assumptions.json`
 with provenance; every calculation lives in `engine/` (pure, injected, deterministic); the
 measured inputs come in through `inputs/` — the only code that touches the database or the
 price feed; every document is rendered from a run's outputs by `render/` with no hand-typed
@@ -87,6 +87,8 @@ generated document from phase 4.
 | `runs/<date>/` | one folder per run: `inputs.json`, `outputs.json`, `diff.md`, `summary.json`, the seven documents, `emissions.json`, `manifest.json`, and `ACCEPTED.json` once accepted; `runs/LATEST_ACCEPTED` names the current plan |
 | `tools/` | `set.mjs` (change an assumption), `ledger.mjs`, `avc.mjs`, `order-sheet.mjs` |
 | `decisions.md` | append-only log of what was decided, when, and why |
+| `triggers.md` | life events → which keys to touch and what to run (`npm run plan:trigger -- <event>`) |
+| `HOW-TO-RERUN-2040.md` | how to read, re-run and update the plan with nothing but a JavaScript runtime |
 | `ARCHITECTURE.md` | the drift-proof design and the seven phases |
 
 ## Rules (enforced by tests from phase 1)

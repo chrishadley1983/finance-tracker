@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildLadder, sizeByBudget } from '@/lib/plan/ladder';
 import { parseGiltTable } from '@/lib/plan/gilt-parser';
-import { FALLBACK_GILT_PRICES, LADDER } from '@/lib/plan/constants';
+import { FALLBACK_GILT_PRICES, LADDER } from '@/lib/plan/assumptions';
 
 describe('ladder sizing (criterion F6)', () => {
   const plan = buildLadder(FALLBACK_GILT_PRICES);

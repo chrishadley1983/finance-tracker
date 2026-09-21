@@ -2,7 +2,7 @@
  * Cockpit binding for the gilt-ladder sizing. The arithmetic lives in
  * plan/engine/ladder.mjs; this binds it to the repo's assumptions.
  */
-import { ASSUMPTIONS, type GiltPrice } from './constants';
+import { ASSUMPTIONS, type GiltPrice } from './assumptions';
 import * as engine from '../../plan/engine/ladder.mjs';
 
 export interface RungAllocation {
