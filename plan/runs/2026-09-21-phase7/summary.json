@@ -1,9 +1,8 @@
 {
   "runId": "2026-09-21-phase7",
-  "acceptedOn": "2026-09-21T09:29:01.146Z",
-  "by": "Chris",
-  "note": "Phase 7 baseline; plan line £70k, work to curb spending to meet it (Chris 21 Sep)",
+  "today": "2026-09-21",
   "verdict": "RED",
+  "prevId": "2026-09-21",
   "headline": {
     "atRetirement": 2284.6,
     "atLastRung": 2203,
@@ -12,7 +11,7 @@
     "preRetirementDraw": 0
   },
   "avcPct": 55,
-  "potsTotal": 1626749,
   "ladderPerYear": 101621.44645092079,
-  "sustainableSpend": 97228.32009032821
+  "sustainableSpend": 97228.32009032821,
+  "potsTotal": 1626749
 }

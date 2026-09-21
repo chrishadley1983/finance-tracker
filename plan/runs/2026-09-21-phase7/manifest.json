@@ -1,0 +1,67 @@
+{
+  "writtenAt": "2026-09-21T09:18:27.174Z",
+  "engineVersion": "2026-09-21.phase7",
+  "gitSha": "259da8f",
+  "node": "v24.11.1",
+  "files": {
+    "assumptions.md": {
+      "sha256": "03b3a288177077b20284ea80063de92d5fcb2f319e4a6fdf67b445c740deab61",
+      "bytes": 14498
+    },
+    "avc-recipe.md": {
+      "sha256": "ea61d874d4b237f540ff50c60f4c4cff910a875ae89f5b229a5d81e061954b41",
+      "bytes": 444
+    },
+    "diff.md": {
+      "sha256": "f7d5f3abf3af8cf0562d1735368ef8d58fece3f855c482e0ae835ab34481ad59",
+      "bytes": 1888
+    },
+    "emissions.json": {
+      "sha256": "aa4146cdec71662ccf2e1beace05b8683c090f991c245d2a8f28b002b344d146",
+      "bytes": 187186
+    },
+    "inputs.json": {
+      "sha256": "0769957221d26a4c3dbca3e699cae8dcfb9aa3d6ea3be9091af8ae4e69b94c05",
+      "bytes": 80786
+    },
+    "ledger.csv": {
+      "sha256": "e983a85c0dab259828b1b075e0b3b4d28445ce7972eaa8398db6a6b89296e917",
+      "bytes": 5902
+    },
+    "ledger.html": {
+      "sha256": "bdf3b78a447fd9b3158ee16a92c904e3d9614db207c851b2c807119742daa910",
+      "bytes": 92723
+    },
+    "order-sheet-isa.csv": {
+      "sha256": "dd24fafc933f6c269920b6b97404415d29b7e01918982c35d918b1249e816da3",
+      "bytes": 789
+    },
+    "order-sheet-sipp.csv": {
+      "sha256": "25143c0398004ae92d1598b767d5f61b24da798acea2c340838a0ae4e181afa9",
+      "bytes": 666
+    },
+    "outputs.json": {
+      "sha256": "1deeb10753c423ff1f38510af6c5c1885a39919173c71bbcf458951da8a862ad",
+      "bytes": 92579
+    },
+    "plan.xlsx": {
+      "sha256": "d32e59919e71ea76cc55ced3948166ae4c19a575f57ccb8d0d9d37725ad7cfbc",
+      "bytes": 120923
+    },
+    "summary.html": {
+      "sha256": "70ce940e0ee38baa00ea00228d9b338d4b20e6c051aeb8ef8dcd0f47440d550f",
+      "bytes": 23210
+    },
+    "summary.json": {
+      "sha256": "609414987123d6c84fd5ea75107a4cbdd3e9700ad62f19a7dd1c4d662d5204d0",
+      "bytes": 377
+    },
+    "summary.pdf": {
+      "sha256": "6d0e72d7d729998a60f67406e4f0f05dda426493218bd12599f8ced41c1fa458",
+      "bytes": 201962
+    }
+  },
+  "runId": "2026-09-21-phase7",
+  "verdict": "RED",
+  "prevId": "2026-09-21"
+}
