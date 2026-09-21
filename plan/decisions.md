@@ -103,3 +103,20 @@ drawdown model, plus reconciliation of the spend and income lines to the tracker
   contributions £8.6k → recurring spendable ≈ £85.4k. The spend RED stands until holidays fall back or the
   plan line is re-decided; it is the household breakeven question from the 20 Sep review, now measured monthly.
 - Today's live gilt prices saved as `plan/observations/gilt-prices/2026-09-21.json`.
+
+## Phase 4 complete, 21 Sep 2026 (generated documents)
+
+- `plan/render/render.mjs` renders seven documents from a run's outputs: `summary.html` (the one page for
+  Abby: tiles, the AVC to set, the pivot table, how the plan holds up, the inputs check, the known
+  limitations, what the numbers came from), `ledger.html` (Plan E account by account), `assumptions.md`
+  (the register with provenance), `avc-recipe.md`, `ledger.csv`, `order-sheet-isa.csv`, `order-sheet-sipp.csv`.
+  Self-contained HTML (system fonts, inline CSS, no scripts or external links).
+- Rule 3 is now mechanical: every figure passes through `em.v(outputsPath, formattedText)`, which records
+  it and tags it in HTML. `tests/unit/plan/render.test.ts` re-renders, re-formats each recorded path's
+  value and checks the document text, reads the HTML spans back, greps the template source for digits,
+  and checks every known limitation appears in every document. `fmt.mjs` is the only place a number is
+  shaped. `npm run plan:render` writes the set to `tmp/plan-render-<date>/` with the inputs and outputs.
+- The engine now also sizes the two wrappers on their own budgets (`ladder.isa`, `ladder.sipp`) so the
+  order-sheet CSVs need no arithmetic in the renderer. Engine version `2026-09-21.phase4`.
+- Tests: 90 green. The frozen 3 Sep/20 Sep ledger HTML stays frozen; from phase 5 the generated
+  `ledger.html` in each run folder is the live document.

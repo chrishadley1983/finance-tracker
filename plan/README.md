@@ -4,10 +4,12 @@ This tree is the single home for the plan: its documents, its decisions, and (fr
 assumptions, engine, renderers and accepted runs. Design: `ARCHITECTURE.md`. Decision log:
 `decisions.md` (append-only).
 
-Status, 21 Sep 2026: **phases 0–3 complete.** Every planning number lives in `assumptions.json`
-with provenance; every calculation lives in `engine/` (pure, injected, deterministic); and the
+Status, 21 Sep 2026: **phases 0–4 complete.** Every planning number lives in `assumptions.json`
+with provenance; every calculation lives in `engine/` (pure, injected, deterministic); the
 measured inputs come in through `inputs/` — the only code that touches the database or the
-price feed. `engine/SPEC.md` states every formula.
+price feed; and every document is rendered from a run's outputs by `render/` with no
+hand-typed numbers (each figure is tagged with the outputs path it came from and a test reads
+them all back). `engine/SPEC.md` states every formula.
 
 ```
 npm run plan:check          # validate assumptions, DERIVED values, freshness, engine cross-checks (--live: + DB drift)
@@ -17,6 +19,7 @@ npm run plan:avc            # Abby's AVC% recipe from the newest payslip observa
 npm run plan:payslip -- add --month 2026-09 --tax-month 6 --pay-date 2026-09-28 --basic … --taxable … --ytd-taxable … --net … --avc 55
 npm run plan:order-sheet    # gilt order sheet sized by budget (live prices; --offline; --save; --budget N --years 2035-2040)
 npm run plan:standalone     # runPlan() on the repo's current inputs → outputs JSON (the durability path)
+npm run plan:render         # the documents from the repo's inputs → tmp/plan-render-<date>/ (or --inputs <file> --out <dir>)
 ```
 
 **Monthly routine (until the phase-5 job automates it):** when Abby's payslip arrives, `plan:payslip add`
@@ -58,6 +61,7 @@ generated document from phase 4.
 | `engine/` | the plan's arithmetic: `tax`, `pivot`, `ladder`, `ledger`, `outlook`, `spend`; `index.mjs#runPlan(inputs)`; `run-standalone.mjs`; `SPEC.md` (phase 2) |
 | `observations/gilt-prices/`, `gilt-yields/`, `payslips/` | dated measured inputs: market prices/yields and Abby's payslips |
 | `derivations/` | `golden.json` + one note per anchor: values derived by hand OUTSIDE the engine; `tests/unit/plan/golden.test.ts` holds the engine to them |
+| `render/` | `render.mjs` (summary.html — the page Abby reads; ledger.html; assumptions.md; avc-recipe.md; ledger.csv; order-sheet CSVs) and `fmt.mjs`; no arithmetic, no literals (phase 4) |
 | `tools/` | `set.mjs` (change an assumption), `ledger.mjs`, `avc.mjs`, `order-sheet.mjs` |
 | `decisions.md` | append-only log of what was decided, when, and why |
 | `ARCHITECTURE.md` | the drift-proof design and the seven phases |

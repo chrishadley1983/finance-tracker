@@ -24,7 +24,8 @@
     "plan:order-sheet": "node plan/tools/order-sheet.mjs",
     "plan:standalone": "node plan/engine/run-standalone.mjs",
     "plan:inputs": "tsx scripts/plan-inputs.ts",
-    "plan:payslip": "node plan/tools/payslip.mjs"
+    "plan:payslip": "node plan/tools/payslip.mjs",
+    "plan:render": "node plan/tools/render.mjs"
   },
   "repository": {
     "type": "git",

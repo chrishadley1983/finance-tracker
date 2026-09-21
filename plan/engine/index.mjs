@@ -17,7 +17,7 @@ import { buildLadder, couponSchedule } from './ladder.mjs';
 import { runLedger } from './ledger.mjs';
 import { defaultOutlook, potsAtExit, sustainableSpend, drawdownSim } from './outlook.mjs';
 
-export const ENGINE_VERSION = '2026-09-21.phase2';
+export const ENGINE_VERSION = '2026-09-21.phase4';
 
 /**
  * @param {{ assumptions: any, giltPrices?: { asOf: string, gilts: any[] }, giltYields?: { asOf: string, rungs: any[] }, payslip?: any, today?: string }} inputs
@@ -29,6 +29,9 @@ export function runPlan(inputs) {
   const operating = pivotProgramme(a, a.hicbc.operatingTarget);
   const retune = today ? currentRetune(a, a.hicbc.operatingTarget, today) : null;
   const ladder = inputs.giltPrices ? buildLadder(a, inputs.giltPrices.gilts) : null;
+  // The two wrappers sized on their own budgets: ISA rungs must cover the years before Chris's pension opens.
+  const ladderIsa = inputs.giltPrices ? buildLadder(a, inputs.giltPrices.gilts, { firstYear: a.ladder.firstYear, lastYear: a.dates.chrisPensionAccessYear, budgetReal: a.ladder.isaBudgetReal }) : null;
+  const ladderSipp = inputs.giltPrices ? buildLadder(a, inputs.giltPrices.gilts, { firstYear: a.dates.chrisPensionAccessYear + 1, lastYear: a.ladder.lastYear, budgetReal: a.ladder.sippBudgetReal }) : null;
   const gy = inputs.giltYields;
   const ledger = gy ? runLedger(a, gy) : null;
   const ledgerFlat = gy ? [0, a.returns.realEquity.planning, a.returns.realEquity.better].map((G) => { const l = runLedger(a, gy, { G }); return { G, ...l.headline, lifeTax: l.lifeTax }; }) : null;
@@ -42,7 +45,7 @@ export function runPlan(inputs) {
       takeHomeYear1AtLine: takeHomeNominal(a, 0, pivotYear(a, 0, a.hicbc.lowerThreshold).extraSacrifice),
       avcRecipe: inputs.payslip ? avcRecipeFromYtd(a, inputs.payslip) : null,
     },
-    ladder: ladder ? { ...ladder, coupons: couponSchedule(ladder, 2027), pricesAsOf: inputs.giltPrices?.asOf } : null,
+    ladder: ladder ? { ...ladder, coupons: couponSchedule(ladder, 2027), pricesAsOf: inputs.giltPrices?.asOf, isa: ladderIsa ? { ...ladderIsa, coupons: couponSchedule(ladderIsa, 2027) } : null, sipp: ladderSipp ? { ...ladderSipp, coupons: couponSchedule(ladderSipp, 2027) } : null } : null,
     ledger, ledgerFlat, outlook,
     knownLimitations: inputs.assumptions.__knownLimitations ?? [],
   };
