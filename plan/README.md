@@ -84,7 +84,7 @@ generated document from phase 4.
 | `engine/` | the plan's arithmetic: `tax`, `pivot`, `ladder`, `ledger`, `outlook`, `spend`; `index.mjs#runPlan(inputs)`; `run-standalone.mjs`; `SPEC.md` (phase 2) |
 | `observations/gilt-prices/`, `gilt-yields/`, `payslips/` | dated measured inputs: market prices/yields and Abby's payslips |
 | `derivations/` | `golden.json` + one note per anchor: values derived by hand OUTSIDE the engine; `tests/unit/plan/golden.test.ts` holds the engine to them |
-| `render/` | `render.mjs` (summary.html — the page Abby reads; ledger.html; assumptions.md; avc-recipe.md; ledger.csv; order-sheet CSVs) and `fmt.mjs`; no arithmetic, no literals (phase 4) |
+| `render/` | `render.mjs` (summary.html — the page Abby reads; ledger.html; execution.html — the ladder purchase checklist by account; assumptions.md; avc-recipe.md; ledger.csv; order-sheet CSVs) and `fmt.mjs`; no arithmetic, no literals (phase 4) |
 | `inputs/diff.mjs`, `diff-rules.json`, `manifest.mjs`, `notify.mjs` | run-vs-accepted comparison and its tolerances; sha256 manifests; Discord/email (phase 5) |
 | `runs/<date>/` | one folder per run: `inputs.json`, `outputs.json`, `diff.md`, `summary.json`, the seven documents, `emissions.json`, `manifest.json`, and `ACCEPTED.json` once accepted; `runs/LATEST_ACCEPTED` names the current plan |
 | `tools/` | `set.mjs` (change an assumption), `ledger.mjs`, `avc.mjs`, `order-sheet.mjs` |

@@ -6,7 +6,7 @@
  * the text in <span data-key="…">. tests/unit/plan/render.test.ts re-renders, reads
  * every emission back and checks it against the value at that path in outputs.
  *
- * renderAll(outputs, inputs, meta) → { 'summary.html': string, 'ledger.html': string,
+ * renderAll(outputs, inputs, meta) → { 'summary.html': string, 'ledger.html': string, 'execution.html': string,
  *   'assumptions.md': string, 'avc-recipe.md': string, 'ledger.csv': string,
  *   'order-sheet-isa.csv': string, 'order-sheet-sipp.csv': string, 'emissions.json': string }
  *
@@ -229,13 +229,69 @@ function scenariosBlock(/** @type {ReturnType<typeof emitter>} */ em, /** @type 
 ${full ? `<h3>Spend × return: what is left at ${em.v('inputs.assumptions.dates.simulationEndYear', yr(a.dates.simulationEndYear))}</h3><div class="scroll"><table><thead><tr><th class="left">Spend for life</th>${gridHead}</tr></thead><tbody>${grid}</tbody></table></div>${replay}` : ''}`;
 }
 
+// ---------------------------------------------------------------------------
+// execution.html — the ladder purchase checklist, account by account
+// ---------------------------------------------------------------------------
+export function renderExecution(/** @type {any} */ o, /** @type {any} */ inputs, /** @type {any} */ meta) {
+  const em = emitter('execution.html');
+  const a = inputs.assumptions;
+  const L = o.ladder;
+  if (!L?.isa?.byHolder || !L?.sipp) return { html: page('Ladder execution', '<h1>Ladder execution</h1><p>No gilt prices in this run.</p>'), emissions: em.list };
+  const H = L.isa.byHolder;
+  const row0 = o.ledger?.rows?.[0];
+  /** one purchase line: tick box, gilt, nominal to order, cost, real redemption, years covered, notes */
+  const line = (/** @type {any} */ g, /** @type {string} */ k) => `<tr><td class="left tick">☐</td><td class="left wrap">${em.t(g.giltName)}<br><span class="note">${em.t(g.epic)} · matures ${em.t(g.maturity)} · real yield ${em.v(`${k}.realYield`, dec(g.realYield, 2))}%</span></td><td><b>${em.v(`${k}.face`, int(g.face))}</b></td><td>${em.v(`${k}.estCost`, gbp(g.estCost))}</td><td>${em.v(`${k}.realAmount`, gbp(g.realAmount))}</td><td class="left">${g.coversYears.map((/** @type {number} */ y, /** @type {number} */ j) => em.v(`${k}.coversYears.${j}`, yr(y))).join(', ')}</td><td class="left wrap note">${g.split ? 'part of this gilt — the rest is in the other ISA' : ''}${g.notes.map((/** @type {string} */ n) => em.t(n)).join('; ')}</td></tr>`;
+  const head = `<thead><tr><th class="left">Done</th><th class="left">Gilt</th><th>Nominal to order (£)</th><th>Cost at these prices</th><th>Real redemption</th><th class="left">Covers</th><th class="left">Notes</th></tr></thead>`;
+  const holderRows = (/** @type {string} */ h) => H.rows.map((/** @type {any} */ g, /** @type {number} */ i) => (g.holder === h ? line(g, `ladder.isa.byHolder.rows.${i}`) : '')).join('');
+  const holderTotal = (/** @type {string} */ h) => `<tr class="tot"><td></td><td class="left">Total</td><td>${em.v(`ladder.isa.byHolder.totals.${h}.face`, int(H.totals[h].face))}</td><td>${em.v(`ladder.isa.byHolder.totals.${h}.estCost`, gbp(H.totals[h].estCost))}</td><td>${em.v(`ladder.isa.byHolder.totals.${h}.realAmount`, gbp(H.totals[h].realAmount))}</td><td></td><td></td></tr>`;
+  const sippRows = L.sipp.byGilt.map((/** @type {any} */ g, /** @type {number} */ i) => line({ ...g, split: false }, `ladder.sipp.byGilt.${i}`)).join('');
+  const body = `<p class="eyebrow">Household plan · ladder execution</p><h1>Buying the gilt ladder, account by account</h1>
+<p class="lede">Every number here comes from the accepted plan at the gilt prices of ${em.t(String(L.pricesAsOf ?? '').slice(0, 10))}. Prices move daily, so on each dealing day regenerate this page (<code>npm run plan:render</code>) or the order sheets (<code>npm run plan:order-sheet</code>) and order the nominal amounts it shows then. You order index-linked gilts by <b>nominal</b> (face) amount; the cost column is what that nominal costs at today's dirty price.</p>
+<div class="meta"><span>Generated ${em.t(meta.generatedAt ?? '')}</span>${meta.runId ? `<span>Run ${em.t(meta.runId)}</span>` : ''}<span>Engine ${em.t(o.engineVersion)}</span></div>
+<div class="tiles">
+<div class="tile"><div class="n">${em.v('inputs.assumptions.ladder.budgetReal', gbpShort(a.ladder.budgetReal))}</div><div class="l">total ladder budget</div></div>
+<div class="tile"><div class="n">${em.v('inputs.assumptions.ladder.isaBudgetReal', gbpShort(a.ladder.isaBudgetReal))}</div><div class="l">ISA rungs ${em.v('inputs.assumptions.ladder.firstYear', yr(a.ladder.firstYear))}–${em.v('inputs.assumptions.dates.chrisPensionAccessYear', yr(a.dates.chrisPensionAccessYear))}, ${em.v('ladder.isa.amountPerYear', gbpShort(L.isa.amountPerYear))} real a year</div></div>
+<div class="tile"><div class="n">${em.v('inputs.assumptions.ladder.sippBudgetReal', gbpShort(a.ladder.sippBudgetReal))}</div><div class="l">SIPP rungs to ${em.v('inputs.assumptions.ladder.lastYear', yr(a.ladder.lastYear))}, ${em.v('ladder.sipp.amountPerYear', gbpShort(L.sipp.amountPerYear))} real a year</div></div>
+</div>
+<div class="box"><b>Ground rules.</b><ul class="note"><li>Shortest rungs first: they are the years hardest to replace if real yields fall.</li><li>Phase the switch out of equity over a few months to average the entry, but do not stretch it beyond that.</li><li>ii deals index-linked gilts by phone through its fixed-income desk (number on the ii site); sell the funds first so the cash is in the account, and confirm the dealing charge when you book.</li><li>Vanguard cannot hold individual gilts, which is why the ISA rungs live at ii.</li><li>Coupons arrive as cash in the account; leave them invested in equity inside the same wrapper. They are the top-up, not part of the rung.</li><li>Tick each line here and mark the rung bought in the /plan cockpit so the next run tracks actual cost instead of the price feed.</li></ul></div>
+
+<h2>Step 1 — open Abby's ii ISA and start the transfer</h2>
+<p>Open a Stocks and Shares ISA at ii in Abby's name. Ask Vanguard for a <b>partial ISA transfer</b> of ${em.v('inputs.assumptions.ladder.abbyIiIsaTransfer', gbp(a.ladder.abbyIiIsaTransfer))} to it, in cash, from prior-year subscriptions (an ISA transfer keeps the tax wrapper and does not use this year's allowance; do not withdraw and re-subscribe). Her Vanguard ISA is ${em.v('inputs.assumptions.pots.abbyVanguardIsa', gbp(a.pots.abbyVanguardIsa))} today, so about ${row0 ? em.v('ledger.rows.0.abbyIsaEq', gbpFromK(row0.abbyIsaEq)) : '–'} stays there as equity. Transfers take a few weeks, so this goes first; steps 2 and 3 do not wait for it.</p>
+<p class="note">☐ Account opened &nbsp; ☐ Transfer requested &nbsp; ☐ Cash landed at ii</p>
+
+<h2>Step 2 — Chris's ii ISA: sell the funds, buy the near rungs</h2>
+<p>Pot ${em.v('inputs.assumptions.pots.chrisIiIsa', gbp(a.pots.chrisIiIsa))}. Sell the LifeStrategy holdings to cash, then buy in this order:</p>
+<div class="scroll"><table>${head}<tbody>${holderRows(H.holders[0])}${holderTotal(H.holders[0])}</tbody></table></div>
+
+<h2>Step 3 — Chris's ii SIPP: sell, buy the far rungs, keep a slice in equity</h2>
+<p>Pot ${em.v('inputs.assumptions.pots.chrisIiSipp', gbp(a.pots.chrisIiSipp))}. Sell enough to fund the rungs; about ${em.v('inputs.assumptions.ladder.sippEquityRetained', gbp(a.ladder.sippEquityRetained))} stays in equity. These rungs mature inside the SIPP, which opens at 57.</p>
+<div class="scroll"><table>${head}<tbody>${sippRows}<tr class="tot"><td></td><td class="left">Total</td><td>${em.v('ladder.sipp.totals.face', int(L.sipp.totals.face))}</td><td>${em.v('ladder.sipp.totals.estCost', gbp(L.sipp.totals.estCost))}</td><td>${em.v('ladder.sipp.totals.realAmount', gbp(L.sipp.totals.realAmount))}</td><td></td><td></td></tr></tbody></table></div>
+
+<h2>Step 4 — Abby's ii ISA: when the transfer lands, buy the middle rungs</h2>
+<div class="scroll"><table>${head}<tbody>${holderRows(H.holders[1])}${holderTotal(H.holders[1])}</tbody></table></div>
+
+<h2>Step 5 — record it</h2>
+<p>After each purchase: mark the rung bought in the /plan cockpit (actual nominal and cost), then <code>npm run plan:trigger -- rung-bought</code> lists the assumptions to review. The next quarterly run reconciles bought rungs against the budget.</p>
+
+<h2>Leave alone</h2>
+<ul class="note">
+<li><b>Chris's Accenture pension at L&amp;G</b> (${em.v('inputs.assumptions.pots.chrisAccenturePension', gbp(a.pots.chrisAccenturePension))}): stays where it is in the global equity tracker. Not part of the ladder; the transfer idea was retired.</li>
+<li><b>Abby's Accenture pension at L&amp;G</b> (${em.v('inputs.assumptions.pots.abbyAccentureDc', gbp(a.pots.abbyAccentureDc))}): untouched, receiving the AVC, all equity.</li>
+<li><b>The rest of Abby's Vanguard ISA</b>: stays as the growth sleeve; consolidating it into a single global tracker is housekeeping, not urgent.</li>
+<li><b>Beneficiary nominations</b> on all four pension and ISA pots want refreshing while you are in the accounts.</li>
+</ul>
+<p class="note">None of this is regulated advice. A one-off, fee-only IFA check of the execution is cheap insurance.</p>
+${limitationsBlock(em, o.knownLimitations)}`;
+  return { html: page('Ladder execution', body), emissions: em.list };
+}
+
 /** All documents for a run. */
 export function renderAll(/** @type {any} */ outputs, /** @type {any} */ inputs, /** @type {any} */ meta = {}) {
   const m = { generatedAt: inputs.today ?? '', ...meta };
-  const s = renderSummary(outputs, inputs, m), l = renderLedger(outputs, inputs, m), am = renderAssumptionsMd(outputs, inputs, m), av = renderAvcMd(outputs, inputs, m), lc = renderLedgerCsv(outputs), oi = renderOrderSheetCsv(outputs, 'isa'), os = renderOrderSheetCsv(outputs, 'sipp');
-  const emissions = [...s.emissions, ...l.emissions, ...am.emissions, ...av.emissions, ...lc.emissions, ...oi.emissions, ...os.emissions];
+  const s = renderSummary(outputs, inputs, m), l = renderLedger(outputs, inputs, m), x = renderExecution(outputs, inputs, m), am = renderAssumptionsMd(outputs, inputs, m), av = renderAvcMd(outputs, inputs, m), lc = renderLedgerCsv(outputs), oi = renderOrderSheetCsv(outputs, 'isa'), os = renderOrderSheetCsv(outputs, 'sipp');
+  const emissions = [...s.emissions, ...l.emissions, ...x.emissions, ...am.emissions, ...av.emissions, ...lc.emissions, ...oi.emissions, ...os.emissions];
   return {
-    'summary.html': s.html, 'ledger.html': l.html, 'assumptions.md': am.text, 'avc-recipe.md': av.text, 'ledger.csv': lc.text,
+    'summary.html': s.html, 'ledger.html': l.html, 'execution.html': x.html, 'assumptions.md': am.text, 'avc-recipe.md': av.text, 'ledger.csv': lc.text,
     'order-sheet-isa.csv': oi.text, 'order-sheet-sipp.csv': os.text,
     'emissions.json': JSON.stringify(emissions),
   };

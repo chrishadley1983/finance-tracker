@@ -135,3 +135,28 @@ export function parseGiltTable(html) {
   }
   return gilts.sort((x, y) => x.matYear - y.matYear);
 }
+
+/**
+ * Split a wrapper's gilts between two holders in maturity order: the first holder buys
+ * until `firstBudget` (their pot) is used up, the gilt that straddles the boundary is
+ * split pro rata, and everything after goes to the second holder. Used for the ISA
+ * rungs: Chris's ii ISA first, then Abby's new ii ISA (funded by her Vanguard transfer).
+ * @param {ReturnType<typeof buildLadder>} plan @param {number} firstBudget @param {[string, string]} holders
+ */
+export function splitByHolder(plan, firstBudget, holders) {
+  /** @type {Array<{ epic: string, giltName: string, maturity: string, matYear: number, dirty: number, realYield: number, coversYears: number[], notes: string[], holder: string, face: number, estCost: number, realAmount: number, split: boolean }>} */
+  const rows = [];
+  let left = firstBudget;
+  for (const g of [...plan.byGilt].sort((x, y) => x.matYear - y.matYear)) {
+    const base = { epic: g.epic, giltName: g.giltName, maturity: g.maturity, matYear: g.matYear, dirty: g.dirty, realYield: g.realYield, coversYears: g.coversYears, notes: g.notes };
+    if (left >= g.estCost - 0.005) { rows.push({ ...base, holder: holders[0], face: g.face, estCost: g.estCost, realAmount: g.realAmount, split: false }); left -= g.estCost; }
+    else if (left > 0.5) {
+      const f = left / g.estCost;
+      rows.push({ ...base, holder: holders[0], face: g.face * f, estCost: left, realAmount: g.realAmount * f, split: true });
+      rows.push({ ...base, holder: holders[1], face: g.face * (1 - f), estCost: g.estCost - left, realAmount: g.realAmount * (1 - f), split: true });
+      left = 0;
+    } else rows.push({ ...base, holder: holders[1], face: g.face, estCost: g.estCost, realAmount: g.realAmount, split: false });
+  }
+  const tot = (/** @type {string} */ h) => { const r = rows.filter((x) => x.holder === h); return { face: r.reduce((s, x) => s + x.face, 0), estCost: r.reduce((s, x) => s + x.estCost, 0), realAmount: r.reduce((s, x) => s + x.realAmount, 0) }; };
+  return { holders, firstBudget, rows, totals: { [holders[0]]: tot(holders[0]), [holders[1]]: tot(holders[1]) } };
+}

@@ -29,7 +29,7 @@ const formatters: Array<(v: number) => string> = [fmt.gbp, fmt.gbpShort, fmt.gbp
 
 describe('renderers (phase 4): documents equal the model', () => {
   it('produces every document with content', () => {
-    for (const name of ['summary.html', 'ledger.html', 'assumptions.md', 'avc-recipe.md', 'ledger.csv', 'order-sheet-isa.csv', 'order-sheet-sipp.csv']) expect(docs[name as keyof typeof docs].length, name).toBeGreaterThan(200);
+    for (const name of ['summary.html', 'ledger.html', 'execution.html', 'assumptions.md', 'avc-recipe.md', 'ledger.csv', 'order-sheet-isa.csv', 'order-sheet-sipp.csv']) expect(docs[name as keyof typeof docs].length, name).toBeGreaterThan(200);
     expect(emissions.length).toBeGreaterThan(500);
   });
 
@@ -45,7 +45,7 @@ describe('renderers (phase 4): documents equal the model', () => {
   });
 
   it('HTML spans read back to the same key/text pairs the renderer recorded', () => {
-    for (const name of ['summary.html', 'ledger.html'] as const) {
+    for (const name of ['summary.html', 'ledger.html', 'execution.html'] as const) {
       const html = docs[name];
       const spans = Array.from(html.matchAll(/<span data-key="([^"]+)">([^<]*)<\/span>/g)).map((m) => ({ key: m[1], text: m[2].replace(/&amp;/g, '&').replace(/&lt;/g, '<') }));
       const recorded = emissions.filter((e) => e.doc === name);
@@ -57,7 +57,7 @@ describe('renderers (phase 4): documents equal the model', () => {
   });
 
   it('documents are self-contained (no external stylesheet, script, font or image)', () => {
-    for (const name of ['summary.html', 'ledger.html'] as const) {
+    for (const name of ['summary.html', 'ledger.html', 'execution.html'] as const) {
       const html = docs[name];
       expect(html).not.toMatch(/<link\b/i);
       expect(html).not.toMatch(/<script\b/i);

@@ -14,12 +14,12 @@
  * }
  */
 import { pivotProgramme, currentRetune, avcRecipeFromYtd, takeHomeNominal, pivotYear } from './pivot.mjs';
-import { buildLadder, couponSchedule } from './ladder.mjs';
+import { buildLadder, couponSchedule, splitByHolder } from './ladder.mjs';
 import { runLedger } from './ledger.mjs';
 import { defaultOutlook, potsAtExit, sustainableSpend, drawdownSim } from './outlook.mjs';
 import { runScenarios } from './scenarios.mjs';
 
-export const ENGINE_VERSION = '2026-09-21.phase7';
+export const ENGINE_VERSION = '2026-09-21.phase7b';
 
 /**
  * @param {{ assumptions: any, giltPrices?: { asOf: string, gilts: any[] }, giltYields?: { asOf: string, rungs: any[] }, payslip?: any, shiller?: number[][], today?: string }} inputs
@@ -48,7 +48,7 @@ export function runPlan(inputs) {
       takeHomeYear1AtLine: takeHomeNominal(a, 0, pivotYear(a, 0, a.hicbc.lowerThreshold).extraSacrifice),
       avcRecipe: inputs.payslip ? avcRecipeFromYtd(a, inputs.payslip) : null,
     },
-    ladder: ladder ? { ...ladder, coupons: couponSchedule(ladder, 2027), pricesAsOf: inputs.giltPrices?.asOf, isa: ladderIsa ? { ...ladderIsa, coupons: couponSchedule(ladderIsa, 2027) } : null, sipp: ladderSipp ? { ...ladderSipp, coupons: couponSchedule(ladderSipp, 2027) } : null } : null,
+    ladder: ladder ? { ...ladder, coupons: couponSchedule(ladder, 2027), pricesAsOf: inputs.giltPrices?.asOf, isa: ladderIsa ? { ...ladderIsa, coupons: couponSchedule(ladderIsa, 2027), byHolder: splitByHolder(ladderIsa, a.pots.chrisIiIsa, ['chris', 'abby']) } : null, sipp: ladderSipp ? { ...ladderSipp, coupons: couponSchedule(ladderSipp, 2027) } : null } : null,
     ledger, ledgerFlat, scenarios, outlook,
     knownLimitations: inputs.assumptions.__knownLimitations ?? [],
   };

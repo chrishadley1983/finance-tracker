@@ -76,7 +76,7 @@ describe('manifests and accepted runs (phase 5)', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'plan-runs-'));
     execFileSync('npx', ['tsx', 'scripts/plan-run.ts', '--offline', '--no-notify', '--no-pdf', '--dir', dir, '--today', '2026-09-21', '--tag', 'test'], { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 50e6 });
     const run = path.join(dir, '2026-09-21-test');
-    for (const f of ['inputs.json', 'outputs.json', 'diff.md', 'summary.json', 'manifest.json', 'summary.html', 'ledger.html', 'assumptions.md', 'avc-recipe.md', 'ledger.csv', 'order-sheet-isa.csv', 'order-sheet-sipp.csv', 'emissions.json']) expect(fs.existsSync(path.join(run, f)), f).toBe(true);
+    for (const f of ['inputs.json', 'outputs.json', 'diff.md', 'summary.json', 'manifest.json', 'summary.html', 'ledger.html', 'assumptions.md', 'avc-recipe.md', 'ledger.csv', 'order-sheet-isa.csv', 'order-sheet-sipp.csv', 'execution.html', 'emissions.json']) expect(fs.existsSync(path.join(run, f)), f).toBe(true);
     expect(verifyManifest(run).ok).toBe(true);
     const summary = JSON.parse(fs.readFileSync(path.join(run, 'summary.json'), 'utf8'));
     expect(summary.verdict).toBe('AMBER'); // no baseline yet in a fresh dir

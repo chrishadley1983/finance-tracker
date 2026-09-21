@@ -42,7 +42,7 @@ indexRatio ≈ dirty/clean). **allocate** covers a target year with its own matu
 nearest earlier and later maturities. **sizeByBudget(prices, budget, years)** = budget ÷ Σ_years cost-per-£1.
 **buildLadder(a, prices, opts)** sizes by `a.ladder.budgetReal` over `firstYear..lastYear` unless `amountPerYear`
 is given; returns allocations, per-gilt totals (face, cost, real amount) and totals. **couponSchedule** = Σ over
-gilts still outstanding of coupon rate × real amount held, per year (the top-up, not part of the rung).
+gilts still outstanding of coupon rate × real amount held, per year (the top-up, not part of the rung). **splitByHolder(plan, firstBudget, [h1, h2])** walks the wrapper’s gilts in maturity order: h1 takes whole gilts until firstBudget is spent, the gilt that straddles the boundary is split pro rata (face, cost, real amount), the rest is h2 — the ISA rungs between Chris’s ii ISA (firstBudget = pots.chrisIiIsa) and Abby’s.
 
 ## ledger.mjs — runLedger(a, yields, {G, gPath, spend, spendSchedule, hbPost, cash, crypto, preRetirement, extension})
 

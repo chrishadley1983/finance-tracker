@@ -50,7 +50,7 @@ export function notifyEmail(msg, log = console.log) {
 import json, smtplib, ssl, sys
 from email.message import EmailMessage
 from pathlib import Path
-m = json.load(sys.stdin)
+m = json.loads(sys.stdin.buffer.read().decode('utf-8'))  # bytes: the console codec mangles non-cp1252 characters
 msg = EmailMessage(); msg['Subject'] = m['subject']; msg['From'] = m['user']; msg['To'] = m['to']
 msg.set_content('See the HTML version.'); msg.add_alternative(m['html'], subtype='html')
 for p in m.get('attachments', []):

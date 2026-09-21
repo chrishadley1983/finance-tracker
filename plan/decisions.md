@@ -221,3 +221,16 @@ Accenture DC to the ii SIPP" was retired on 3 Sep: the pot stays at L&G and was 
 Focus lifestyle fund to 100% Global Equity Tracker (B6W3, 0.11%). Chris, 21 Sep: not worth the effort given the
 fund now available. It is part of the growth sleeve in the baseline. The phase 7 "ratchet to 2050" scenario remains
 an option only; choosing it would need a transfer at that time, because L&G cannot hold individual gilts.
+
+## 21 Sep 2026 — execution.html: the ladder purchase checklist, rendered like everything else
+
+Chris asked for an actionable document of the ladder execution steps. Rather than hand-write one, every run now
+renders `execution.html` from the outputs: which account opens (Abby's ii ISA), the partial Vanguard transfer,
+and a tick-box purchase table per account — Chris's ii ISA (near rungs), Chris's ii SIPP (far rungs), Abby's ii
+ISA (middle rungs) — with nominal to order, cost at the run's prices, real redemption and coverage notes. The
+ISA split between the two holders is computed in the engine (`ladder.splitByHolder`: Chris's pot buys in
+maturity order until it runs out, the straddling gilt is split pro rata, the rest is Abby's); engine version
+`2026-09-21.phase7b`. At 21 Sep prices: Chris's ISA buys 2035–37 plus a slice of 2038, Abby's the rest of 2038
+plus 2039–40. Emailed to Chris with the two order-sheet CSVs; the accepted run (2026-09-21-phase7) predates
+the document and is left immutable — the next run carries it. Also fixed: the email helper read stdin through
+the console codec, which broke on characters outside cp1252 (the tick boxes).
