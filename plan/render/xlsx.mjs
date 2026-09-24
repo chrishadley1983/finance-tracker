@@ -17,7 +17,7 @@ export function buildWorkbook(outputs, inputs, meta = {}) {
     { item: 'pots total (£)', value: a.pots.total }, { item: 'ladder budget (£)', value: a.ladder.budgetReal },
     { item: 'ISA rung redemption (£k real)', value: L?.wrappers.isa.R }, { item: 'SIPP rung redemption (£k real)', value: L?.wrappers.sipp.R },
     { item: 'at retirement (£k real, planning case)', value: L?.headline.atRetirement }, { item: 'at last rung (£k)', value: L?.headline.atLastRung }, { item: 'at end (£k)', value: L?.headline.atEnd },
-    { item: 'lifetime tax (£k)', value: L?.lifeTax }, { item: 'AVC % to set', value: outputs.pivot.avcRecipe?.avcPct ?? '' }, { item: 'sustainable spend (£, outlook)', value: outputs.outlook.sustainableSpend },
+    { item: 'lifetime tax (£k)', value: L?.lifeTax }, { item: 'drawdown strategy', value: L?.drawdown }, { item: 'estate at end (£k)', value: L?.estate?.total }, { item: 'inheritance tax, est. (£k)', value: L?.estate?.iht }, { item: 'left to the children (£k)', value: L?.estate?.netToHeirs }, { item: 'giftable income a year (£k)', value: L?.estate?.giftableAvg }, { item: 'AVC % to set', value: outputs.pivot.avcRecipe?.avcPct ?? '' }, { item: 'sustainable spend (£, outlook)', value: outputs.outlook.sustainableSpend },
   ]);
   if (L) add('Ledger', L.rows);
   add('Pivot', outputs.pivot.programme.years);
@@ -25,7 +25,7 @@ export function buildWorkbook(outputs, inputs, meta = {}) {
   if (outputs.ladder?.sipp) add('Ladder SIPP', outputs.ladder.sipp.byGilt.map((/** @type {any} */ g) => ({ ...g, coversYears: g.coversYears.join(' '), notes: g.notes.join('; ') })));
   if (outputs.scenarios) {
     const rows = [];
-    for (const s of Object.values(outputs.scenarios.scenarios)) for (const c of /** @type {any} */ (s).cases) rows.push({ scenario: /** @type {any} */ (s).id, title: /** @type {any} */ (s).title, G: c.G, atRetirement: c.atRetirement, atLastRung: c.atLastRung, atEnd: c.atEnd, lifeTax: c.lifeTax, firstCashNegative: c.firstCashNegative ?? '', preRetirementDraw: c.preRetirementDraw ?? 0 });
+    for (const s of Object.values(outputs.scenarios.scenarios)) for (const c of /** @type {any} */ (s).cases) rows.push({ scenario: /** @type {any} */ (s).id, title: /** @type {any} */ (s).title, G: c.G, atRetirement: c.atRetirement, atLastRung: c.atLastRung, atEnd: c.atEnd, lifeTax: c.lifeTax, iht: c.iht, netToHeirs: c.netToHeirs, firstCashNegative: c.firstCashNegative ?? '', preRetirementDraw: c.preRetirementDraw ?? 0 });
     add('Scenarios', rows);
     const grid = [];
     for (const g of outputs.scenarios.grid) for (const c of g.byReturn) grid.push({ spend: g.spend, G: c.G, atRetirement: c.atRetirement, atLastRung: c.atLastRung, atEnd: c.atEnd, lifeTax: c.lifeTax, firstCashNegative: c.firstCashNegative ?? '' });

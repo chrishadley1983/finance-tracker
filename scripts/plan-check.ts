@@ -41,7 +41,7 @@ try {
   const out = JSON.parse(execFileSync('node', ['plan/tools/ledger.mjs', '--json'], { cwd: root, encoding: 'utf8', maxBuffer: 50e6 }));
   const want = pivotProgramme(built.values.hicbc.lowerThreshold).years.map((y) => y.extraSacrifice / 1000);
   const payroll = (built.values.payslip.basicAnnual * (built.values.payslip.employerRate + built.values.payslip.existingEeRate)) / 1000;
-  const arrOk = out.avcSchedule.length === want.length && out.avcSchedule.every((v: number, i: number) => Math.abs(v - want[i]) < 0.001);
+  const arrOk = out.avcScheduleNominal.length === want.length && out.avcScheduleNominal.every((v: number, i: number) => Math.abs(v - want[i]) < 0.001);
   const payOk = Math.abs(out.payrollReal - payroll) < 0.001;
   flag(arrOk ? 'OK' : 'RED', `ledger AVC schedule ${arrOk ? 'matches' : 'DIFFERS FROM'} pivot.ts (${want.map((x) => x.toFixed(1)).join(', ')} £k)`);
   flag(payOk ? 'OK' : 'RED', `ledger payroll contribution ${out.payrollReal.toFixed(3)} vs ${payroll.toFixed(3)} £k from the payslip`);

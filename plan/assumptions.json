@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "preparedOn": "2026-09-20",
+  "preparedOn": "2026-09-23",
   "moneyBasis": "Sep 2026 pounds unless a unit says nominal",
   "entries": {
     "payslip.asOf": {
@@ -142,6 +142,19 @@
       "status": "FACT",
       "source": "gov.uk 2026/27: personal allowance + basic-rate band",
       "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "tax.thresholdsFrozenThroughTaxYear": {
+      "value": 2030,
+      "unit": "tax year (2030 = 2030/31)",
+      "status": "FACT",
+      "source": "Autumn Budget 2025: personal allowance and higher-rate threshold frozen to April 2031. CPI-indexed afterwards is the model's assumption",
+      "asOf": "2025-11-26",
       "reviewBy": "2027-04-06",
       "cadence": "tax-year",
       "triggers": [
@@ -774,7 +787,7 @@
       "value": 268275,
       "unit": "GBP NOMINAL (frozen)",
       "status": "FACT",
-      "source": "Lump sum allowance from Apr 2024, frozen in cash. The model still treats it as real — see knownLimitations tfc-nominal-cap",
+      "source": "Lump sum allowance from Apr 2024, frozen in cash (no indexation in the legislation): the engine erodes it by returns.cpi and caps tax-free cash at 25% of what is crystallised",
       "asOf": "2026-04-06",
       "reviewBy": "2027-04-06",
       "cadence": "tax-year",
@@ -793,6 +806,17 @@
       "triggers": [
         "april",
         "budget"
+      ]
+    },
+    "drawdown.strategy": {
+      "value": "basicBand",
+      "status": "DECISION",
+      "source": "plan/decisions.md — 23 Sep 2026: from each pension's access year draw taxable pension income to the top of the basic-rate band (inheritance-tax aware); the surplus stays in ISA/GIA and is reported as giftable income; gifts themselves are not modelled. The previous case (personal allowance only, tax-free cash first) is kept as 'paFill' for comparison",
+      "asOf": "2026-09-23",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
       ]
     },
     "ladder.firstYear": {
@@ -933,6 +957,18 @@
         "annual"
       ]
     },
+    "returns.cpi": {
+      "value": 0.02,
+      "unit": "per year",
+      "status": "GUESS",
+      "source": "CPI planning assumption (the Bank of England target; same rate as payslip.payGrowth and childBenefit.uprating). Converts nominal amounts to today's money: the AVC schedule, thresholds frozen in cash, the lump sum allowance, the IHT nil-rate band",
+      "asOf": "2026-09-23",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
+      ]
+    },
     "ledger.cashFloor": {
       "value": 30000,
       "unit": "GBP real",
@@ -957,27 +993,76 @@
         "april",
         "budget"
       ]
+    },
+    "iht.rate": {
+      "value": 0.4,
+      "status": "FACT",
+      "source": "gov.uk inheritance tax rate above the nil-rate band",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "iht.nilRateBandEach": {
+      "value": 325000,
+      "unit": "GBP nominal",
+      "status": "CHECK",
+      "source": "gov.uk nil-rate band £325,000 each, transferable between spouses. The residence nil-rate band (£175k each, tapered away above a £2M estate) is not used: the house is outside the model",
+      "asOf": "2026-04-06",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "iht.frozenThroughTaxYear": {
+      "value": 2030,
+      "unit": "tax year (2030 = 2030/31)",
+      "status": "CHECK",
+      "source": "Nil-rate bands frozen to April 2030 (Autumn Budget 2024), extended to April 2031 at Autumn Budget 2025 — verify on gov.uk. CPI-indexed afterwards is the model's assumption",
+      "asOf": "2025-11-26",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "iht.pensionsInEstateFromTaxYear": {
+      "value": 2027,
+      "unit": "tax year",
+      "status": "FACT",
+      "source": "Autumn Budget 2024: unused pension funds and death benefits fall into the estate for inheritance tax from 6 April 2027",
+      "asOf": "2024-10-30",
+      "reviewBy": "2027-04-06",
+      "cadence": "tax-year",
+      "triggers": [
+        "april",
+        "budget"
+      ]
+    },
+    "iht.beneficiaryIncomeTaxRate": {
+      "value": 0.4,
+      "status": "GUESS",
+      "source": "An inherited pension is taxed as the beneficiary's income when the member dies after 75 (both would be at the horizon); assumes Emmie and Max are higher-rate taxpayers when they draw it",
+      "asOf": "2026-09-23",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": [
+        "annual"
+      ]
     }
   },
   "knownLimitations": [
     {
-      "id": "tfc-nominal-cap",
-      "raised": "2026-09-20",
-      "fixBy": "2027-06-01",
-      "text": "Tax-free cash is modelled as a cumulative real allowance of £268,275 each, with no 25%-of-crystallised-pot limit. The lump sum allowance is frozen in cash (≈£195k real by 2041) and 25% of each pot is ≈£200k, so the model over-counts tax-free money by about £145k real. Lifetime drawdown tax is about £44k at 2% real and £115k at 0%, not ≈£0.",
-      "impact": "tax narrative only; survival unaffected"
-    },
-    {
       "id": "thresholds-held-real",
       "raised": "2026-09-20",
-      "text": "Personal allowance, basic-rate band and state pension are held constant in real terms for the whole simulation. The allowance is frozen in cash to April 2031 (≈£11.5k real by then); the state pension is uprated by the triple lock. Small, opposite-signed biases.",
+      "text": "The personal allowance and higher-rate threshold are frozen in cash to 2030/31 and CPI-indexed after (modelled from 23 Sep 2026). Still held constant in real terms: the state pension (the triple lock would raise it), the ISA allowance and the cash floor. Small, opposite-signed biases.",
       "impact": "≈£0.5k/yr of tax from 2041"
-    },
-    {
-      "id": "iht-not-modelled",
-      "raised": "2026-09-20",
-      "text": "Pensions join the estate for inheritance tax from April 2027. The planning case leaves roughly £1.8M in pensions at 2075, implying IHT of the order of £850k plus beneficiary income tax. Drawing to the basic-rate band from 2041 should become the planning case; it is not yet.",
-      "impact": "dominant tax in every path; not a spending risk"
     },
     {
       "id": "nic-cap-2029",
@@ -991,6 +1076,18 @@
       "raised": "2026-09-20",
       "text": "Platform and dealing fees (~£8k to 2045) are unmodelled; crypto (~£54k) is treated as equity at 2% real and never drawn; the sustainable-spend column in the ledger document is the 3 Sep outlook figure and £70k/yr does not survive the flat-0% case under the ledger's tax rules.",
       "impact": "small"
+    },
+    {
+      "id": "iht-estimate",
+      "raised": "2026-09-23",
+      "text": "The estate figure is an order of magnitude: both are assumed to die at the horizon, the house and its residence nil-rate band are outside the model, lifetime gifts (and the seven-year rule) are not modelled, and Emmie and Max are assumed to be higher-rate taxpayers when they draw inherited pensions.",
+      "impact": "estate and net-to-heirs only; survival unaffected"
+    },
+    {
+      "id": "gia-untaxed",
+      "raised": "2026-09-23",
+      "text": "Drawing to the basic-rate band pushes surpluses beyond the ISA allowance into a general account, whose dividends and gains are treated as untaxed. At the planning case the GIA reaches a few hundred £k by the 2060s; dividend and capital gains tax on it are not deducted.",
+      "impact": "slightly flatters the late-life balance under the basicBand strategy"
     }
   ]
 }

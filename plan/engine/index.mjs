@@ -19,7 +19,7 @@ import { runLedger } from './ledger.mjs';
 import { defaultOutlook, potsAtExit, sustainableSpend, drawdownSim } from './outlook.mjs';
 import { runScenarios } from './scenarios.mjs';
 
-export const ENGINE_VERSION = '2026-09-21.phase7b';
+export const ENGINE_VERSION = '2026-09-23.real-terms';
 
 /**
  * @param {{ assumptions: any, giltPrices?: { asOf: string, gilts: any[] }, giltYields?: { asOf: string, rungs: any[] }, payslip?: any, shiller?: number[][], today?: string }} inputs

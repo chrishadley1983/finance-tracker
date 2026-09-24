@@ -29,15 +29,34 @@ export function netPay(a, cashPay, taxablePay) {
 /**
  * Income tax on a person's taxable income in retirement (full personal
  * allowance, basic rate to the higher-rate floor, higher rate above).
+ * `scale` multiplies both thresholds — pass thresholdScale(a, year) to get
+ * today's-money thresholds that are frozen in cash (default 1 = 2026/27 values).
  * @param {any} a
  * @param {number} taxableIncome
+ * @param {number} [scale]
  */
-export function personTax(a, taxableIncome) {
+export function personTax(a, taxableIncome, scale = 1) {
   const t = a.tax;
   return (
-    t.basicRate * Math.max(0, Math.min(taxableIncome, t.higherRateFloor) - t.personalAllowance) +
-    t.higherRate * Math.max(0, taxableIncome - t.higherRateFloor)
+    t.basicRate * Math.max(0, Math.min(taxableIncome, t.higherRateFloor * scale) - t.personalAllowance * scale) +
+    t.higherRate * Math.max(0, taxableIncome - t.higherRateFloor * scale)
   );
+}
+
+/**
+ * Today's-money value of £1 of an amount frozen in cash from the base year
+ * (2026/27) through tax year `frozenThrough` and CPI-indexed afterwards;
+ * `frozenThrough` = Infinity for amounts frozen indefinitely (the lump sum
+ * allowance). Row year y is read as tax year y/y+1.
+ * @param {any} a @param {number} year @param {number} frozenThrough @param {number} [base]
+ */
+export function frozenInCash(a, year, frozenThrough, base = 2026) {
+  return Math.pow(1 + a.returns.cpi, -(Math.max(base, Math.min(year, frozenThrough)) - base));
+}
+
+/** Real-terms scale for the income tax personal allowance and higher-rate threshold in row year `year`. @param {any} a @param {number} year */
+export function thresholdScale(a, year) {
+  return frozenInCash(a, year, a.tax.thresholdsFrozenThroughTaxYear);
 }
 
 /**

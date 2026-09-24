@@ -16,7 +16,9 @@ Money: nominal £ in the pivot (per tax year); real £ (today's money) everywher
   tax = basicRate × min(max(taxable − payeAllowance, 0), basicRateBand) + higherRate × max(taxable − payeAllowance − basicRateBand, 0);
   NI = niMainRate × max(min(cash, UEL) − PT, 0) + niUpperRate × max(cash − UEL, 0).
   Additional rate and the £100k allowance taper are not modelled (never reached under the pivot).
-- **personTax(a, income)** = basicRate × max(min(income, higherRateFloor) − personalAllowance, 0) + higherRate × max(income − higherRateFloor, 0).
+- **personTax(a, income, scale = 1)** = basicRate × max(min(income, higherRateFloor·scale) − personalAllowance·scale, 0) + higherRate × max(income − higherRateFloor·scale, 0).
+- **frozenInCash(a, year, frozenThrough)** = (1 + returns.cpi)^−(clamp(year, 2026, frozenThrough) − 2026): today's-money value of £1 frozen in cash from 2026/27 through tax year `frozenThrough` and CPI-indexed after (Infinity for the lump sum allowance, which has no indexation). Row year y is tax year y/y+1.
+- **thresholdScale(a, year)** = frozenInCash(a, year, tax.thresholdsFrozenThroughTaxYear) — applied to the personal allowance and higher-rate threshold in retirement.
 - **childBenefitKept(a, ani, full)** = full if ani ≤ lower; 0 if ani ≥ upper; else full × (1 − taperPerStep × floor((ani − lower)/stepSize)).
 - **reliefOnSacrifice(a, aniBefore, extra, {taxYearStart, existingSacrifice})** = reliefAbove × (part of the band [aniBefore − extra, aniBefore] above higherRateFloor) + reliefBelow × the rest, **minus the employee NI no longer saved once the salary-sacrifice NIC cap applies**: from tax year `salarySacrificeNicCapFromTaxYear` (2029/30, Autumn Budget 2025) sacrifice above `salarySacrificeNicCapThreshold` (£2,000 a year, all pension sacrifice counted) stays NI-able, so with **nicLiableSacrifice(a, taxYearStart, extra, existingSacrifice)** = max(0, extra − max(0, threshold − existingSacrifice)) (0 before the cap year) the relief loses niUpperRate × (liable part above the UEL) + niMainRate × (the rest). Without a `taxYearStart` the pre-cap formula applies (the YTD recipe for the current year).
 - **annuity(n, g)** = (1 − (1+g)^−n)/g (n if g = 0; 0 if n ≤ 0).
@@ -61,17 +63,43 @@ from `source` ('acn' = the Accenture pension pot, which then holds the ext ladde
 fromYear..toYear like the SIPP rungs. `headline` = {atRetirement, atLastRung, atEnd, firstCashNegative,
 preRetirementDraw}. Flows leave the ladder balance each year; before retirement they are
 reinvested in-wrapper, in ISA years they are the year's cash, in SIPP years they stay as pension equity.
-Abby's DC receives extra_i (pivot at the £60k line) + payroll (basicAnnual × (employerRate + existingEeRate)) in
-rows BASE+1..retirement. From retirement each year: spend (retirementTarget), HB to chrisPensionAccessYear,
-state pensions from the year after each SPA year, PA-filling draws once each pension is open, tax =
-personTax on each person's taxable income; a shortfall is met in order TFC (Chris then Abby, each capped at
-tfcCapEach), ISA equity, GIA, cash down to cashFloor, then a taxed pension draw grossed up at basicRate;
-a surplus goes to ISA equity (up to isaAllowanceCouple after the ISA rung years, the rest to GIA).
+Abby's DC receives extra_i × (1 + cpi)^−i (the pivot works in each tax year's cash against a frozen £60k line, so
+its sacrifice is deflated to today's money; `avcScheduleNominal` keeps the cash figures) + payroll (basicAnnual ×
+(employerRate + existingEeRate)) in rows BASE+1..retirement. The pre-retirement take-home is deflated by cpi too.
+
+**Retirement rows** (from 23 Sep 2026, engine `2026-09-23.real-terms`). Each year: spend (retirementTarget or the
+schedule), HB to chrisPensionAccessYear, state pensions from the year after each SPA year. Thresholds are
+personalAllowance and higherRateFloor × thresholdScale(year). Per person P ∈ {Chris, Abby} the engine tracks the
+liquid pension pot (Chris: sippEq + acn, into which the SIPP rungs mature; Abby: abbyDC), the drawdown fund
+crys_P (crystallised, not yet withdrawn, fully taxable, grows with equity) and the lump sum allowance lsa_P in
+NOMINAL £ (its real value is lsa_P × frozenInCash(year, ∞)).
+- **drawTaxable(P, T)**: take d = min(T, crys_P) from the drawdown fund; for the rest, crystallise x from the
+  uncrystallised pot with t = x/4 tax-free while the allowance lasts: x = 4(T−d)/3 if (T−d)/3 ≤ L, else x = (T−d) + L
+  (L = the allowance's real value), so the taxable part is exactly T; t reduces lsa_P by t / frozenInCash.
+- **takeTfc(P, want)** ('paFill' only): t = min(want, L, (pot − crys_P)/4); crystallise 4t, pay t, crys_P += 3t.
+- **Strategy `drawdown.strategy`** (or opts.drawdown). 'basicBand' (planning case): once P's pension is open,
+  drawTaxable(P, higherRateFloor·scale − P's other taxable income). 'paFill' (the pre-23-Sep case):
+  drawTaxable(P, personalAllowance·scale − other income).
+- tax = personTax(inc_P, scale) summed. net = ISA rung cash (ISA years) + HB + SP + draws − spend − tax.
+  A shortfall is met in order: ('paFill' only) takeTfc Chris then Abby; ISA equity; GIA; cash down to cashFloor;
+  then taxed draws a band at a time (gross = short/(1 − marginal rate), capped at the next threshold), Chris then
+  Abby; anything left makes the cash line negative (crypto is never drawn). A surplus goes to ISA equity (up to
+  isaAllowanceCouple after the ISA rung years, the rest to GIA) and, once a pension is open,
+  **giftable** = max(0, min(surplus, taxable income − tax − spend)) — surplus income, not capital, is what the
+  normal-expenditure exemption covers. Gifts are reported, never deducted.
+- **estate** at simulationEndYear (both assumed to die then; spouse exemption on the first death): total, pensions,
+  nilRateBands = 2 × iht.nilRateBandEach × frozenInCash(END, iht.frozenThroughTaxYear); iht = iht.rate ×
+  max(0, total − nilRateBands) (pensions count from iht.pensionsInEstateFromTaxYear); beneficiaryTax =
+  iht.beneficiaryIncomeTaxRate × (pensions − the IHT share falling on them); netToHeirs = total − iht −
+  beneficiaryTax. The house and the residence nil-rate band are outside the model.
+- `headline` adds iht and netToHeirs; old inputs without returns.cpi are refused (re-run them at their manifest sha).
+- Cross-check: `plan/derivations/independent-ledger.mjs` re-implements this from scratch;
+  `tests/unit/plan/independent.test.ts` holds the two within 1% at 0/2/4% real under both strategies.
 
 ## scenarios.mjs — runScenarios(a, yields, {shiller, capeThreshold})
 
 Every scenario is `runLedger` with different knobs, each at G ∈ {0, returns.realEquity.planning, .better}:
-baseline; spend = planLine; spend = planLine + 10k; step-down (planLine + 10k from retirement, retirementTarget +
+baseline; spend = planLine; spend = planLine + 10k; paFillDrawdown (the planning case with the 'paFill' strategy); step-down (planLine + 10k from retirement, retirementTarget +
 5k from childBenefit.maxEndsAug + 3); reserve spent (cash = crypto = 0); Chris £20k take-home pre-retirement at
 spend = planLine and planLine + 10k (cottrell 3,000, side income 0); ratchet (extension budget =
 pots.chrisAccenturePension over lastYear+1..lastYear+5, only when the yields file has `ext` rungs). **Grid**:
@@ -87,7 +115,7 @@ negative, worst / 5th / median / 95th percentile of `atEnd`.
 household cash delta (takeHome_i deflated + child benefit + hbPreRetirement − planLine), each grown from mid-year.
 **sustainableSpend** = (pots + PV of both state pensions + PV of HB) ÷ annuity(horizon − retireYear, r).
 **drawdownSim**: three buckets (Chris pension, Abby pension, non-pension) drawn in the order UFPLS to fill each
-personal allowance → tax-free-cash strips (25% of the crystallised slice, cumulative cap) → non-pension →
+personal allowance (× thresholdScale; the lump sum allowance cap is nominal, worth cap × frozenInCash(year, ∞)) → tax-free-cash strips (25% of the crystallised slice, cumulative cap) → non-pension →
 taxed draws (basic rate on the taxable fraction); surplus recycled to non-pension; all buckets grow at r.
 
 ## spend.mjs

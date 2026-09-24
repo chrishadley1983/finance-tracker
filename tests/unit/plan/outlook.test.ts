@@ -34,20 +34,22 @@ describe('outlook models (criteria F10, F11, E3)', () => {
     expect(Math.abs(s - 80_000) / 80_000).toBeLessThan(0.03);
   });
 
-  it('baseline drawdown: effective tax ≤4%, total tax ≤£30k, first taxed year ≥2070 or never', () => {
+  // 23 Sep 2026: the lump sum allowance and the personal allowance are now frozen in cash (worth less each
+  // year in today's money), so the outlook pays more tax than the ≤4% / ≤£30k it showed when both were held real.
+  it('baseline drawdown: effective tax ≤6%, total tax ≤£45k, first taxed year ≥2070 or never', () => {
     const r = drawdownSim(base);
-    expect(r.effectiveTaxRate).toBeLessThanOrEqual(0.04);
-    expect(r.totalTax).toBeLessThanOrEqual(30_000);
+    expect(r.effectiveTaxRate).toBeLessThanOrEqual(0.06);
+    expect(r.totalTax).toBeLessThanOrEqual(45_000);
     if (r.firstTaxedYear !== null) expect(r.firstTaxedYear).toBeGreaterThanOrEqual(2070);
   });
 
-  it('regression: doc-table pots (£747/£648/£820k) → surplus £2.04M ±3%, eff tax ≤1%', () => {
+  it('regression: doc-table pots (£747/£648/£820k) → surplus £2.00M ±3%, eff tax ≤6% (was £2.04M / ≤1% before the cash-frozen allowances)', () => {
     const r = drawdownSim({
       ...base,
       potsOverride: { chrisPension: 747_000, abbyPension: 648_000, nonPension: 820_000, total: 2_215_000 },
     });
-    expect(Math.abs(r.surplusAt92 - 2_040_000) / 2_040_000).toBeLessThan(0.03);
-    expect(r.effectiveTaxRate).toBeLessThanOrEqual(0.01);
+    expect(Math.abs(r.surplusAt92 - 2_000_000) / 2_000_000).toBeLessThan(0.03);
+    expect(r.effectiveTaxRate).toBeLessThanOrEqual(0.06);
   });
 
   it('4% real beats 2% real at every retirement year', () => {

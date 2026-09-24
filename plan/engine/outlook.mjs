@@ -6,7 +6,7 @@
  *
  * SPEC: plan/engine/SPEC.md §outlook.
  */
-import { annuity } from './tax.mjs';
+import { annuity, frozenInCash, thresholdScale } from './tax.mjs';
 import { pivotYear, takeHomeNominal } from './pivot.mjs';
 
 /**
@@ -92,23 +92,25 @@ export function drawdownSim(a, opts) {
     const hb = opts.retireYear >= a.dates.planRetirementYear && year <= a.dates.chrisPensionAccessYear ? opts.hbPostRetirement : 0;
     const sp = { C: year > a.dates.chrisStatePensionYear ? a.statePension.annualEach : 0, A: year > a.dates.abbyStatePensionYear ? a.statePension.annualEach : 0 };
     const access = { C: year > a.dates.chrisPensionAccessYear, A: year > a.dates.abbyPensionAccessYear };
+    // cap[] is the lump sum allowance left in NOMINAL £ (frozen in cash); f converts it to today's money
+    const f = frozenInCash(a, year, Infinity), sc = thresholdScale(a, year);
     let cash = hb + sp.C + sp.A;
     const row = { year, hb, statePension: sp.C + sp.A, chrisPensionDraw: 0, abbyPensionDraw: 0, ladderDraw: 0, isaDraw: 0, nonPensionDraw: 0, tax: 0 };
     for (const p of /** @type {const} */ (['C', 'A'])) {
       if (!access[p] || U[p] <= 0) continue;
       const otherTaxable = sp[p] + (p === 'C' ? hb : 0);
-      const head = Math.max(0, PA - otherTaxable);
-      const w = Math.min(U[p], (head * 4) / 3, cap[p] * 4);
-      U[p] -= w; cap[p] -= 0.25 * w; cash += w; pensionWithdrawn += w;
+      const head = Math.max(0, PA * sc - otherTaxable);
+      const w = Math.min(U[p], (head * 4) / 3, cap[p] * f * 4);
+      U[p] -= w; cap[p] -= (0.25 * w) / f; cash += w; pensionWithdrawn += w;
       if (p === 'C') row.chrisPensionDraw += w; else row.abbyPensionDraw += w;
     }
     let need = opts.retirementSpend - cash;
     if (need > 0) {
       for (const p of /** @type {const} */ (['C', 'A'])) {
         if (need <= 0 || !access[p] || U[p] <= 0 || cap[p] <= 0) continue;
-        const s = Math.min(need, cap[p], U[p] * 0.25);
+        const s = Math.min(need, cap[p] * f, U[p] * 0.25);
         const X = s * 4;
-        U[p] -= X; D[p] += 0.75 * X; cap[p] -= s; cash += s; need -= s; pensionWithdrawn += s;
+        U[p] -= X; D[p] += 0.75 * X; cap[p] -= s / f; cash += s; need -= s; pensionWithdrawn += s;
         if (p === 'C') row.chrisPensionDraw += s; else row.abbyPensionDraw += s;
       }
       if (need > 0) {
@@ -127,7 +129,7 @@ export function drawdownSim(a, opts) {
           totalTax += t; row.tax += t;
           if (t > 0 && firstTaxedYear === null) firstTaxedYear = year;
           cash += gross - t; need -= gross - t; pensionWithdrawn += gross;
-          if (pot === U) cap[p] -= 0.25 * gross;
+          if (pot === U) cap[p] -= (0.25 * gross) / f;
           if (p === 'C') row.chrisPensionDraw += gross; else row.abbyPensionDraw += gross;
         }
       }

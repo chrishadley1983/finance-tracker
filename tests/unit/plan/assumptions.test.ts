@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import assumptionsFile from '../../../plan/assumptions.json';
 import { buildAssumptions, validateAssumptions, resolveAssumptions, evalFormula, freshness } from '../../../plan/inputs/assumptions.mjs';
 import { pivotProgramme, pivotYear, takeHomeNominal } from '@/lib/plan/pivot';
-import { LADDER, POTS_BASELINE, SPEND, PAYSLIP } from '@/lib/plan/assumptions';
+import { LADDER, POTS_BASELINE, SPEND, PAYSLIP, ASSUMPTIONS } from '@/lib/plan/assumptions';
 
 const root = path.resolve(__dirname, '../../..');
 const file = assumptionsFile as never;
@@ -69,8 +69,10 @@ describe('plan/assumptions.json — the single home for planning numbers (phase 
   it('the ledger tool computes the same AVC schedule as the pivot (one engine, two entry points)', () => {
     const out = JSON.parse(execFileSync('node', ['plan/tools/ledger.mjs', '0.02', '--json'], { cwd: root, encoding: 'utf8', maxBuffer: 50e6 }));
     const want = pivotProgramme(60_000).years.map((y) => y.extraSacrifice / 1000);
-    expect(out.avcSchedule).toHaveLength(want.length);
-    out.avcSchedule.forEach((v: number, i: number) => expect(Math.abs(v - want[i])).toBeLessThan(0.001));
+    expect(out.avcScheduleNominal).toHaveLength(want.length);
+    out.avcScheduleNominal.forEach((v: number, i: number) => expect(Math.abs(v - want[i])).toBeLessThan(0.001));
+    // what feeds Abby's DC is the same schedule in today's money
+    out.avcSchedule.forEach((v: number, i: number) => expect(Math.abs(v - want[i] * Math.pow(1 + ASSUMPTIONS.returns.cpi, -i))).toBeLessThan(0.001));
     expect(Math.abs(out.payrollReal - (PAYSLIP.basicAnnual * (PAYSLIP.employerRate + PAYSLIP.existingEeRate)) / 1000)).toBeLessThan(0.001);
     expect(Math.abs(out.wrappers.isa.budget * 1000 - LADDER.isaBudgetReal)).toBeLessThan(1);
   }, 30_000);

@@ -23,13 +23,40 @@ const a = buildAssumptions(assumptionsFile as never).values;
 const y21 = yields21 as never;
 
 describe('ledger scenario knobs (phase 7)', () => {
-  it('regression: the refactored ledger reproduces the accepted run 2026-09-21 on its own inputs', () => {
+  // 23 Sep 2026: the engine now works in today's money throughout (AVC deflated, thresholds and the lump sum
+  // allowance frozen in cash, tax-free cash capped at 25% of what is crystallised). With inflation set to zero those
+  // corrections vanish, so every row up to Chris's pension opening (no pension draws yet) must still equal run 2026-09-21.
+  it('regression: with cpi = 0 the ledger reproduces accepted run 2026-09-21 up to the first pension draw', () => {
     const acc = JSON.parse(fs.readFileSync(path.join(root, 'plan/runs/2026-09-21/outputs.json'), 'utf8'));
     const accInputs = JSON.parse(fs.readFileSync(path.join(root, 'plan/runs/2026-09-21/inputs.json'), 'utf8'));
-    const l = runLedger(accInputs.assumptions, yields20 as never);
-    for (const k of ['atRetirement', 'atLastRung', 'atEnd'] as const) expect(l.headline[k]).toBe(acc.ledger.headline[k]);
-    expect(l.lifeTax).toBeCloseTo(acc.ledger.lifeTax, 6);
-    expect(l.rows.map((r: { total: number }) => r.total)).toEqual(acc.ledger.rows.map((r: { total: number }) => r.total));
+    const old = accInputs.assumptions;
+    expect(() => runLedger(old, yields20 as never)).toThrow(/returns\.cpi/); // old inputs are refused, not silently re-read
+    const zero = { ...old, returns: { ...old.returns, cpi: 0 }, tax: { ...old.tax, thresholdsFrozenThroughTaxYear: a.tax.thresholdsFrozenThroughTaxYear }, drawdown: { ...old.drawdown, strategy: 'paFill' }, iht: a.iht };
+    const l = runLedger(zero, yields20 as never);
+    expect(l.headline.atRetirement).toBe(acc.ledger.headline.atRetirement);
+    const upTo = (rows: Array<{ year: number; total: number }>) => rows.filter((r) => r.year <= a.dates.chrisPensionAccessYear).map((r) => r.total);
+    expect(upTo(l.rows)).toEqual(upTo(acc.ledger.rows));
+  });
+
+  it('the three corrections only ever lower the planning case, and the band strategy leaves more to the children', () => {
+    const band = runLedger(a, y21), pa = runLedger(a, y21, { drawdown: 'paFill' });
+    const noCpi = runLedger({ ...a, returns: { ...a.returns, cpi: 0 } }, y21, { drawdown: 'paFill' });
+    expect(pa.headline.atRetirement!).toBeLessThan(noCpi.headline.atRetirement!); // AVC in today's money
+    expect(pa.headline.atEnd!).toBeLessThan(noCpi.headline.atEnd!);
+    expect(pa.lifeTax).toBeGreaterThan(noCpi.lifeTax);
+    expect(band.estate.netToHeirs).toBeGreaterThan(pa.estate.netToHeirs);
+    expect(band.estate.pensions).toBeLessThan(pa.estate.pensions);
+    expect(band.headline.firstCashNegative).toBeNull();
+  });
+
+  it('tax-free cash stays within the cash-frozen lump sum allowance in every case', () => {
+    for (const dd of ['basicBand', 'paFill'] as const) for (const G of [0, 0.02, 0.04]) {
+      const l = runLedger(a, y21, { G, drawdown: dd });
+      const tfc = l.rows.reduce((s: number, r: { tfc: number }) => s + r.tfc, 0);
+      const lastOpen = l.rows.filter((r: { year: number }) => r.year >= a.dates.abbyPensionAccessYear);
+      expect(tfc).toBeLessThan((2 * a.drawdown.tfcCapEach) / 1000); // nominal cap; its real value is lower still
+      for (const r of lastOpen) { expect(r.lsaC).toBeGreaterThanOrEqual(-1e-6); expect(r.lsaA).toBeGreaterThanOrEqual(-1e-6); }
+    }
   });
 
   it('step-down spend sits between the flat plan-line and the flat retirement-target cases', () => {

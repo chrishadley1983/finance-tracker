@@ -234,3 +234,40 @@ maturity order until it runs out, the straddling gilt is split pro rata, the res
 plus 2039–40. Emailed to Chris with the two order-sheet CSVs; the accepted run (2026-09-21-phase7) predates
 the document and is left immutable — the next run carries it. Also fixed: the email helper read stdin through
 the console codec, which broke on characters outside cp1252 (the tick boxes).
+
+## 23 Sep 2026 — critical review of Plan E; engine in today's money; drawing to the basic-rate band (decisions, Chris)
+
+A from-scratch review (independent model, Monte Carlo, US history with haircuts, variant and retirement-date
+comparisons) found Plan E the right design for the stated goal: on every downside test E sustains £3–4k/yr more
+than the June £498k ladder and £6–15k/yr more than all-equity; the SIPP rungs are worth £3–7k/yr; the £1.18M
+"max floor" adds only £1–2k/yr for ~£0.5M less median upside. Each year retirement moves shifts downside-safe spend
+by ~£2k/yr for life. It also found three errors, all flattering, and an estate problem. Chris decided:
+
+- **Fix the three errors (done, engine `2026-09-23.real-terms`).** (1) Abby's AVC schedule was added in cash to a
+  real ledger — now deflated by the new `returns.cpi` (2%). (2) Tax-free cash treated the £268,275 allowance as real
+  and uncapped — now frozen in cash and limited to 25% of what is crystallised. (3) The personal allowance and
+  higher-rate threshold were held real — now frozen in cash to 2030/31 (`tax.thresholdsFrozenThroughTaxYear`), CPI
+  after. The cockpit's `drawdownSim` takes (2) and (3) too. Effect at 2% real, £60k, old drawdown: 2035 £2.28M → £2.26M,
+  2075 £2.21M → £2.11M, lifetime tax £0.5k → £61k; at 0% the 2075 figure falls £0.42M → £0.31M. Survival unchanged.
+  Known limitation `tfc-nominal-cap` closed; `thresholds-held-real` narrowed to the state pension.
+- **Planning case draws each pension to the top of the basic-rate band** from the year it opens
+  (`drawdown.strategy` = basicBand), instead of personal allowance + tax-free cash first (kept as scenario
+  `paFillDrawdown`). Pensions enter the estate from April 2027; at 2% real / £60k this leaves about £1.27M to the
+  children after inheritance tax and their income tax on inherited pensions, against about £0.95M the old way
+  (about +£250k at £70k). It pays more income tax earlier (lifetime ~£280k vs ~£60k) and ends with a smaller estate
+  (2075 £1.72M vs £2.11M) that is taxed far less. At 0% real the 2075 figure is ~£0.29M either way.
+- **Gifts are not modelled.** The engine reports giftable surplus income each year (normal-expenditure exemption;
+  about £10k/yr on average at £60k/2%, £5k at £70k); whether to give it is decided at the time, because every gift
+  comes out of the buffer the plan relies on. New keys `iht.*` (nil-rate band £325k each, frozen to 2030/31 — CHECK;
+  pensions in estate from 2027; beneficiary rate 40% GUESS). The house and residence nil-rate band stay outside.
+- **Late-life tool (annuity trigger / rungs to 2054): deferred.** Chris: decide from ~2040 with real spend and pot
+  sizes; the ladder makes 2035–45 certain and the house is the backstop. Noted: the residual risk in every stress
+  test is after 2060, and the 2046–50 linkers are ~2.4% real today — a large fall in real yields before 2040 would
+  make the extension dearer.
+- **Pre-retirement spend is the household's to close, not a plan change.** Measured cost if it isn't: HB £20k and
+  £80k to 2035 draw ~£115k of the £120k cash + crypto reserve and lower the 2035 pot by ~£120k; each £5k/yr of
+  retirement spend is worth ~£430k at 2075 (2% real), four times the pre-retirement effect. Chris expects spend to
+  fall by 2037 (less support for the children, off-peak holidays).
+- Independent cross-check kept: `plan/derivations/independent-ledger.mjs` + `tests/unit/plan/independent.test.ts`.
+  The accepted run 2026-09-21-phase7 is immutable and its inputs are now refused by the ledger (no `returns.cpi`);
+  the next `plan:run` diffs against it and needs accepting.
