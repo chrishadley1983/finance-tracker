@@ -271,3 +271,9 @@ by ~£2k/yr for life. It also found three errors, all flattering, and an estate 
 - Independent cross-check kept: `plan/derivations/independent-ledger.mjs` + `tests/unit/plan/independent.test.ts`.
   The accepted run 2026-09-21-phase7 is immutable and its inputs are now refused by the ledger (no `returns.cpi`);
   the next `plan:run` diffs against it and needs accepting.
+
+## 24 Sep 2026 — run 2026-09-23 accepted (decision, Chris)
+
+Baseline is now `plan/runs/2026-09-23` (supersedes 2026-09-21-phase7): the corrected engine with drawdown to the basic-rate
+band. RED at run time for two expected reasons: the 2075 figure falls 22.5% (the drawdown change — a smaller estate that
+leaves more to the children) and the trailing-12-month spend (£83.9k vs the £70k line), which stands as the target to close.

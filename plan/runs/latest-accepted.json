@@ -1,18 +1,20 @@
 {
-  "runId": "2026-09-21-phase7",
-  "acceptedOn": "2026-09-21T09:29:01.146Z",
+  "runId": "2026-09-23",
+  "acceptedOn": "2026-09-24T07:51:33.150Z",
   "by": "Chris",
-  "note": "Phase 7 baseline; plan line £70k, work to curb spending to meet it (Chris 21 Sep)",
+  "note": "23 Sep 2026 review: engine in today's money (AVC deflated, frozen allowances, 25% TFC cap); drawdown to the basic-rate band as planning case; spend RED acknowledged",
   "verdict": "RED",
   "headline": {
-    "atRetirement": 2284.6,
-    "atLastRung": 2203,
-    "atEnd": 2214.5,
+    "atRetirement": 2262.7,
+    "atLastRung": 2117.6,
+    "atEnd": 1715.3,
     "firstCashNegative": null,
-    "preRetirementDraw": 0
+    "preRetirementDraw": 0,
+    "iht": 445.9,
+    "netToHeirs": 1269.4
   },
   "avcPct": 55,
   "potsTotal": 1626749,
-  "ladderPerYear": 101621.44645092079,
+  "ladderPerYear": 102756.5127486596,
   "sustainableSpend": 97228.32009032821
 }
