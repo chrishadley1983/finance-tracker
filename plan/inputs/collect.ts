@@ -32,6 +32,9 @@ export async function collectInputs(opts: CollectOptions = {}) {
   const yieldsFile = fs.readdirSync(yieldsDir).filter((f) => f.endsWith('.json')).sort().pop();
   const giltYields = yieldsFile ? JSON.parse(fs.readFileSync(path.join(yieldsDir, yieldsFile), 'utf8')) : null;
   const payslip = newestPayslip();
+  const isinsDir = path.join(planDir, 'observations', 'gilt-isins');
+  const isinsFile = fs.existsSync(isinsDir) ? fs.readdirSync(isinsDir).filter((f) => f.endsWith('.json')).sort().pop() : undefined;
+  const giltIsins = isinsFile ? JSON.parse(fs.readFileSync(path.join(isinsDir, isinsFile), 'utf8')) : null;
   const giltPrices = await getGiltPrices({ offline: !opts.live || opts.offlinePrices, save: opts.savePrices, log });
   const shillerPath = path.join(planDir, 'observations', 'market', 'shiller-monthly.json');
   const shiller: number[][] | null = fs.existsSync(shillerPath) ? JSON.parse(fs.readFileSync(shillerPath, 'utf8')) : null;
@@ -63,6 +66,7 @@ export async function collectInputs(opts: CollectOptions = {}) {
     assumptions: { ...a, __preparedOn: built.preparedOn, __knownLimitations: built.knownLimitations },
     giltPrices: { asOf: giltPrices.asOf, source: giltPrices.source, gilts: giltPrices.gilts },
     giltYields,
+    giltIsins,
     payslip: payslip?.slip ?? null,
     shiller: shiller ?? undefined,
     today,

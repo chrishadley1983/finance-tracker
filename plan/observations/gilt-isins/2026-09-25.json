@@ -1,0 +1,167 @@
+{
+ "asOf": "2026-09-25",
+ "source": "UK DMO gilts in issue (https://www.dmo.gov.uk/data/XmlDataReport?reportCode=D1A), matched to the price feed by name and redemption date",
+ "note": "Identifiers only: the ISIN to quote to the dealing desk for each EPIC. Refresh when a new linker is issued.",
+ "isins": {
+  "T27": {
+   "isin": "GB00B128DH60",
+   "name": "1¼% Index-linked Treasury Gilt 2027",
+   "maturity": "2027-11-22"
+  },
+  "T28": {
+   "isin": "GB00BZ1NTB69",
+   "name": "0 1/8% Index-linked Treasury Gilt 2028",
+   "maturity": "2028-08-10"
+  },
+  "T29": {
+   "isin": "GB00B3Y1JG82",
+   "name": "0 1/8% Index-linked Treasury Gilt 2029",
+   "maturity": "2029-03-22"
+  },
+  "TR31": {
+   "isin": "GB00BNNGP551",
+   "name": "0 1/8% Index-linked Treasury Gilt 2031",
+   "maturity": "2031-08-10"
+  },
+  "T32": {
+   "isin": "GB00B3D4VD98",
+   "name": "1¼% Index-linked Treasury Gilt 2032",
+   "maturity": "2032-11-22"
+  },
+  "T33": {
+   "isin": "GB00BMF9LJ15",
+   "name": "0¾% Index-linked Treasury Gilt 2033",
+   "maturity": "2033-11-22"
+  },
+  "TRTQ": {
+   "isin": "GB00B46CGH68",
+   "name": "0¾% Index-linked Treasury Gilt 2034",
+   "maturity": "2034-03-22"
+  },
+  "TR35": {
+   "isin": "GB00BT7HZZ68",
+   "name": "1 1/8% Index-linked Treasury Gilt 2035",
+   "maturity": "2035-09-22"
+  },
+  "TG36": {
+   "isin": "GB00BYZW3J87",
+   "name": "0 1/8% Index-linked Treasury Gilt 2036",
+   "maturity": "2036-11-22"
+  },
+  "TR37": {
+   "isin": "GB00B1L6W962",
+   "name": "1 1/8% Index-linked Treasury Gilt 2037",
+   "maturity": "2037-11-22"
+  },
+  "T38": {
+   "isin": "GB00BMY62Z61",
+   "name": "1¾% Index-linked Treasury Gilt 2038",
+   "maturity": "2038-09-22"
+  },
+  "TG39": {
+   "isin": "GB00BLH38265",
+   "name": "0 1/8% Index-linked Treasury Gilt 2039",
+   "maturity": "2039-03-22"
+  },
+  "TR40": {
+   "isin": "GB00B3LZBF68",
+   "name": "0 5/8% Index-linked Treasury Gilt 2040",
+   "maturity": "2040-03-22"
+  },
+  "T41": {
+   "isin": "GB00BGDYHF49",
+   "name": "0 1/8% Index-linked Treasury Gilt 2041",
+   "maturity": "2041-08-10"
+  },
+  "T42A": {
+   "isin": "GB00B3MYD345",
+   "name": "0 5/8% Index-linked Treasury Gilt 2042",
+   "maturity": "2042-11-22"
+  },
+  "T44": {
+   "isin": "GB00B7RN0G65",
+   "name": "0 1/8% Index-linked Treasury Gilt 2044",
+   "maturity": "2044-03-22"
+  },
+  "TR45": {
+   "isin": "GB00BMF9LH90",
+   "name": "0 5/8% Index-linked Treasury Gilt 2045",
+   "maturity": "2045-03-22"
+  },
+  "TR46": {
+   "isin": "GB00BYMWG366",
+   "name": "0 1/8% Index-linked Treasury Gilt 2046",
+   "maturity": "2046-03-22"
+  },
+  "T47": {
+   "isin": "GB00B24FFM16",
+   "name": "0¾% Index-linked Treasury Gilt 2047",
+   "maturity": "2047-11-22"
+  },
+  "TG48": {
+   "isin": "GB00BZ13DV40",
+   "name": "0 1/8% Index-linked Treasury Gilt 2048",
+   "maturity": "2048-08-10"
+  },
+  "TR49": {
+   "isin": "GB00BT7J0134",
+   "name": "1 7/8% Index-linked Treasury Gilt 2049",
+   "maturity": "2049-09-22"
+  },
+  "TR50": {
+   "isin": "GB00B421JZ66",
+   "name": "0½% Index-linked Treasury Gilt 2050",
+   "maturity": "2050-03-22"
+  },
+  "TG51": {
+   "isin": "GB00BNNGP882",
+   "name": "0 1/8% Index-linked Treasury Gilt 2051",
+   "maturity": "2051-03-22"
+  },
+  "TG52": {
+   "isin": "GB00B73ZYW09",
+   "name": "0¼% Index-linked Treasury Gilt 2052",
+   "maturity": "2052-03-22"
+  },
+  "TG54": {
+   "isin": "GB00BPSNBG80",
+   "name": "1¼% Index-linked Treasury Gilt 2054",
+   "maturity": "2054-11-22"
+  },
+  "TR8F": {
+   "isin": "GB00B0CNHZ09",
+   "name": "1¼% Index-linked Treasury Gilt 2055",
+   "maturity": "2055-11-22"
+  },
+  "TR56": {
+   "isin": "GB00BYVP4K94",
+   "name": "0 1/8% Index-Linked Treasury Gilt 2056",
+   "maturity": "2056-11-22"
+  },
+  "T58": {
+   "isin": "GB00BP9DLZ64",
+   "name": "0 1/8% Index-linked Treasury Gilt 2058",
+   "maturity": "2058-03-22"
+  },
+  "T62": {
+   "isin": "GB00B4PTCY75",
+   "name": "0 3/8% Index-linked Treasury Gilt 2062",
+   "maturity": "2062-03-22"
+  },
+  "TR65": {
+   "isin": "GB00BD9MZZ71",
+   "name": "0 1/8% Index-linked Treasury Gilt 2065",
+   "maturity": "2065-11-22"
+  },
+  "T68": {
+   "isin": "GB00BDX8CX86",
+   "name": "0 1/8% Index-linked Treasury Gilt 2068",
+   "maturity": "2068-03-22"
+  },
+  "TG73": {
+   "isin": "GB00BM8Z2W66",
+   "name": "0 1/8% Index-linked Treasury Gilt 2073",
+   "maturity": "2073-03-22"
+  }
+ }
+}

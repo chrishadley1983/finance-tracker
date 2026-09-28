@@ -277,3 +277,35 @@ by ~£2k/yr for life. It also found three errors, all flattering, and an estate 
 Baseline is now `plan/runs/2026-09-23` (supersedes 2026-09-21-phase7): the corrected engine with drawdown to the basic-rate
 band. RED at run time for two expected reasons: the 2075 figure falls 22.5% (the drawdown change — a smaller estate that
 leaves more to the children) and the trailing-12-month spend (£83.9k vs the £70k line), which stands as the target to close.
+
+## 28 Sep 2026 — final adversarial challenge before buying; Plan E confirmed as is (decision, Chris)
+
+Before the first purchase Chris asked for one more full challenge of Plan E. Method: the plan's own tax-aware ledger
+with the ladder size varied (E £909k; June A £498k; E without SIPP rungs; bridge-only £350k; all equity; max floor
+= all ISA + SIPP), at the live 28 Sep yields (~5bp above 23 Sep), over every historical start with 1.5% and 2.5% haircuts
+on US real returns, plus high-valuation subsets: CAPE ≥ 20/22/25 full paths (1898–1969), and CAPE > 20 starts
+1993–2025 with the unobserved future filled at 1/CAPE (2.56% real) or by resampled history. Scratch scripts
+`tmp/adv-*.mjs` (not maintained).
+
+- E is never worse on the downside in any test: it beats all equity everywhere and beats or ties A. In the worst 5%
+  (2.5% haircut, all starts) E sustains £84k/yr vs A £81k and all equity £71k, and the pot never falls below
+  ~£850k after 2035 (all equity ~£330k). From high-valuation starts with real history through the ladder window
+  (1898–1969; 1993–2007) E also leaves the children the most at the median. Max floor adds nothing over E.
+- The price is paid only in good worlds: A keeps £11–19k/yr more safe spend at the top quartile/decile and more estate
+  where the children would already get £3–15M+. A's edge is concentrated in 2010–2020 starts that rode CAPE ~20 → 39,
+  which a start at 39 cannot repeat on that scale.
+- Deterministic check (E, £70k for life): 2% real → 2075 pot £1.09M, net to heirs £0.89M; 2.56% → £1.72M / £1.27M.
+- External checks: gilts are explicitly NOT "cash-like" under the April 2027 ISA rules (only money market funds are);
+  interest on uninvested cash in a stocks & shares ISA is taxed at 22% from April 2027, so coupons and redemptions
+  should not sit as cash. Autumn Budget 28 Oct 2026: nothing reported changes the case. Linkers pay RPI to 2030
+  (~1pp above CPI): an unmodelled ~£20k bonus, i.e. the plan is conservative. TR35 matures 22 Sep 2035, so Jun–Sep
+  2035 comes from the cash floor.
+- Confirmed by Chris: Abby has agreed Plan E and the ~£243k Vanguard → ii ISA transfer (cash due at ii by Fri 2 Oct);
+  no debt of any kind (credit card cleared monthly); Chris's ii ISA and SIPP are in cash, ready to deal on 29 Sep.
+- **Decision: execute Plan E as is** — Chris's ISA (2035–38 slice) and SIPP (2041–45) on 29 Sep, Abby's ISA
+  (rest of 2038, 2039–40) when her transfer lands. Sized at the day's prices via `plan:order-sheet --save` + `plan:render`.
+- Open, not blocking: ask L&G whether the Accenture scheme carries a protected pension age of 55 (flexibility only).
+- Later on 28 Sep: `execution.html` now shows each gilt's ISIN (new observation `plan/observations/gilt-isins/`, from the
+  DMO gilts-in-issue register, all 32 linkers matched to the price feed by name and redemption date) and a dealing note
+  (quote the ISIN; compare total consideration incl. accrued with the cost column, not prices). Its lede now says to
+  run `plan:order-sheet -- --save` before `plan:render` (render reads the newest saved prices). Tests 125 green.
