@@ -88,7 +88,7 @@ export function buildBrief(a, o) {
     return { spend, atLastRung: c ? c.atLastRung * 1000 : null, atEnd: c ? Math.max(0, c.atEnd) * 1000 : null, runsOut: c?.firstCashNegative ?? null, runsOutTurns: c?.firstCashNegative ? turns(c.firstCashNegative) : null, barShare: 0 };
   }) });
   const X = o.expensive;
-  const history = X ? { id: 'history', capeMin: X.capeMin, cut: X.cut, starts: X.starts, firstYear: X.firstYear, lastYear: X.lastYear, years: X.yearsPerPath, cells: spends.map((spend) => {
+  const history = X ? { id: 'history', capeMin: X.capeMin, cut: X.cut, starts: X.starts, fullStarts: X.fullStarts, recentStarts: X.recentStarts, lastFullYear: X.lastFullYear, firstYear: X.firstYear, lastYear: X.lastYear, years: X.yearsPerPath, cells: spends.map((spend) => {
     const c = X.bySpend.find((/** @type {any} */ x) => x.spend === spend);
     return { spend, atLastRung: c.atLastRung * 1000, atEnd: Math.max(0, c.atEnd) * 1000, atLastRungP10: c.atLastRungP10 * 1000, atEndP10: Math.max(0, c.atEndP10) * 1000, failRate: c.failRate, runsOut: null, runsOutTurns: null, barShare: 0 };
   }) } : null;

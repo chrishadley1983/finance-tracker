@@ -353,3 +353,10 @@ New FACT keys `dates.chrisBirthYear` / `dates.abbyBirthYear` give the ages shown
   (159 starts, 1898–1969), equity cut by 2.5% a year (new DECISION keys `returns.expensiveCapeFrom`, `returns.historyHaircut`;
   `scenarios.mjs#expensiveStartsReplay`), median with the worst tenth. At £60k: 2045 £1.54M (worst tenth £1.09M),
   2075 £3.70M (£1.99M); at £70k: £1.41M (£1.01M), £2.74M (£1.22M); none ran out. Headers centred.
+- Later still on 29 Sep (Chris): the expensive-starts row now includes the recent expensive starts too. Starts are
+  quarterly; a start whose 49 years run past the end of the data keeps its actual returns to date and then continues,
+  in turn, with the returns that followed each full-length expensive start (the same pattern, same 2.5% cut); each
+  starting point carries equal weight. 176 starts 1898–2025 (53 full, 123 continued). At £60k: 2045 £2.23M (worst tenth
+  £1.30M), 2075 £3.52M (£2.07M); at £70k: £2.08M (£1.21M), £2.62M (£1.35M); none ran out. With the modern era in, the
+  middle case no longer sags by 2045 — the poor-first-decade risk shows in the worst tenth, and the page now says so.
+  Cost: `runPlan` takes ~30 s longer when the Shiller series is present (≈13k ledger runs).
