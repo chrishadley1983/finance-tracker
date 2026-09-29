@@ -1003,6 +1003,26 @@
         "annual"
       ]
     },
+    "returns.historyHaircut": {
+      "value": 0.025,
+      "unit": "per year",
+      "status": "DECISION",
+      "source": "plan/decisions.md — 29 Sep 2026: US equity history is cut by 2.5% a year when replayed for the one-pager (global not US, and a CAPE near 39 today); the 28 Sep challenge used 1.5% and 2.5%",
+      "asOf": "2026-09-29",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": []
+    },
+    "returns.expensiveCapeFrom": {
+      "value": 20,
+      "unit": "CAPE",
+      "status": "DECISION",
+      "source": "plan/decisions.md — 29 Sep 2026: \"expensive\" starting points are those with CAPE of 20 or more (about the top tenth of full-length starts since 1871); today is about 39",
+      "asOf": "2026-09-29",
+      "reviewBy": "2027-09-01",
+      "cadence": "annual",
+      "triggers": []
+    },
     "ledger.cashFloor": {
       "value": 30000,
       "unit": "GBP real",

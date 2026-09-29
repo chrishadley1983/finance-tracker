@@ -347,3 +347,9 @@ other document: `plan/engine/brief.mjs` (pure; engine `2026-09-29.brief`) arrang
 into `outputs.brief`, and `renderBrief` formats it as `plan-e-one-pager.html` in every run and render folder. CSS widths
 of the bars are recorded through a new attribute emitter (`em.a`) so they are held to the outputs like every figure.
 New FACT keys `dates.chrisBirthYear` / `dates.abbyBirthYear` give the ages shown. Tests 125 green.
+- Later on 29 Sep (Chris's review): the one-pager's lede wrongly said the gilts cover "the years between stopping work and
+  the state pension" (state pensions start 2051/2054); it now says the first decade after we stop work. The outcome table
+  drops the flat 0% row for **real history from expensive starts**: every full-length Shiller start with CAPE ≥ 20
+  (159 starts, 1898–1969), equity cut by 2.5% a year (new DECISION keys `returns.expensiveCapeFrom`, `returns.historyHaircut`;
+  `scenarios.mjs#expensiveStartsReplay`), median with the worst tenth. At £60k: 2045 £1.54M (worst tenth £1.09M),
+  2075 £3.70M (£1.99M); at £70k: £1.41M (£1.01M), £2.74M (£1.22M); none ran out. Headers centred.

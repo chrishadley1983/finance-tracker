@@ -80,3 +80,25 @@ export function runScenarios(a, yields, data = {}) {
   }
   return { asOfYields: yields.asOf, stepDownYear, scenarios, grid, returns, spends, replay };
 }
+
+/**
+ * History from expensive starts (29 Sep 2026, for the one-pager): every full-length start in the Shiller record
+ * whose CAPE was at least a.returns.expensiveCapeFrom, equity returns cut by a.returns.historyHaircut a year,
+ * gilts at their locked yields. Per spend: the median and worst-tenth pot at the last rung and at the horizon.
+ * @param {any} a @param {{ asOf: string, rungs: any[] }} yields @param {number[][]} shiller @param {number[]} spends
+ */
+export function expensiveStartsReplay(a, yields, shiller, spends) {
+  const years = a.dates.simulationEndYear - 2026, need = years * 12;
+  const capeMin = a.returns.expensiveCapeFrom, cut = a.returns.historyHaircut;
+  /** @type {number[]} */
+  const starts = [];
+  for (let m = 0; m + need <= shiller.length; m++) if (shiller[m][2] / 10 >= capeMin) starts.push(m);
+  const q = (/** @type {number[]} */ xs, /** @type {number} */ f) => { const s = [...xs].sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(f * s.length))]; };
+  const bySpend = spends.map((spend) => {
+    const runs = starts.map((m) => runLedger(a, yields, { spend, gPath: Array.from({ length: years }, (_, i) => annualReturnFrom(shiller, m + i * 12) - cut) }).headline);
+    const last = runs.map((h) => h.atLastRung ?? 0), end = runs.map((h) => h.atEnd ?? 0);
+    return { spend, atLastRung: q(last, 0.5), atEnd: q(end, 0.5), atLastRungP10: q(last, 0.1), atEndP10: q(end, 0.1), failRate: runs.filter((h) => h.firstCashNegative !== null).length / (runs.length || 1) };
+  });
+  const firstYear = starts.length ? 1871 + Math.floor(starts[0] / 12) : null, lastYear = starts.length ? 1871 + Math.floor(starts[starts.length - 1] / 12) : null;
+  return { capeMin, cut, starts: starts.length, firstYear, lastYear, yearsPerPath: years, bySpend };
+}

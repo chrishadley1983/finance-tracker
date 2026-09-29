@@ -9,7 +9,7 @@
 
 /**
  * @param {any} a  assumptions (values)
- * @param {{ ladder: any, ledger: any, scenarios: any, pivot: any }} o  the run's outputs so far
+ * @param {{ ladder: any, ledger: any, scenarios: any, pivot: any, expensive?: any }} o  the run's outputs so far
  */
 export function buildBrief(a, o) {
   const P = a.pots, L = a.ladder;
@@ -79,18 +79,25 @@ export function buildBrief(a, o) {
   });
   const strip = { spend: a.spend.retirementTarget, G: o.ledger?.G ?? null, years };
 
-  // 3c. How it could go: the scenario grid at the retirement target and the plan line, 0 / planning / better.
-  const Gs = [0, a.returns.realEquity.planning, a.returns.realEquity.better];
+  // 3c. How it could go, at the retirement target and the plan line: the planning and better flat cases from the
+  // scenario grid, and history from expensive starts (median, with the worst tenth) from o.expensive.
   const spends = [a.spend.retirementTarget, a.spend.planLine];
   const grid = o.scenarios?.grid ?? [];
-  const cells = spends.map((spend) => {
-    const g = grid.find((/** @type {any} */ x) => x.spend === spend);
-    return { spend, byReturn: Gs.map((G) => { const c = g?.byReturn.find((/** @type {any} */ x) => Math.abs(x.G - G) < 1e-9); return c ? { G, atRetirement: c.atRetirement * 1000, atLastRung: c.atLastRung * 1000, atEnd: Math.max(0, c.atEnd) * 1000, runsOut: c.firstCashNegative, runsOutTurns: c.firstCashNegative ? turns(c.firstCashNegative) : null, heirs: c.netToHeirs * 1000 } : null; }) };
-  });
-  const maxEnd = Math.max(1, ...cells.flatMap((c) => c.byReturn.map((x) => x?.atEnd ?? 0)));
-  for (const c of cells) for (const x of c.byReturn) if (x) /** @type {any} */ (x).barShare = x.atEnd / maxEnd;
+  const flat = (/** @type {string} */ id, /** @type {number} */ G) => ({ id, G, cells: spends.map((spend) => {
+    const c = grid.find((/** @type {any} */ x) => x.spend === spend)?.byReturn.find((/** @type {any} */ x) => Math.abs(x.G - G) < 1e-9);
+    return { spend, atLastRung: c ? c.atLastRung * 1000 : null, atEnd: c ? Math.max(0, c.atEnd) * 1000 : null, runsOut: c?.firstCashNegative ?? null, runsOutTurns: c?.firstCashNegative ? turns(c.firstCashNegative) : null, barShare: 0 };
+  }) });
+  const X = o.expensive;
+  const history = X ? { id: 'history', capeMin: X.capeMin, cut: X.cut, starts: X.starts, firstYear: X.firstYear, lastYear: X.lastYear, years: X.yearsPerPath, cells: spends.map((spend) => {
+    const c = X.bySpend.find((/** @type {any} */ x) => x.spend === spend);
+    return { spend, atLastRung: c.atLastRung * 1000, atEnd: Math.max(0, c.atEnd) * 1000, atLastRungP10: c.atLastRungP10 * 1000, atEndP10: Math.max(0, c.atEndP10) * 1000, failRate: c.failRate, runsOut: null, runsOutTurns: null, barShare: 0 };
+  }) } : null;
+  /** @type {any[]} */
+  const outRows = [flat('planning', a.returns.realEquity.planning), ...(history ? [history] : []), flat('better', a.returns.realEquity.better)];
+  const maxEnd = Math.max(1, ...outRows.flatMap((r) => r.cells.map((/** @type {any} */ c) => c.atEnd ?? 0)));
+  for (const r of outRows) for (const c of r.cells) c.barShare = (c.atEnd ?? 0) / maxEnd;
   const replay = o.scenarios?.replay;
-  const outcomes = { Gs, spends, cells, endYear: end, endTurns: turns(end), history: replay ? { starts: replay.all.starts, failRate: replay.all.failRate, from: replay.firstStartYear, years: replay.yearsPerPath } : null };
+  const outcomes = { spends, rows: outRows, endYear: end, endTurns: turns(end), allHistory: replay ? { starts: replay.all.starts, failRate: replay.all.failRate, from: replay.firstStartYear, years: replay.yearsPerPath } : null };
 
   const iht = { pensionsInEstateFrom: a.iht.pensionsInEstateFromTaxYear };
   return { retire: { year: retireYear, turns: turns(retireYear) }, iht, where, commitments, floor, phases, strip, outcomes, pensionsOpen: { chris: chrisOpen, abby: abbyOpen, turns: { chris: turns(chrisOpen).chris, abby: turns(abbyOpen).abby } }, statePension: { chris: spChris, abby: spAbby, each: a.statePension.annualEach, joint: 2 * a.statePension.annualEach } };

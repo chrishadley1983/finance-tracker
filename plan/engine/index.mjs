@@ -17,7 +17,7 @@ import { pivotProgramme, currentRetune, avcRecipeFromYtd, takeHomeNominal, pivot
 import { buildLadder, couponSchedule, splitByHolder } from './ladder.mjs';
 import { runLedger } from './ledger.mjs';
 import { defaultOutlook, potsAtExit, sustainableSpend, drawdownSim } from './outlook.mjs';
-import { runScenarios } from './scenarios.mjs';
+import { runScenarios, expensiveStartsReplay } from './scenarios.mjs';
 import { buildBrief } from './brief.mjs';
 
 export const ENGINE_VERSION = '2026-09-29.brief';
@@ -53,7 +53,7 @@ export function runPlan(inputs) {
     pivot,
     ladder: ladderOut,
     ledger, ledgerFlat, scenarios, outlook,
-    brief: buildBrief(a, { ladder: ladderOut, ledger, scenarios, pivot }),
+    brief: buildBrief(a, { ladder: ladderOut, ledger, scenarios, pivot, expensive: gy && inputs.shiller ? expensiveStartsReplay(a, gy, inputs.shiller, [a.spend.retirementTarget, a.spend.planLine]) : null }),
     knownLimitations: inputs.assumptions.__knownLimitations ?? [],
   };
 }
