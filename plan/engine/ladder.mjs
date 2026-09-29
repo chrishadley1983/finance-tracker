@@ -75,13 +75,13 @@ export function buildLadder(a, prices, opts = {}) {
   /** @type {RungAllocation[]} */
   const allocations = [];
   for (let y = firstYear; y <= lastYear; y++) allocations.push(...allocate(prices, y, amount));
-  /** @type {Map<string, { epic: string, giltName: string, maturity: string, matYear: number, coupon: string, dirty: number, realYield: number, face: number, realAmount: number, estCost: number, coversYears: number[], notes: string[] }>} */
+  /** @type {Map<string, { epic: string, giltName: string, maturity: string, matYear: number, coupon: string, clean: number, dirty: number, realYield: number, face: number, realAmount: number, estCost: number, coversYears: number[], notes: string[] }>} */
   const byGiltMap = new Map();
   for (const x of allocations) {
     let e = byGiltMap.get(x.epic);
     if (!e) {
       const g = /** @type {GiltPrice} */ (prices.find((p) => p.epic === x.epic));
-      e = { epic: x.epic, giltName: x.giltName, maturity: x.maturity, matYear: g.matYear, coupon: g.coupon, dirty: x.dirty, realYield: x.realYield, face: 0, realAmount: 0, estCost: 0, coversYears: [], notes: [] };
+      e = { epic: x.epic, giltName: x.giltName, maturity: x.maturity, matYear: g.matYear, coupon: g.coupon, clean: g.clean, dirty: x.dirty, realYield: x.realYield, face: 0, realAmount: 0, estCost: 0, coversYears: [], notes: [] };
       byGiltMap.set(x.epic, e);
     }
     e.face += x.face; e.realAmount += x.realAmount; e.estCost += x.estCost; e.coversYears.push(x.targetYear);
@@ -144,11 +144,11 @@ export function parseGiltTable(html) {
  * @param {ReturnType<typeof buildLadder>} plan @param {number} firstBudget @param {[string, string]} holders
  */
 export function splitByHolder(plan, firstBudget, holders) {
-  /** @type {Array<{ epic: string, giltName: string, maturity: string, matYear: number, dirty: number, realYield: number, coversYears: number[], notes: string[], holder: string, face: number, estCost: number, realAmount: number, split: boolean }>} */
+  /** @type {Array<{ epic: string, giltName: string, maturity: string, matYear: number, clean: number, dirty: number, realYield: number, coversYears: number[], notes: string[], holder: string, face: number, estCost: number, realAmount: number, split: boolean }>} */
   const rows = [];
   let left = firstBudget;
   for (const g of [...plan.byGilt].sort((x, y) => x.matYear - y.matYear)) {
-    const base = { epic: g.epic, giltName: g.giltName, maturity: g.maturity, matYear: g.matYear, dirty: g.dirty, realYield: g.realYield, coversYears: g.coversYears, notes: g.notes };
+    const base = { epic: g.epic, giltName: g.giltName, maturity: g.maturity, matYear: g.matYear, clean: g.clean, dirty: g.dirty, realYield: g.realYield, coversYears: g.coversYears, notes: g.notes };
     if (left >= g.estCost - 0.005) { rows.push({ ...base, holder: holders[0], face: g.face, estCost: g.estCost, realAmount: g.realAmount, split: false }); left -= g.estCost; }
     else if (left > 0.5) {
       const f = left / g.estCost;

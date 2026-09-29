@@ -439,15 +439,22 @@
       ]
     },
     "pots.chrisIiIsa": {
-      "value": 276716,
+      "value": 279029,
       "unit": "GBP",
       "status": "FACT",
-      "source": "finance.wealth_snapshots 2026-09-01, CH ISA",
-      "asOf": "2026-09-01",
+      "source": "ii ISA cash balance, reported by Chris 28 Sep 2026 (sold to cash for the ladder)",
+      "asOf": "2026-09-28",
       "reviewBy": "2026-10-15",
       "cadence": "monthly",
       "triggers": [
         "snapshot"
+      ],
+      "history": [
+        {
+          "value": 276716,
+          "asOf": "2026-09-01",
+          "supersededOn": "2026-09-28"
+        }
       ]
     },
     "pots.abbyVanguardIsa": {
@@ -463,15 +470,22 @@
       ]
     },
     "pots.chrisIiSipp": {
-      "value": 439574,
+      "value": 442488,
       "unit": "GBP",
       "status": "FACT",
-      "source": "finance.wealth_snapshots 2026-09-01, Chris II SIPP Pension",
-      "asOf": "2026-09-01",
+      "source": "ii SIPP cash balance, reported by Chris 28 Sep 2026 (sold to cash for the ladder)",
+      "asOf": "2026-09-28",
       "reviewBy": "2026-10-15",
       "cadence": "monthly",
       "triggers": [
         "snapshot"
+      ],
+      "history": [
+        {
+          "value": 439574,
+          "asOf": "2026-09-01",
+          "supersededOn": "2026-09-28"
+        }
       ]
     },
     "pots.chrisAccenturePension": {

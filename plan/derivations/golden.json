@@ -16,6 +16,6 @@
     { "id": "annuity-40y-2pct", "check": "annuity(40, 0.02)", "expected": 27.3555, "tol": 0.0005, "unit": "years", "derivedBy": "(1 − 1.02^−40) / 0.02", "on": "2026-09-20", "file": "annuity.md" },
     { "id": "nmw-annual-floor-40h", "check": "assumptions.nmw.annualFloor", "expected": 26508, "tol": 5, "unit": "GBP/yr", "derivedBy": "12.71 × 40 × 52.14", "on": "2026-09-20", "file": "nmw.md" },
     { "id": "avc-recipe-aug-2026", "check": "avcRecipeFromYtd(payslip 2026-08).avcPct", "expected": 55, "tol": 0, "unit": "percent of basic", "derivedBy": "longhand from the August YTD", "on": "2026-09-20", "file": "avc-aug-2026.md" },
-    { "id": "ledger-2027-isa-ladder", "check": "runLedger(yields 2026-09-20).rows[2027].isaLadC + isaLadA", "expected": 525.1, "tol": 0.3, "unit": "GBP k real", "derivedBy": "519.516 × 1.0201 − ISA coupons 4.6", "on": "2026-09-21", "file": "ledger-2027-row.md" }
+    { "id": "ledger-2027-isa-ladder", "check": "runLedger(yields 2026-09-20).rows[2027].isaLadC + isaLadA", "expected": 527.5, "tol": 0.3, "unit": "GBP k real", "derivedBy": "521.829 × 1.0201 − ISA coupons 4.83 (re-derived after the ISA pot rebase)", "on": "2026-09-29", "file": "ledger-2027-row.md" }
   ]
 }

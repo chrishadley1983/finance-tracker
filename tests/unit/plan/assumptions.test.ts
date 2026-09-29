@@ -31,7 +31,7 @@ describe('plan/assumptions.json — the single home for planning numbers (phase 
     expect(built.flat['ladder.sippBudgetReal']).toBe(e['pots.chrisIiSipp'].value - e['ladder.sippEquityRetained'].value);
     expect(built.flat['ladder.budgetReal']).toBe(Number(built.flat['ladder.isaBudgetReal']) + Number(built.flat['ladder.sippBudgetReal']));
     expect(built.flat['pots.crypto']).toBe(e['pots.otherSavings'].value - e['pots.cashBuffer'].value);
-    expect(built.flat['pots.total']).toBeCloseTo(276_716 + 312_573 + 439_574 + 193_081 + 282_921 + 119_924 + 1_960, 0); // 1 Sep 2026 snapshot sum
+    expect(built.flat['pots.total']).toBeCloseTo(['chrisIiIsa', 'abbyVanguardIsa', 'chrisIiSipp', 'chrisAccenturePension', 'abbyAccentureDc', 'otherSavings', 'accentureShares'].reduce((s, k) => s + (e as unknown as Record<string, { value: number }>)[`pots.${k}`].value, 0), 0); // sum of the per-account pots (plan:set moves them; the literals went stale on 28 Sep 2026)
 
     const tampered = JSON.parse(JSON.stringify(assumptionsFile));
     tampered.entries['ladder.budgetReal'].value = 909_400;
@@ -56,7 +56,7 @@ describe('plan/assumptions.json — the single home for planning numbers (phase 
     expect(SPEND.planLine).toBe(assumptionsFile.entries['spend.planLine'].value);
     expect(SPEND.planLine).toBe(70_000); // the 20 Sep 2026 decision
     expect(PAYSLIP.basicAnnual).toBe(73_837.8);
-    expect(POTS_BASELINE.chrisPension).toBe(439_574 + 193_081);
+    expect(POTS_BASELINE.chrisPension).toBe(assumptionsFile.entries['pots.chrisIiSipp'].value + assumptionsFile.entries['pots.chrisAccenturePension'].value);
   });
 
   it('engine-derived entry: income.abbyTakeHomeYear1 ≈ £43,498 at a £60k ANI landing, whatever the basic', () => {

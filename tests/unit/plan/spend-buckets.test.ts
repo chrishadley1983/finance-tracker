@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SPEND, POTS_BASELINE } from '@/lib/plan/assumptions';
+import assumptionsFile from '../../../plan/assumptions.json';
 import { computeRunRate } from '@/lib/plan/spend';
 import { bucketTotals } from '@/lib/plan/buckets';
 
@@ -57,10 +58,10 @@ describe('pot buckets (criteria F2, F9)', () => {
     expect(b.isBaseline).toBe(true);
     // DERIVED in plan/assumptions.json from the per-account snapshot values
     expect(b.chrisPension).toBe(POTS_BASELINE.chrisPension);
-    expect(b.chrisPension).toBe(439_574 + 193_081);
+    expect(b.chrisPension).toBe(assumptionsFile.entries['pots.chrisIiSipp'].value + assumptionsFile.entries['pots.chrisAccenturePension'].value);
     expect(b.abbyPension).toBe(POTS_BASELINE.abbyPension);
     expect(b.accessible).toBe(POTS_BASELINE.nonPension);
-    expect(b.accessible).toBe(276_716 + 312_573 + 119_924 + 1_960);
+    expect(b.accessible).toBe(['chrisIiIsa', 'abbyVanguardIsa', 'otherSavings', 'accentureShares'].reduce((t, k) => t + (assumptionsFile.entries as unknown as Record<string, { value: number }>)[`pots.${k}`].value, 0));
   });
 
   it('routes unknown pension accounts by name; unknown other types to accessible', () => {

@@ -309,3 +309,32 @@ on US real returns, plus high-valuation subsets: CAPE ≥ 20/22/25 full paths (1
   DMO gilts-in-issue register, all 32 linkers matched to the price feed by name and redemption date) and a dealing note
   (quote the ISIN; compare total consideration incl. accrued with the cost column, not prices). Its lede now says to
   run `plan:order-sheet -- --save` before `plan:render` (render reads the newest saved prices). Tests 125 green.
+
+## 29 Sep 2026 — the ladder is bought: Chris's ISA and SIPP rungs (execution record)
+
+Pots rebased first to the cash Chris held on 28 Sep (`pots.chrisIiIsa` 279,029; `pots.chrisIiSipp` 442,488), priced at the
+28 Sep close (the feed had not moved by 10:24 on the 29th). All trades 29 Sep, settle 1 Oct; recorded in `plan_ladder_rungs`.
+
+| Rung | Gilt | Wrapper | Units (£ nominal) | Cost | Real value (today's £) |
+|---|---|---|---|---|---|
+| 2035 | TR35 | Chris ISA | 93,013.77 | £93,600 | £99.7k |
+| 2036 | TG36 | Chris ISA | 62,205.87 (2 fills) | £82,915 | £100.0k |
+| 2037 | TR37 | Chris ISA | 48,128.01 (2 fills) | £90,398 | £99.7k |
+| 2038 (part) | T38 | Chris ISA | 10,983.23 | £11,077 | £11.6k |
+| 2041 | T41 | Chris SIPP | 72,944.72 | £79,105 | £109.2k |
+| 2042 + ½ 2043 | T42A | Chris SIPP | 82,820.02 | £125,280 | £163.4k |
+| ½ 2043 + 2044 | T44 | Chris SIPP | 94,720.10 | £109,329 | £163.8k |
+| 2045 | TR45 | Chris SIPP | 94,685.42 | £79,072 | £109.0k |
+
+ISA £277,990 spent (~£1.0k cash left → LS100); SIPP £392,786 (~£49.7k left → global equity, the planned slice).
+Every rung within 0.1–0.7% of plan; 2041–45 ≈ £109k/yr real, 2035–37 ≈ £100k/yr real.
+
+- Execution slip, caught and fixed the same morning: the page's "Nominal to order (£)" column was typed into ii's online
+  ticket as an amount in pounds. Harmless for TR35/T38 (≈£1 a unit), but TG36 (£1.33) and TR37 (£1.87) bought 25% and 47%
+  short; both were topped up (TG36 +15,610.72, TR37 +22,498.82 units). TR35's 619-unit shortfall (0.6%) left as noise.
+  The page now leads with a bold "£ to enter" column, shows "Units (check)" and clean/dirty price per unit, and says
+  the ii ticket takes pounds. Engine carries `clean` through the ladder rows for this.
+- Tests: four assertions pinned the 1 Sep pot literals; they now read the pots from `assumptions.json`. Golden
+  `ledger-2027-isa-ladder` re-derived for the £521,829 ISA budget (527.5; working in `ledger-2027-row.md`).
+- Still to do: Abby's ii ISA — rest of T38, TG39, TR40 (~£242.8k) when her Vanguard transfer lands (~2 Oct); size her
+  T38 as the 2038 rung less Chris's £11.6k real. Then `plan:trigger -- rung-bought`, and the next `plan:run` needs accepting.
