@@ -24,13 +24,15 @@ export function getPath(/** @type {any} */ obj, /** @type {string} */ path) {
 
 /** Emission recorder. Each document gets its own so the test can attribute keys. */
 export function emitter(/** @type {string} */ docName, html = true) {
-  /** @type {Array<{ doc: string, key: string, text: string }>} */
+  /** @type {Array<{ doc: string, key: string, text: string, attr?: boolean }>} */
   const list = [];
   const esc = (/** @type {string} */ s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
   return {
     list,
     /** emit a formatted value that came from `key` in outputs */
     v(/** @type {string} */ key, /** @type {string} */ text) { list.push({ doc: docName, key, text }); return html ? `<span data-key="${esc(key)}">${esc(text)}</span>` : text; },
+    /** a value from `key` used inside an attribute (a CSS width): recorded, returned raw */
+    a(/** @type {string} */ key, /** @type {string} */ text) { list.push({ doc: docName, key, text, attr: true }); return text; },
     /** plain text that is not a number (labels) — escaped for HTML */
     t(/** @type {string} */ text) { return html ? esc(text) : text; },
   };
@@ -48,6 +50,16 @@ table{border-collapse:collapse;width:100%;background:#fff;font-size:.9rem;font-v
 .note{font-size:.88rem;color:#3b4a5e}.box{background:#fff;border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:.5rem;padding:.9rem 1rem;margin:1rem 0}.box.warn{border-left-color:var(--amber)}
 .ok{color:var(--green)}.amber{color:var(--amber)}.red{color:#b3261e;font-weight:650}code{font-family:ui-monospace,Consolas,monospace;font-size:.85em;background:#f2f5f9;padding:.05rem .3rem;border-radius:.25rem}
 dl{display:grid;grid-template-columns:max-content 1fr;gap:.3rem 1rem}dt{font-weight:600}
+.stack{display:flex;height:3.2rem;border-radius:.6rem;overflow:hidden;margin:.6rem 0 1rem;font-size:.9rem;color:#fff}.stack .seg.reserve{min-width:9rem;flex-shrink:0}.stack .seg{display:flex;align-items:center;gap:.4rem;padding:0 .8rem;white-space:nowrap;overflow:hidden}
+.seg.ladder,.chip.ladder,.ph.isa,.ph.sipp,i.gilts{background:#14467d}.seg.growth,.chip.growth,.ph.growth,i.pensions{background:#2e9d5b}.seg.reserve,.chip.reserve{background:#c77c1b}i.hb{background:#e0a458}.ph.sp,i.sp{background:#8a97a8}i.savings{background:#9fd3b3}
+.ph.sipp{background:#2c5f99}
+.chip{display:inline-block;width:.7rem;height:.7rem;border-radius:.2rem;margin-right:.45rem;vertical-align:-.05rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:.8rem}.card{background:#fff;border:1px solid var(--line);border-radius:.6rem;padding:.8rem 1rem}.card h3{margin:0 0 .3rem;font-size:1rem;color:var(--navy)}.card p{margin:0;font-size:.92rem;color:#3b4a5e}
+.phases{display:flex;gap:2px;margin-top:.6rem;color:#fff}.ph{display:flex;flex-direction:column;padding:.5rem .6rem;min-width:0;font-size:.85rem;line-height:1.3}.ph:first-child{border-radius:.5rem 0 0 0}.ph:last-child{border-radius:0 .5rem 0 0}.ph b{font-size:.92rem}.ph .sub{opacity:.85;font-size:.78rem}
+.strip{display:flex;gap:1px;height:6rem;background:#fff;border:1px solid var(--line);border-top:0;border-radius:0 0 .5rem .5rem;padding:2px}.strip .col{flex:1;display:flex;flex-direction:column-reverse}.strip i{display:block;width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font-size:.85rem;margin:.5rem 0}.legend i{display:inline-block;width:.8rem;height:.8rem;border-radius:.2rem;margin-right:.35rem;vertical-align:-.1rem}
+table.out td{vertical-align:middle}.hbar{display:inline-block;width:6rem;height:.7rem;background:#eef2f7;border-radius:.35rem;margin-right:.5rem;vertical-align:middle;overflow:hidden}.hbar i{display:block;height:100%;background:#2e9d5b}
+@media print{body{background:#fff;font-size:12px}main{padding:0;max-width:none}h2{margin-top:1.2rem}.tile,.card,.box{break-inside:avoid}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 `;
 
 function page(/** @type {string} */ title, /** @type {string} */ body) {
@@ -305,14 +317,90 @@ ${limitationsBlock(em, o.knownLimitations)}`;
   return { html: page('Ladder execution', body), emissions: em.list };
 }
 
+// ---------------------------------------------------------------------------
+// plan-e-one-pager.html — Plan E on one page, for Abby (29 Sep 2026)
+// ---------------------------------------------------------------------------
+export function renderBrief(/** @type {any} */ o, /** @type {any} */ inputs, /** @type {any} */ meta) {
+  const em = emitter('plan-e-one-pager.html');
+  const B = o.brief;
+  if (!B) return { html: page('Plan E on one page', '<h1>Plan E on one page</h1><p>No brief in this run.</p>'), emissions: em.list };
+  const W = B.where, C = B.commitments, F = B.floor, O = B.outcomes;
+  const Y = (/** @type {string} */ k, /** @type {number} */ y) => em.v(k, yr(y));
+  const range = (/** @type {string} */ k, /** @type {any} */ x) => `${Y(`${k}.from`, x.from)}–${Y(`${k}.to`, x.to)}`;
+  const roleName = /** @type {Record<string, string>} */ ({ ladder: 'Gilts', growth: 'Shares', reserve: 'Reserve' });
+  const roleJob = /** @type {Record<string, string>} */ ({ ladder: 'pays our income', growth: 'grows for later', reserve: 'for surprises' });
+
+  const bar = ['ladder', 'growth', 'reserve'].map((r) => `<div class="seg ${r}" style="width:${em.a(`brief.where.roles.${r}.share`, pct(W.roles[r].share, 1))}"><b>${roleName[r]}</b> ${em.v(`brief.where.roles.${r}.amount`, gbpShort(W.roles[r].amount))}</div>`).join('');
+  const rowsHtml = W.rows.map((/** @type {any} */ r, /** @type {number} */ i) => `<tr><td class="left"><span class="chip ${r.role}"></span>${em.t(r.holder)}</td><td class="left">${em.t(r.account)}</td><td class="left wrap">${em.t(r.holds)}${r.from ? ` · pays ${range(`brief.where.rows.${i}`, r)}` : ''}</td><td class="left note">${roleJob[r.role]}</td><td>${em.v(`brief.where.rows.${i}.amount`, gbp(r.amount))}</td></tr>`).join('');
+
+  const card = (/** @type {string} */ title, /** @type {string} */ body) => `<div class="card"><h3>${title}</h3><p>${body}</p></div>`;
+  const cards = [
+    card('Abby’s pay: the pension top-up', `Abby’s taxable pay is held at ${em.v('brief.commitments.aniHeldAt', gbp(C.aniHeldAt))}, just under the ${em.v('brief.commitments.hicbcFrom', gbp(C.hicbcFrom))} child-benefit line. This year that puts an extra ${em.v('brief.commitments.extraSacrificeThisYear', gbp(C.extraSacrificeThisYear))} into her pension for ${em.v('brief.commitments.takeHomeCutThisYear', gbp(C.takeHomeCutThisYear))} less take-home (the cost to take-home is only about ${em.v('brief.commitments.costPerPound', pct(C.costPerPound, 0))} of what goes in), and keeps the ${em.v('brief.commitments.cbKeptThisYear', gbp(C.cbKeptThisYear))} child benefit. By ${Y('brief.commitments.lastTaxYearEnd', C.lastTaxYearEnd)} about <b>${em.v('brief.commitments.intoAbbyPensionReal', gbpShort(C.intoAbbyPensionReal))}</b> (today’s money, with Accenture’s share) goes into her pension.`),
+    card(`Spend about ${em.v('brief.commitments.spendLine', gbpShort(C.spendLine))} a year`, 'The household line until we stop work. We are running above it at the moment, so bringing it down is the main job for the next few years.'),
+    card(`Hadley Bricks: ${em.v('brief.commitments.hbTakeHome', gbpShort(C.hbTakeHome))} take-home`, `Chris’s income until we stop; after that about ${em.v('brief.floor.hbAfter', gbpShort(F.hbAfter))} a year to ${Y('brief.pensionsOpen.chris', B.pensionsOpen.chris)}.`),
+    card('Leave the gilts alone', `They pay a small interest (about ${em.v('brief.commitments.couponsPerYear', gbp(C.couponsPerYear))} a year, reinvested). The real money arrives as each one matures, one a year from ${Y('brief.floor.isaFrom', F.isaFrom)}. They can be sold early, but that defeats the point.`),
+    card('Keep the reserve', `About ${em.v('brief.commitments.reserve', gbpShort(C.reserve))} in cash and crypto for surprises. The plan never lets cash fall below ${em.v('brief.commitments.cashFloor', gbpShort(C.cashFloor))}.`),
+    card('Abby’s ISA move (this week)', `${em.v('brief.commitments.abbyTransfer', gbp(C.abbyTransfer))} moves from Vanguard to a new ii ISA in Abby’s name and buys the gilts that pay ${range('brief.where.rows.1', W.rows[1])}. The rest of her Vanguard ISA stays invested.`),
+  ].join('');
+
+  const phaseTitle = /** @type {Record<string, [string, string]>} */ ({ isa: ['ISA gilts pay', '+ Hadley Bricks'], sipp: ['SIPP gilts pay', 'pensions open'], growth: ['Pensions + ISAs pay', 'ladder finished'], sp: ['State pensions join', 'pots drawn less'] });
+  const phases = B.phases.map((/** @type {any} */ p, /** @type {number} */ i) => `<div class="ph ${p.id}" style="width:${em.a(`brief.phases.${i}.share`, pct(p.share, 1))}"><b>${phaseTitle[p.id][0]}</b><span>${range(`brief.phases.${i}`, p)}</span><span class="sub">${phaseTitle[p.id][1]}</span><span class="sub">we turn ${em.v(`brief.phases.${i}.turnsFrom.chris`, String(p.turnsFrom.chris))} / ${em.v(`brief.phases.${i}.turnsFrom.abby`, String(p.turnsFrom.abby))}</span></div>`).join('');
+  const parts = ['gilts', 'hb', 'pensions', 'sp', 'savings'];
+  const partName = /** @type {Record<string, string>} */ ({ gilts: 'Gilts maturing', hb: 'Hadley Bricks', pensions: 'Pension drawdown', sp: 'State pensions', savings: 'ISAs and savings' });
+  const strip = B.strip.years.map((/** @type {any} */ y, /** @type {number} */ i) => `<div class="col">${parts.filter((k) => y.parts[k] > 0).map((k) => `<i class="${k}" style="height:${em.a(`brief.strip.years.${i}.parts.${k}`, pct(y.parts[k], 1))}"></i>`).join('')}</div>`).join('');
+  const legend = parts.map((k) => `<span><i class="${k}"></i>${partName[k]}</span>`).join('');
+
+  const rLabel = ['Markets go nowhere, for fifty years', 'The planning case', 'The long-run average'];
+  const outRows = O.Gs.map((/** @type {number} */ G, /** @type {number} */ gi) => `<tr><td class="left"><b>${em.v(`brief.outcomes.Gs.${gi}`, pct(G, 0))}</b> a year above inflation<br><span class="note">${rLabel[gi]}</span></td>${O.cells.map((/** @type {any} */ c, /** @type {number} */ ci) => { const x = c.byReturn[gi]; const k = `brief.outcomes.cells.${ci}.byReturn.${gi}`; return `<td class="sep">${em.v(`${k}.atLastRung`, gbpShort(x.atLastRung))}</td><td class="left">${x.runsOut ? `<span class="red">runs out ${Y(`${k}.runsOut`, x.runsOut)}</span><br><span class="note">Chris ${em.v(`${k}.runsOutTurns.chris`, String(x.runsOutTurns.chris))}, Abby ${em.v(`${k}.runsOutTurns.abby`, String(x.runsOutTurns.abby))}</span>` : `<div class="hbar"><i style="width:${em.a(`${k}.barShare`, pct(x.barShare, 1))}"></i></div>${em.v(`${k}.atEnd`, gbpShort(x.atEnd))}`}</td>`; }).join('')}</tr>`).join('');
+  const H = O.history;
+
+  const body = `<p class="eyebrow">Household plan · Plan E on one page</p>
+<h1>The years after we stop work, made certain. The rest, left to grow.</h1>
+<p class="lede">About half our savings are now in index-linked gilts: government bonds that pay back a fixed amount that rises with inflation. One matures each year from ${Y('brief.floor.isaFrom', F.isaFrom)} to ${Y('brief.floor.sippTo', F.sippTo)}, the years between stopping work and the state pension, so those years do not depend on the stock market. Everything else stays invested for the long run. All figures are in today’s money.</p>
+<div class="tiles">
+<div class="tile"><div class="n">${em.v('brief.where.total', gbpShort(W.total))}</div><div class="l">our savings today (not counting the house)</div></div>
+<div class="tile g"><div class="n">${em.v('brief.floor.isaPerYear', gbpShort(F.isaPerYear))}</div><div class="l">a year from the gilts ${Y('brief.floor.isaFrom', F.isaFrom)}–${Y('brief.floor.isaTo', F.isaTo)}, whatever markets do</div></div>
+<div class="tile g"><div class="n">${em.v('brief.floor.sippPerYear', gbpShort(F.sippPerYear))}</div><div class="l">a year from the gilts ${Y('brief.floor.sippFrom', F.sippFrom)}–${Y('brief.floor.sippTo', F.sippTo)}</div></div>
+<div class="tile e"><div class="n">June ${Y('brief.retire.year', B.retire.year)}</div><div class="l">we both stop: Chris turns ${em.v('brief.retire.turns.chris', String(B.retire.turns.chris))}, Abby ${em.v('brief.retire.turns.abby', String(B.retire.turns.abby))}</div></div>
+</div>
+
+<h2>1 · What sits where</h2>
+<div class="stack">${bar}</div>
+<div class="scroll"><table><thead><tr><th class="left">Whose</th><th class="left">Account</th><th class="left">What’s in it</th><th class="left">Its job</th><th>Today</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
+
+<h2>2 · What we have signed up to until ${Y('brief.retire.year', B.retire.year)}</h2>
+<div class="cards">${cards}</div>
+
+<h2>3 · From ${Y('brief.retire.year', B.retire.year)}: where the money comes from</h2>
+<div class="phases">${phases}</div>
+<div class="strip">${strip}</div>
+<div class="legend">${legend}</div>
+<p class="note">Who pays each year’s spending at the ${em.v('brief.strip.spend', gbpShort(B.strip.spend))} retirement target, in the planning case (shares growing ${em.v('brief.strip.G', pct(B.strip.G, 0))} a year above inflation). Chris’s pension opens in ${Y('brief.pensionsOpen.chris', B.pensionsOpen.chris)}, Abby’s in ${Y('brief.pensionsOpen.abby', B.pensionsOpen.abby)}; state pensions of about ${em.v('brief.statePension.each', gbpShort(B.statePension.each))} each start in November ${Y('brief.statePension.chris', B.statePension.chris)} (Chris) and August ${Y('brief.statePension.abby', B.statePension.abby)} (Abby).</p>
+
+<h3>How it could go</h3>
+<div class="scroll"><table class="out"><thead><tr><th class="left" rowspan="2">If our shares grow…</th>${O.cells.map((/** @type {any} */ c, /** @type {number} */ ci) => `<th colspan="2" class="sep">Spending ${em.v(`brief.outcomes.cells.${ci}.spend`, gbpShort(c.spend))} a year for life</th>`).join('')}</tr><tr>${O.cells.map(() => `<th class="sep">Left at ${Y('brief.floor.sippTo', F.sippTo)}</th><th class="left">Left at ${Y('brief.outcomes.endYear', O.endYear)} (we turn ${em.v('brief.outcomes.endTurns.chris', String(O.endTurns.chris))} / ${em.v('brief.outcomes.endTurns.abby', String(O.endTurns.abby))})</th>`).join('')}</tr></thead><tbody>${outRows}</tbody></table></div>
+<div class="box"><b>Reading it:</b> the gilts pay out whatever happens, so a bad market only bites decades later, and only if we also spend at the higher level for life. ${H ? `Played forward ${em.v('brief.outcomes.history.years', String(H.years))} years from each of ${em.v('brief.outcomes.history.starts', int(H.starts))} starting points in US stock-market history since ${Y('brief.outcomes.history.from', H.from)}, the plan ran out in ${em.v('brief.outcomes.history.failRate', pct(H.failRate, 0))} of them. ` : ''}What we gave up: in a long boom an all-shares plan would leave more. We chose certainty in the years that matter over the best case.</div>
+
+<h2>4 · Worth knowing</h2>
+<div class="cards">
+${card('If one of us dies', 'ISAs can pass to the other with their tax-free wrapper. Pensions go to whoever is named on the nomination forms, which we are refreshing on every pot.')}
+${card('Not counted, on purpose', 'The house, any inheritance, and state pension rises above inflation. All of it is extra safety on top of these numbers.')}
+${card('Tax', `Each pension is drawn up to the top of the basic-rate band once it opens, which keeps the tax low and leaves less for inheritance tax (pensions count towards it from ${Y('brief.iht.pensionsInEstateFrom', B.iht.pensionsInEstateFrom)}).`)}
+${card('It checks itself', 'The plan re-runs every quarter against our real balances and spending, and flags anything drifting.')}
+${card('When we would revisit', `A job change, health, spending stuck above the line, or a big market move either way. Later-life options (an annuity, or more gilts beyond ${Y('brief.floor.sippTo', F.sippTo)}) are for around ${Y('brief.pensionsOpen.chris', B.pensionsOpen.chris)}.`)}
+</div>
+<p class="note">Generated ${em.t(meta.generatedAt ?? '')} from the household plan (engine ${em.t(o.engineVersion)}). Not regulated advice.</p>`;
+  return { html: page('Plan E on one page', body), emissions: em.list };
+}
+
 /** All documents for a run. */
 export function renderAll(/** @type {any} */ outputs, /** @type {any} */ inputs, /** @type {any} */ meta = {}) {
   const m = { generatedAt: inputs.today ?? '', ...meta };
-  const s = renderSummary(outputs, inputs, m), l = renderLedger(outputs, inputs, m), x = renderExecution(outputs, inputs, m), am = renderAssumptionsMd(outputs, inputs, m), av = renderAvcMd(outputs, inputs, m), lc = renderLedgerCsv(outputs), oi = renderOrderSheetCsv(outputs, 'isa'), os = renderOrderSheetCsv(outputs, 'sipp');
-  const emissions = [...s.emissions, ...l.emissions, ...x.emissions, ...am.emissions, ...av.emissions, ...lc.emissions, ...oi.emissions, ...os.emissions];
+  const s = renderSummary(outputs, inputs, m), l = renderLedger(outputs, inputs, m), x = renderExecution(outputs, inputs, m), am = renderAssumptionsMd(outputs, inputs, m), av = renderAvcMd(outputs, inputs, m), lc = renderLedgerCsv(outputs), oi = renderOrderSheetCsv(outputs, 'isa'), os = renderOrderSheetCsv(outputs, 'sipp'), br = renderBrief(outputs, inputs, m);
+  const emissions = [...s.emissions, ...l.emissions, ...x.emissions, ...am.emissions, ...av.emissions, ...lc.emissions, ...oi.emissions, ...os.emissions, ...br.emissions];
   return {
     'summary.html': s.html, 'ledger.html': l.html, 'execution.html': x.html, 'assumptions.md': am.text, 'avc-recipe.md': av.text, 'ledger.csv': lc.text,
-    'order-sheet-isa.csv': oi.text, 'order-sheet-sipp.csv': os.text,
+    'order-sheet-isa.csv': oi.text, 'order-sheet-sipp.csv': os.text, 'plan-e-one-pager.html': br.html,
     'emissions.json': JSON.stringify(emissions),
   };
 }

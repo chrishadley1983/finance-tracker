@@ -338,3 +338,12 @@ Every rung within 0.1–0.7% of plan; 2041–45 ≈ £109k/yr real, 2035–37 �
   `ledger-2027-isa-ladder` re-derived for the £521,829 ISA budget (527.5; working in `ledger-2027-row.md`).
 - Still to do: Abby's ii ISA — rest of T38, TG39, TR40 (~£242.8k) when her Vanguard transfer lands (~2 Oct); size her
   T38 as the 2038 rung less Chris's £11.6k real. Then `plan:trigger -- rung-bought`, and the next `plan:run` needs accepting.
+
+## 29 Sep 2026 — Plan E on one page, for Abby (new document)
+
+Chris asked for a visual one-pager explaining Plan E to Abby: what sits where, what we have committed to until 2035,
+where the money comes from after 2035 with the downside and upside, and anything else useful. It is rendered like every
+other document: `plan/engine/brief.mjs` (pure; engine `2026-09-29.brief`) arranges the assumptions and the run's outputs
+into `outputs.brief`, and `renderBrief` formats it as `plan-e-one-pager.html` in every run and render folder. CSS widths
+of the bars are recorded through a new attribute emitter (`em.a`) so they are held to the outputs like every figure.
+New FACT keys `dates.chrisBirthYear` / `dates.abbyBirthYear` give the ages shown. Tests 125 green.

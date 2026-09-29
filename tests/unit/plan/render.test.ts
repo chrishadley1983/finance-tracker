@@ -21,7 +21,7 @@ const built = buildAssumptions(assumptionsFile as never);
 const inputs = { assumptions: { ...built.values, __preparedOn: built.preparedOn, __knownLimitations: built.knownLimitations }, giltPrices: fallback, giltYields: yields, payslip: payslipAug, today: '2026-09-21', observations: { payslip: { month: '2026-08', taxMonth: 5 }, giltPrices: { live: false } } };
 const outputs = runPlan(inputs);
 const docs = renderAll(outputs, inputs, { generatedAt: '2026-09-21', assumptionsFile, drift: { verdict: 'AMBER', items: [{ level: 'AMBER', item: 'spend.planLine', detail: 'test' }] } });
-const emissions = JSON.parse(docs['emissions.json']) as Array<{ doc: string; key: string; text: string }>;
+const emissions = JSON.parse(docs['emissions.json']) as Array<{ doc: string; key: string; text: string; attr?: boolean }>;
 const scope = { ...outputs, inputs };
 
 // every formatter the renderers use, so a recorded text can be matched to SOME formatting of the source value
@@ -29,7 +29,7 @@ const formatters: Array<(v: number) => string> = [fmt.gbp, fmt.gbpShort, fmt.gbp
 
 describe('renderers (phase 4): documents equal the model', () => {
   it('produces every document with content', () => {
-    for (const name of ['summary.html', 'ledger.html', 'execution.html', 'assumptions.md', 'avc-recipe.md', 'ledger.csv', 'order-sheet-isa.csv', 'order-sheet-sipp.csv']) expect(docs[name as keyof typeof docs].length, name).toBeGreaterThan(200);
+    for (const name of ['summary.html', 'ledger.html', 'execution.html', 'plan-e-one-pager.html', 'assumptions.md', 'avc-recipe.md', 'ledger.csv', 'order-sheet-isa.csv', 'order-sheet-sipp.csv']) expect(docs[name as keyof typeof docs].length, name).toBeGreaterThan(200);
     expect(emissions.length).toBeGreaterThan(500);
   });
 
@@ -45,10 +45,10 @@ describe('renderers (phase 4): documents equal the model', () => {
   });
 
   it('HTML spans read back to the same key/text pairs the renderer recorded', () => {
-    for (const name of ['summary.html', 'ledger.html', 'execution.html'] as const) {
+    for (const name of ['summary.html', 'ledger.html', 'execution.html', 'plan-e-one-pager.html'] as const) {
       const html = docs[name];
       const spans = Array.from(html.matchAll(/<span data-key="([^"]+)">([^<]*)<\/span>/g)).map((m) => ({ key: m[1], text: m[2].replace(/&amp;/g, '&').replace(/&lt;/g, '<') }));
-      const recorded = emissions.filter((e) => e.doc === name);
+      const recorded = emissions.filter((e) => e.doc === name && !e.attr); // attribute values (CSS widths) carry no span
       expect(spans.length).toBe(recorded.length);
       // template pieces are assembled out of document order, so compare as multisets
       const key = (x: { key: string; text: string }) => `${x.key}|${x.text}`;
@@ -57,7 +57,7 @@ describe('renderers (phase 4): documents equal the model', () => {
   });
 
   it('documents are self-contained (no external stylesheet, script, font or image)', () => {
-    for (const name of ['summary.html', 'ledger.html', 'execution.html'] as const) {
+    for (const name of ['summary.html', 'ledger.html', 'execution.html', 'plan-e-one-pager.html'] as const) {
       const html = docs[name];
       expect(html).not.toMatch(/<link\b/i);
       expect(html).not.toMatch(/<script\b/i);

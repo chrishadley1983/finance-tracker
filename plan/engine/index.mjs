@@ -18,8 +18,9 @@ import { buildLadder, couponSchedule, splitByHolder } from './ladder.mjs';
 import { runLedger } from './ledger.mjs';
 import { defaultOutlook, potsAtExit, sustainableSpend, drawdownSim } from './outlook.mjs';
 import { runScenarios } from './scenarios.mjs';
+import { buildBrief } from './brief.mjs';
 
-export const ENGINE_VERSION = '2026-09-23.real-terms';
+export const ENGINE_VERSION = '2026-09-29.brief';
 
 /**
  * @param {{ assumptions: any, giltPrices?: { asOf: string, gilts: any[] }, giltYields?: { asOf: string, rungs: any[] }, payslip?: any, shiller?: number[][], today?: string }} inputs
@@ -40,16 +41,19 @@ export function runPlan(inputs) {
   const scenarios = gy ? runScenarios(a, gy, { shiller: inputs.shiller }) : null;
   const outlookOpts = defaultOutlook(a);
   const outlook = { options: outlookOpts, pots: potsAtExit(a, outlookOpts), sustainableSpend: sustainableSpend(a, outlookOpts), drawdown: drawdownSim(a, outlookOpts) };
+  const pivot = {
+    modelledTo: a.hicbc.lowerThreshold, operatedTo: a.hicbc.operatingTarget, programme, operating, retune,
+    takeHomeYear1AtLine: takeHomeNominal(a, 0, pivotYear(a, 0, a.hicbc.lowerThreshold).extraSacrifice),
+    avcRecipe: inputs.payslip ? avcRecipeFromYtd(a, inputs.payslip) : null,
+  };
+  const ladderOut = ladder ? { ...ladder, coupons: couponSchedule(ladder, 2027), pricesAsOf: inputs.giltPrices?.asOf, isa: ladderIsa ? { ...ladderIsa, coupons: couponSchedule(ladderIsa, 2027), byHolder: splitByHolder(ladderIsa, a.pots.chrisIiIsa, ['chris', 'abby']) } : null, sipp: ladderSipp ? { ...ladderSipp, coupons: couponSchedule(ladderSipp, 2027) } : null } : null;
   return {
     engineVersion: ENGINE_VERSION,
     inputsSummary: { assumptionsPreparedOn: inputs.assumptions.__preparedOn ?? null, giltPricesAsOf: inputs.giltPrices?.asOf ?? null, giltYieldsAsOf: inputs.giltYields?.asOf ?? null, payslipMonth: inputs.payslip ? `${inputs.payslip.taxYear} M${inputs.payslip.taxMonth}` : null, today: inputs.today ?? null },
-    pivot: {
-      modelledTo: a.hicbc.lowerThreshold, operatedTo: a.hicbc.operatingTarget, programme, operating, retune,
-      takeHomeYear1AtLine: takeHomeNominal(a, 0, pivotYear(a, 0, a.hicbc.lowerThreshold).extraSacrifice),
-      avcRecipe: inputs.payslip ? avcRecipeFromYtd(a, inputs.payslip) : null,
-    },
-    ladder: ladder ? { ...ladder, coupons: couponSchedule(ladder, 2027), pricesAsOf: inputs.giltPrices?.asOf, isa: ladderIsa ? { ...ladderIsa, coupons: couponSchedule(ladderIsa, 2027), byHolder: splitByHolder(ladderIsa, a.pots.chrisIiIsa, ['chris', 'abby']) } : null, sipp: ladderSipp ? { ...ladderSipp, coupons: couponSchedule(ladderSipp, 2027) } : null } : null,
+    pivot,
+    ladder: ladderOut,
     ledger, ledgerFlat, scenarios, outlook,
+    brief: buildBrief(a, { ladder: ladderOut, ledger, scenarios, pivot }),
     knownLimitations: inputs.assumptions.__knownLimitations ?? [],
   };
 }

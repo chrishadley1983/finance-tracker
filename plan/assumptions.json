@@ -725,6 +725,26 @@
         "annual"
       ]
     },
+    "dates.chrisBirthYear": {
+      "value": 1983,
+      "unit": "year",
+      "status": "FACT",
+      "source": "Chris born Nov 1983 (same source as dates.chrisPensionAccessYear); used for ages on the one-pager",
+      "asOf": "2026-09-29",
+      "reviewBy": "2030-09-29",
+      "cadence": "none",
+      "triggers": []
+    },
+    "dates.abbyBirthYear": {
+      "value": 1986,
+      "unit": "year",
+      "status": "FACT",
+      "source": "Abby born 5 Aug 1986 (same source as dates.abbyPensionAccessYear); used for ages on the one-pager",
+      "asOf": "2026-09-29",
+      "reviewBy": "2030-09-29",
+      "cadence": "none",
+      "triggers": []
+    },
     "dates.chrisPensionAccessYear": {
       "value": 2040,
       "unit": "year (Nov)",
