@@ -360,3 +360,19 @@ New FACT keys `dates.chrisBirthYear` / `dates.abbyBirthYear` give the ages shown
   £1.30M), 2075 £3.52M (£2.07M); at £70k: £2.08M (£1.21M), £2.62M (£1.35M); none ran out. With the modern era in, the
   middle case no longer sags by 2045 — the poor-first-decade risk shows in the worst tenth, and the page now says so.
   Cost: `runPlan` takes ~30 s longer when the Shiller series is present (≈13k ledger runs).
+
+## 30 Sep 2026 — first payslip with the AVC (September): on track; recipe take-home fixed; employer now 12%
+
+- Payslip (tax month 06): Pension EE 51.5% = 4.5% + **47% extra** (SS Pension 3,168.87); net 2,874.04; tax 453.67
+  (cumulative, relief still 40%); NI 198.24. Re-derived from first principles to the penny (do-nothing net 4,511 −
+  2,892 sacrifice + 1,157 tax + 98 NI). Recorded as `observations/payslips/2026-09.json` (YTD on the do-nothing basis
+  40,150.20 with 2,891.98 extra AVC taken).
+- Year end at 47% held: ANI **£59,079** if the February bonus is sacrificed (£921 under the cliff, CB kept); **£62,771**
+  if it is not (~£304 of CB lost; 56% from October would be needed). Recipe from this payslip: 46%. Decision: stay at 47%
+  (bigger buffer for ~£35/month). The bonus sacrifice must be elected before it is paid — to confirm.
+- "Take-home lower than predicted": the plan's ~£3,600/month is the steady state (AVC across 12 months, ANI held at
+  £59.5k); this year's catch-up is squeezed into Sep–Mar, so ~£2,874–2,910/month until March, ~£3,600 from April 2027.
+- Bug fixed in `avcRecipeFromYtd`: `netMonthlyAfter` subtracted the new AVC from a net that already carried the
+  payslip's AVC (predicted £1,232/month at 46%); it now adds the payslip's own AVC back first (`netDoNothing`).
+- `payslip.employerRate` 0.11 → **0.12** (Pension ER % 12.00 on the payslip; +£0.74k/yr into Abby's pension; 2035 pot
+  ≈ £712k vs £705k). `payslip.asOf` → 2026-09. Outlook test re-derived; runs test reads the recipe % per payslip.

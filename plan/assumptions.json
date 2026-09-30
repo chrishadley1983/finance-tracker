@@ -4,15 +4,22 @@
   "moneyBasis": "Sep 2026 pounds unless a unit says nominal",
   "entries": {
     "payslip.asOf": {
-      "value": "2026-08",
+      "value": "2026-09",
       "unit": "payslip month",
       "status": "FACT",
-      "source": "Abby payslip Aug 2026 (tax month 05)",
-      "asOf": "2026-08-31",
+      "source": "Abby payslip Sep 2026 (tax month 06)",
+      "asOf": "2026-09-30",
       "reviewBy": "2026-10-15",
       "cadence": "monthly",
       "triggers": [
         "payslip"
+      ],
+      "history": [
+        {
+          "value": "2026-08",
+          "asOf": "2026-08-31",
+          "supersededOn": "2026-09-30"
+        }
       ]
     },
     "payslip.basicAnnual": {
@@ -86,16 +93,23 @@
       ]
     },
     "payslip.employerRate": {
-      "value": 0.11,
+      "value": 0.12,
       "unit": "fraction of basic",
       "status": "FACT",
-      "source": "Abby payslip: Accenture 11% on basic; no match on AVCs assumed",
-      "asOf": "2026-08-31",
+      "source": "Abby payslip Sep 2026: Pension ER % 12.00 (was 11% on the Apr/Aug payslips); Pension ER this month 3,907.25 = 12% of basic 738.38 + the salary-sacrificed 3,168.87",
+      "asOf": "2026-09-30",
       "reviewBy": "2027-04-06",
       "cadence": "tax-year",
       "triggers": [
         "payslip",
         "job-change"
+      ],
+      "history": [
+        {
+          "value": 0.11,
+          "asOf": "2026-08-31",
+          "supersededOn": "2026-09-30"
+        }
       ]
     },
     "payslip.payGrowth": {

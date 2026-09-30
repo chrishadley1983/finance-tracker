@@ -111,12 +111,15 @@ export function avcRecipeFromYtd(a, slip, opts = {}) {
   const paidBasicAnnual = (slip.basicMonthly * (1 - a.payslip.existingEeRate) - actualPerPayslip) * 12;
   const netCostRate = 1 - a.tax.reliefAbove;
   const netCutMonthly = actualPerPayslip * netCostRate;
+  // The payslip's net already carries its own AVC (slip.avcPct): add that back before applying the new one
+  // (fixed 30 Sep 2026 — the first post-AVC payslip was otherwise charged twice).
+  const netDoNothing = slip.netMonthly + ((slip.avcPct ?? 0) / 100) * slip.basicMonthly * netCostRate;
   const nmwFloor = a.nmw.annualFloor;
   return {
     taxYear: slip.taxYear, taxMonth: slip.taxMonth, remaining, target,
     aniDoNothing, bonusInAni, extraNeeded, perPayslip, rawPct, avcPct, actualPerPayslip, landedAni,
     bufferBelowCliff: a.hicbc.lowerThreshold - landedAni,
-    netCutMonthly, netMonthlyAfter: slip.netMonthly - netCutMonthly,
+    netCutMonthly, netDoNothing, netMonthlyAfter: netDoNothing - netCutMonthly,
     paidBasicAnnual, nmwFloor, nmwOk: paidBasicAnnual > nmwFloor,
     aboveCliff: landedAni > a.hicbc.lowerThreshold, aboveTarget: landedAni > target,
   };

@@ -80,7 +80,11 @@ describe('manifests and accepted runs (phase 5)', () => {
     expect(verifyManifest(run).ok).toBe(true);
     const summary = JSON.parse(fs.readFileSync(path.join(run, 'summary.json'), 'utf8'));
     expect(summary.verdict).toBe('AMBER'); // no baseline yet in a fresh dir
-    expect(summary.avcPct).toBe(55);
+    // the recipe from the newest payslip observation: Aug 2026 → 55% (from zero, seven payslips); Sep 2026 → 46% (six left)
+    const newestSlip = fs.readdirSync(path.join(root, 'plan/observations/payslips')).filter((f) => f.endsWith('.json')).sort().pop() ?? '';
+    const expectedPct: Record<string, number> = { '2026-08.json': 55, '2026-09.json': 46 };
+    expect(newestSlip in expectedPct, `add the recipe % for ${newestSlip} to this test`).toBe(true);
+    expect(summary.avcPct).toBe(expectedPct[newestSlip]);
     // accept it, then a second run diffs against it and is GREEN
     execFileSync('npx', ['tsx', 'scripts/plan-accept.ts', '2026-09-21-test', '--dir', dir, '--note', 'test'], { cwd: root, encoding: 'utf8', shell: true });
     expect(fs.readFileSync(path.join(dir, 'LATEST_ACCEPTED'), 'utf8').trim()).toBe('2026-09-21-test');

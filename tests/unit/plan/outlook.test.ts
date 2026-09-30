@@ -4,12 +4,13 @@ import { potsAtExit, sustainableSpend, drawdownSim, DEFAULT_OUTLOOK } from '@/li
 describe('outlook models (criteria F10, F11, E3)', () => {
   const base = DEFAULT_OUTLOOK;
 
-  it('pots at 2035 baseline: Chris ~£756k, Abby ~£705k, total £2.29M ±3% (1 Sep 2026 pots, Aug-2026 payslip)', () => {
-    // Chris: (439,574 + 193,081) × 1.02^9 = 756.1k. Abby: 282,921 × 1.02^9 = 338k plus nine years of
-    // 11.4k payroll + 22.0k→34.8k sacrifice (real) compounding at 2% mid-year ≈ 705k.
+  it('pots at 2035 baseline: Chris ~£756k, Abby ~£712k, total £2.29M ±3% (Sep 2026 pots, Sep-2026 payslip)', () => {
+    // Chris: (442,488 + 193,081) × 1.02^9 = 759.6k (within 1% of 756k). Abby: 282,921 × 1.02^9 = 338k plus nine years of
+    // payroll + 22.0k→34.8k sacrifice (real) compounding at 2% mid-year ≈ 705k at 11.4k payroll (Aug payslip, employer 11%);
+    // the Sep 2026 payslip raised the employer rate to 12%: +0.74k a year × ~9.6 (nine years, 2%, mid-year) ≈ +7.1k → ≈ 712k.
     const p = potsAtExit(base);
     expect(Math.abs(p.chrisPension - 756_000) / 756_000).toBeLessThan(0.01);
-    expect(Math.abs(p.abbyPension - 705_000) / 705_000).toBeLessThan(0.01);
+    expect(Math.abs(p.abbyPension - 712_000) / 712_000).toBeLessThan(0.01);
     expect(Math.abs(p.total - 2_290_000) / 2_290_000).toBeLessThan(0.03);
   });
 
