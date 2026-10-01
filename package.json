@@ -29,7 +29,8 @@
     "plan:render": "node plan/tools/render.mjs",
     "plan:run": "tsx scripts/plan-run.ts",
     "plan:accept": "tsx scripts/plan-accept.ts",
-    "plan:trigger": "node plan/tools/trigger.mjs"
+    "plan:trigger": "node plan/tools/trigger.mjs",
+    "plan:gilt-value": "tsx scripts/plan-gilt-value.ts"
   },
   "repository": {
     "type": "git",

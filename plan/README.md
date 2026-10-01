@@ -40,10 +40,13 @@ npm run plan:inputs         # collect assumptions + live observations → tmp/pl
 npm run plan:ledger         # the Plan E ledger (add 0 / 0.04 for other returns; --json; --spend 70000 --cash 0 --crypto 0)
 npm run plan:avc            # Abby's AVC% recipe from the newest payslip observation
 npm run plan:payslip -- add --month 2026-09 --tax-month 6 --pay-date 2026-09-28 --basic … --taxable … --ytd-taxable … --net … --avc 55
+npm run plan:gilt-value     # gilts held at TRUE value (units × dirty) per account; --other "CH ISA=551.47" adds cash/funds; --save writes the month's snapshot
 npm run plan:order-sheet    # gilt order sheet sized by budget (live prices; --offline; --save; --budget N --years 2035-2040)
 npm run plan:standalone     # runPlan() on the repo's current inputs → outputs JSON (the durability path)
 npm run plan:render         # the documents + plan.xlsx from the repo's inputs → tmp/plan-render-<date>/ (or --inputs <file> --out <dir>; --pdf adds summary.pdf)
 ```
+
+**Snapshotting accounts that hold gilts:** never copy ii's account total — ii values index-linked gilts at the clean price with no inflation uplift (on 1 Oct 2026 it understated Chris's gilts by ~£235k). Run `npm run plan:gilt-value -- --other "CH ISA=<cash+funds>" --other "Chris II SIPP Pension=<cash+funds>" --save --date YYYY-MM-01` instead; holdings live in `observations/holdings/` (add a dated file after any trade).
 
 **Monthly routine (until the phase-5 job automates it):** when Abby's payslip arrives, `plan:payslip add`
 (it prints the `plan:set` commands if the basic moved and the new AVC%); after the 1st-of-month wealth
