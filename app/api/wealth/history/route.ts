@@ -173,6 +173,7 @@ export async function GET(request: NextRequest) {
           .from('transactions')
           .select('account_id, date, amount')
           .in('account_id', transactionalAccountIds)
+          .order('id', { ascending: true })
           .range(txFrom, txFrom + txPageSize - 1);
         if (!page || page.length === 0) break;
         for (const t of page) {
