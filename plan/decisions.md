@@ -391,3 +391,11 @@ Also 1 Oct: gilt holdings are snapshotted at true value by `npm run plan:gilt-va
 with no inflation uplift). NS&I Green Savings Bond identified from the emails as **Issue 5, 5.70%**, invested 2 Nov 2023,
 matures 2 Nov 2026 (£23,618.64); worth £22,344.98 on 1 Oct. Chris plans to move it into the ISA in a 1-year fixed product
 (a short conventional gilt is the natural fit); about £3.6k over his £20k allowance can go to Abby's ISA.
+- Later on 1 Oct: the 8 duplicate 1 Aug 2026 snapshots written by a 31 Aug 09:50 batch (September values or zeros under
+  the August date) were deleted after Chris approved the list; the 1 Aug 19:49 originals were kept. The
+  UNIQUE (account_id, date) rule that 001 declared but the live table never had is now enforced
+  (`supabase/migrations/011_wealth_snapshots_unique.sql`, applied with `supabase db query --linked` — NOT `db push`,
+  whose history belongs to the Hadley Bricks app). Other Savings 1 Oct £123,736.47 (crypto £74,212 · NS&I £22,345 ·
+  Zopa £20,454 · current account £5,000, which is not in net worth elsewhere · Unbolted £1,725). The plan's
+  `pots.cashBuffer` (CHECK £66k) is now measured at ~£49.5k cash with crypto ~£74.2k — update with the October
+  pots once Abby's figures are in.
