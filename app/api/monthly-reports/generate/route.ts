@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { aggregateMonthlyReport, saveMonthlyReport } from '@/lib/reports/aggregate';
 import { generateMonthlyReportHtml } from '@/lib/reports/monthly-html';
-import { requireUser } from '@/lib/api/require-user';
+import { requireAgentOrUser } from '@/lib/api/require-agent';
 
 /**
  * POST /api/monthly-reports/generate
@@ -9,12 +9,14 @@ import { requireUser } from '@/lib/api/require-user';
  * Generate (and optionally save) a monthly finance report.
  * Body: { year: number, month: number, save?: boolean, format?: 'json' | 'html' }
  *
- * Requires an authenticated session — this endpoint reads all financial data
- * and writes to monthly_reports, so it must not be publicly triggerable.
+ * Requires an authenticated session or the agent key (x-api-key =
+ * FINANCE_AGENT_KEY: Peter's month-close job) — this endpoint reads all
+ * financial data and writes to monthly_reports, so it must not be publicly
+ * triggerable.
  */
 export async function POST(request: NextRequest) {
   try {
-    const unauthorized = await requireUser();
+    const unauthorized = await requireAgentOrUser(request);
     if (unauthorized) return unauthorized;
 
     const body = await request.json();
@@ -28,11 +30,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Stamped BEFORE aggregating: anything that changes while we read is newer
+    // than the report, so readiness will see it and regenerate.
+    const startedAt = new Date().toISOString();
     const report = await aggregateMonthlyReport(year, month);
     const html = generateMonthlyReportHtml(report);
 
     if (body.save !== false) {
-      await saveMonthlyReport(report, html);
+      await saveMonthlyReport(report, html, { generatedAt: startedAt });
     }
 
     if (body.format === 'html') {

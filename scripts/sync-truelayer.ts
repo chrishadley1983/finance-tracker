@@ -58,6 +58,8 @@ async function recentDailyDigest(): Promise<string | null> {
     .from('categorisation_digests')
     .select('created_at')
     .neq('status', 'failed')
+    // Ad hoc lookups (Peter's "check these transactions") don't sync — only the daily job counts.
+    .or('meta->>kind.is.null,meta->>kind.neq.adhoc')
     .gte('created_at', since)
     .order('created_at', { ascending: false })
     .limit(1);
