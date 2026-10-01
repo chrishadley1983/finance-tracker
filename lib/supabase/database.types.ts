@@ -327,6 +327,39 @@ export type Database = {
           },
         ]
       }
+      categorisation_digests: {
+        Row: {
+          created_at: string
+          id: string
+          items: Json
+          meta: Json
+          posted_message_ids: string[]
+          status: string
+          window_end: string | null
+          window_start: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          items?: Json
+          meta?: Json
+          posted_message_ids?: string[]
+          status?: string
+          window_end?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          items?: Json
+          meta?: Json
+          posted_message_ids?: string[]
+          status?: string
+          window_end?: string | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       category_corrections: {
         Row: {
           corrected_category_id: string
@@ -337,6 +370,7 @@ export type Database = {
           import_session_id: string | null
           original_category_id: string | null
           original_source: string | null
+          transaction_id: string | null
         }
         Insert: {
           corrected_category_id: string
@@ -347,6 +381,7 @@ export type Database = {
           import_session_id?: string | null
           original_category_id?: string | null
           original_source?: string | null
+          transaction_id?: string | null
         }
         Update: {
           corrected_category_id?: string
@@ -357,6 +392,7 @@ export type Database = {
           import_session_id?: string | null
           original_category_id?: string | null
           original_source?: string | null
+          transaction_id?: string | null
         }
         Relationships: [
           {
@@ -418,6 +454,12 @@ export type Database = {
       }
       category_mappings: {
         Row: {
+          account_id: string | null
+          action: string
+          amount_max: number | null
+          amount_min: number | null
+          amount_sign: string | null
+          updated_at: string | null
           category_id: string
           confidence: number
           created_at: string
@@ -428,6 +470,12 @@ export type Database = {
           pattern: string
         }
         Insert: {
+          account_id?: string | null
+          action?: string
+          amount_max?: number | null
+          amount_min?: number | null
+          amount_sign?: string | null
+          updated_at?: string | null
           category_id: string
           confidence?: number
           created_at?: string
@@ -438,6 +486,12 @@ export type Database = {
           pattern: string
         }
         Update: {
+          account_id?: string | null
+          action?: string
+          amount_max?: number | null
+          amount_min?: number | null
+          amount_sign?: string | null
+          updated_at?: string | null
           category_id?: string
           confidence?: number
           created_at?: string
@@ -456,6 +510,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      category_rule_events: {
+        Row: {
+          created_at: string
+          detail: Json
+          event: string
+          id: string
+          new_category_id: string | null
+          old_category_id: string | null
+          pattern: string
+          rule_id: string | null
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: Json
+          event: string
+          id?: string
+          new_category_id?: string | null
+          old_category_id?: string | null
+          pattern: string
+          rule_id?: string | null
+          source: string
+        }
+        Update: {
+          created_at?: string
+          detail?: Json
+          event?: string
+          id?: string
+          new_category_id?: string | null
+          old_category_id?: string | null
+          pattern?: string
+          rule_id?: string | null
+          source?: string
+        }
+        Relationships: []
       }
       fire_inputs: {
         Row: {
@@ -996,6 +1086,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      increment_ai_usage: {
+        Args: { p_count: number; p_date: string; p_usage_type: string }
+        Returns: number
+      }
       find_similar_transactions: {
         Args: {
           max_results?: number

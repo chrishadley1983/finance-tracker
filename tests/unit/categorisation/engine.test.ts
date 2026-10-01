@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock the dependencies
 vi.mock('@/lib/categorisation/rule-matcher', () => ({
-  matchRule: vi.fn(),
   matchRulesBatch: vi.fn(),
   clearRulesCache: vi.fn(),
 }));
@@ -10,382 +8,261 @@ vi.mock('@/lib/categorisation/rule-matcher', () => ({
 vi.mock('@/lib/categorisation/similar-lookup', () => ({
   findSimilarTransactions: vi.fn(),
   getMostCommonCategory: vi.fn(),
-  findSimilarBatch: vi.fn(),
 }));
 
 vi.mock('@/lib/categorisation/ai-categoriser', () => ({
-  categoriseWithAI: vi.fn(),
   categoriseBatchWithAI: vi.fn(),
-  checkAIAvailability: vi.fn(() =>
-    Promise.resolve({ available: true, remaining: 100, dailyLimit: 100 })
-  ),
+  checkAIAvailability: vi.fn(),
   trackAIUsage: vi.fn(),
   clearCategoriesCache: vi.fn(),
+}));
+
+vi.mock('@/lib/categorisation/ai-context', () => ({
+  buildAIContext: vi.fn(async (items: unknown[]) => ({ precedents: items.map(() => []), corrections: [], policies: [] })),
 }));
 
 import {
   categoriseTransaction,
   categoriseMultiple,
   calculateStats,
+  toTransactionCategoryFields,
   type CategorisationResult,
 } from '@/lib/categorisation/engine';
-import { matchRule, matchRulesBatch } from '@/lib/categorisation/rule-matcher';
-import {
-  findSimilarTransactions,
-  getMostCommonCategory,
-} from '@/lib/categorisation/similar-lookup';
-import {
-  categoriseWithAI,
-  categoriseBatchWithAI,
-  checkAIAvailability,
-} from '@/lib/categorisation/ai-categoriser';
+import { matchRulesBatch, type RuleMatch } from '@/lib/categorisation/rule-matcher';
+import { findSimilarTransactions, getMostCommonCategory, type SimilarMatch } from '@/lib/categorisation/similar-lookup';
+import { categoriseBatchWithAI, checkAIAvailability, trackAIUsage } from '@/lib/categorisation/ai-categoriser';
+import { buildAIContext } from '@/lib/categorisation/ai-context';
+
+function ruleMatch(partial: Partial<RuleMatch>): RuleMatch {
+  return {
+    ruleId: 'rule-1',
+    categoryId: 'cat-groceries',
+    categoryName: 'Groceries',
+    pattern: 'tesco',
+    matchType: 'contains',
+    confidence: 0.9,
+    isPolicy: false,
+    action: 'categorise',
+    ...partial,
+  };
+}
+
+function similar(categoryId: string, similarity: number, description = 'TESCO STORES'): SimilarMatch {
+  return { transactionId: `t-${Math.random()}`, description, categoryId, categoryName: categoryId, similarity, date: '2026-09-01' };
+}
+
+function rulesFor(matches: (RuleMatch | null)[]) {
+  vi.mocked(matchRulesBatch).mockResolvedValue(new Map(matches.map((m, i) => [i, m])));
+}
+
+/** Mirror of similar-lookup's majority helper. */
+function realMostCommon(ms: SimilarMatch[]) {
+  const counts = new Map<string, number>();
+  for (const m of ms) counts.set(m.categoryId, (counts.get(m.categoryId) ?? 0) + 1);
+  let best: { categoryId: string; categoryName: string; count: number } | null = null;
+  counts.forEach((count, categoryId) => {
+    if (!best || count > best.count) best = { categoryId, categoryName: categoryId, count };
+  });
+  return best;
+}
+
+const tx = (description: string, amount = -10, accountId = 'acct-joint') => ({ date: '2026-09-30', description, amount, accountId });
 
 describe('Categorisation Engine', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(findSimilarTransactions).mockResolvedValue([]);
+    vi.mocked(getMostCommonCategory).mockImplementation(realMostCommon as never);
+    vi.mocked(checkAIAvailability).mockResolvedValue({ available: true, remaining: 100, dailyLimit: 100 });
+    vi.mocked(categoriseBatchWithAI).mockResolvedValue(new Map());
   });
 
-  describe('categoriseTransaction', () => {
-    it('returns exact rule match when found', async () => {
-      vi.mocked(matchRule).mockResolvedValue({
-        ruleId: 'rule-1',
-        categoryId: 'cat-groceries',
-        categoryName: 'Groceries',
-        pattern: 'TESCO',
-        matchType: 'exact',
-        confidence: 1.0,
-      });
+  describe('rules', () => {
+    it('passes amount and account to the rule matcher (policies need them)', async () => {
+      rulesFor([ruleMatch({})]);
+      await categoriseMultiple([tx('TESCO', -12.5, 'acct-1')]);
+      expect(matchRulesBatch).toHaveBeenCalledWith([{ description: 'TESCO', amount: -12.5, accountId: 'acct-1' }]);
+    });
 
-      const result = await categoriseTransaction({
-        description: 'TESCO',
-        amount: -50.0,
-        date: '2024-01-15',
-      });
-
-      expect(result.source).toBe('rule_exact');
-      expect(result.categoryId).toBe('cat-groceries');
-      expect(result.confidence).toBe(1.0);
+    it('exact and pattern rules map to rule_exact / rule_pattern and are auto-applied at ≥0.8', async () => {
+      rulesFor([ruleMatch({ matchType: 'exact', confidence: 1 }), ruleMatch({ confidence: 0.9 })]);
+      const [a, b] = await categoriseMultiple([tx('TESCO'), tx('TESCO STORES')]);
+      expect(a.source).toBe('rule_exact');
+      expect(b.source).toBe('rule_pattern');
+      expect(a.needsReview).toBe(false);
+      expect(b.needsReview).toBe(false);
       expect(findSimilarTransactions).not.toHaveBeenCalled();
-      expect(categoriseWithAI).not.toHaveBeenCalled();
     });
 
-    it('returns pattern rule match when found', async () => {
-      vi.mocked(matchRule).mockResolvedValue({
-        ruleId: 'rule-2',
-        categoryId: 'cat-groceries',
-        categoryName: 'Groceries',
-        pattern: 'TESCO',
-        matchType: 'contains',
-        confidence: 0.9,
-      });
-
-      const result = await categoriseTransaction({
-        description: 'TESCO STORES 1234',
-        amount: -50.0,
-        date: '2024-01-15',
-      });
-
-      expect(result.source).toBe('rule_pattern');
-      expect(result.categoryId).toBe('cat-groceries');
-      expect(result.confidence).toBe(0.9);
+    it('a policy match is source "policy"', async () => {
+      rulesFor([ruleMatch({ isPolicy: true, confidence: 0.95, categoryId: 'cat-income', categoryName: 'Chris Income' })]);
+      const [r] = await categoriseMultiple([tx('Stripe Payments UKSHOPIFY', 22.27)]);
+      expect(r.source).toBe('policy');
+      expect(r.categoryName).toBe('Chris Income');
+      expect(r.needsReview).toBe(false);
     });
 
-    it('falls back to similar transactions when no rule matches', async () => {
-      vi.mocked(matchRule).mockResolvedValue(null);
-      vi.mocked(findSimilarTransactions).mockResolvedValue([
-        {
-          transactionId: 'tx-1',
-          description: 'AMAZON UK',
-          categoryId: 'cat-shopping',
-          categoryName: 'Shopping',
-          similarity: 0.8,
-          date: '2024-01-10',
-        },
-        {
-          transactionId: 'tx-2',
-          description: 'AMAZON PRIME',
-          categoryId: 'cat-shopping',
-          categoryName: 'Shopping',
-          similarity: 0.7,
-          date: '2024-01-05',
-        },
-        {
-          transactionId: 'tx-3',
-          description: 'AMAZON RETAIL',
-          categoryId: 'cat-shopping',
-          categoryName: 'Shopping',
-          similarity: 0.68,
-          date: '2024-01-02',
-        },
-      ]);
-      vi.mocked(getMostCommonCategory).mockReturnValue({
-        categoryId: 'cat-shopping',
-        categoryName: 'Shopping',
-        count: 3,
-        avgSimilarity: 0.73,
-      });
-
-      const result = await categoriseTransaction({
-        description: 'AMAZON MARKETPLACE',
-        amount: -25.0,
-        date: '2024-01-15',
-      });
-
-      expect(result.source).toBe('similar');
-      expect(result.categoryId).toBe('cat-shopping');
-      expect(result.confidence).toBeGreaterThanOrEqual(0.8);
-      expect(categoriseWithAI).not.toHaveBeenCalled();
+    it('an ask policy suggests its category but always needs review', async () => {
+      rulesFor([ruleMatch({ isPolicy: true, action: 'ask', confidence: 0.95, categoryId: 'cat-social', categoryName: 'Social Travel', pattern: 'gridserve' })]);
+      const [r] = await categoriseMultiple([tx('GRIDSERVE UK OMM LIVER', -23.36)]);
+      expect(r.source).toBe('policy_ask');
+      expect(r.categoryId).toBe('cat-social');
+      expect(r.needsReview).toBe(true);
+      expect(r.reviewReason).toMatch(/always ask/);
+      expect(categoriseBatchWithAI).not.toHaveBeenCalled();
     });
 
-    it('treats a low-agreement similar match as weak: consults AI, keeps guess as fallback', async () => {
-      vi.mocked(matchRule).mockResolvedValue(null);
-      vi.mocked(findSimilarTransactions).mockResolvedValue([
-        {
-          transactionId: 'tx-1',
-          description: 'HUSH HOMEWEAR LONDON',
-          categoryId: 'cat-eating-out',
-          categoryName: 'Eating out',
-          similarity: 0.55,
-          date: '2024-01-10',
-        },
-      ]);
-      vi.mocked(getMostCommonCategory).mockReturnValue({
-        categoryId: 'cat-eating-out',
-        categoryName: 'Eating out',
-        count: 1,
-        avgSimilarity: 0.55,
-      });
-      // AI unavailable → weak guess is used, flagged by its low confidence
-      vi.mocked(checkAIAvailability).mockResolvedValueOnce({
-        available: false,
-        remaining: 0,
-        dailyLimit: 100,
-      });
-
-      const result = await categoriseTransaction({
-        description: 'Hush Homewear Ltd London',
-        amount: -125.0,
-        date: '2024-01-15',
-      });
-
-      expect(result.source).toBe('similar');
-      expect(result.categoryId).toBe('cat-eating-out');
-      expect(result.confidence).toBeLessThan(0.8);
-    });
-
-    it('falls back to AI when no rule or similar matches', async () => {
-      vi.mocked(matchRule).mockResolvedValue(null);
-      vi.mocked(findSimilarTransactions).mockResolvedValue([]);
-      vi.mocked(getMostCommonCategory).mockReturnValue(null);
-      vi.mocked(categoriseWithAI).mockResolvedValue({
-        categoryId: 'cat-entertainment',
-        categoryName: 'Entertainment',
-        confidence: 0.85,
-        reasoning: 'Looks like a streaming service',
-      });
-
-      const result = await categoriseTransaction({
-        description: 'NOVEL STREAMING SERVICE',
-        amount: -9.99,
-        date: '2024-01-15',
-      });
-
-      expect(result.source).toBe('ai');
-      expect(result.categoryId).toBe('cat-entertainment');
-      expect(result.confidence).toBe(0.85);
-      expect(categoriseWithAI).toHaveBeenCalled();
-    });
-
-    it('returns none when AI is not available', async () => {
-      vi.mocked(matchRule).mockResolvedValue(null);
-      vi.mocked(findSimilarTransactions).mockResolvedValue([]);
-      vi.mocked(getMostCommonCategory).mockReturnValue(null);
-      vi.mocked(checkAIAvailability).mockResolvedValue({
-        available: false,
-        remaining: 0,
-        dailyLimit: 100,
-      });
-
-      const result = await categoriseTransaction({
-        description: 'UNKNOWN TRANSACTION',
-        amount: -50.0,
-        date: '2024-01-15',
-      });
-
-      expect(result.source).toBe('none');
-      expect(result.categoryId).toBeNull();
-      expect(categoriseWithAI).not.toHaveBeenCalled();
-    });
-
-    it('skips AI when confidence threshold is met by similar', async () => {
-      vi.mocked(matchRule).mockResolvedValue(null);
-      vi.mocked(findSimilarTransactions).mockResolvedValue([
-        {
-          transactionId: 'tx-1',
-          description: 'NETFLIX',
-          categoryId: 'cat-entertainment',
-          categoryName: 'Entertainment',
-          similarity: 0.95,
-          date: '2024-01-10',
-        },
-      ]);
-      vi.mocked(getMostCommonCategory).mockReturnValue({
-        categoryId: 'cat-entertainment',
-        categoryName: 'Entertainment',
-        count: 1,
-        avgSimilarity: 0.95,
-      });
-
-      const result = await categoriseTransaction({
-        description: 'NETFLIX.COM',
-        amount: -15.99,
-        date: '2024-01-15',
-      });
-
-      expect(result.source).toBe('similar');
-      expect(categoriseWithAI).not.toHaveBeenCalled();
+    it('a low-confidence rule is applied but flagged', async () => {
+      rulesFor([ruleMatch({ confidence: 0.7 })]);
+      const [r] = await categoriseMultiple([tx('TESCO')]);
+      expect(r.categoryId).toBe('cat-groceries');
+      expect(r.needsReview).toBe(true);
     });
   });
 
-  describe('categoriseMultiple', () => {
-    it('categorises transactions with rule matches', async () => {
-      vi.mocked(matchRulesBatch).mockResolvedValue(
+  describe('similar precedent', () => {
+    it('a strong majority is trusted without AI', async () => {
+      rulesFor([null]);
+      vi.mocked(findSimilarTransactions).mockResolvedValue([similar('g', 0.8), similar('g', 0.75), similar('g', 0.7)]);
+      const [r] = await categoriseMultiple([tx('TESCO STORES 3021')]);
+      expect(r.source).toBe('similar');
+      expect(r.needsReview).toBe(false);
+      expect(categoriseBatchWithAI).not.toHaveBeenCalled();
+    });
+
+    it('a weak match goes to AI and is kept as fallback if AI fails', async () => {
+      rulesFor([null]);
+      vi.mocked(findSimilarTransactions).mockResolvedValue([similar('g', 0.5)]);
+      vi.mocked(categoriseBatchWithAI).mockRejectedValue(new Error('boom'));
+      const [r] = await categoriseMultiple([tx('TESCO EXPRESS')]);
+      expect(categoriseBatchWithAI).toHaveBeenCalled();
+      expect(r.source).toBe('similar');
+      expect(r.needsReview).toBe(true);
+    });
+  });
+
+  describe('AI fallback (A6)', () => {
+    it('passes precedents/corrections/policies context to the AI', async () => {
+      rulesFor([null]);
+      const ms = [similar('g', 0.55, 'BENA LTD TONBRIDGE')];
+      vi.mocked(findSimilarTransactions).mockResolvedValue(ms);
+      vi.mocked(categoriseBatchWithAI).mockResolvedValue(
+        new Map([[0, { categoryId: 'takeaway', categoryName: 'Takeaway', confidence: 0.9, reasoning: 'precedent' }]])
+      );
+      await categoriseMultiple([tx('BENA LTD Tonbridge')]);
+      expect(buildAIContext).toHaveBeenCalledWith([{ description: 'BENA LTD Tonbridge', similar: ms }]);
+      expect(vi.mocked(categoriseBatchWithAI).mock.calls[0][1]).toEqual({ precedents: [[]], corrections: [], policies: [] });
+    });
+
+    it('a confident AI guess WITH settled precedent is auto-applied', async () => {
+      rulesFor([null]);
+      vi.mocked(findSimilarTransactions).mockResolvedValue([similar('takeaway', 0.55)]);
+      vi.mocked(categoriseBatchWithAI).mockResolvedValue(
+        new Map([[0, { categoryId: 'takeaway', categoryName: 'Takeaway', confidence: 0.9, reasoning: 'r' }]])
+      );
+      const [r] = await categoriseMultiple([tx('BENA LTD Tonbridge')]);
+      expect(r.source).toBe('ai');
+      expect(r.needsReview).toBe(false);
+    });
+
+    it('a confident AI guess for a NEW merchant (no precedent ≥0.5) is always reviewed', async () => {
+      rulesFor([null]);
+      vi.mocked(findSimilarTransactions).mockResolvedValue([similar('x', 0.35)]);
+      vi.mocked(categoriseBatchWithAI).mockResolvedValue(
+        new Map([[0, { categoryId: 'subs', categoryName: 'Subscriptions', confidence: 0.97, reasoning: 'r' }]])
+      );
+      const [r] = await categoriseMultiple([tx('BRAND NEW SAAS INC')]);
+      expect(r.categoryId).toBe('subs');
+      expect(r.needsReview).toBe(true);
+      expect(r.reviewReason).toMatch(/new merchant/);
+    });
+
+    it('an AI result with no valid category falls back (never an invalid id) (A12)', async () => {
+      rulesFor([null]);
+      vi.mocked(categoriseBatchWithAI).mockResolvedValue(
+        new Map([[0, { categoryId: null, categoryName: 'Made Up', confidence: 0, reasoning: 'r' }]])
+      );
+      const [r] = await categoriseMultiple([tx('MYSTERY')]);
+      expect(r.categoryId).toBeNull();
+      expect(r.source).toBe('none');
+      expect(r.needsReview).toBe(true);
+    });
+
+    it('only the remaining daily quota goes to AI; the rest fall back (A11)', async () => {
+      rulesFor([null, null, null]);
+      vi.mocked(checkAIAvailability).mockResolvedValue({ available: true, remaining: 2, dailyLimit: 100 });
+      vi.mocked(categoriseBatchWithAI).mockResolvedValue(
         new Map([
-          [
-            0,
-            {
-              ruleId: 'rule-1',
-              categoryId: 'cat-groceries',
-              categoryName: 'Groceries',
-              pattern: 'TESCO',
-              matchType: 'exact',
-              confidence: 1.0,
-            },
-          ],
-          [
-            1,
-            {
-              ruleId: 'rule-2',
-              categoryId: 'cat-shopping',
-              categoryName: 'Shopping',
-              pattern: 'AMAZON',
-              matchType: 'contains',
-              confidence: 0.9,
-            },
-          ],
+          [0, { categoryId: 'a', categoryName: 'A', confidence: 0.6, reasoning: 'r' }],
+          [1, { categoryId: 'b', categoryName: 'B', confidence: 0.6, reasoning: 'r' }],
         ])
       );
-
-      const results = await categoriseMultiple([
-        { description: 'TESCO', amount: -50, date: '2024-01-15' },
-        { description: 'AMAZON UK', amount: -25, date: '2024-01-15' },
-      ]);
-
-      expect(results.length).toBe(2);
-      expect(results[0].source).toBe('rule_exact');
-      expect(results[0].categoryName).toBe('Groceries');
-      expect(results[1].source).toBe('rule_pattern');
-      expect(results[1].categoryName).toBe('Shopping');
+      const results = await categoriseMultiple([tx('ONE'), tx('TWO'), tx('THREE')]);
+      expect(vi.mocked(categoriseBatchWithAI).mock.calls[0][0]).toHaveLength(2);
+      expect(trackAIUsage).toHaveBeenCalledWith(2);
+      expect(results[0].source).toBe('ai');
+      expect(results[2].source).toBe('none');
+      expect(results[2].matchDetails).toMatch(/cap/);
     });
 
-    it('returns empty array for empty input', async () => {
-      const results = await categoriseMultiple([]);
-      expect(results.length).toBe(0);
+    it('allowAI=false never calls AI', async () => {
+      rulesFor([null]);
+      const [r] = await categoriseMultiple([tx('ONE')], { allowAI: false });
+      expect(checkAIAvailability).not.toHaveBeenCalled();
+      expect(categoriseBatchWithAI).not.toHaveBeenCalled();
+      expect(r.source).toBe('none');
     });
 
-    it('falls back to similar when no rule matches', async () => {
-      vi.mocked(matchRulesBatch).mockResolvedValue(
-        new Map([[0, null]])
-      );
+    it('returns none when AI is unavailable', async () => {
+      rulesFor([null]);
+      vi.mocked(checkAIAvailability).mockResolvedValue({ available: false, remaining: 0, dailyLimit: 100 });
+      const [r] = await categoriseMultiple([tx('ONE')]);
+      expect(r.source).toBe('none');
+      expect(categoriseBatchWithAI).not.toHaveBeenCalled();
+    });
+  });
 
-      vi.mocked(findSimilarTransactions).mockResolvedValue([
-        {
-          transactionId: 'tx-1',
-          description: 'SIMILAR TX',
-          categoryId: 'cat-shopping',
-          categoryName: 'Shopping',
-          similarity: 0.8,
-          date: '2024-01-01',
-        },
-      ]);
+  it('categoriseTransaction delegates to the batch path', async () => {
+    rulesFor([ruleMatch({})]);
+    const r = await categoriseTransaction(tx('TESCO'));
+    expect(r.source).toBe('rule_pattern');
+  });
 
-      vi.mocked(getMostCommonCategory).mockReturnValue({
-        categoryId: 'cat-shopping',
-        categoryName: 'Shopping',
-        count: 1,
-        avgSimilarity: 0.8,
+  it('returns empty array for empty input', async () => {
+    expect(await categoriseMultiple([])).toEqual([]);
+  });
+
+  describe('toTransactionCategoryFields', () => {
+    it('maps engine sources to the DB enum and carries the review flag', () => {
+      const base: CategorisationResult = { categoryId: 'c', categoryName: 'C', source: 'policy_ask', confidence: 0.5, matchDetails: '', needsReview: true };
+      expect(toTransactionCategoryFields(base)).toEqual({
+        category_id: 'c',
+        categorisation_source: 'rule',
+        engine_source: 'policy_ask',
+        categorisation_confidence: 0.5,
+        needs_review: true,
       });
-
-      const results = await categoriseMultiple([
-        { description: 'UNKNOWN TX', amount: -50, date: '2024-01-15' },
-      ]);
-
-      expect(results.length).toBe(1);
-      expect(results[0].source).toBe('similar');
+      expect(toTransactionCategoryFields({ ...base, source: 'ai', needsReview: false }).categorisation_source).toBe('ai');
+      expect(toTransactionCategoryFields({ ...base, source: 'none', categoryId: null }).categorisation_confidence).toBeNull();
     });
   });
 
   describe('calculateStats', () => {
-    it('calculates statistics for categorisation results', () => {
+    it('counts by source including policies', () => {
       const results: CategorisationResult[] = [
-        {
-          categoryId: 'cat-1',
-          categoryName: 'Groceries',
-          source: 'rule_exact',
-          confidence: 1.0,
-          matchDetails: 'Rule: TESCO',
-        },
-        {
-          categoryId: 'cat-1',
-          categoryName: 'Groceries',
-          source: 'rule_pattern',
-          confidence: 0.9,
-          matchDetails: 'Pattern: SAINSBURY',
-        },
-        {
-          categoryId: 'cat-2',
-          categoryName: 'Shopping',
-          source: 'similar',
-          confidence: 0.75,
-          matchDetails: 'Similar: 3 matches',
-        },
-        {
-          categoryId: 'cat-3',
-          categoryName: 'Entertainment',
-          source: 'ai',
-          confidence: 0.4, // Low confidence AI result
-          matchDetails: 'AI: streaming service',
-        },
-        {
-          categoryId: null,
-          categoryName: null,
-          source: 'none',
-          confidence: 0,
-          matchDetails: 'No match found',
-        },
+        { categoryId: 'a', categoryName: 'A', source: 'policy', confidence: 0.95, matchDetails: '' },
+        { categoryId: 'a', categoryName: 'A', source: 'policy_ask', confidence: 0.5, matchDetails: '' },
+        { categoryId: 'b', categoryName: 'B', source: 'ai', confidence: 0.4, matchDetails: '' },
+        { categoryId: null, categoryName: null, source: 'none', confidence: 0, matchDetails: '' },
       ];
-
-      const stats = calculateStats(results);
-
-      expect(stats.total).toBe(5);
-      expect(stats.bySource.rule_exact).toBe(1);
-      expect(stats.bySource.rule_pattern).toBe(1);
-      expect(stats.bySource.similar).toBe(1);
-      expect(stats.bySource.ai).toBe(1);
-      expect(stats.bySource.none).toBe(1);
-      expect(stats.categorised).toBe(4);
-      expect(stats.uncategorised).toBe(1);
-      // High confidence: 1.0, 0.9 = 2 (>= 0.8)
-      expect(stats.highConfidence).toBe(2);
-      // Low confidence: 0.4 (< 0.5, but has categoryId)
-      expect(stats.lowConfidence).toBe(1);
-    });
-
-    it('handles empty results', () => {
-      const stats = calculateStats([]);
-
-      expect(stats.total).toBe(0);
-      expect(stats.categorised).toBe(0);
+      const s = calculateStats(results);
+      expect(s.bySource.policy).toBe(1);
+      expect(s.bySource.policy_ask).toBe(1);
+      expect(s.categorised).toBe(3);
+      expect(s.uncategorised).toBe(1);
+      expect(s.highConfidence).toBe(1);
+      expect(s.lowConfidence).toBe(1);
+      expect(s.aiUsed).toBe(1);
     });
   });
 });

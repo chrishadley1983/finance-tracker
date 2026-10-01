@@ -25,9 +25,20 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }));
 
+// Category changes go through the shared manual path (tested against a fake
+// DB in tests/api/categorisation-edit-paths.test.ts); here we test wiring.
+const mockApply = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/categorisation/apply', () => ({
+  applyManualCategories: mockApply,
+  InvalidCategoryError: class InvalidCategoryError extends Error {},
+}));
+
 describe('Transactions Bulk API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockApply.mockImplementation(async (items: { transactionIds: string[]; categoryId: string }[]) =>
+      items.map((i) => ({ categoryId: i.categoryId, requested: i.transactionIds.length, applied: i.transactionIds.length, missing: [], corrections: 0 }))
+    );
 
     // Setup chain mocks
     mockUpdate.mockReturnValue({ in: mockIn });
@@ -67,8 +78,9 @@ describe('Transactions Bulk API', () => {
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
       expect(data.updated).toBe(3);
-      expect(mockFrom).toHaveBeenCalledWith('transactions');
-      expect(mockUpdate).toHaveBeenCalled();
+      // Category goes through the shared manual path (corrections + flag cleared)
+      expect(mockApply).toHaveBeenCalledWith([{ transactionIds: [UUID_1, UUID_2, UUID_3], categoryId: CAT_UUID }]);
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
 
     it('updates multiple transactions with date', async () => {
@@ -197,11 +209,21 @@ describe('Transactions Bulk API', () => {
       expect(response.status).toBe(400);
     });
 
+    it('returns 500 when categorising fails', async () => {
+      mockApply.mockRejectedValue(new Error('Database error'));
+      const request = new NextRequest('http://localhost/api/transactions/bulk', {
+        method: 'PUT',
+        body: JSON.stringify({ ids: [UUID_1], update: { category_id: CAT_UUID } }),
+      });
+      const response = await PUT(request);
+      expect(response.status).toBe(500);
+    });
+
     it('returns 500 on database error', async () => {
       const updateData = {
         ids: [UUID_1],
         update: {
-          category_id: CAT_UUID,
+          date: '2024-06-15',
         },
       };
 
@@ -231,6 +253,7 @@ describe('Transactions Bulk API', () => {
           category_id: CAT_UUID,
         },
       };
+      mockApply.mockResolvedValue([{ categoryId: CAT_UUID, requested: 2, applied: 0, missing: [UUID_1, UUID_2], corrections: 0 }]);
 
       mockIn.mockReturnValue({
         select: () => ({

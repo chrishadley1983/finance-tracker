@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { applyManualCategories, InvalidCategoryError } from '@/lib/categorisation/apply';
 import {
   bulkUpdateTransactionsSchema,
   bulkDeleteTransactionsSchema,
@@ -13,31 +14,43 @@ export async function PUT(request: NextRequest) {
 
     const { ids, update } = validated;
 
-    // Build update object with only defined fields
+    // Setting a category is a human decision: shared path (manual source,
+    // review flag cleared, corrections recorded for the learning loop).
+    let categorised = 0;
+    if (update.category_id) {
+      const [result] = await applyManualCategories([{ transactionIds: ids, categoryId: update.category_id }]);
+      categorised = result.applied;
+    }
+
+    // Remaining fields are a plain update.
     const updateData: Record<string, unknown> = {};
-    if (update.category_id !== undefined) {
-      updateData.category_id = update.category_id;
+    if (update.category_id === null) {
+      updateData.category_id = null;
     }
     if (update.date !== undefined) {
       updateData.date = update.date;
     }
-    if (update.categorisation_source !== undefined) {
+    if (!update.category_id && update.categorisation_source !== undefined) {
       updateData.categorisation_source = update.categorisation_source;
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('transactions')
-      .update(updateData)
-      .in('id', ids)
-      .select('id');
+    let updated = categorised;
+    if (Object.keys(updateData).length > 0) {
+      const { data, error } = await supabaseAdmin
+        .from('transactions')
+        .update(updateData)
+        .in('id', ids)
+        .select('id');
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      updated = Math.max(updated, data?.length ?? 0);
     }
 
     return NextResponse.json({
       success: true,
-      updated: data?.length ?? 0,
+      updated,
     });
   } catch (error) {
     if (error instanceof ZodError) {
@@ -45,6 +58,9 @@ export async function PUT(request: NextRequest) {
         { error: 'Validation error', details: error.issues },
         { status: 400 }
       );
+    }
+    if (error instanceof InvalidCategoryError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
     console.error('PUT /api/transactions/bulk error:', error);
     return NextResponse.json(

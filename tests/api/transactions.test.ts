@@ -38,6 +38,18 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }));
 
+// Category changes go through the shared manual path (tested against a fake
+// DB in tests/api/categorisation-edit-paths.test.ts); here we test wiring.
+const mockApply = vi.hoisted(() =>
+  vi.fn(async (items: { transactionIds: string[]; categoryId: string }[]) =>
+    items.map((i) => ({ categoryId: i.categoryId, requested: i.transactionIds.length, applied: i.transactionIds.length, missing: [], corrections: 0 }))
+  )
+);
+vi.mock('@/lib/categorisation/apply', () => ({
+  applyManualCategories: mockApply,
+  InvalidCategoryError: class InvalidCategoryError extends Error {},
+}));
+
 describe('Transactions API', () => {
   beforeEach(() => {
     vi.clearAllMocks();

@@ -42,28 +42,42 @@ const TRAILING_NOISE = [
  * Classify one token. References are dropped, merchant words kept; a merchant
  * word with a glued-on trailing reference ("THEATRE01732304241") keeps only
  * the word.
+ *
+ * Any other token containing a digit is dropped: branch numbers, order ids and
+ * card fragments vary per transaction, so keeping them splits one merchant into
+ * many keys and lets mining learn junk rules from order numbers
+ * ("eBay O*23-…" once mined as `ebay o 23` → Lego Out).
  */
 function cleanToken(token: string): string | null {
-  // Pure digits: short numbers are branch/street numbers (BOOTS/0936); long
-  // runs are account/phone references.
-  if (/^\d+$/.test(token)) {
-    return token.length <= 4 ? token : null;
-  }
-
-  const digitGroups = token.match(/\d+/g);
-  if (!digitGroups) return token;
-
-  // Interleaved letters/digits (NQ70H8U14, NL19K3JLONDON, GPC02H3PCH) are
-  // order references, not names.
-  if (digitGroups.length >= 2) return null;
+  if (!/\d/.test(token)) return token;
 
   // Single trailing digit run glued to a word: keep the word
   // (THEATRE01732304241 → theatre, DISNEYPLUS35314369001 → disneyplus).
   const glued = token.match(/^([a-z&]{3,}?)(\d{4,})$/i);
   if (glued) return glued[1];
 
-  // Short embedded digits are part of the name (h3g, 4ocean).
-  return token;
+  return null;
+}
+
+// Two-letter tokens that are real words in descriptors, not reference
+// prefixes ("SAINSBURYS.CO.UK 0800…", "AMAZON UK* NL19…").
+const SHORT_WORDS = new Set(['uk', 'co', 'st', 'sf', 'of', 'my', 'at', 'by', 'on', 'in', 'to', 'gb', 'us', 'eu']);
+
+/**
+ * Drop reference tokens, plus the 1–2 letter token immediately before a
+ * dropped one — it is the reference's prefix ("o" in "ebay o 23 15143").
+ */
+function dropReferences(tokens: string[]): string[] {
+  const cleaned = tokens.map(cleanToken);
+  const kept: string[] = [];
+  for (let i = 0; i < cleaned.length; i++) {
+    const t = cleaned[i];
+    if (t === null || t.length === 0) continue;
+    const nextDropped = i + 1 < cleaned.length && cleaned[i + 1] === null;
+    if (nextDropped && t.length <= 2 && !SHORT_WORDS.has(t)) continue;
+    kept.push(t);
+  }
+  return kept;
 }
 
 /**
@@ -110,19 +124,22 @@ export function normaliseDescription(raw: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 
-  // Drop reference-like tokens (order ids, card fragments, long numbers).
-  const tokens = s
-    .split(' ')
-    .map(cleanToken)
-    .filter((t): t is string => t !== null && t.length > 0);
+  // Drop reference-like tokens (order ids, card fragments, branch numbers).
+  return dropReferences(s.split(' ')).join(' ');
+}
 
-  // Trailing pure-digit tokens are phone numbers / references, not names
-  // ("SAINSBURYS.CO.UK 0800 328 1700").
-  while (tokens.length > 0 && /^\d+$/.test(tokens[tokens.length - 1])) {
-    tokens.pop();
-  }
-
-  return tokens.join(' ');
+/**
+ * Normalise a rule pattern for token-bounded comparison against
+ * normaliseDescription() output: lowercase, punctuation → spaces. Unlike
+ * normaliseDescription it does NOT strip processor prefixes — a pattern is
+ * already the merchant text Chris (or mining) chose.
+ */
+export function normalisePattern(pattern: string): string {
+  return pattern
+    .toLowerCase()
+    .replace(/[^a-z0-9&\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /**
@@ -141,5 +158,5 @@ export function merchantKey(raw: string, maxTokens = 3): string {
  * Guards against patterns so short they'd match unrelated merchants.
  */
 export function isMineablePattern(key: string): boolean {
-  return key.length >= 4 && !/^\d+$/.test(key);
+  return key.length >= 4 && !/\d/.test(key);
 }

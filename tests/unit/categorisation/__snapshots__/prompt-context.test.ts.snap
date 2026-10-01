@@ -1,0 +1,48 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AI prompt with learning context (A6) > builds the full batch prompt (snapshot) 1`] = `
+"You are categorising multiple UK financial transactions for Chris's household finance tracker.
+
+Transactions:
+0. Date: 2026-09-30, Amount: -£4.20, Description: "PRET A MANGER BANK"
+1. Date: 2026-09-30, Amount: -£12.00, Description: "BRAND NEW PLACE $& LTD"
+
+Available categories:
+
+Discretionary:
+  - Coffee (id: cat-coffee)
+  - Takeaway (id: cat-takeaway)
+
+Income:
+  - Chris Income (id: cat-income) [INCOME]
+
+Chris's standing policies (always follow):
+- "stripe payments" (money in, on HSBC Joint Current Account) → Chris Income
+- "gridserve" → always flag for Chris (suggest Social Travel)
+
+Recent corrections Chris made to similar transactions (the earlier guess was wrong):
+- "PRET A MANGER LONDON": Eating out → corrected to Coffee
+
+How similar past transactions were settled (by transaction index):
+0. "PRET A MANGER CANARY" → Coffee (2026-09-12, 71% similar)
+1. (no precedent — new merchant)
+
+For each transaction, select the most appropriate category. Consider, in this order:
+- Chris's standing policies (if listed above) — always follow them
+- How similar past transactions were settled (precedents) and Chris's recent corrections
+- The merchant or payee name in the description
+- Common UK transaction patterns (DIRECT DEBIT, CARD PAYMENT, FASTER PAYMENT, etc.)
+- Amount sign: negative = expense, positive = income. A refund belongs in the category of the original spend, not income
+- If a transaction has no precedent, give your best guess but keep confidence at or below 0.7
+
+Respond ONLY with valid JSON array (no markdown, no explanation):
+[
+  {
+    "index": 0,
+    "categoryId": "uuid",
+    "categoryName": "name",
+    "confidence": 0.0 to 1.0,
+    "reasoning": "brief explanation"
+  }
+]"
+`;
