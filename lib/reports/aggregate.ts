@@ -355,6 +355,7 @@ async function fetchNetWorthForMonth(
         .select('account_id, date, amount')
         .in('account_id', transactionalAccountIds)
         .lte('date', monthEndStr)
+        .order('id', { ascending: true })
         .range(txFrom, txFrom + txPageSize - 1);
       if (!page || page.length === 0) break;
       for (const t of page) {
@@ -460,6 +461,7 @@ async function fetchTransactionsForMonth(
       .select('amount, category_id')
       .gte('date', startDate)
       .lt('date', endDate)
+      .order('id', { ascending: true })
       .range(from, from + pageSize - 1);
     if (!page || page.length === 0) break;
     all.push(...page);
@@ -498,6 +500,7 @@ async function fetchMonthlyTrend(
       .select('date, amount, category_id')
       .gte('date', startDate)
       .lt('date', endDate)
+      .order('id', { ascending: true })
       .range(from, from + pageSize - 1);
     if (!page || page.length === 0) break;
     allTransactions.push(...page);

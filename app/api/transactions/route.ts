@@ -41,7 +41,8 @@ export async function GET(request: NextRequest) {
     let queryBuilder = supabaseAdmin
       .from('transactions')
       .select('*, account:accounts(name), category:categories(name, group_name)')
-      .order(sortColumn, { ascending: sortAscending });
+      .order(sortColumn, { ascending: sortAscending })
+      .order('id', { ascending: true }); // tie-break so same-date rows page stably
 
     // Apply filters to both queries
     if (query.account_id) {

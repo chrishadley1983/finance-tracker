@@ -212,11 +212,13 @@ describe('Dashboard By-Category API', () => {
           select: vi.fn().mockReturnValue({
             gte: vi.fn().mockReturnValue({
               lte: vi.fn().mockReturnValue({
-                range: vi.fn().mockResolvedValue({
-                  data: [
-                    { amount: -100, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries', is_income: false, exclude_from_totals: false } },
-                  ],
-                  error: null,
+                order: vi.fn().mockReturnValue({
+                  range: vi.fn().mockResolvedValue({
+                    data: [
+                      { amount: -100, category: { id: TEST_CATEGORY_1_ID, name: 'Groceries', is_income: false, exclude_from_totals: false } },
+                    ],
+                    error: null,
+                  }),
                 }),
               }),
             }),
