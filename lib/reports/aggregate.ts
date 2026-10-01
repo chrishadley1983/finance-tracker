@@ -355,6 +355,7 @@ async function fetchNetWorthForMonth(
         .select('account_id, date, amount')
         .in('account_id', transactionalAccountIds)
         .lte('date', monthEndStr)
+        .order('id', { ascending: true })
         .range(txFrom, txFrom + txPageSize - 1);
       if (!page || page.length === 0) break;
       for (const t of page) {
@@ -460,6 +461,7 @@ async function fetchTransactionsForMonth(
       .select('amount, category_id')
       .gte('date', startDate)
       .lt('date', endDate)
+      .order('id', { ascending: true })
       .range(from, from + pageSize - 1);
     if (!page || page.length === 0) break;
     all.push(...page);
@@ -498,6 +500,7 @@ async function fetchMonthlyTrend(
       .select('date, amount, category_id')
       .gte('date', startDate)
       .lt('date', endDate)
+      .order('id', { ascending: true })
       .range(from, from + pageSize - 1);
     if (!page || page.length === 0) break;
     allTransactions.push(...page);
@@ -589,7 +592,11 @@ async function fetchPriorReport(
 /**
  * Save report data to the monthly_reports table.
  */
-export async function saveMonthlyReport(data: MonthlyReportData, html?: string): Promise<void> {
+export async function saveMonthlyReport(
+  data: MonthlyReportData,
+  html?: string,
+  opts: { generatedAt?: string } = {},
+): Promise<void> {
   const reportSnapshot = {
     net_worth: data.netWorth,
     net_worth_change: data.netWorthChange,
@@ -614,6 +621,9 @@ export async function saveMonthlyReport(data: MonthlyReportData, html?: string):
     year: data.year,
     month: data.month,
     report_data: reportSnapshot,
+    // Always set: generated_at only defaults on INSERT, and month-close
+    // readiness compares it with when the month's data last changed.
+    generated_at: opts.generatedAt ?? new Date().toISOString(),
   };
   if (html) {
     row.report_html = html;
@@ -628,6 +638,7 @@ export async function saveMonthlyReport(data: MonthlyReportData, html?: string):
 
   if (error) {
     console.error('Error saving monthly report:', error);
+    throw new Error(`Failed to save monthly report: ${error.message}`);
   }
 }
 

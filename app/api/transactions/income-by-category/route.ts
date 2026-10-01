@@ -162,6 +162,7 @@ export async function GET(request: NextRequest) {
           .select('amount, category_id')
           .gte('date', startDate)
           .lte('date', endDate)
+          .order('id', { ascending: true })
           .range(offset, offset + batchSize - 1);
 
         if (batchError) {

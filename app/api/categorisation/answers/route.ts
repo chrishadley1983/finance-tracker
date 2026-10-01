@@ -26,11 +26,12 @@ const answersSchema = z.object({
  * Auth: x-api-key = FINANCE_AGENT_KEY (or a logged-in session).
  *
  * Applies each answer as a manual categorisation (corrections recorded,
- * review flag cleared); `always` also creates/updates the rule so future
+ * review flag cleared, row marked is_validated — Chris confirmed it). An answer
+ * matching the current category just validates (no correction). `always` also creates/updates the rule so future
  * transactions follow it. An unknown category id rejects the whole batch
  * (400, nothing written).
  *
- * → { results: [{ index, category_id, requested, applied, missing[], corrections,
+ * → { results: [{ index, category_id, requested, applied, missing[], corrections, validated,
  *                 rule?: { status, ruleId?, pattern?, effective?, reason? } }],
  *     recategorised: { examined, changed, cleared } | null }
  */

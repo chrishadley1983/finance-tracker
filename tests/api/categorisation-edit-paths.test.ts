@@ -107,8 +107,15 @@ describe('A5: every edit path records corrections and clears the flag', () => {
   it('POST /api/categorisation/answers', async () => {
     const res = await POST_ANSWERS(json('http://x/api/categorisation/answers', 'POST', { answers: [{ transaction_ids: [T.aldi], category_id: CAT.groceries }] }, KEY));
     expect(res.status).toBe(200);
-    expect(row(T.aldi)).toMatchObject({ categorisation_source: 'manual', needs_review: false });
+    expect(row(T.aldi)).toMatchObject({ categorisation_source: 'manual', needs_review: false, is_validated: true });
     expect(corrections()).toHaveLength(1);
+  });
+
+  it('only the answers path validates — UI edit paths leave is_validated alone', async () => {
+    await PUT_ONE(json('http://x', 'PUT', { category_id: CAT.groceries }), { params: Promise.resolve({ id: T.aldi }) });
+    await PUT_BULK(json('http://x', 'PUT', { ids: [T.pret], update: { category_id: CAT.coffee } }));
+    await PATCH_QUEUE(json('http://x', 'PATCH', { transactionIds: [T.bena], categoryId: CAT.groceries }));
+    for (const id of [T.aldi, T.pret, T.bena]) expect(row(id).is_validated).toBe(false);
   });
 
   it('no correction when the previous category was already manual, or unchanged', async () => {
@@ -183,6 +190,23 @@ describe('A9: answers endpoint', () => {
     expect(corrections()).toHaveLength(1);
     expect(db.current!.table('category_mappings').filter((r) => r.pattern === 'aldi tonbridge')).toHaveLength(1);
     expect(JSON.stringify({ t: db.current!.table('transactions'), r: db.current!.table('category_mappings') })).toBe(snapshot);
+  });
+
+  it('confirming a Done item (same category) validates it with no correction and no rule', async () => {
+    const res = await POST_ANSWERS(json('http://x', 'POST', { answers: [{ transaction_ids: [T.pret, T.stripe], category_id: CAT.eatingOut }] }, KEY));
+    // pret is already Eating out (pure confirmation); stripe was Transfers (a fix → correction)
+    const out = (await res.json()).results[0];
+    expect(out).toMatchObject({ applied: 2, validated: 2, corrections: 1 });
+    expect(out.rule).toBeUndefined();
+    expect(row(T.pret)).toMatchObject({ category_id: CAT.eatingOut, is_validated: true, needs_review: false });
+    expect(corrections().map((c) => c.transaction_id)).toEqual([T.stripe]);
+    expect(db.current!.table('category_rule_events')).toHaveLength(0);
+  });
+
+  it('rows cleared by the queue re-run are NOT validated — only what Chris named', async () => {
+    await POST_ANSWERS(json('http://x', 'POST', { answers: [{ transaction_ids: [T.bena], category_id: CAT.eatingOut, always: true }] }, KEY));
+    expect(row(T.bena).is_validated).toBe(true);
+    expect(row(T.bena2)).toMatchObject({ needs_review: false, is_validated: false });
   });
 
   it('reports ids that do not exist', async () => {

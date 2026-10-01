@@ -15,6 +15,16 @@ export interface ApplyItem {
   categoryId: string;
 }
 
+export interface ApplyOptions {
+  /**
+   * Also mark the rows `is_validated = true` — Chris has confirmed them
+   * (Peter's digest answers, the finance-recategorise skill). A row whose
+   * category already matches is then a pure confirmation: validated, no
+   * correction recorded.
+   */
+  validate?: boolean;
+}
+
 export interface ApplyItemResult {
   categoryId: string;
   requested: number;
@@ -23,6 +33,8 @@ export interface ApplyItemResult {
   missing: string[];
   /** Corrections recorded (auto category overridden). */
   corrections: number;
+  /** Rows marked validated (only with `validate`). */
+  validated: number;
 }
 
 export class InvalidCategoryError extends Error {
@@ -80,7 +92,7 @@ async function readBefore(ids: string[]): Promise<Map<string, BeforeRow>> {
  * Validate everything first (all categories must exist), then apply. An
  * invalid category rejects the whole batch with nothing written.
  */
-export async function applyManualCategories(items: ApplyItem[]): Promise<ApplyItemResult[]> {
+export async function applyManualCategories(items: ApplyItem[], opts: ApplyOptions = {}): Promise<ApplyItemResult[]> {
   await assertCategoriesExist(items.map((i) => i.categoryId));
 
   const allIds = Array.from(new Set(items.flatMap((i) => i.transactionIds)));
@@ -96,7 +108,12 @@ export async function applyManualCategories(items: ApplyItem[]): Promise<ApplyIt
     for (const part of chunks(present)) {
       const { data, error } = await supabaseAdmin
         .from('transactions')
-        .update({ category_id: item.categoryId, categorisation_source: 'manual', needs_review: false })
+        .update({
+          category_id: item.categoryId,
+          categorisation_source: 'manual',
+          needs_review: false,
+          ...(opts.validate ? { is_validated: true } : {}),
+        })
         .in('id', part)
         .select('id');
       if (error) throw new Error(`Failed to update transactions: ${error.message}`);
@@ -131,7 +148,14 @@ export async function applyManualCategories(items: ApplyItem[]): Promise<ApplyIt
       before.set(id, { ...r, category_id: item.categoryId, categorisation_source: 'manual' });
     }
 
-    results.push({ categoryId: item.categoryId, requested: ids.length, applied, missing, corrections: recorded });
+    results.push({
+      categoryId: item.categoryId,
+      requested: ids.length,
+      applied,
+      missing,
+      corrections: recorded,
+      validated: opts.validate ? applied : 0,
+    });
   }
   return results;
 }

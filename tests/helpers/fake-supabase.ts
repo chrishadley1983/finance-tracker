@@ -60,7 +60,8 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
   }
 
   function builder(name: string) {
-    let op: 'select' | 'insert' | 'update' | 'delete' = 'select';
+    let op: 'select' | 'insert' | 'update' | 'delete' | 'upsert' = 'select';
+    let conflictCols: string[] = [];
     let selectSpec: string | undefined;
     let returning = false;
     let payload: Row | Row[] | null = null;
@@ -85,6 +86,23 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
         rows.push(...list);
         const data = returning ? list.map((r) => project(name, r, selectSpec)) : null;
         return { data: single ? data?.[0] ?? null : data, error: null, count: list.length };
+      }
+      if (op === 'upsert') {
+        const list = Array.isArray(payload) ? payload : [payload!];
+        const out: Row[] = [];
+        for (const r of list) {
+          const hit = conflictCols.length > 0 ? rows.find((x) => conflictCols.every((c) => x[c] === r[c])) : undefined;
+          if (hit) {
+            Object.assign(hit, r);
+            out.push(hit);
+          } else {
+            const row = { id: r.id ?? fakeId(name), created_at: r.created_at ?? new Date().toISOString(), ...r };
+            rows.push(row);
+            out.push(row);
+          }
+        }
+        const data = returning ? out.map((r) => project(name, r, selectSpec)) : null;
+        return { data: single ? data?.[0] ?? null : data, error: null, count: out.length };
       }
       let matched = rows.filter((r) => filters.every((f) => f(r)));
       if (op === 'update') {
@@ -123,6 +141,12 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
       insert(rows: Row | Row[]) {
         op = 'insert';
         payload = rows;
+        return b;
+      },
+      upsert(rows: Row | Row[], opts?: { onConflict?: string }) {
+        op = 'upsert';
+        payload = rows;
+        conflictCols = (opts?.onConflict ?? '').split(',').map((c) => c.trim()).filter(Boolean);
         return b;
       },
       update(values: Row) {
