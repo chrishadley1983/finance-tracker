@@ -12,19 +12,27 @@ export {
   clearCategoriesCache,
   checkAIAvailability,
   CONFIDENCE_REVIEW_THRESHOLD,
+  toDbCategorisationSource,
+  toTransactionCategoryFields,
   type ParsedTransaction,
   type CategorisationResult,
   type CategorisationStats,
+  type EngineSource,
 } from './engine';
 
-export { normaliseDescription, merchantKey, isMineablePattern } from './normalise';
+export { normaliseDescription, normalisePattern, merchantKey, isMineablePattern } from './normalise';
 
 export {
   matchRule,
   matchExactRule,
   matchPatternRule,
   matchRulesBatch,
+  selectRule,
+  ruleApplies,
+  isPolicyRule,
   type RuleMatch,
+  type RuleRecord,
+  type RuleContext,
 } from './rule-matcher';
 
 export {

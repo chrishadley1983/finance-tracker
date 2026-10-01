@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { recordCorrection } from '@/lib/categorisation/learning';
+import { applyManualCategories, InvalidCategoryError } from '@/lib/categorisation/apply';
 import { updateTransactionSchema } from '@/lib/validations/transactions';
 import { ZodError } from 'zod';
 
@@ -39,60 +39,34 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const validated = updateTransactionSchema.parse(body);
 
-    // A category change by hand is a correction to feed the learning loop:
-    // snapshot the row first, and promote the source to 'manual'.
-    let correction: {
-      description: string;
-      originalCategoryId: string | null;
-      originalSource: string;
-    } | null = null;
-    if (validated.category_id !== undefined && validated.category_id !== null) {
-      const { data: existing } = await supabaseAdmin
-        .from('transactions')
-        .select('description, category_id, categorisation_source')
-        .eq('id', id)
-        .single();
-      if (
-        existing &&
-        existing.categorisation_source !== 'manual' &&
-        existing.category_id !== validated.category_id
-      ) {
-        correction = {
-          description: existing.description,
-          originalCategoryId: existing.category_id,
-          originalSource: existing.categorisation_source,
-        };
-      }
-      if (!validated.categorisation_source) {
-        validated.categorisation_source = 'manual';
+    // A category set by hand goes through the shared path: manual source,
+    // review flag cleared, correction recorded for the learning loop.
+    const { category_id, categorisation_source, ...otherFields } = validated;
+    if (category_id) {
+      const [result] = await applyManualCategories([{ transactionIds: [id], categoryId: category_id }]);
+      if (result.applied === 0) {
+        return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
       }
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('transactions')
-      .update(validated)
-      .eq('id', id)
-      .select()
-      .single();
+    // Everything else is a plain update (clearing the category, dates, amounts…).
+    const remaining: Record<string, unknown> = { ...otherFields };
+    if (category_id === null) remaining.category_id = null;
+    if (!category_id && categorisation_source !== undefined) {
+      remaining.categorisation_source = categorisation_source;
+    }
+
+    const query =
+      Object.keys(remaining).length > 0
+        ? supabaseAdmin.from('transactions').update(remaining).eq('id', id).select().single()
+        : supabaseAdmin.from('transactions').select().eq('id', id).single();
+    const { data, error } = await query;
 
     if (error) {
       if (error.code === 'PGRST116') {
         return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    if (correction && validated.category_id) {
-      try {
-        await recordCorrection({
-          description: correction.description,
-          originalCategoryId: correction.originalCategoryId,
-          correctedCategoryId: validated.category_id,
-          originalSource: correction.originalSource,
-        });
-      } catch (e) {
-        console.warn('Failed to record correction:', e);
-      }
     }
 
     return NextResponse.json(data);
@@ -102,6 +76,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         { error: 'Validation error', details: error.issues },
         { status: 400 }
       );
+    }
+    if (error instanceof InvalidCategoryError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
     console.error('PUT /api/transactions/[id] error:', error);
     return NextResponse.json(

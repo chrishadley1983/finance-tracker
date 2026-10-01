@@ -1,16 +1,27 @@
 /**
  * Rule Matcher
  *
- * Matches transaction descriptions against category_mappings rules.
- * Supports exact, contains, and regex match types.
+ * Matches transactions against category_mappings rules.
+ *
+ * Order of precedence:
+ * 1. Policy rules — `is_system`, or any rule with an account / sign / amount
+ *    condition or the `ask` action. Chris's standing decisions; the most
+ *    specific matching policy wins (most conditions, then confidence, then
+ *    longest pattern).
+ * 2. Exact rules.
+ * 3. Contains rules — token-bounded against the normalised description
+ *    (highest confidence, then longest pattern).
+ * 4. Regex rules (raw description).
  */
 
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { normaliseDescription } from './normalise';
+import { normaliseDescription, normalisePattern } from './normalise';
 
 // =============================================================================
 // TYPES
 // =============================================================================
+
+export type RuleAction = 'categorise' | 'ask';
 
 export interface RuleMatch {
   ruleId: string;
@@ -19,18 +30,47 @@ export interface RuleMatch {
   pattern: string;
   matchType: 'exact' | 'contains' | 'regex';
   confidence: number;
+  isPolicy: boolean;
+  action: RuleAction;
 }
 
-interface CategoryMapping {
+export interface RuleRecord {
   id: string;
   pattern: string;
   category_id: string;
   match_type: 'exact' | 'contains' | 'regex';
   confidence: number;
+  is_system?: boolean | null;
+  account_id?: string | null;
+  amount_sign?: string | null;
+  amount_min?: number | string | null;
+  amount_max?: number | string | null;
+  /** ISO weekdays (1=Mon … 7=Sun) of the transaction date. */
+  days_of_week?: number[] | null;
+  action?: string | null;
+  notes?: string | null;
   categories: {
     id: string;
     name: string;
-  };
+  } | null;
+}
+
+/** What a rule is evaluated against. Amount/account/date are needed for policy conditions. */
+export interface RuleContext {
+  description: string;
+  amount?: number;
+  accountId?: string | null;
+  /** Transaction date, YYYY-MM-DD (for day-of-week conditions). */
+  date?: string | null;
+}
+
+/** ISO weekday (1=Mon … 7=Sun) of a YYYY-MM-DD date, or null if unparseable. */
+export function isoWeekday(date: string | null | undefined): number | null {
+  if (!date || !/^\d{4}-\d{2}-\d{2}/.test(date)) return null;
+  const d = new Date(`${date.slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return null;
+  const js = d.getUTCDay(); // 0 = Sun
+  return js === 0 ? 7 : js;
 }
 
 // =============================================================================
@@ -38,11 +78,11 @@ interface CategoryMapping {
 // =============================================================================
 
 // Simple in-memory cache for rules (refreshed every 5 minutes)
-let rulesCache: CategoryMapping[] | null = null;
+let rulesCache: RuleRecord[] | null = null;
 let rulesCacheTimestamp = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-async function getRules(): Promise<CategoryMapping[]> {
+export async function getRules(): Promise<RuleRecord[]> {
   const now = Date.now();
 
   if (rulesCache && now - rulesCacheTimestamp < CACHE_TTL) {
@@ -58,6 +98,14 @@ async function getRules(): Promise<CategoryMapping[]> {
       category_id,
       match_type,
       confidence,
+      is_system,
+      account_id,
+      amount_sign,
+      amount_min,
+      amount_max,
+      days_of_week,
+      action,
+      notes,
       categories (
         id,
         name
@@ -71,7 +119,7 @@ async function getRules(): Promise<CategoryMapping[]> {
     return rulesCache || [];
   }
 
-  rulesCache = data as unknown as CategoryMapping[];
+  rulesCache = data as unknown as RuleRecord[];
   rulesCacheTimestamp = now;
   return rulesCache;
 }
@@ -85,205 +133,208 @@ export function clearRulesCache(): void {
 }
 
 // =============================================================================
+// PURE MATCHING
+// =============================================================================
+
+const AMOUNT_EPSILON = 0.005;
+
+function num(v: number | string | null | undefined): number | null {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function hasDays(rule: RuleRecord): boolean {
+  return Array.isArray(rule.days_of_week) && rule.days_of_week.length > 0;
+}
+
+/** Number of conditions a rule carries (account, sign, min, max, days of week). */
+export function conditionCount(rule: RuleRecord): number {
+  return (
+    (rule.account_id ? 1 : 0) +
+    (rule.amount_sign ? 1 : 0) +
+    (num(rule.amount_min) !== null ? 1 : 0) +
+    (num(rule.amount_max) !== null ? 1 : 0) +
+    (hasDays(rule) ? 1 : 0)
+  );
+}
+
+/** Policy rules are Chris's standing decisions and are evaluated first. */
+export function isPolicyRule(rule: RuleRecord): boolean {
+  return Boolean(rule.is_system) || rule.action === 'ask' || conditionCount(rule) > 0;
+}
+
+/** All present conditions must hold; a condition on unknown context never matches. */
+export function conditionsMatch(rule: RuleRecord, ctx: RuleContext): boolean {
+  if (rule.account_id) {
+    if (!ctx.accountId || ctx.accountId !== rule.account_id) return false;
+  }
+  const needsAmount = rule.amount_sign || num(rule.amount_min) !== null || num(rule.amount_max) !== null;
+  if (needsAmount) {
+    if (ctx.amount === undefined || ctx.amount === null || !Number.isFinite(ctx.amount)) return false;
+    if (rule.amount_sign === 'debit' && !(ctx.amount < 0)) return false;
+    if (rule.amount_sign === 'credit' && !(ctx.amount > 0)) return false;
+    const abs = Math.abs(ctx.amount);
+    const min = num(rule.amount_min);
+    const max = num(rule.amount_max);
+    if (min !== null && abs < min - AMOUNT_EPSILON) return false;
+    if (max !== null && abs > max + AMOUNT_EPSILON) return false;
+  }
+  if (hasDays(rule)) {
+    const day = isoWeekday(ctx.date);
+    if (day === null || !rule.days_of_week!.map(Number).includes(day)) return false;
+  }
+  return true;
+}
+
+interface PreparedDescription {
+  raw: string;
+  lower: string;
+  merchant: string;
+  /** Lowercase, punctuation → spaces, digits KEPT — for patterns that contain digits. */
+  light: string;
+}
+
+function prepare(description: string): PreparedDescription {
+  return {
+    raw: description,
+    lower: description.toLowerCase().trim(),
+    merchant: normaliseDescription(description),
+    light: normalisePattern(description),
+  };
+}
+
+/** Does the rule's pattern match the description (ignoring conditions)? */
+function patternMatches(rule: RuleRecord, d: PreparedDescription): boolean {
+  if (rule.match_type === 'exact') {
+    const p = rule.pattern.toLowerCase().trim();
+    return d.lower === p || d.merchant === normalisePattern(rule.pattern);
+  }
+  if (rule.match_type === 'contains') {
+    // Token-bounded on the normalised description only, so "aldi" can't hit
+    // "vivaldi" and a legacy label like "Energy" can't hit "...ENERGYDRINK".
+    const p = normalisePattern(rule.pattern);
+    if (!p) return false;
+    // The merchant normaliser drops digit-bearing tokens (order/branch refs),
+    // so a hand-made pattern that itself contains digits ("micro1", "h3g")
+    // is matched against the lightly-normalised description instead.
+    const haystack = /\d/.test(p) ? d.light : d.merchant;
+    return ` ${haystack} `.includes(` ${p} `);
+  }
+  try {
+    return new RegExp(rule.pattern, 'i').test(d.raw);
+  } catch {
+    console.warn(`Invalid regex pattern in rule ${rule.id}: ${rule.pattern}`);
+    return false;
+  }
+}
+
+/** Does this one rule apply to this transaction (pattern + conditions)? */
+export function ruleApplies(rule: RuleRecord, ctx: RuleContext): boolean {
+  return patternMatches(rule, prepare(ctx.description)) && conditionsMatch(rule, ctx);
+}
+
+function toMatch(rule: RuleRecord): RuleMatch {
+  return {
+    ruleId: rule.id,
+    categoryId: rule.category_id,
+    categoryName: rule.categories?.name || 'Unknown',
+    pattern: rule.pattern,
+    matchType: rule.match_type,
+    confidence: Number(rule.confidence),
+    isPolicy: isPolicyRule(rule),
+    action: rule.action === 'ask' ? 'ask' : 'categorise',
+  };
+}
+
+function better(a: RuleRecord, b: RuleRecord, byConditions: boolean): boolean {
+  if (byConditions) {
+    const ca = conditionCount(a);
+    const cb = conditionCount(b);
+    if (ca !== cb) return ca > cb;
+  }
+  const fa = Number(a.confidence);
+  const fb = Number(b.confidence);
+  if (fa !== fb) return fa > fb;
+  if (a.pattern.length !== b.pattern.length) return a.pattern.length > b.pattern.length;
+  // Deterministic last resort, independent of DB row order.
+  return a.id < b.id;
+}
+
+/** Pure: pick the winning rule for a transaction, or null. */
+export function selectRule(rules: RuleRecord[], ctx: RuleContext): RuleMatch | null {
+  const d = prepare(ctx.description);
+  let policy: RuleRecord | null = null;
+  let exact: RuleRecord | null = null;
+  let contains: RuleRecord | null = null;
+  let regex: RuleRecord | null = null;
+
+  for (const rule of rules) {
+    if (!patternMatches(rule, d)) continue;
+    if (isPolicyRule(rule)) {
+      if (!conditionsMatch(rule, ctx)) continue;
+      if (!policy || better(rule, policy, true)) policy = rule;
+    } else if (rule.match_type === 'exact') {
+      if (!exact) exact = rule;
+    } else if (rule.match_type === 'contains') {
+      if (!contains || better(rule, contains, false)) contains = rule;
+    } else if (!regex || Number(rule.confidence) > Number(regex.confidence)) {
+      regex = rule;
+    }
+  }
+
+  const winner = policy ?? exact ?? contains ?? regex;
+  return winner ? toMatch(winner) : null;
+}
+
+// =============================================================================
 // MATCHING FUNCTIONS
 // =============================================================================
 
+function toContext(input: string | RuleContext): RuleContext {
+  return typeof input === 'string' ? { description: input } : input;
+}
+
 /**
- * Match a description against exact match rules.
+ * Match a description against exact match rules (non-policy).
  * Case-insensitive comparison.
  */
 export async function matchExactRule(description: string): Promise<RuleMatch | null> {
   const rules = await getRules();
-  const normalizedDesc = description.toLowerCase().trim();
-  const merchantDesc = normaliseDescription(description);
-
-  for (const rule of rules) {
-    if (rule.match_type !== 'exact') continue;
-
-    const normalizedPattern = rule.pattern.toLowerCase().trim();
-    if (normalizedDesc === normalizedPattern || merchantDesc === normalizedPattern) {
-      return {
-        ruleId: rule.id,
-        categoryId: rule.category_id,
-        categoryName: rule.categories?.name || 'Unknown',
-        pattern: rule.pattern,
-        matchType: 'exact',
-        confidence: Number(rule.confidence),
-      };
-    }
-  }
-
-  return null;
+  return selectRule(
+    rules.filter((r) => r.match_type === 'exact' && !isPolicyRule(r)),
+    { description }
+  );
 }
 
 /**
- * Match a description against pattern rules (contains or regex).
+ * Match a description against pattern rules (contains or regex, non-policy).
  * Returns the highest confidence match.
  */
 export async function matchPatternRule(description: string): Promise<RuleMatch | null> {
   const rules = await getRules();
-  const normalizedDesc = description.toLowerCase().trim();
-  const merchantDesc = normaliseDescription(description);
-
-  let bestMatch: RuleMatch | null = null;
-
-  for (const rule of rules) {
-    if (rule.match_type === 'exact') continue;
-
-    let isMatch = false;
-
-    if (rule.match_type === 'contains') {
-      const normalizedPattern = rule.pattern.toLowerCase().trim();
-      // Raw text catches legacy label rules; normalised text catches mined
-      // merchant rules ("aldi tonbridge") behind processor prefixes/refs.
-      // Normalised matching is token-bounded so "aldi" can't hit "vivaldi".
-      isMatch =
-        normalizedDesc.includes(normalizedPattern) ||
-        ` ${merchantDesc} `.includes(` ${normalizedPattern} `);
-    } else if (rule.match_type === 'regex') {
-      try {
-        const regex = new RegExp(rule.pattern, 'i');
-        isMatch = regex.test(description);
-      } catch {
-        // Invalid regex pattern - skip
-        console.warn(`Invalid regex pattern in rule ${rule.id}: ${rule.pattern}`);
-        continue;
-      }
-    }
-
-    if (isMatch) {
-      const match: RuleMatch = {
-        ruleId: rule.id,
-        categoryId: rule.category_id,
-        categoryName: rule.categories?.name || 'Unknown',
-        pattern: rule.pattern,
-        matchType: rule.match_type,
-        confidence: Number(rule.confidence),
-      };
-
-      // Keep highest confidence match; prefer the more specific (longer)
-      // pattern on ties so "amazon prime" beats "amazon".
-      if (
-        !bestMatch ||
-        match.confidence > bestMatch.confidence ||
-        (match.confidence === bestMatch.confidence && match.pattern.length > bestMatch.pattern.length)
-      ) {
-        bestMatch = match;
-      }
-    }
-  }
-
-  return bestMatch;
+  return selectRule(
+    rules.filter((r) => r.match_type !== 'exact' && !isPolicyRule(r)),
+    { description }
+  );
 }
 
 /**
- * Match a description against all rules (exact first, then patterns).
- * Returns the best match considering priority: exact > contains > regex.
+ * Match a transaction against all rules (policy → exact → contains → regex).
  */
-export async function matchRule(description: string): Promise<RuleMatch | null> {
-  // Try exact match first (highest priority)
-  const exactMatch = await matchExactRule(description);
-  if (exactMatch) {
-    return exactMatch;
-  }
-
-  // Fall back to pattern matching
-  return matchPatternRule(description);
+export async function matchRule(input: string | RuleContext): Promise<RuleMatch | null> {
+  const rules = await getRules();
+  return selectRule(rules, toContext(input));
 }
 
 /**
- * Match multiple descriptions against rules (batch operation).
- * More efficient than calling matchRule for each description.
+ * Match multiple transactions against rules (batch operation, one rules read).
  */
 export async function matchRulesBatch(
-  descriptions: string[]
+  inputs: Array<string | RuleContext>
 ): Promise<Map<number, RuleMatch | null>> {
   const rules = await getRules();
   const results = new Map<number, RuleMatch | null>();
-
-  // Separate rules by type for efficient matching
-  const exactRules = rules.filter((r) => r.match_type === 'exact');
-  const containsRules = rules.filter((r) => r.match_type === 'contains');
-  const regexRules = rules.filter((r) => r.match_type === 'regex');
-
-  // Compile regex patterns once
-  const compiledRegexes = regexRules
-    .map((rule) => {
-      try {
-        return { rule, regex: new RegExp(rule.pattern, 'i') };
-      } catch {
-        return null;
-      }
-    })
-    .filter((r): r is { rule: CategoryMapping; regex: RegExp } => r !== null);
-
-  for (let i = 0; i < descriptions.length; i++) {
-    const description = descriptions[i];
-    const normalizedDesc = description.toLowerCase().trim();
-    const merchantDesc = normaliseDescription(description);
-    let match: RuleMatch | null = null;
-
-    // Try exact match first
-    for (const rule of exactRules) {
-      const pattern = rule.pattern.toLowerCase().trim();
-      if (normalizedDesc === pattern || merchantDesc === pattern) {
-        match = {
-          ruleId: rule.id,
-          categoryId: rule.category_id,
-          categoryName: rule.categories?.name || 'Unknown',
-          pattern: rule.pattern,
-          matchType: 'exact',
-          confidence: Number(rule.confidence),
-        };
-        break;
-      }
-    }
-
-    // Try contains match
-    if (!match) {
-      for (const rule of containsRules) {
-        const pattern = rule.pattern.toLowerCase().trim();
-        if (normalizedDesc.includes(pattern) || ` ${merchantDesc} `.includes(` ${pattern} `)) {
-          const candidate: RuleMatch = {
-            ruleId: rule.id,
-            categoryId: rule.category_id,
-            categoryName: rule.categories?.name || 'Unknown',
-            pattern: rule.pattern,
-            matchType: 'contains',
-            confidence: Number(rule.confidence),
-          };
-          if (
-            !match ||
-            candidate.confidence > match.confidence ||
-            (candidate.confidence === match.confidence && candidate.pattern.length > match.pattern.length)
-          ) {
-            match = candidate;
-          }
-        }
-      }
-    }
-
-    // Try regex match
-    if (!match) {
-      for (const { rule, regex } of compiledRegexes) {
-        if (regex.test(description)) {
-          const candidate: RuleMatch = {
-            ruleId: rule.id,
-            categoryId: rule.category_id,
-            categoryName: rule.categories?.name || 'Unknown',
-            pattern: rule.pattern,
-            matchType: 'regex',
-            confidence: Number(rule.confidence),
-          };
-          if (!match || candidate.confidence > match.confidence) {
-            match = candidate;
-          }
-        }
-      }
-    }
-
-    results.set(i, match);
-  }
-
+  inputs.forEach((input, i) => results.set(i, selectRule(rules, toContext(input))));
   return results;
 }

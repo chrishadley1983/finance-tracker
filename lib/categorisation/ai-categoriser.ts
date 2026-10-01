@@ -17,17 +17,24 @@ import {
   type TransactionForCategorisation,
   type AICategorisationResult as AICategorisationResultType,
   type BatchCategorisationResult,
+  type PromptContext,
 } from './prompts/categorise';
 
-// Re-export the type for external use
-export type AICategorisationResult = AICategorisationResultType;
+/**
+ * AI result as returned to the engine. `categoryId` is null when Claude named
+ * a category that doesn't exist (by id or name) — the row must then stay
+ * uncategorised rather than carry an id that breaks the FK on insert.
+ */
+export type AICategorisationResult = Omit<AICategorisationResultType, 'categoryId'> & {
+  categoryId: string | null;
+};
 
 // =============================================================================
 // CONFIGURATION
 // =============================================================================
 
 const AI_CONFIG = {
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-5',
   maxTokens: 2048,
   timeout: 30000,
   maxBatchSize: 10,
@@ -210,8 +217,7 @@ export async function categoriseWithAI(
         if (matchByName) {
           parsed.categoryId = matchByName.id;
         } else {
-          // Lower confidence if category not found
-          parsed.confidence = Math.min(parsed.confidence, 0.3);
+          return { ...parsed, categoryId: null, confidence: 0 };
         }
       }
 
@@ -263,7 +269,8 @@ export async function categoriseWithAI(
  * More efficient than calling categoriseWithAI for each transaction.
  */
 export async function categoriseBatchWithAI(
-  transactions: TransactionForCategorisation[]
+  transactions: TransactionForCategorisation[],
+  context?: PromptContext
 ): Promise<Map<number, AICategorisationResult>> {
   if (transactions.length === 0) {
     return new Map();
@@ -275,7 +282,10 @@ export async function categoriseBatchWithAI(
     const results = new Map<number, AICategorisationResult>();
     for (let i = 0; i < transactions.length; i += AI_CONFIG.maxBatchSize) {
       const chunk = transactions.slice(i, i + AI_CONFIG.maxBatchSize);
-      const chunkResults = await categoriseBatchWithAI(chunk);
+      const chunkContext = context
+        ? { ...context, precedents: context.precedents.slice(i, i + AI_CONFIG.maxBatchSize) }
+        : undefined;
+      const chunkResults = await categoriseBatchWithAI(chunk, chunkContext);
 
       // Re-index results
       Array.from(chunkResults.entries()).forEach(([index, result]) => {
@@ -291,7 +301,7 @@ export async function categoriseBatchWithAI(
     throw new AICategorisationError('No categories available', 'API_ERROR');
   }
 
-  const prompt = buildBatchCategorisePrompt(transactions, categories);
+  const prompt = buildBatchCategorisePrompt(transactions, categories, context);
 
   const client = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
@@ -353,22 +363,24 @@ export async function categoriseBatchWithAI(
       const results = new Map<number, AICategorisationResult>();
 
       for (const item of parsed as BatchCategorisationResult[]) {
+        if (item.index < 0 || item.index >= transactions.length) continue;
         const isValid = await validateCategoryId(item.categoryId);
-        let categoryId = item.categoryId;
+        let categoryId: string | null = item.categoryId;
+        let categoryName = item.categoryName;
 
         if (!isValid) {
           const matchByName = categories.find(
             (c) => c.name.toLowerCase() === item.categoryName.toLowerCase()
           );
-          if (matchByName) {
-            categoryId = matchByName.id;
-          }
+          // Unknown id and no name match → no category (never an invalid FK).
+          categoryId = matchByName ? matchByName.id : null;
+          if (matchByName) categoryName = matchByName.name;
         }
 
         results.set(item.index, {
           categoryId,
-          categoryName: item.categoryName,
-          confidence: isValid ? item.confidence : Math.min(item.confidence, 0.3),
+          categoryName,
+          confidence: categoryId ? (isValid ? item.confidence : Math.min(item.confidence, 0.3)) : 0,
           reasoning: item.reasoning,
         });
       }
@@ -422,18 +434,16 @@ export async function categoriseBatchWithAI(
 export async function trackAIUsage(count: number = 1): Promise<void> {
   const today = new Date().toISOString().split('T')[0];
 
-  await supabaseAdmin
-    .from('ai_usage_tracking')
-    .upsert(
-      {
-        date: today,
-        usage_type: 'categorisation',
-        count: count,
-      },
-      {
-        onConflict: 'date,usage_type',
-      }
-    );
+  // Atomic increment (INSERT … ON CONFLICT DO UPDATE count = count + n). The
+  // old upsert had no matching unique index and silently failed for months.
+  const { error } = await supabaseAdmin.rpc('increment_ai_usage', {
+    p_date: today,
+    p_usage_type: 'categorisation',
+    p_count: count,
+  });
+  if (error) {
+    console.warn('Failed to track AI usage:', error.message);
+  }
 }
 
 /**

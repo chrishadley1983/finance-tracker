@@ -18,11 +18,11 @@ describe('normaliseDescription', () => {
   it('strips stacked INT\'L + FX noise', () => {
     expect(
       normaliseDescription("INT'L 0002211029 Pandreitje 1806 Br Brugge EUR 5.30 @ 1.1521 Visa Rate )))")
-    ).toBe('pandreitje 1806 br brugge');
+    ).toBe('pandreitje br brugge');
   });
 
   it('strips Zettle prefix', () => {
-    expect(normaliseDescription('ZETTLE_*CABLE 8 LTLONDON')).toBe('cable 8 ltlondon');
+    expect(normaliseDescription('ZETTLE_*CABLE 8 LTLONDON')).toBe('cable ltlondon');
     expect(normaliseDescription('Zettle_*GamekeeperLondon')).toBe('gamekeeperlondon');
   });
 
@@ -87,6 +87,7 @@ describe('isMineablePattern', () => {
   it('rejects short or numeric keys', () => {
     expect(isMineablePattern('ok')).toBe(false);
     expect(isMineablePattern('12345')).toBe(false);
+    expect(isMineablePattern('ebay o 23')).toBe(false);
     expect(isMineablePattern('')).toBe(false);
   });
 });

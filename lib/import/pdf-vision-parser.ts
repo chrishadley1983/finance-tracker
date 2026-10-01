@@ -22,7 +22,7 @@ import type { PdfPage } from './pdf-extractor';
 // =============================================================================
 
 const VISION_CONFIG = {
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-5',
   maxTokens: 4096,
   timeout: 60000, // 60 seconds (longer than text due to image processing)
   maxRetries: 1,

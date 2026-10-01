@@ -49,7 +49,7 @@ export class AIMappingError extends Error {
 // =============================================================================
 
 const AI_CONFIG = {
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-5',
   maxTokens: 1024,
   timeout: 30000, // 30 seconds
   maxRetries: 1,
