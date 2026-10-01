@@ -78,10 +78,10 @@ describe('Categorisation Engine', () => {
   });
 
   describe('rules', () => {
-    it('passes amount and account to the rule matcher (policies need them)', async () => {
+    it('passes amount, account and date to the rule matcher (policies need them)', async () => {
       rulesFor([ruleMatch({})]);
       await categoriseMultiple([tx('TESCO', -12.5, 'acct-1')]);
-      expect(matchRulesBatch).toHaveBeenCalledWith([{ description: 'TESCO', amount: -12.5, accountId: 'acct-1' }]);
+      expect(matchRulesBatch).toHaveBeenCalledWith([{ description: 'TESCO', amount: -12.5, accountId: 'acct-1', date: '2026-09-30' }]);
     });
 
     it('exact and pattern rules map to rule_exact / rule_pattern and are auto-applied at ≥0.8', async () => {

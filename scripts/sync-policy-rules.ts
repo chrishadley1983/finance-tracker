@@ -18,6 +18,7 @@ async function main() {
   console.log(`Policies: ${res.inserted.length} ${verb} inserted, ${res.updated.length} ${verb} updated, ${res.unchanged.length} unchanged`);
   if (res.inserted.length) console.log(`  inserted: ${res.inserted.join(', ')}`);
   if (res.updated.length) console.log(`  updated:  ${res.updated.join(', ')}`);
+  if (res.deleted.length) console.log(`  retired (deleted): ${res.deleted.join(', ')}`);
   if (res.overridden.length) {
     console.log(`  ⚠ overridden by Chris's "always" answers (left as-is — update policies.ts): ${res.overridden.join(', ')}`);
   }

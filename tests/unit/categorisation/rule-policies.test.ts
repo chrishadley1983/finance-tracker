@@ -6,10 +6,11 @@ import {
   selectRule,
   conditionsMatch,
   isPolicyRule,
+  isoWeekday,
   ruleApplies,
   type RuleRecord,
 } from '@/lib/categorisation/rule-matcher';
-import { POLICIES, POLICY_CONFIDENCE } from '@/lib/categorisation/policies';
+import { POLICIES, POLICY_CONFIDENCE, RETIRED_POLICY_KEYS } from '@/lib/categorisation/policies';
 import { policyRow } from '@/lib/categorisation/policy-sync';
 
 const JOINT = 'acct-joint';
@@ -148,8 +149,10 @@ describe("Chris's seeded policies (A4)", () => {
   ];
   const rules = [...distractors, ...policyRules];
 
-  const decide = (description: string, amount: number, accountId: string = JOINT) =>
-    selectRule(rules, { description, amount, accountId });
+  const WEEKDAY = '2026-09-29'; // Tuesday
+  const decide = (description: string, amount: number, accountId: string = JOINT, date: string = WEEKDAY) =>
+    selectRule(rules, { description, amount, accountId, date });
+
 
   it('every policy is an is_system rule at the policy confidence', () => {
     for (const r of policyRules) {
@@ -169,10 +172,6 @@ describe("Chris's seeded policies (A4)", () => {
     ['SP HORSHAM COFFEE RO BURGESS HILL LND', -44.6, 'Groceries'],
     ['Non-Sterling Transaction Fee', -0.51, 'Holiday Travel'],
     ['NON-STERLING TRANSACTION FEE', -7.54, 'Holiday Travel'],
-    ['SE TONBRIDGE SST TONBRIDGE-TN9 )))', -19.2, 'Work Travel'],
-    ['SE TONBRIDGE SST TONBRIDGE-TN9 VIS', -19.2, 'Work Travel'],
-    ['SE TONBRIDGE SST TONBRIDGE-TN9', -40.7, 'Work Travel'],
-    ['SE TONBRIDGE SST TONBRIDGE-TN9 )))', -22.9, 'Social Travel'],
     ['PAYMENT - THANK YOU', 250, 'Credit card payments'],
     ['INTEREST', -12.4, 'Service fees & bank charges'],
   ])('%s (%d) → %s', (description, amount, expected) => {
@@ -201,5 +200,75 @@ describe("Chris's seeded policies (A4)", () => {
     const m = decide(description, -25);
     expect(m?.action).toBe('ask');
     expect(m?.categoryName).toBe('Social Travel');
+  });
+
+  // Chris, 2026-10-01: under £20 → Social; Sat/Sun → Social; weekday £20+ → Work.
+  const SAT = '2026-10-03';
+  const SUN = '2026-10-04';
+  const FRI = '2026-10-02';
+  it.each([
+    ['weekday £19.20 (was Work under the old policy)', -19.2, WEEKDAY, 'Social Travel'],
+    ['weekday £19.99', -19.99, WEEKDAY, 'Social Travel'],
+    ['weekday £20.00 (boundary)', -20, WEEKDAY, 'Work Travel'],
+    ['weekday £22.90', -22.9, WEEKDAY, 'Work Travel'],
+    ['Friday £40.70', -40.7, FRI, 'Work Travel'],
+    ['Saturday £40.70', -40.7, SAT, 'Social Travel'],
+    ['Sunday £37.60', -37.6, SUN, 'Social Travel'],
+    ['Sunday £19.20', -19.2, SUN, 'Social Travel'],
+    ['a refund (credit)', 40.7, WEEKDAY, 'Social Travel'],
+  ])('SE Tonbridge: %s → %s', (_label, amount, date, expected) => {
+    expect(decide('SE TONBRIDGE SST TONBRIDGE-TN9 )))', amount as number, JOINT, date as string)?.categoryName).toBe(expected);
+  });
+
+  it('SE Tonbridge outcome does not depend on rule order', () => {
+    const cases: [number, string][] = [[-19.2, WEEKDAY], [-40.7, WEEKDAY], [-40.7, SAT], [-19.2, SUN], [-25, FRI]];
+    const reversed = [...rules].reverse();
+    for (const [amount, date] of cases) {
+      const ctx = { description: 'SE TONBRIDGE SST TONBRIDGE-TN9', amount, accountId: JOINT, date };
+      expect(selectRule(reversed, ctx)?.categoryName).toBe(selectRule(rules, ctx)?.categoryName);
+    }
+  });
+
+  it('a weekday £20+ fare matches ONLY the Work row; a weekend £20+ fare never matches it', () => {
+    const work = policyRules.find((r) => r.id === 'policy:se-tonbridge-weekday-20-plus')!;
+    expect(conditionsMatch(work, { description: 'x', amount: -40.7, date: WEEKDAY })).toBe(true);
+    expect(conditionsMatch(work, { description: 'x', amount: -40.7, date: SAT })).toBe(false);
+    expect(conditionsMatch(work, { description: 'x', amount: -19.2, date: WEEKDAY })).toBe(false);
+  });
+
+  it('the retired £19.20/£40.70 policies are gone from POLICIES and listed as retired', () => {
+    expect(POLICIES.map((p) => p.key)).not.toContain('se-tonbridge-commute-1920');
+    expect(RETIRED_POLICY_KEYS).toEqual(expect.arrayContaining(['se-tonbridge-commute-1920', 'se-tonbridge-commute-4070']));
+  });
+});
+
+describe('day-of-week condition', () => {
+  it('isoWeekday maps dates to ISO weekdays (1=Mon … 7=Sun)', () => {
+    expect(isoWeekday('2026-09-28')).toBe(1); // Monday
+    expect(isoWeekday('2026-10-01')).toBe(4); // Thursday
+    expect(isoWeekday('2026-10-03')).toBe(6); // Saturday
+    expect(isoWeekday('2026-10-04')).toBe(7); // Sunday
+    expect(isoWeekday('2026-10-04T23:30:00Z')).toBe(7);
+    expect(isoWeekday(null)).toBeNull();
+    expect(isoWeekday('not a date')).toBeNull();
+  });
+
+  it('matches only the listed weekdays; unknown date never matches', () => {
+    const weekend = rule({ pattern: 'p', category_id: 'c', days_of_week: [6, 7] });
+    expect(conditionsMatch(weekend, { description: 'p', date: '2026-10-03' })).toBe(true);
+    expect(conditionsMatch(weekend, { description: 'p', date: '2026-10-04' })).toBe(true);
+    expect(conditionsMatch(weekend, { description: 'p', date: '2026-10-02' })).toBe(false);
+    expect(conditionsMatch(weekend, { description: 'p' })).toBe(false);
+  });
+
+  it('counts as a condition (makes the rule a policy, adds specificity)', () => {
+    const r = rule({ pattern: 'p', category_id: 'c', days_of_week: [1] });
+    expect(isPolicyRule(r)).toBe(true);
+    const rules = [
+      rule({ pattern: 'cafe', category_id: 'any', amount_sign: 'debit' }),
+      rule({ pattern: 'cafe', category_id: 'weekend', amount_sign: 'debit', days_of_week: [6, 7] }),
+    ];
+    expect(selectRule(rules, { description: 'CAFE', amount: -3, date: '2026-10-03' })?.categoryId).toBe('weekend');
+    expect(selectRule(rules, { description: 'CAFE', amount: -3, date: '2026-10-01' })?.categoryId).toBe('any');
   });
 });

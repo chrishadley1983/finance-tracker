@@ -459,6 +459,7 @@ export type Database = {
           amount_max: number | null
           amount_min: number | null
           amount_sign: string | null
+          days_of_week: number[] | null
           updated_at: string | null
           category_id: string
           confidence: number
@@ -475,6 +476,7 @@ export type Database = {
           amount_max?: number | null
           amount_min?: number | null
           amount_sign?: string | null
+          days_of_week?: number[] | null
           updated_at?: string | null
           category_id: string
           confidence?: number
@@ -491,6 +493,7 @@ export type Database = {
           amount_max?: number | null
           amount_min?: number | null
           amount_sign?: string | null
+          days_of_week?: number[] | null
           updated_at?: string | null
           category_id?: string
           confidence?: number

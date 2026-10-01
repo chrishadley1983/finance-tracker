@@ -108,3 +108,26 @@ Both are under 45s. `ai_usage_tracking` gained a 2026-10-01 row, the first since
 | Criterion | Final |
 |---|---|
 | A1–A12, I1–I4 | **PASS** (A12 live 10.9s / 3.1s; A2 0 unlisted) |
+
+## Iteration 3 — Chris's decisions (2026-10-01)
+
+- **MMBILL.COM:** stays Transfers. No change.
+- **SE Tonbridge rail fares:** the new policy replaces £19.20/£40.70 → Work:
+  - debit under £20 → Social Travel;
+  - debit on Sat/Sun → Social Travel;
+  - weekday debit of £20 or more → Work Travel.
+- **Schema:** `category_mappings.days_of_week smallint[]` (ISO 1=Mon … 7=Sun), with a CHECK constraint and the uniqueness key widened.
+  - Migration `20261013120000_finance_rule_days_of_week.sql` in the HB repo, applied with `db query` before the code deploy.
+  - The first attempt was rejected (`days_of_week::text` isn't IMMUTABLE in an index) and rolled back cleanly. Fixed by indexing the array directly.
+- **Matcher:**
+  - `RuleContext.date`; `isoWeekday()`.
+  - `days_of_week` counts as a condition; an unknown date never matches.
+  - A deterministic final tie-break by rule id.
+  - The date is passed through the engine, re-categorisation, answers, mining evidence and `rules:check`.
+- **Seeded ordering:** three disjoint debit rows: weekend → Social (sign + days), ≤£19.99 → Social (sign + max), and weekday £20+ → Work (sign + min + Mon–Fri).
+  - Every Work/Social outcome comes from exactly one row, so the result never depends on tie-breaking.
+  - Weekend fares under £20 match both Social rows, which agree.
+  - Tests cover Chris's cases (weekday £19.20/£19.99 → Social, £20.00/£22.90 → Work, Fri £40.70 → Work, Sat £40.70 / Sun £37.60 / Sun £19.20 → Social, refund → Social) and reversed rule order.
+- **Retiring policies:** `policies:sync` deletes rows for `RETIRED_POLICY_KEYS` (`se-tonbridge-commute-1920/4070`).
+- **No retro-categorisation of settled history** (Chris). Only `recategorise-pending` runs.
+- **Tests:** 1,434/1,434 pass.

@@ -4,13 +4,13 @@
  * A policy row is identified by pattern + match_type + conditions (the same
  * key as the uq_category_mappings_pattern_conditions index). Existing rows
  * are updated in place (category, action, confidence, is_system, notes);
- * missing rows are inserted. Policy rows no longer in POLICIES are left
- * alone — retire one by editing it here to the desired state, or delete it
- * deliberately.
+ * missing rows are inserted. A policy Chris has replaced is listed in
+ * RETIRED_POLICY_KEYS and its row is deleted; other rows not in POLICIES are
+ * left alone.
  */
 
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { POLICIES, POLICY_CONFIDENCE, type PolicyDefinition } from './policies';
+import { POLICIES, POLICY_CONFIDENCE, RETIRED_POLICY_KEYS, type PolicyDefinition } from './policies';
 import { clearRulesCache } from './rule-matcher';
 import { logRuleEvents, type RuleEvent } from './rule-events';
 
@@ -20,6 +20,8 @@ export interface PolicySyncResult {
   unchanged: string[];
   /** Policies Chris changed via an "always" answer — left as-is; update policies.ts to match. */
   overridden: string[];
+  /** Retired policies whose rows were deleted. */
+  deleted: string[];
 }
 
 interface ExistingRow {
@@ -33,6 +35,7 @@ interface ExistingRow {
   amount_sign: string | null;
   amount_min: number | null;
   amount_max: number | null;
+  days_of_week: number[] | null;
   action: string;
   notes: string | null;
 }
@@ -41,6 +44,12 @@ function sameNum(a: number | null | undefined, b: number | null | undefined): bo
   if (a === null || a === undefined) return b === null || b === undefined;
   if (b === null || b === undefined) return false;
   return Math.abs(Number(a) - Number(b)) < 0.0001;
+}
+
+function sameDays(a: number[] | null | undefined, b: number[] | null | undefined): boolean {
+  const norm = (x: number[] | null | undefined) =>
+    x && x.length ? [...x].map(Number).sort((p, q) => p - q).join(',') : '';
+  return norm(a) === norm(b);
 }
 
 /** Resolve names → ids and build the row a policy should be. */
@@ -66,6 +75,7 @@ export function policyRow(
     amount_sign: def.amountSign ?? null,
     amount_min: def.amountMin ?? null,
     amount_max: def.amountMax ?? null,
+    days_of_week: def.daysOfWeek?.length ? [...def.daysOfWeek].sort((p, q) => p - q) : null,
     action: def.action ?? 'categorise',
     notes: `policy:${def.key} — ${def.note}`,
   };
@@ -78,7 +88,7 @@ export async function syncPolicies(opts: { dryRun?: boolean } = {}): Promise<Pol
       supabaseAdmin.from('accounts').select('id, name'),
       supabaseAdmin
         .from('category_mappings')
-        .select('id, pattern, match_type, category_id, confidence, is_system, account_id, amount_sign, amount_min, amount_max, action, notes'),
+        .select('id, pattern, match_type, category_id, confidence, is_system, account_id, amount_sign, amount_min, amount_max, days_of_week, action, notes'),
     ]);
   if (catErr || acctErr || exErr) {
     throw new Error(`Policy sync: read failed: ${(catErr ?? acctErr ?? exErr)!.message}`);
@@ -87,7 +97,7 @@ export async function syncPolicies(opts: { dryRun?: boolean } = {}): Promise<Pol
   const accountIdByName = new Map((accts ?? []).map((a) => [a.name, a.id]));
   const rows = (existing ?? []) as unknown as ExistingRow[];
 
-  const result: PolicySyncResult = { inserted: [], updated: [], unchanged: [], overridden: [] };
+  const result: PolicySyncResult = { inserted: [], updated: [], unchanged: [], overridden: [], deleted: [] };
   const events: RuleEvent[] = [];
 
   for (const def of POLICIES) {
@@ -99,7 +109,8 @@ export async function syncPolicies(opts: { dryRun?: boolean } = {}): Promise<Pol
         (r.account_id ?? null) === want.account_id &&
         (r.amount_sign ?? null) === want.amount_sign &&
         sameNum(r.amount_min, want.amount_min) &&
-        sameNum(r.amount_max, want.amount_max)
+        sameNum(r.amount_max, want.amount_max) &&
+        sameDays(r.days_of_week, want.days_of_week)
     );
 
     if (!match) {
@@ -151,6 +162,18 @@ export async function syncPolicies(opts: { dryRun?: boolean } = {}): Promise<Pol
       source: 'policies:sync',
       detail: { key: def.key },
     });
+  }
+
+  // Policies Chris replaced: delete their rows (identified by the notes tag).
+  for (const key of RETIRED_POLICY_KEYS) {
+    const stale = rows.filter((r) => r.is_system && (r.notes ?? '').startsWith(`policy:${key} `));
+    for (const r of stale) {
+      result.deleted.push(key);
+      if (opts.dryRun) continue;
+      const { error } = await supabaseAdmin.from('category_mappings').delete().eq('id', r.id);
+      if (error) throw new Error(`Policy ${key}: delete failed: ${error.message}`);
+      events.push({ ruleId: r.id, pattern: r.pattern, event: 'deleted', oldCategoryId: r.category_id, source: 'policies:sync', detail: { key, reason: 'retired policy' } });
+    }
   }
 
   if (!opts.dryRun) {

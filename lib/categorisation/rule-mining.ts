@@ -53,6 +53,7 @@ export interface EvidenceRow {
   description: string;
   amount: number;
   account_id: string | null;
+  date?: string | null;
   category_id: string;
 }
 
@@ -102,11 +103,11 @@ async function paginate<T>(
 
 /** Every settled categorised transaction (paginated past the 1k cap). */
 async function fetchSettledTransactions(): Promise<SettledRow[]> {
-  const rows = await paginate<{ description: string; amount: number; account_id: string | null; category_id: string | null }>(
+  const rows = await paginate<{ date: string; description: string; amount: number; account_id: string | null; category_id: string | null }>(
     (from, to) =>
       supabaseAdmin
         .from('transactions')
-        .select('description, amount, account_id, category_id')
+        .select('date, description, amount, account_id, category_id')
         .not('category_id', 'is', null)
         .eq('needs_review', false)
         .order('id', { ascending: true })
@@ -114,7 +115,7 @@ async function fetchSettledTransactions(): Promise<SettledRow[]> {
     'transactions'
   );
   return rows
-    .filter((r): r is SettledRow => Boolean(r.category_id))
+    .filter((r): r is typeof r & { category_id: string } => Boolean(r.category_id))
     .map((r) => ({ ...r, amount: Number(r.amount) }));
 }
 
@@ -123,11 +124,11 @@ async function fetchManualEvidence(now: Date): Promise<EvidenceRow[]> {
   const since = new Date(now.getTime() - MINING_CONFIG.supersedeLookbackDays * 86_400_000)
     .toISOString()
     .slice(0, 10);
-  const rows = await paginate<{ description: string; amount: number; account_id: string | null; category_id: string | null }>(
+  const rows = await paginate<{ date: string; description: string; amount: number; account_id: string | null; category_id: string | null }>(
     (from, to) =>
       supabaseAdmin
         .from('transactions')
-        .select('description, amount, account_id, category_id')
+        .select('date, description, amount, account_id, category_id')
         .eq('categorisation_source', 'manual')
         .eq('needs_review', false)
         .not('category_id', 'is', null)
@@ -137,7 +138,7 @@ async function fetchManualEvidence(now: Date): Promise<EvidenceRow[]> {
     'manual evidence'
   );
   return rows
-    .filter((r): r is EvidenceRow => Boolean(r.category_id))
+    .filter((r): r is typeof r & { category_id: string } => Boolean(r.category_id))
     .map((r) => ({ ...r, amount: Number(r.amount) }));
 }
 
@@ -145,7 +146,7 @@ async function fetchRules(): Promise<MappingRow[]> {
   const { data, error } = await supabaseAdmin
     .from('category_mappings')
     .select(
-      'id, pattern, category_id, match_type, confidence, is_system, account_id, amount_sign, amount_min, amount_max, action, notes, categories (id, name)'
+      'id, pattern, category_id, match_type, confidence, is_system, account_id, amount_sign, amount_min, amount_max, days_of_week, action, notes, categories (id, name)'
     );
   if (error) throw new Error(`Rule mining: failed to read rules: ${error.message}`);
   return (data ?? []) as unknown as MappingRow[];
@@ -205,7 +206,7 @@ export function findSupersessions(rules: RuleRecord[], evidence: EvidenceRow[]):
     const counts = new Map<string, number>();
     let total = 0;
     for (const row of evidence) {
-      if (!ruleApplies(rule, { description: row.description, amount: row.amount, accountId: row.account_id })) continue;
+      if (!ruleApplies(rule, { description: row.description, amount: row.amount, accountId: row.account_id, date: row.date })) continue;
       total++;
       counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
     }
@@ -246,6 +247,7 @@ export interface SettledRow {
   description: string;
   amount: number;
   account_id: string | null;
+  date?: string | null;
   category_id: string;
 }
 
@@ -290,7 +292,7 @@ export function findLowQualityMinedRules(rules: MappingRow[], rows: SettledRow[]
     let matched = 0;
     let agree = 0;
     for (const r of rows) {
-      if (!ruleApplies(rule, { description: r.description, amount: r.amount, accountId: r.account_id })) continue;
+      if (!ruleApplies(rule, { description: r.description, amount: r.amount, accountId: r.account_id, date: r.date })) continue;
       matched++;
       if (r.category_id === rule.category_id) agree++;
     }
