@@ -31,7 +31,8 @@
     "plan:accept": "tsx scripts/plan-accept.ts",
     "plan:trigger": "node plan/tools/trigger.mjs",
     "plan:gilt-value": "tsx scripts/plan-gilt-value.ts",
-    "plan:stock-value": "tsx scripts/plan-stock-value.ts"
+    "plan:stock-value": "tsx scripts/plan-stock-value.ts",
+    "plan:shares-value": "tsx scripts/plan-shares-value.ts"
   },
   "repository": {
     "type": "git",

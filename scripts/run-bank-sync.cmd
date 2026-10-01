@@ -11,6 +11,7 @@ rem (listed at list less fees, other stock at cost, BrickLink parts at a share o
 echo. >> plan-check.log
 echo ==== %DATE% %TIME% stock ==== >> plan-check.log
 call npm run plan:stock-value -- --save --if-first >> plan-check.log 2>&1
+call npm run plan:shares-value -- --save --if-first >> plan-check.log 2>&1
 rem Household plan: cheap live health check after every sync (assumptions vs the fresh
 rem snapshots, run-rate and payslip age; dead-man on the last accepted run). Notifies on RED.
 echo. >> plan-check.log
