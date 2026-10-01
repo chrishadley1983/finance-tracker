@@ -7,6 +7,7 @@
  */
 
 import { supabaseAdmin } from '@/lib/supabase/server';
+import type { Json } from '@/lib/supabase/database.types';
 
 export type RuleEventType = 'created' | 'repointed' | 'deleted' | 'updated';
 
@@ -32,7 +33,7 @@ export async function logRuleEvents(events: RuleEvent[]): Promise<void> {
       old_category_id: e.oldCategoryId ?? null,
       new_category_id: e.newCategoryId ?? null,
       source: e.source,
-      detail: (e.detail ?? {}) as never,
+      detail: (e.detail ?? {}) as Json,
     }))
   );
   if (error) console.warn('Failed to log rule events:', error.message);

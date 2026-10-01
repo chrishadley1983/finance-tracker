@@ -48,9 +48,14 @@ function chunks<T>(arr: T[], size = CHUNK): T[][] {
 }
 
 /** Throws InvalidCategoryError if any id isn't a real category. */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function assertCategoriesExist(categoryIds: string[]): Promise<void> {
   const unique = Array.from(new Set(categoryIds));
   if (unique.length === 0) return;
+  // A non-UUID would make Postgres reject the whole query — it's simply unknown.
+  const malformed = unique.filter((id) => !UUID_RE.test(id));
+  if (malformed.length > 0) throw new InvalidCategoryError(malformed);
   const { data, error } = await supabaseAdmin.from('categories').select('id').in('id', unique);
   if (error) throw new Error(`Failed to read categories: ${error.message}`);
   const found = new Set((data ?? []).map((c) => c.id));
