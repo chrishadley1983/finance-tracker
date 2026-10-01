@@ -527,15 +527,22 @@
       ]
     },
     "pots.otherSavings": {
-      "value": 119924,
+      "value": 123736.47,
       "unit": "GBP",
       "status": "FACT",
-      "source": "finance.wealth_snapshots 2026-09-01, Other Savings (cash buffer + crypto)",
-      "asOf": "2026-09-01",
+      "source": "finance.wealth_snapshots 2026-10-01, Other Savings (crypto 74,212.41 + NS&I 22,344.98 + Zopa 20,454 + current acct 5,000 + Unbolted 1,725.08)",
+      "asOf": "2026-10-01",
       "reviewBy": "2026-10-15",
       "cadence": "monthly",
       "triggers": [
         "snapshot"
+      ],
+      "history": [
+        {
+          "value": 119924,
+          "asOf": "2026-09-01",
+          "supersededOn": "2026-10-01"
+        }
       ]
     },
     "pots.accentureShares": {
@@ -551,15 +558,22 @@
       ]
     },
     "pots.cashBuffer": {
-      "value": 66000,
+      "value": 49524.06,
       "unit": "GBP",
       "status": "CHECK",
-      "source": "Plan E ledger split of Other Savings: ~£66k cash, ~£54k crypto (1 BTC, 6 ETH). Not separately snapshotted",
-      "asOf": "2026-09-01",
+      "source": "1 Oct 2026 measured: Other Savings 123,736.47 less crypto 74,212.41 (CoinGecko: 0.9757 BTC, 6.087 ETH, DOT) = NS&I 22,345 + Zopa 20,454 + current 5,000 + Unbolted 1,725",
+      "asOf": "2026-10-01",
       "reviewBy": "2026-12-31",
       "cadence": "quarterly",
       "triggers": [
         "snapshot"
+      ],
+      "history": [
+        {
+          "value": 66000,
+          "asOf": "2026-09-01",
+          "supersededOn": "2026-10-01"
+        }
       ]
     },
     "pots.crypto": {
