@@ -42,18 +42,21 @@ Respond ONLY with valid JSON (no markdown, no explanation):
  * Prompt for categorising multiple transactions in batch.
  * Variables: {transactionsList}, {categoriesList}
  */
-export const BATCH_CATEGORISE_PROMPT = `You are categorising multiple UK financial transactions.
+export const BATCH_CATEGORISE_PROMPT = `You are categorising multiple UK financial transactions for Chris's household finance tracker.
 
 Transactions:
 {transactionsList}
 
 Available categories:
 {categoriesList}
-
-For each transaction, select the most appropriate category. Consider:
+{contextBlock}
+For each transaction, select the most appropriate category. Consider, in this order:
+- Chris's standing policies (if listed above) — always follow them
+- How similar past transactions were settled (precedents) and Chris's recent corrections
 - The merchant or payee name in the description
 - Common UK transaction patterns (DIRECT DEBIT, CARD PAYMENT, FASTER PAYMENT, etc.)
-- Amount sign: negative = expense, positive = income
+- Amount sign: negative = expense, positive = income. A refund belongs in the category of the original spend, not income
+- If a transaction has no precedent, give your best guess but keep confidence at or below 0.7
 
 Respond ONLY with valid JSON array (no markdown, no explanation):
 [
@@ -170,15 +173,66 @@ export function buildSingleCategorisePrompt(
 }
 
 /**
+ * Learning context for the batch prompt (see lib/categorisation/ai-context.ts).
+ * Structural so this module stays free of DB imports.
+ */
+export interface PromptContext {
+  precedents: { description: string; categoryName: string; similarity: number; date: string }[][];
+  corrections: { description: string; fromCategory: string | null; toCategory: string }[];
+  policies: string[];
+}
+
+/**
+ * Format the policies / corrections / precedents block. Empty sections are
+ * omitted; no context at all yields an empty string.
+ */
+export function formatContextBlock(context?: PromptContext): string {
+  if (!context) return '';
+  const sections: string[] = [];
+
+  if (context.policies.length > 0) {
+    sections.push(`Chris's standing policies (always follow):\n${context.policies.join('\n')}`);
+  }
+
+  if (context.corrections.length > 0) {
+    const lines = context.corrections.map(
+      (c) => `- "${c.description}": ${c.fromCategory ?? 'uncategorised'} → corrected to ${c.toCategory}`
+    );
+    sections.push(`Recent corrections Chris made to similar transactions (the earlier guess was wrong):\n${lines.join('\n')}`);
+  }
+
+  const precedentLines: string[] = [];
+  context.precedents.forEach((list, i) => {
+    if (list.length === 0) {
+      precedentLines.push(`${i}. (no precedent — new merchant)`);
+      return;
+    }
+    const examples = list
+      .map((p) => `"${p.description}" → ${p.categoryName} (${p.date}, ${Math.round(p.similarity * 100)}% similar)`)
+      .join('; ');
+    precedentLines.push(`${i}. ${examples}`);
+  });
+  if (precedentLines.length > 0) {
+    sections.push(`How similar past transactions were settled (by transaction index):\n${precedentLines.join('\n')}`);
+  }
+
+  return sections.length > 0 ? `\n${sections.join('\n\n')}\n` : '';
+}
+
+/**
  * Build the batch categorisation prompt.
  */
 export function buildBatchCategorisePrompt(
   transactions: TransactionForCategorisation[],
-  categories: Category[]
+  categories: Category[],
+  context?: PromptContext
 ): string {
+  // Function replacers: descriptions are bank data and may contain `$&`-style
+  // sequences that a string replacement would interpret.
   return BATCH_CATEGORISE_PROMPT
-    .replace('{transactionsList}', formatTransactionsList(transactions))
-    .replace('{categoriesList}', formatCategoriesList(categories));
+    .replace('{transactionsList}', () => formatTransactionsList(transactions))
+    .replace('{categoriesList}', () => formatCategoriesList(categories))
+    .replace('{contextBlock}', () => formatContextBlock(context));
 }
 
 // =============================================================================

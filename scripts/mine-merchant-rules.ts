@@ -1,9 +1,10 @@
 /**
  * Mine merchant rules from categorised history.
  *
- * Any normalised merchant with ≥3 settled transactions and ≥90% category
- * agreement becomes a `contains` rule, so repeat merchants categorise
- * deterministically on future syncs.
+ * Re-points/deletes rules Chris's manual decisions contradict, deletes
+ * digit-token rules, then turns any normalised merchant with ≥3 settled
+ * transactions and ≥90% category agreement into a `contains` rule, and
+ * finally re-runs the review queue against the updated rules.
  *
  * Run:  npm run mine:rules           (writes new rules)
  *       npm run mine:rules -- --dry-run   (report only)
@@ -27,6 +28,23 @@ async function main() {
   console.log(
     `  ${dryRun ? 'Would create' : 'Created'} ${res.created} rule(s), ${res.skippedExisting} already covered`,
   );
+
+  if (res.superseded.length > 0) {
+    console.log(`  ${dryRun ? 'Would supersede' : 'Superseded'} ${res.superseded.length} rule(s) contradicted by Chris's manual history:`);
+    for (const s of res.superseded) {
+      console.log(
+        `    "${s.pattern}": ${s.action === 'repoint' ? `re-point ${s.oldCategoryId} → ${s.newCategoryId}` : `delete (was ${s.oldCategoryId})`}` +
+          ` — ${s.evidence.disagree}/${s.evidence.total} manual rows disagree`,
+      );
+    }
+  }
+  if (res.digitRulesDeleted.length > 0) {
+    console.log(`  ${dryRun ? 'Would delete' : 'Deleted'} ${res.digitRulesDeleted.length} digit-token rule(s): ${res.digitRulesDeleted.join(', ')}`);
+  }
+  if (res.recategorised) {
+    const r = res.recategorised;
+    console.log(`  Review queue re-run: examined ${r.examined}, changed ${r.changed}, cleared ${r.cleared}`);
+  }
 
   if (res.conflicts.length > 0) {
     console.log(`  ⚠ ${res.conflicts.length} conflict(s) with existing rules (NOT changed):`);

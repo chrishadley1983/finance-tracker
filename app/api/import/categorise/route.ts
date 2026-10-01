@@ -55,6 +55,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           categorised: 0,
           uncategorised: 0,
           bySource: {
+            policy: 0,
+            policy_ask: 0,
             rule_exact: 0,
             rule_pattern: 0,
             similar: 0,

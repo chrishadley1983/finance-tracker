@@ -81,6 +81,10 @@ export function SourceBadge({ source }: SourceBadgeProps) {
       case 'rule_exact':
       case 'rule_pattern':
         return 'rule';
+      case 'policy':
+        return 'policy';
+      case 'policy_ask':
+        return 'ask';
       case 'similar':
         return 'similar';
       case 'ai':
@@ -96,7 +100,10 @@ export function SourceBadge({ source }: SourceBadgeProps) {
     switch (source) {
       case 'rule_exact':
       case 'rule_pattern':
+      case 'policy':
         return 'bg-blue-100 text-blue-700';
+      case 'policy_ask':
+        return 'bg-amber-100 text-amber-700';
       case 'similar':
         return 'bg-purple-100 text-purple-700';
       case 'ai':

@@ -10,8 +10,10 @@ vi.mock('@anthropic-ai/sdk', () => ({
 }));
 
 // Mock Supabase
+const mockRpc = vi.hoisted(() => vi.fn(() => Promise.resolve({ data: 1, error: null })));
 vi.mock('@/lib/supabase/server', () => ({
   supabaseAdmin: {
+    rpc: mockRpc,
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         order: vi.fn(() => ({
@@ -109,13 +111,20 @@ describe('AI Categoriser', () => {
     });
   });
 
-  describe('trackAIUsage', () => {
-    it('tracks usage without throwing', async () => {
-      await expect(trackAIUsage(1)).resolves.not.toThrow();
+  describe('trackAIUsage (A11)', () => {
+    it('increments the daily counter atomically via increment_ai_usage', async () => {
+      await trackAIUsage(5);
+      const today = new Date().toISOString().split('T')[0];
+      expect(mockRpc).toHaveBeenCalledWith('increment_ai_usage', {
+        p_date: today,
+        p_usage_type: 'categorisation',
+        p_count: 5,
+      });
     });
 
-    it('tracks multiple usage counts', async () => {
-      await expect(trackAIUsage(5)).resolves.not.toThrow();
+    it('never throws when the counter write fails', async () => {
+      mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'down' } } as never);
+      await expect(trackAIUsage(1)).resolves.toBeUndefined();
     });
   });
 
