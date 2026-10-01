@@ -45,6 +45,7 @@ Snapshot: 2026-10-01, after `policies:sync`, hygiene and mining. 4,236 settled r
 | `lego house billund` | Consumerables | 1/5 | 4 of 5 agree. |
 | `worldofbooks cogoring by` | Consumerables | 1/3 | Re-pointed today by mining (manual evidence); one older gift row remains. |
 | `prime video rent` | Subscriptions | 1/3 | 2 of 3 agree. |
+| `spond tpc thursday` | Sport + Gym | 1/2 | Created by Chris's "always" answer on 2026-10-01, which supersedes his earlier Clubs & Kids choice (Sep 14 row). Settled history is not retro-categorised. |
 
 ## A7(c) — legacy spreadsheet-label rules (hygiene 2026-10-01)
 
