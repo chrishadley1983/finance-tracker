@@ -8,7 +8,14 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }));
 
-import { findSupersessions, findDigitRules, mineMerchantRules, type EvidenceRow } from '@/lib/categorisation/rule-mining';
+import {
+  findSupersessions,
+  findDigitRules,
+  findLowQualityMinedRules,
+  rejectBroadCandidates,
+  mineMerchantRules,
+  type EvidenceRow,
+} from '@/lib/categorisation/rule-mining';
 import type { RuleRecord } from '@/lib/categorisation/rule-matcher';
 
 function rule(id: string, pattern: string, category_id: string, extra: Partial<RuleRecord> = {}): RuleRecord & { notes: string | null } {
@@ -76,6 +83,51 @@ describe('findDigitRules (A7a)', () => {
       rule('sys', 'route 66', 'x', { is_system: true }),
     ];
     expect(findDigitRules(rules).map((r) => r.id)).toEqual(['d1', 'd2']);
+  });
+});
+
+describe('broad-pattern guard', () => {
+  const settled = (description: string, category_id: string) => ({ description, amount: -10, account_id: 'acct', category_id });
+
+  it('rejects a key that would capture disagreeing merchants outside its group (the live "tonbridge" bug)', () => {
+    const rows = [
+      settled('TONBRIDGE KEBAB HOUSE', 'takeaway'),
+      settled('TONBRIDGE', 'takeaway'),
+      settled('TONBRIDGE', 'takeaway'),
+      settled('SPOND* TPC THURSDAY - TONBRIDGE LND', 'clubs'),
+      settled('NEVLL FIX IT LTD TONBRIDGE LND', 'home'),
+      settled('WAITROSE TONBRIDGE', 'groceries'),
+    ];
+    const { kept, rejected } = rejectBroadCandidates(
+      [{ pattern: 'tonbridge', categoryId: 'takeaway', total: 3, agreement: 1 }],
+      rows
+    );
+    expect(kept).toEqual([]);
+    expect(rejected[0]).toMatchObject({ pattern: 'tonbridge', matched: 6, broadAgreement: 0.5 });
+  });
+
+  it('keeps a specific key that only matches its own merchant', () => {
+    const rows = [settled('ALDI TONBRIDGE', 'groceries'), settled('ALDI TONBRIDGE )))', 'groceries'), settled('ALDI TONBRIDGE', 'groceries'), settled('WAITROSE TONBRIDGE', 'groceries')];
+    const { kept } = rejectBroadCandidates([{ pattern: 'aldi tonbridge', categoryId: 'groceries', total: 3, agreement: 1 }], rows);
+    expect(kept).toHaveLength(1);
+  });
+
+  it('retires mined rules settled history no longer supports (<60% of ≥4 matches), never system/hand-made rules', () => {
+    const rows = [
+      settled('SumUp *Tonbridge Tonbridge', 'entertainment'),
+      settled('WH Smith Tonbridge Tonbridge', 'consumerables'),
+      settled('FCB Tonbridge Tonbridge', 'coffee'),
+      settled('Brewers Tonbridge Tonbridge', 'home'),
+      settled('B&M - TONBRIDGE TONBRIDGE', 'consumerables'),
+    ];
+    const rules = [
+      rule('mined', 'tonbridge tonbridge', 'entertainment'),
+      rule('hand', 'tonbridge tonbridge', 'entertainment', { notes: null }),
+      rule('sys', 'tonbridge tonbridge', 'entertainment', { is_system: true }),
+    ];
+    const out = findLowQualityMinedRules(rules, rows);
+    expect(out.map((o) => o.rule.id)).toEqual(['mined']);
+    expect(out[0]).toMatchObject({ matched: 5, agreement: 0.2 });
   });
 });
 

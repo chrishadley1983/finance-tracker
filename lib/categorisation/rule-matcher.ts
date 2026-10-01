@@ -168,6 +168,8 @@ interface PreparedDescription {
   raw: string;
   lower: string;
   merchant: string;
+  /** Lowercase, punctuation → spaces, digits KEPT — for patterns that contain digits. */
+  light: string;
 }
 
 function prepare(description: string): PreparedDescription {
@@ -175,6 +177,7 @@ function prepare(description: string): PreparedDescription {
     raw: description,
     lower: description.toLowerCase().trim(),
     merchant: normaliseDescription(description),
+    light: normalisePattern(description),
   };
 }
 
@@ -189,7 +192,11 @@ function patternMatches(rule: RuleRecord, d: PreparedDescription): boolean {
     // "vivaldi" and a legacy label like "Energy" can't hit "...ENERGYDRINK".
     const p = normalisePattern(rule.pattern);
     if (!p) return false;
-    return ` ${d.merchant} `.includes(` ${p} `);
+    // The merchant normaliser drops digit-bearing tokens (order/branch refs),
+    // so a hand-made pattern that itself contains digits ("micro1", "h3g")
+    // is matched against the lightly-normalised description instead.
+    const haystack = /\d/.test(p) ? d.light : d.merchant;
+    return ` ${haystack} `.includes(` ${p} `);
   }
   try {
     return new RegExp(rule.pattern, 'i').test(d.raw);

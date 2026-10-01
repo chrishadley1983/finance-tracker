@@ -52,3 +52,59 @@ Backups taken before any live change: `finance._backup_recat_20261001_{mappings,
 | I2 skill aligned | PASS | `~/.claude/skills/finance-recategorise/SKILL.md` uses `POST /api/categorisation/answers` and reads policies from the DB |
 | I3 weekly script | PASS (code) | `sync-truelayer.ts` skips the TrueLayer step when a digest exists in the last 36h (`--force` overrides); dry run after deploy |
 | I4 tests green | PASS | 1,419/1,419 |
+
+Merged: finance-tracker #25 (`ead4442`), HB #825 (`927ef7b4`). Production deploy `finance-tracker-7b0xwd0j2` Ready.
+
+## Iteration 2 — live data run + fixes (2026-10-01, after deploy)
+
+### Production smoke
+- `POST /api/categorisation/answers` returns 401 with no key or a wrong key, and 400 (nothing written) for an unknown category.
+- `GET /api/categorisation/learning-stats?days=30` returns 200 in 2.0s.
+- Correction rate is 4.3% for the last 30 days vs 13.3% for the 30 days before. By source this window: AI 12.5%, rule_pattern 0%, similar 2.6%.
+
+### Live data steps
+1. `npm run policies:sync`: 21 inserted, 3 updated (the existing system rules for FX fee, card repayment and HSBC Premier). The queue re-run cleared 1 row: Shopify £28.80, AI "Lego In" → policy, Chris Income.
+2. `tsx scripts/rule-hygiene-2026-10-01.ts --apply`: 29 legacy labels deleted, `Clothing` and `Energy` lowered to 0.85, the mined `interest` rule deleted (replaced by the debit policy).
+3. `npm run mine:rules`:
+   - 3 rules superseded and re-pointed: **`stripe payments ukshopify` Transfers → Chris Income**, `justpark london`, `worldofbooks cogoring by`.
+   - 26 digit-token rules deleted, including `ebay o 23/02/16` → Lego Out.
+   - 60 rules created.
+
+### Incident caught by the A2 check: a too-broad mined rule
+Step 3 created **`tonbridge` → Takeaway**. As a whole-word contains rule it won for 239 settled rows, and 225 of them disagreed.
+- **Cause.** Mining checked agreement only inside the merchant-key group (`merchantKey()` = "tonbridge" for a takeaway). It never checked every row the pattern would actually match. The old matcher had the same gap for multi-word keys (`tonbridge tonbridge`).
+- **Containment.**
+  - The rule was deleted within about 4 minutes (audit event `mining:broad-pattern-fix`).
+  - The same mining run's queue re-run had cleared 3 rows to Takeaway with it: NEVLL FIX IT, and SPOND TPC Thursday and Wednesday. All 3 were restored from `_backup_recat_20261001_transactions`.
+  - No sync ran in that window (0 rows created).
+- **Fix (code).**
+  - `rejectBroadCandidates`: a candidate must hold ≥90% agreement across every settled row its pattern matches. `tonbridge` scored 5% across 642 rows.
+  - `findLowQualityMinedRules`: mined rules that ≥4 settled matches agree with less than 60% of the time are deleted. That removed `tonbridge tonbridge` (33%) and `justpark london` (25%, a context-dependent holiday-vs-social merchant).
+  - Tests: `rule-supersession.test.ts` (broad-pattern guard).
+
+### Regression: hand-made digit patterns
+Comparing the old and new matchers over all 4,236 settled rows found that **`micro1` (Chris's side income) stopped matching**. The new normaliser drops tokens that contain digits.
+- **Fix:** a contains-pattern that itself has a digit is matched, whole-word, against the lightly normalised description, which keeps digits. Test added.
+
+**Final comparison** (old matcher vs new, same live rules): **308 rows newly correct, 9 no longer correct**. Of the 9:
+- 7 are SE Tonbridge fares where the amount policy disagrees with mixed history (flagged ⚠ for Chris in `kept-rules.md`);
+- 1 is Instavolt (now an ask policy, by design);
+- 2 are `BP HILDEN SSERVE` partial-word hits that whole-word matching intentionally drops.
+
+### A2
+`npm run rules:check`: 4,236 settled rows, 213 winning rules, 28 contradicted, **0 unlisted** (`kept-rules.md`).
+
+### A12, live production timing (TrueLayer reconnected)
+`POST /api/truelayer/sync`, 3-day window (2026-09-28 → 10-01):
+- Joint Current: **10.9s** (8 imported and categorised: 6 rule, 1 similar, 1 AI → review).
+- Credit Card: **3.1s**.
+
+Both are under 45s. `ai_usage_tracking` gained a 2026-10-01 row, the first since February (A11 confirmed live).
+
+### I3
+- Inserted a test digest, then ran `tsx scripts/sync-truelayer.ts`: "Bank sync skipped — the daily finance-categorise job owns it", then mining and the queue summary ran (20.5s).
+- Test row deleted.
+
+| Criterion | Final |
+|---|---|
+| A1–A12, I1–I4 | **PASS** (A12 live 10.9s / 3.1s; A2 0 unlisted) |

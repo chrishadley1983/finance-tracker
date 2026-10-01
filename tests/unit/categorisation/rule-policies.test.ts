@@ -115,6 +115,12 @@ describe('contains rules are token-bounded on the normalised description (A7b)',
     expect(selectRule(rules, { description: 'OCTOPUS ENERGY DD' })?.categoryId).toBe('utilities');
   });
 
+  it('hand-made patterns containing digits still match (the normaliser drops digit tokens)', () => {
+    const rules = [rule({ pattern: 'micro1', category_id: 'chris-income' })];
+    expect(selectRule(rules, { description: 'Deel Inc. Micro1 Inc', amount: 900 })?.categoryId).toBe('chris-income');
+    expect(selectRule(rules, { description: 'MICRO10 LTD', amount: 900 })).toBeNull(); // still token-bounded
+  });
+
   it('ruleApplies honours pattern and conditions together', () => {
     const r = rule({ pattern: 'hadley bricks', category_id: 'income', amount_sign: 'credit' });
     expect(ruleApplies(r, { description: 'Hadley Bricks CR', amount: 500 })).toBe(true);
