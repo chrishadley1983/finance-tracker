@@ -41,6 +41,18 @@ async function main() {
   if (res.digitRulesDeleted.length > 0) {
     console.log(`  ${dryRun ? 'Would delete' : 'Deleted'} ${res.digitRulesDeleted.length} digit-token rule(s): ${res.digitRulesDeleted.join(', ')}`);
   }
+  if (res.lowQualityDeleted.length > 0) {
+    console.log(
+      `  ${dryRun ? 'Would delete' : 'Deleted'} ${res.lowQualityDeleted.length} mined rule(s) history no longer supports: ` +
+        res.lowQualityDeleted.map((l) => `${l.pattern} (${Math.round(l.agreement * 100)}% of ${l.matched})`).join(', '),
+    );
+  }
+  if (res.rejectedBroad.length > 0) {
+    console.log(
+      `  Rejected ${res.rejectedBroad.length} too-broad candidate(s): ` +
+        res.rejectedBroad.map((c) => `${c.pattern} (${Math.round(c.broadAgreement * 100)}% of ${c.matched})`).join(', '),
+    );
+  }
   if (res.recategorised) {
     const r = res.recategorised;
     console.log(`  Review queue re-run: examined ${r.examined}, changed ${r.changed}, cleared ${r.cleared}`);

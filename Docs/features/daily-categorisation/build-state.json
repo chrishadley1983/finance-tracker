@@ -1,21 +1,27 @@
 {
   "feature": "daily-categorisation",
   "phase": "A",
-  "status": "IN_PROGRESS",
+  "status": "CONVERGED",
   "branch": "feature/daily-categorisation",
   "migrationsBranch": "hadley-bricks-inventory-management:feature/finance-categorisation-migrations",
-  "iterations": 1,
+  "iterations": 2,
   "lastRun": "2026-10-01T17:10:00+01:00",
-  "criteria": {
-    "passed": ["A1", "A3", "A5", "A6", "A8", "A9", "A10", "A11", "I1", "I2", "I4"],
-    "pending": {
-      "A2": "Needs the live policies:sync + hygiene + mining run after deploy, then npm run rules:check",
-      "A4": "Unit-verified; live seed via npm run policies:sync after deploy",
-      "A7": "Code verified; live hygiene + digit-rule deletion after deploy",
-      "A12": "Invalid-category fix verified; production timing after deploy",
-      "I3": "Code verified; dry run after deploy"
-    },
-    "outOfScopeForPhaseA": ["B1", "B2", "B3", "B4", "C1-C12", "E1-E4 (Phase C)", "P1 (=A12)", "P2", "I5"]
+  "merged": {
+    "finance-tracker": "#25 ead4442",
+    "hadley-bricks-inventory-management": "#825 927ef7b4"
   },
-  "notes": "See build-log.md for spec refinements and evidence."
+  "criteria": {
+    "passed": ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "I1", "I2", "I3", "I4"],
+    "passedWithNotes": {
+      "A2": "Verified with the engine's own matcher (npm run rules:check) rather than the audit's raw LIKE query — contains-rules are token-bounded since A7(b). 28 contradicted rules, all in kept-rules.md with reasons; 2 flagged for Chris (mmbill, SE Tonbridge amounts).",
+      "A7": "Two-letter real words (uk, co, st…) are kept before digit tokens; dropping them broke 'sainsburys co uk' / 'amazon uk'.",
+      "A12": "Live production: Joint 10.9s, Card 3.1s for a 3-day window.",
+      "I1": "Applied 2026-10-01 via supabase db query --linked; types hand-patched (full regen drags in unrelated nullability drift)."
+    },
+    "incidents": [
+      "Mined rule 'tonbridge' → Takeaway (225/239 settled rows wrong) created by the first live mining run; deleted within ~4 min, 3 queue rows restored from backup, mining now rejects broad patterns and retires low-agreement mined rules."
+    ],
+    "outOfScopeForPhaseA": ["B1", "B2", "B3", "B4", "C1-C12", "E1-E4", "P2", "I5"]
+  },
+  "notes": "See build-log.md (iterations 1–2) and kept-rules.md."
 }
