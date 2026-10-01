@@ -38,8 +38,8 @@ describe('triggers, durability note and accepted-run summary (phase 6)', () => {
   });
 
   it('no file outside plan/ imports the retired constants module', () => {
-    const walk = (dir: string): string[] => fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? (['node_modules', '.next', 'plan', '.git'].includes(d.name) ? [] : walk(path.join(dir, d.name))) : /\.(ts|tsx|mjs)$/.test(d.name) ? [path.join(dir, d.name)] : []));
+    const walk = (dir: string): string[] => fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? (['node_modules', '.next', 'plan', '.git', '.claude', 'tmp', 'coverage', 'test-results', 'playwright-report'].includes(d.name) ? [] : walk(path.join(dir, d.name))) : /\.(ts|tsx|mjs)$/.test(d.name) ? [path.join(dir, d.name)] : []));
     const offenders = walk(root).filter((f) => /lib\/plan\/constants|from '\.\/constants'/.test(fs.readFileSync(f, 'utf8')));
     expect(offenders.map((f) => path.relative(root, f))).toEqual([]);
-  });
+  }, 30_000); // walks the repo (worktrees and tmp excluded)
 });

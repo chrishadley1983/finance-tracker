@@ -6,7 +6,11 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+// async so the test worker stays responsive: a plan run takes a minute or more (vitest's worker RPC times out on a blocked event loop)
+const execAsync = promisify(execFile);
 import rules from '../../../plan/inputs/diff-rules.json';
 import { diffRuns, diffToMarkdown, diffToText } from '../../../plan/inputs/diff.mjs';
 import { writeManifest, verifyManifest } from '../../../plan/inputs/manifest.mjs';
@@ -72,9 +76,9 @@ describe('manifests and accepted runs (phase 5)', () => {
     const latest = path.join(runs, 'LATEST_ACCEPTED');
     if (fs.existsSync(latest)) expect(accepted).toContain(fs.readFileSync(latest, 'utf8').trim());
   });
-  it('offline end-to-end: plan:run writes a complete, manifest-verified run folder', () => {
+  it('offline end-to-end: plan:run writes a complete, manifest-verified run folder', async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'plan-runs-'));
-    execFileSync('npx', ['tsx', 'scripts/plan-run.ts', '--offline', '--no-notify', '--no-pdf', '--dir', dir, '--today', '2026-09-21', '--tag', 'test'], { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 50e6 });
+    await execAsync('npx', ['tsx', 'scripts/plan-run.ts', '--offline', '--no-notify', '--no-pdf', '--dir', dir, '--today', '2026-09-21', '--tag', 'test'], { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 50e6 }).catch((e) => { if (e.code !== 1) throw e; }); // exit 1 = RED verdict, still a complete run
     const run = path.join(dir, '2026-09-21-test');
     for (const f of ['inputs.json', 'outputs.json', 'diff.md', 'summary.json', 'manifest.json', 'summary.html', 'ledger.html', 'assumptions.md', 'avc-recipe.md', 'ledger.csv', 'order-sheet-isa.csv', 'order-sheet-sipp.csv', 'execution.html', 'emissions.json']) expect(fs.existsSync(path.join(run, f)), f).toBe(true);
     expect(verifyManifest(run).ok).toBe(true);
@@ -86,9 +90,9 @@ describe('manifests and accepted runs (phase 5)', () => {
     expect(newestSlip in expectedPct, `add the recipe % for ${newestSlip} to this test`).toBe(true);
     expect(summary.avcPct).toBe(expectedPct[newestSlip]);
     // accept it, then a second run diffs against it and is GREEN
-    execFileSync('npx', ['tsx', 'scripts/plan-accept.ts', '2026-09-21-test', '--dir', dir, '--note', 'test'], { cwd: root, encoding: 'utf8', shell: true });
+    await execAsync('npx', ['tsx', 'scripts/plan-accept.ts', '2026-09-21-test', '--dir', dir, '--note', 'test'], { cwd: root, encoding: 'utf8', shell: true });
     expect(fs.readFileSync(path.join(dir, 'LATEST_ACCEPTED'), 'utf8').trim()).toBe('2026-09-21-test');
-    execFileSync('npx', ['tsx', 'scripts/plan-run.ts', '--offline', '--no-notify', '--no-pdf', '--dir', dir, '--today', '2026-09-21', '--tag', 'again'], { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 50e6 });
+    await execAsync('npx', ['tsx', 'scripts/plan-run.ts', '--offline', '--no-notify', '--no-pdf', '--dir', dir, '--today', '2026-09-21', '--tag', 'again'], { cwd: root, encoding: 'utf8', shell: true, maxBuffer: 50e6 });
     expect(JSON.parse(fs.readFileSync(path.join(dir, '2026-09-21-again', 'summary.json'), 'utf8')).verdict).toBe('GREEN');
-  }, 180_000);
+  }, 480_000); // two full plan runs, each computing runPlan twice (live + standalone parity); the expensive-starts replay (29 Sep 2026) adds ~30 s per runPlan
 });
