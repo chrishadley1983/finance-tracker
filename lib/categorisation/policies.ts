@@ -21,11 +21,19 @@ export interface PolicyDefinition {
   amountSign?: 'debit' | 'credit';
   amountMin?: number;
   amountMax?: number;
+  /** ISO weekdays of the transaction date (1=Mon … 7=Sun). */
+  daysOfWeek?: number[];
   action?: 'categorise' | 'ask';
   note: string;
 }
 
 export const POLICY_CONFIDENCE = 0.95;
+
+/** Policies Chris has replaced — `policies:sync` deletes their rows. */
+export const RETIRED_POLICY_KEYS = [
+  'se-tonbridge-commute-1920', // replaced 2026-10-01 by the weekend / under-£20 / weekday-£20+ rules
+  'se-tonbridge-commute-4070',
+];
 
 const JOINT = 'HSBC Joint Current Account';
 const HB_PAYOUT = 'Hadley Bricks money landing in the joint account is Chris Income (decided 2026-09-19)';
@@ -46,10 +54,15 @@ export const POLICIES: PolicyDefinition[] = [
   { key: 'hsbc-premier-transfer', pattern: 'hsbc premier', categoryName: 'Transfers', note: 'Current → credit-card transfer legs' },
   { key: 'card-interest', pattern: 'interest', categoryName: 'Service fees & bank charges', amountSign: 'debit', note: 'Card interest charged is a bank charge (interest received is not)' },
 
-  // Train fares: the commute fares are Work Travel, anything else Social Travel
-  { key: 'se-tonbridge-commute-1920', pattern: 'se tonbridge sst', categoryName: 'Work Travel', amountSign: 'debit', amountMin: 19.2, amountMax: 19.2, note: 'Commute fare £19.20 = Work Travel' },
-  { key: 'se-tonbridge-commute-4070', pattern: 'se tonbridge sst', categoryName: 'Work Travel', amountSign: 'debit', amountMin: 40.7, amountMax: 40.7, note: 'Commute fare £40.70 = Work Travel' },
-  { key: 'se-tonbridge-other', pattern: 'se tonbridge sst', categoryName: 'Social Travel', note: 'Other SE Tonbridge fares = Social Travel' },
+  // SE Tonbridge rail fares (Chris, 2026-10-01): under £20 or at the weekend =
+  // Social Travel; a weekday fare of £20+ = Work Travel. The three debit rows
+  // are disjoint for every Work/Social outcome (the Work row is weekday-only),
+  // so the result never depends on tie-breaking; the unconditioned row only
+  // catches credits (refunds).
+  { key: 'se-tonbridge-weekend', pattern: 'se tonbridge sst', categoryName: 'Social Travel', amountSign: 'debit', daysOfWeek: [6, 7], note: 'Weekend rail fare = Social Travel' },
+  { key: 'se-tonbridge-under-20', pattern: 'se tonbridge sst', categoryName: 'Social Travel', amountSign: 'debit', amountMax: 19.99, note: 'Rail fare under £20 = Social Travel' },
+  { key: 'se-tonbridge-weekday-20-plus', pattern: 'se tonbridge sst', categoryName: 'Work Travel', amountSign: 'debit', amountMin: 20, daysOfWeek: [1, 2, 3, 4, 5], note: 'Weekday rail fare £20+ = Work Travel' },
+  { key: 'se-tonbridge-other', pattern: 'se tonbridge sst', categoryName: 'Social Travel', note: 'Other SE Tonbridge rows (e.g. refunds) = Social Travel' },
 
   // EV charging — always ask
   ...['gridserve', 'instavolt', 'applegreen electri', 'applegreen electric', 'totalenergies charging', 'pod point', 'ionity', 'bp pulse', 'recharge', 'robo charge', 'tesla supercharger'].map(

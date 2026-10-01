@@ -98,6 +98,10 @@ export function describePolicy(rule: RuleRecord, accountNames: Map<string, strin
     if (min !== null) conds.push(`amount ≥ ${money(min)}`);
     if (max !== null) conds.push(`amount ≤ ${money(max)}`);
   }
+  if (rule.days_of_week?.length) {
+    const names = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    conds.push(`on ${[...rule.days_of_week].map(Number).sort((a, b) => a - b).map((d) => names[d] ?? d).join('/')}`);
+  }
   if (rule.account_id) conds.push(`on ${accountNames.get(rule.account_id) ?? 'a specific account'}`);
   const when = conds.length ? ` (${conds.join(', ')})` : '';
   const category = rule.categories?.name ?? 'Unknown';

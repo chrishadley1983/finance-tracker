@@ -45,6 +45,8 @@ export interface RuleRecord {
   amount_sign?: string | null;
   amount_min?: number | string | null;
   amount_max?: number | string | null;
+  /** ISO weekdays (1=Mon … 7=Sun) of the transaction date. */
+  days_of_week?: number[] | null;
   action?: string | null;
   notes?: string | null;
   categories: {
@@ -53,11 +55,22 @@ export interface RuleRecord {
   } | null;
 }
 
-/** What a rule is evaluated against. Amount/account are needed for policy conditions. */
+/** What a rule is evaluated against. Amount/account/date are needed for policy conditions. */
 export interface RuleContext {
   description: string;
   amount?: number;
   accountId?: string | null;
+  /** Transaction date, YYYY-MM-DD (for day-of-week conditions). */
+  date?: string | null;
+}
+
+/** ISO weekday (1=Mon … 7=Sun) of a YYYY-MM-DD date, or null if unparseable. */
+export function isoWeekday(date: string | null | undefined): number | null {
+  if (!date || !/^\d{4}-\d{2}-\d{2}/.test(date)) return null;
+  const d = new Date(`${date.slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return null;
+  const js = d.getUTCDay(); // 0 = Sun
+  return js === 0 ? 7 : js;
 }
 
 // =============================================================================
@@ -90,6 +103,7 @@ export async function getRules(): Promise<RuleRecord[]> {
       amount_sign,
       amount_min,
       amount_max,
+      days_of_week,
       action,
       notes,
       categories (
@@ -130,13 +144,18 @@ function num(v: number | string | null | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** Number of conditions a rule carries (account, sign, min, max). */
+function hasDays(rule: RuleRecord): boolean {
+  return Array.isArray(rule.days_of_week) && rule.days_of_week.length > 0;
+}
+
+/** Number of conditions a rule carries (account, sign, min, max, days of week). */
 export function conditionCount(rule: RuleRecord): number {
   return (
     (rule.account_id ? 1 : 0) +
     (rule.amount_sign ? 1 : 0) +
     (num(rule.amount_min) !== null ? 1 : 0) +
-    (num(rule.amount_max) !== null ? 1 : 0)
+    (num(rule.amount_max) !== null ? 1 : 0) +
+    (hasDays(rule) ? 1 : 0)
   );
 }
 
@@ -160,6 +179,10 @@ export function conditionsMatch(rule: RuleRecord, ctx: RuleContext): boolean {
     const max = num(rule.amount_max);
     if (min !== null && abs < min - AMOUNT_EPSILON) return false;
     if (max !== null && abs > max + AMOUNT_EPSILON) return false;
+  }
+  if (hasDays(rule)) {
+    const day = isoWeekday(ctx.date);
+    if (day === null || !rule.days_of_week!.map(Number).includes(day)) return false;
   }
   return true;
 }
@@ -233,7 +256,9 @@ function better(a: RuleRecord, b: RuleRecord, byConditions: boolean): boolean {
   const fa = Number(a.confidence);
   const fb = Number(b.confidence);
   if (fa !== fb) return fa > fb;
-  return a.pattern.length > b.pattern.length;
+  if (a.pattern.length !== b.pattern.length) return a.pattern.length > b.pattern.length;
+  // Deterministic last resort, independent of DB row order.
+  return a.id < b.id;
 }
 
 /** Pure: pick the winning rule for a transaction, or null. */

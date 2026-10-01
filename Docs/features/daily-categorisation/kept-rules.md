@@ -9,10 +9,10 @@ Snapshot: 2026-10-01, after `policies:sync`, hygiene and mining. 4,236 settled r
 | Rule | Category | Why kept |
 |---|---|---|
 | `non sterling transaction fee` | Holiday Travel | 58 of 61 disagreeing rows are pre-July 2026 "Service fees". The FX-fee → Holiday Travel policy dates from 2026-07-01. |
-| `mmbill com` | Transfers | 15 older rows are Subscriptions. The finance-recategorise policy (Sep 2026) says leave as Transfers. ⚠ Chris to confirm Transfers vs Subscriptions. |
+| `mmbill com` | Transfers | 15 older rows are Subscriptions. **Confirmed by Chris 2026-10-01: stays Transfers.** |
 | `hsbc premier` | Transfers | 9 rows from the 2025 CSV import are "Credit card payments" (the other leg). The current→card transfer leg is Transfers. |
-| `se tonbridge sst` | Social Travel | Non-commute fares. 6 older rule-applied rows are Work Travel. ⚠ Chris to confirm the amount rule (memory, 2026-06-09). |
-| `se tonbridge sst` | Work Travel | Commute fares £19.20 / £40.70 (two policy rows). 5 older rule-applied rows at these amounts are Social Travel. Same ⚠. |
+| `se tonbridge sst` | Social Travel | **Chris 2026-10-01:** debit under £20, or on a Saturday/Sunday, is Social (plus an unconditioned row for refunds). Older rows settled under the previous rule disagree; settled history is not retro-categorised (Chris). |
+| `se tonbridge sst` | Work Travel | **Chris 2026-10-01:** weekday debit of £20 or more is Work (weekday-only, so it never overlaps the weekend row). Replaces the £19.20/£40.70 → Work policy, which is retired. Same history note. |
 | `hadley bricks` | Chris Income | Credit-only policy. 3 older rows are Transfers. HB drawings are Chris Income. |
 | `ebay commerce` | Chris Income | Joint-account credits. 2 rows predate the 2026-09-19 decision (Lego In / Lego Out). |
 | `stripe payments` | Chris Income | Joint-account credits. 1 row predates the 2026-09-19 decision (Transfers). |

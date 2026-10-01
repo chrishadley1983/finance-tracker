@@ -254,7 +254,7 @@ export async function categoriseMultiple(
 
   // Step 1: Batch rule matching (policies need amount + account)
   const ruleMatches = await matchRulesBatch(
-    transactions.map((t) => ({ description: t.description, amount: t.amount, accountId: t.accountId }))
+    transactions.map((t) => ({ description: t.description, amount: t.amount, accountId: t.accountId, date: t.date }))
   );
 
   for (let i = 0; i < transactions.length; i++) {

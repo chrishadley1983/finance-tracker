@@ -53,6 +53,7 @@ const POLICY_SOURCES = new Set(['policy', 'policy_ask']);
 
 interface TxRow {
   id: string;
+  date: string;
   description: string;
   amount: number;
   account_id: string | null;
@@ -61,7 +62,7 @@ interface TxRow {
 
 async function upsertAlwaysRule(tx: TxRow, categoryId: string, now: Date): Promise<{ outcome: AlwaysRuleOutcome; event?: RuleEvent }> {
   const today = now.toISOString().slice(0, 10);
-  const ctx = { description: tx.description, amount: Number(tx.amount), accountId: tx.account_id };
+  const ctx = { description: tx.description, amount: Number(tx.amount), accountId: tx.account_id, date: tx.date };
   const rules = await getRules();
 
   // Row came from a policy → update that policy (Chris is overriding it).
@@ -101,7 +102,7 @@ async function upsertAlwaysRule(tx: TxRow, categoryId: string, now: Date): Promi
     (r: RuleRecord) =>
       r.pattern.toLowerCase().trim() === pattern &&
       r.match_type === 'contains' &&
-      !r.account_id && !r.amount_sign && r.amount_min == null && r.amount_max == null
+      !r.account_id && !r.amount_sign && r.amount_min == null && r.amount_max == null && !r.days_of_week?.length
   );
 
   if (existing) {
@@ -161,7 +162,7 @@ export async function applyAnswers(answers: Answer[], now: Date = new Date()): P
   if (alwaysIds.length > 0) {
     const { data, error } = await supabaseAdmin
       .from('transactions')
-      .select('id, description, amount, account_id, engine_source')
+      .select('id, date, description, amount, account_id, engine_source')
       .in('id', alwaysIds);
     if (error) throw new Error(`Failed to read transactions: ${error.message}`);
     for (const r of (data ?? []) as TxRow[]) txById.set(r.id, r);
@@ -187,7 +188,7 @@ export async function applyAnswers(answers: Answer[], now: Date = new Date()): P
         clearRulesCache();
         if (outcome.ruleId) {
           const rules = await getRules();
-          const ctx = { description: tx.description, amount: Number(tx.amount), accountId: tx.account_id };
+          const ctx = { description: tx.description, amount: Number(tx.amount), accountId: tx.account_id, date: tx.date };
           const winner = selectRule(rules, ctx);
           outcome.effective = winner?.categoryId === a.category_id && winner.action !== 'ask';
           // Sanity: the rule we touched does apply to the transaction.

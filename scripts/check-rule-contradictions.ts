@@ -36,11 +36,11 @@ async function main() {
   const { data: cats } = await supabaseAdmin.from('categories').select('id, name');
   const catName = new Map((cats ?? []).map((c) => [c.id, c.name]));
 
-  const rows: { description: string; amount: number; account_id: string; category_id: string }[] = [];
+  const rows: { date: string; description: string; amount: number; account_id: string; category_id: string }[] = [];
   for (let page = 0; ; page++) {
     const { data, error } = await supabaseAdmin
       .from('transactions')
-      .select('description, amount, account_id, category_id')
+      .select('date, description, amount, account_id, category_id')
       .eq('needs_review', false)
       .not('category_id', 'is', null)
       .order('id', { ascending: true })
@@ -52,7 +52,7 @@ async function main() {
 
   const byRule = new Map<string, { pattern: string; category: string; wins: number; disagree: number; actual: Map<string, number> }>();
   for (const r of rows) {
-    const win = selectRule(rules, { description: r.description, amount: Number(r.amount), accountId: r.account_id });
+    const win = selectRule(rules, { description: r.description, amount: Number(r.amount), accountId: r.account_id, date: r.date });
     if (!win || win.action === 'ask') continue;
     const s = byRule.get(win.ruleId) ?? { pattern: win.pattern, category: win.categoryName, wins: 0, disagree: 0, actual: new Map() };
     s.wins++;
