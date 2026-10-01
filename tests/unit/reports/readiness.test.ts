@@ -138,6 +138,12 @@ describe('regeneration rule (never regenerate unless data changed after generate
     expect(r).toMatchObject({ reportExists: true, changedSinceReport: false, lateTransactions: 0, action: 'none' });
   });
 
+  it('a current report closes the month even while a check fails (e.g. the 1st, before the 2nd’s sync)', () => {
+    const accounts = ACCOUNTS.map((a) => (a.sync_enabled ? { ...a, last_sync_at: '2026-10-01T06:00:00Z' } : a));
+    const r = evaluateReadiness({ ...READY, accounts, report });
+    expect(r).toMatchObject({ ready: false, reportExists: true, changedSinceReport: false, action: 'none' });
+  });
+
   it('a late transaction dated in M: stale, waits while unvalidated, regenerates once validated', () => {
     const late = tx('late', { created_at: '2026-10-03T07:00:00Z', is_validated: false });
     const waiting = evaluateReadiness({ ...READY, report, transactions: [...READY.transactions, late] });

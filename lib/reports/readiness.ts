@@ -16,6 +16,9 @@
  * - categorised: no transaction dated in M is uncategorised or flagged.
  * - validated:   no transaction dated in M is unvalidated.
  *
+ * A report that exists and is current means action 'none' even if a check is
+ * failing (e.g. on the 1st, before the 2nd's sync) — the month is closed.
+ *
  * Regeneration rule (explicit): an existing report is regenerated ONLY when
  * report-relevant data changed after its generated_at — a transaction dated in
  * M, or a wealth snapshot dated M-01..(M+1)-01, inserted or edited (amount,
@@ -228,13 +231,10 @@ export function evaluateReadiness(input: ReadinessInput): MonthReadiness {
   const changedSinceReport = !!generatedAt && after(dataChangedAt, generatedAt);
   const lateTransactions = generatedAt ? txs.filter((t) => after(t.created_at, generatedAt)).length : 0;
 
-  const action: ReadinessAction = !ready
-    ? 'wait'
-    : !generatedAt
-      ? 'generate'
-      : changedSinceReport
-        ? 'regenerate'
-        : 'none';
+  // A current report closes the month whatever the checks say (they gate building it, not keeping
+  // it). Otherwise wait until every check passes, then build or rebuild.
+  const action: ReadinessAction =
+    generatedAt && !changedSinceReport ? 'none' : !ready ? 'wait' : generatedAt ? 'regenerate' : 'generate';
 
   return {
     year,
