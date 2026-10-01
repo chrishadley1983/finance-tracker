@@ -636,6 +636,64 @@
         "new-account"
       ]
     },
+    "stock.inStockStatuses": {
+      "value": [
+        "NOT YET RECEIVED",
+        "BACKLOG",
+        "LISTED",
+        "PART OUT",
+        "RETURNED"
+      ],
+      "unit": "inventory_items.status values",
+      "status": "FACT",
+      "source": "hadley-bricks-inventory-management apps/web/src/lib/ledger/derive-status.ts IN_STOCK_STATUSES (1 Oct 2026); SOLD, WRITE OFF and PARTED OUT are consumed",
+      "asOf": "2026-10-01",
+      "reviewBy": "2027-10-01",
+      "cadence": "annual",
+      "triggers": []
+    },
+    "stock.listedStatus": {
+      "value": "LISTED",
+      "unit": "inventory_items.status",
+      "status": "DECISION",
+      "source": "plan/decisions.md — 1 Oct 2026: Business Stock is valued automatically from the Hadley Bricks inventory: listed units are valued at listing_value net of fees (cost if no listing value); every other in-stock status at cost",
+      "asOf": "2026-10-01",
+      "reviewBy": "2027-10-01",
+      "cadence": "annual",
+      "triggers": []
+    },
+    "stock.listedFeeRate": {
+      "value": 0.18,
+      "unit": "share of list value",
+      "status": "DECISION",
+      "source": "plan/decisions.md — 1 Oct 2026: Business Stock is valued automatically from the Hadley Bricks inventory: listed stock at list value less ~18% Amazon/eBay fees and postage (Chris)",
+      "asOf": "2026-10-01",
+      "reviewBy": "2027-10-01",
+      "cadence": "annual",
+      "triggers": []
+    },
+    "stock.partsShareOfList": {
+      "value": 0.33,
+      "unit": "share of remaining list value",
+      "status": "DECISION",
+      "source": "plan/decisions.md — 1 Oct 2026: Business Stock is valued automatically from the Hadley Bricks inventory: parted-out stock still on BrickLink (bricklink_uploads.remaining_price) at 33% of list value — parts sell slowly (Chris)",
+      "asOf": "2026-10-01",
+      "reviewBy": "2027-10-01",
+      "cadence": "annual",
+      "triggers": []
+    },
+    "stock.excludeStorageLocations": {
+      "value": [
+        "MOVED TO BL"
+      ],
+      "unit": "inventory_items.storage_location",
+      "status": "DECISION",
+      "source": "plan/decisions.md — 1 Oct 2026: Business Stock is valued automatically from the Hadley Bricks inventory: backlog units marked MOVED TO BL are already inside the BrickLink parts uploads, so they are not counted twice",
+      "asOf": "2026-10-01",
+      "reviewBy": "2027-10-01",
+      "cadence": "annual",
+      "triggers": []
+    },
     "spend.planLine": {
       "value": 70000,
       "unit": "GBP/yr real, household, to June 2035",

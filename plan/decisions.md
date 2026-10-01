@@ -376,3 +376,18 @@ New FACT keys `dates.chrisBirthYear` / `dates.abbyBirthYear` give the ages shown
   payslip's AVC (predicted £1,232/month at 46%); it now adds the payslip's own AVC back first (`netDoNothing`).
 - `payslip.employerRate` 0.11 → **0.12** (Pension ER % 12.00 on the payslip; +£0.74k/yr into Abby's pension; 2035 pot
   ≈ £712k vs £705k). `payslip.asOf` → 2026-09. Outlook test re-derived; runs test reads the recipe % per payslip.
+
+## 1 Oct 2026 — Business Stock valued automatically from the Hadley Bricks inventory (decision, Chris)
+
+Until now Business Stock was a hand-typed round figure (£20k–25k). It is now computed from `public.inventory_items` and
+`public.bricklink_uploads` (same Supabase project) by `npm run plan:stock-value`, saved on the 1st by the bank-sync job
+(`--save --if-first`). Chris's rules (new `stock.*` keys): **listed units at list value less 18% fees** (cost if no list
+value); **backlog, part-out, in transit and returned at cost** (backlog is conservative — pre-granular bulk is not in the
+database); **parted-out stock still on BrickLink at 33% of its remaining list value**; backlog marked MOVED TO BL
+excluded (already in the parts). 1 Oct 2026: listed £23,760 + backlog £7,728 + part-out/in-transit £169 + parts £5,633 =
+**£37,290** (saved). 66 in-stock units have no cost (fix in the HB app over time).
+
+Also 1 Oct: gilt holdings are snapshotted at true value by `npm run plan:gilt-value` (ii shows linkers at the clean price
+with no inflation uplift). NS&I Green Savings Bond identified from the emails as **Issue 5, 5.70%**, invested 2 Nov 2023,
+matures 2 Nov 2026 (£23,618.64); worth £22,344.98 on 1 Oct. Chris plans to move it into the ISA in a 1-year fixed product
+(a short conventional gilt is the natural fit); about £3.6k over his £20k allowance can go to Abby's ISA.
