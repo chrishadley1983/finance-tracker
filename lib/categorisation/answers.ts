@@ -6,7 +6,10 @@
  * finance-recategorise skill uses instead of hand-written SQL.
  *
  * Each answer sets a category on one or more transactions (via the shared
- * manual path, so corrections are recorded). With `always`, it also makes the
+ * manual path, so corrections are recorded) and marks them validated — every
+ * answer is Chris confirming the row. An answer whose category matches the
+ * current one is a pure confirmation: validated, no correction, and no rule
+ * unless `always`. With `always`, it also makes the
  * decision stick for future transactions:
  * - row decided by a policy rule → that policy is updated to the answer
  *   (an `ask` policy becomes a `categorise` one);
@@ -169,15 +172,16 @@ export async function applyAnswers(answers: Answer[], now: Date = new Date()): P
   }
 
   const applied = await applyManualCategories(
-    answers.map((a) => ({ transactionIds: a.transaction_ids, categoryId: a.category_id }))
+    answers.map((a) => ({ transactionIds: a.transaction_ids, categoryId: a.category_id })),
+    { validate: true }
   );
 
   const results: AnswerResult[] = [];
   const events: RuleEvent[] = [];
   for (let i = 0; i < answers.length; i++) {
     const a = answers[i];
-    const { requested, applied: appliedCount, missing, corrections } = applied[i];
-    const res: AnswerResult = { index: i, category_id: a.category_id, requested, applied: appliedCount, missing, corrections };
+    const { requested, applied: appliedCount, missing, corrections, validated } = applied[i];
+    const res: AnswerResult = { index: i, category_id: a.category_id, requested, applied: appliedCount, missing, corrections, validated };
     if (a.always) {
       const tx = txById.get(a.transaction_ids[0]);
       if (!tx) {
