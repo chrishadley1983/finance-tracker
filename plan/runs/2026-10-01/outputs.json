@@ -1,0 +1,5580 @@
+{
+ "engineVersion": "2026-09-29.brief",
+ "inputsSummary": {
+  "assumptionsPreparedOn": "2026-09-23",
+  "giltPricesAsOf": "2026-10-01T06:30:04.109Z",
+  "giltYieldsAsOf": "2026-09-21",
+  "payslipMonth": "2026/27 M6",
+  "today": "2026-10-01"
+ },
+ "pivot": {
+  "modelledTo": 60000,
+  "operatedTo": 59500,
+  "programme": {
+   "years": [
+    {
+     "taxYear": "2026/27",
+     "yearIndex": 0,
+     "basic": 73837.8,
+     "packageTotal": 85359.69,
+     "aniBefore": 82036.989,
+     "extraSacrifice": 22036.989,
+     "aniAfter": 60000,
+     "avcPct": 30,
+     "takeHomeCut": 12781.453620000002,
+     "cbFull": 2337.4,
+     "cbKept": 2337.4,
+     "netCost": 10444.053620000002
+    },
+    {
+     "taxYear": "2027/28",
+     "yearIndex": 1,
+     "basic": 75314.55600000001,
+     "packageTotal": 86910.2838,
+     "aniBefore": 83521.12878,
+     "extraSacrifice": 23521.12878,
+     "aniAfter": 60000,
+     "avcPct": 32,
+     "takeHomeCut": 13642.2546924,
+     "cbFull": 2384.148,
+     "cbKept": 2384.148,
+     "netCost": 11258.1066924
+    },
+    {
+     "taxYear": "2028/29",
+     "yearIndex": 2,
+     "basic": 76820.84712,
+     "packageTotal": 88491.88947600001,
+     "aniBefore": 85034.95135560002,
+     "extraSacrifice": 25034.951355600017,
+     "aniAfter": 60000,
+     "avcPct": 33,
+     "takeHomeCut": 14520.27178624801,
+     "cbFull": 2431.8309600000002,
+     "cbKept": 2431.8309600000002,
+     "netCost": 12088.44082624801
+    },
+    {
+     "taxYear": "2029/30",
+     "yearIndex": 3,
+     "basic": 78357.26406240002,
+     "packageTotal": 90105.12726552002,
+     "aniBefore": 86579.05038271201,
+     "extraSacrifice": 26579.050382712012,
+     "aniAfter": 60000,
+     "avcPct": 34,
+     "takeHomeCut": 15947.430229627207,
+     "cbFull": 2480.4675792000003,
+     "cbKept": 2480.4675792000003,
+     "netCost": 13466.962650427207
+    },
+    {
+     "taxYear": "2030/31",
+     "yearIndex": 4,
+     "basic": 79924.409343648,
+     "packageTotal": 91750.6298108304,
+     "aniBefore": 88154.03139036625,
+     "extraSacrifice": 28154.031390366246,
+     "aniAfter": 60000,
+     "avcPct": 36,
+     "takeHomeCut": 16892.41883421975,
+     "cbFull": 2530.076930784,
+     "cbKept": 2530.076930784,
+     "netCost": 14362.341903435748
+    },
+    {
+     "taxYear": "2031/32",
+     "yearIndex": 5,
+     "basic": 81522.89753052096,
+     "packageTotal": 93429.042407047,
+     "aniBefore": 89760.51201817355,
+     "extraSacrifice": 29760.512018173555,
+     "aniAfter": 60000,
+     "avcPct": 37,
+     "takeHomeCut": 17856.30721090413,
+     "cbFull": 2580.67846939968,
+     "cbKept": 2580.67846939968,
+     "netCost": 15275.628741504452
+    },
+    {
+     "taxYear": "2032/33",
+     "yearIndex": 6,
+     "basic": 83153.35548113138,
+     "packageTotal": 95141.02325518795,
+     "aniBefore": 91399.12225853703,
+     "extraSacrifice": 31399.122258537027,
+     "aniAfter": 60000,
+     "avcPct": 38,
+     "takeHomeCut": 18839.473355122216,
+     "cbFull": 2632.292038787674,
+     "cbKept": 2632.292038787674,
+     "netCost": 16207.181316334543
+    },
+    {
+     "taxYear": "2033/34",
+     "yearIndex": 7,
+     "basic": 84816.42259075401,
+     "packageTotal": 96887.2437202917,
+     "aniBefore": 93070.50470370777,
+     "extraSacrifice": 33070.504703707775,
+     "aniAfter": 60000,
+     "avcPct": 39,
+     "takeHomeCut": 19842.302822224665,
+     "cbFull": 2684.9378795634275,
+     "cbKept": 2684.9378795634275,
+     "netCost": 17157.36494266124
+    },
+    {
+     "taxYear": "2034/35",
+     "yearIndex": 8,
+     "basic": 86512.7510425691,
+     "packageTotal": 98668.38859469755,
+     "aniBefore": 94775.31479778195,
+     "extraSacrifice": 34775.314797781946,
+     "aniAfter": 60000,
+     "avcPct": 41,
+     "takeHomeCut": 20865.188878669167,
+     "cbFull": 2738.636637154696,
+     "cbKept": 2738.636637154696,
+     "netCost": 18126.55224151447
+    }
+   ],
+   "totals": {
+    "extraSacrifice": 254331.60468687856,
+    "takeHomeCut": 151187.10142941514,
+    "cbKept": 22800.46849488948
+   }
+  },
+  "operating": {
+   "years": [
+    {
+     "taxYear": "2026/27",
+     "yearIndex": 0,
+     "basic": 73837.8,
+     "packageTotal": 85359.69,
+     "aniBefore": 82036.989,
+     "extraSacrifice": 22536.989,
+     "aniAfter": 59500,
+     "avcPct": 31,
+     "takeHomeCut": 13071.453620000002,
+     "cbFull": 2337.4,
+     "cbKept": 2337.4,
+     "netCost": 10734.053620000002
+    },
+    {
+     "taxYear": "2027/28",
+     "yearIndex": 1,
+     "basic": 75314.55600000001,
+     "packageTotal": 86910.2838,
+     "aniBefore": 83521.12878,
+     "extraSacrifice": 24021.12878,
+     "aniAfter": 59500,
+     "avcPct": 32,
+     "takeHomeCut": 13932.2546924,
+     "cbFull": 2384.148,
+     "cbKept": 2384.148,
+     "netCost": 11548.1066924
+    },
+    {
+     "taxYear": "2028/29",
+     "yearIndex": 2,
+     "basic": 76820.84712,
+     "packageTotal": 88491.88947600001,
+     "aniBefore": 85034.95135560002,
+     "extraSacrifice": 25534.951355600017,
+     "aniAfter": 59500,
+     "avcPct": 34,
+     "takeHomeCut": 14810.27178624801,
+     "cbFull": 2431.8309600000002,
+     "cbKept": 2431.8309600000002,
+     "netCost": 12378.44082624801
+    },
+    {
+     "taxYear": "2029/30",
+     "yearIndex": 3,
+     "basic": 78357.26406240002,
+     "packageTotal": 90105.12726552002,
+     "aniBefore": 86579.05038271201,
+     "extraSacrifice": 27079.050382712012,
+     "aniAfter": 59500,
+     "avcPct": 35,
+     "takeHomeCut": 16247.430229627207,
+     "cbFull": 2480.4675792000003,
+     "cbKept": 2480.4675792000003,
+     "netCost": 13766.962650427207
+    },
+    {
+     "taxYear": "2030/31",
+     "yearIndex": 4,
+     "basic": 79924.409343648,
+     "packageTotal": 91750.6298108304,
+     "aniBefore": 88154.03139036625,
+     "extraSacrifice": 28654.031390366246,
+     "aniAfter": 59500,
+     "avcPct": 36,
+     "takeHomeCut": 17192.41883421975,
+     "cbFull": 2530.076930784,
+     "cbKept": 2530.076930784,
+     "netCost": 14662.341903435748
+    },
+    {
+     "taxYear": "2031/32",
+     "yearIndex": 5,
+     "basic": 81522.89753052096,
+     "packageTotal": 93429.042407047,
+     "aniBefore": 89760.51201817355,
+     "extraSacrifice": 30260.512018173555,
+     "aniAfter": 59500,
+     "avcPct": 38,
+     "takeHomeCut": 18156.30721090413,
+     "cbFull": 2580.67846939968,
+     "cbKept": 2580.67846939968,
+     "netCost": 15575.628741504452
+    },
+    {
+     "taxYear": "2032/33",
+     "yearIndex": 6,
+     "basic": 83153.35548113138,
+     "packageTotal": 95141.02325518795,
+     "aniBefore": 91399.12225853703,
+     "extraSacrifice": 31899.122258537027,
+     "aniAfter": 59500,
+     "avcPct": 39,
+     "takeHomeCut": 19139.473355122216,
+     "cbFull": 2632.292038787674,
+     "cbKept": 2632.292038787674,
+     "netCost": 16507.181316334543
+    },
+    {
+     "taxYear": "2033/34",
+     "yearIndex": 7,
+     "basic": 84816.42259075401,
+     "packageTotal": 96887.2437202917,
+     "aniBefore": 93070.50470370777,
+     "extraSacrifice": 33570.504703707775,
+     "aniAfter": 59500,
+     "avcPct": 40,
+     "takeHomeCut": 20142.302822224665,
+     "cbFull": 2684.9378795634275,
+     "cbKept": 2684.9378795634275,
+     "netCost": 17457.36494266124
+    },
+    {
+     "taxYear": "2034/35",
+     "yearIndex": 8,
+     "basic": 86512.7510425691,
+     "packageTotal": 98668.38859469755,
+     "aniBefore": 94775.31479778195,
+     "extraSacrifice": 35275.314797781946,
+     "aniAfter": 59500,
+     "avcPct": 41,
+     "takeHomeCut": 21165.188878669167,
+     "cbFull": 2738.636637154696,
+     "cbKept": 2738.636637154696,
+     "netCost": 18426.55224151447
+    }
+   ],
+   "totals": {
+    "extraSacrifice": 258831.60468687856,
+    "takeHomeCut": 153857.10142941514,
+    "cbKept": 22800.46849488948
+   }
+  },
+  "retune": {
+   "taxYear": "2026/27",
+   "yearIndex": 0,
+   "basic": 73837.8,
+   "packageTotal": 85359.69,
+   "aniBefore": 82036.989,
+   "extraSacrifice": 22536.989,
+   "aniAfter": 59500,
+   "avcPct": 31,
+   "takeHomeCut": 13071.453620000002,
+   "cbFull": 2337.4,
+   "cbKept": 2337.4,
+   "netCost": 10734.053620000002
+  },
+  "takeHomeYear1AtLine": 43497.6,
+  "avcRecipe": {
+   "taxYear": "2026/27",
+   "taxMonth": 6,
+   "remaining": 6,
+   "target": 59500,
+   "aniDoNothing": 76430.78,
+   "bonusInAni": 0,
+   "extraNeeded": 16930.78,
+   "perPayslip": 2821.7966666666666,
+   "rawPct": 45.8593836761117,
+   "avcPct": 46,
+   "actualPerPayslip": 2830.449,
+   "landedAni": 59448.085999999996,
+   "bufferBelowCliff": 551.9140000000043,
+   "netCutMonthly": 1641.6604200000002,
+   "netDoNothing": 4551.38869,
+   "netMonthlyAfter": 2909.7282699999996,
+   "paidBasicAnnual": 36549.71099999999,
+   "nmwFloor": 26507.976000000002,
+   "nmwOk": true,
+   "aboveCliff": false,
+   "aboveTarget": false
+  }
+ },
+ "ladder": {
+  "amountPerYear": 104401.77842715355,
+  "firstYear": 2035,
+  "lastYear": 2045,
+  "allocations": [
+   {
+    "targetYear": 2035,
+    "epic": "TR35",
+    "giltName": "1 1/8% Index-linked Treasury Gilt 2035",
+    "maturity": "22-Sep-2035",
+    "dirty": 100.398,
+    "realYield": 1.903,
+    "indexRatio": 1.0725136203397072,
+    "realAmount": 104401.77842715355,
+    "face": 97343.07932992534,
+    "estCost": 97730.50478565844,
+    "note": ""
+   },
+   {
+    "targetYear": 2036,
+    "epic": "TG36",
+    "giltName": "0 1/8% Index-linked Treasury Gilt 2036",
+    "maturity": "22-Nov-2036",
+    "dirty": 133.223,
+    "realYield": 2.031,
+    "indexRatio": 1.612674010410362,
+    "realAmount": 104401.77842715355,
+    "face": 64738.30281458272,
+    "estCost": 86246.30915867155,
+    "note": ""
+   },
+   {
+    "targetYear": 2037,
+    "epic": "TR37",
+    "giltName": "1 1/8% Index-linked Treasury Gilt 2037",
+    "maturity": "22-Nov-2037",
+    "dirty": 187.693,
+    "realYield": 2.12,
+    "indexRatio": 2.0815459687257403,
+    "realAmount": 104401.77842715355,
+    "face": 50155.884134072316,
+    "estCost": 94139.08360776436,
+    "note": ""
+   },
+   {
+    "targetYear": 2038,
+    "epic": "T38",
+    "giltName": "1 3/4% Index-linked Treasury Gilt 2038",
+    "maturity": "22-Sep-2038",
+    "dirty": 100.552,
+    "realYield": 2.194,
+    "indexRatio": 1.0545568956476141,
+    "realAmount": 104401.77842715355,
+    "face": 99000.61235011824,
+    "estCost": 99547.0957302909,
+    "note": ""
+   },
+   {
+    "targetYear": 2039,
+    "epic": "TG39",
+    "giltName": "0 1/8% Index-linked Treasury Gilt 2039",
+    "maturity": "22-Mar-2039",
+    "dirty": 108.21,
+    "realYield": 2.291,
+    "indexRatio": 1.4124787886698864,
+    "realAmount": 104401.77842715355,
+    "face": 73913.87344334381,
+    "estCost": 79982.20245304234,
+    "note": ""
+   },
+   {
+    "targetYear": 2040,
+    "epic": "TR40",
+    "giltName": "0 5/8% Index-linked Treasury Gilt 2040",
+    "maturity": "22-Mar-2040",
+    "dirty": 155.439,
+    "realYield": 2.339,
+    "indexRatio": 1.9359696101631583,
+    "realAmount": 104401.77842715355,
+    "face": 53927.38495433038,
+    "estCost": 83824.18789916158,
+    "note": ""
+   },
+   {
+    "targetYear": 2041,
+    "epic": "T41",
+    "giltName": "0 1/8% Index-linked Treasury Gilt 2041",
+    "maturity": "10-Aug-2041",
+    "dirty": 107.819,
+    "realYield": 2.369,
+    "indexRatio": 1.4968624184367625,
+    "realAmount": 104401.77842715355,
+    "face": 69747.07704679017,
+    "estCost": 75200.6010010787,
+    "note": ""
+   },
+   {
+    "targetYear": 2042,
+    "epic": "T42A",
+    "giltName": "0 5/8% Index-linked Treasury Gilt 2042",
+    "maturity": "22-Nov-2042",
+    "dirty": 150.396,
+    "realYield": 2.43,
+    "indexRatio": 1.9783741120757694,
+    "realAmount": 104401.77842715355,
+    "face": 52771.50453490926,
+    "estCost": 79366.23196032213,
+    "note": ""
+   },
+   {
+    "targetYear": 2043,
+    "epic": "T42A",
+    "giltName": "0 5/8% Index-linked Treasury Gilt 2042",
+    "maturity": "22-Nov-2042",
+    "dirty": 150.396,
+    "realYield": 2.43,
+    "indexRatio": 1.9783741120757694,
+    "realAmount": 52200.889213576775,
+    "face": 26385.75226745463,
+    "estCost": 39683.11598016106,
+    "note": "no 2043 linker — half via 2042"
+   },
+   {
+    "targetYear": 2043,
+    "epic": "T44",
+    "giltName": "0 1/8% Index-linked Treasury Gilt 2044",
+    "maturity": "22-Mar-2044",
+    "dirty": 114.642,
+    "realYield": 2.52,
+    "indexRatio": 1.7288795053536419,
+    "realAmount": 52200.889213576775,
+    "face": 30193.480258127704,
+    "estCost": 34614.40963752276,
+    "note": "no 2043 linker — half via 2044"
+   },
+   {
+    "targetYear": 2044,
+    "epic": "T44",
+    "giltName": "0 1/8% Index-linked Treasury Gilt 2044",
+    "maturity": "22-Mar-2044",
+    "dirty": 114.642,
+    "realYield": 2.52,
+    "indexRatio": 1.7288795053536419,
+    "realAmount": 104401.77842715355,
+    "face": 60386.96051625541,
+    "estCost": 69228.81927504552,
+    "note": ""
+   },
+   {
+    "targetYear": 2045,
+    "epic": "TR45",
+    "giltName": "0 5/8% Index-linked Treasury Gilt 2045",
+    "maturity": "22-Mar-2045",
+    "dirty": 82.804,
+    "realYield": 2.541,
+    "indexRatio": 1.1518152733342606,
+    "realAmount": 104401.77842715355,
+    "face": 90641.07834317266,
+    "estCost": 75054.43851128069,
+    "note": ""
+   }
+  ],
+  "byGilt": [
+   {
+    "epic": "TR35",
+    "giltName": "1 1/8% Index-linked Treasury Gilt 2035",
+    "maturity": "22-Sep-2035",
+    "matYear": 2035,
+    "coupon": "1.125%",
+    "clean": 93.61,
+    "dirty": 100.398,
+    "realYield": 1.903,
+    "face": 97343.07932992534,
+    "realAmount": 104401.77842715355,
+    "estCost": 97730.50478565844,
+    "coversYears": [
+     2035
+    ],
+    "notes": []
+   },
+   {
+    "epic": "TG36",
+    "giltName": "0 1/8% Index-linked Treasury Gilt 2036",
+    "maturity": "22-Nov-2036",
+    "matYear": 2036,
+    "coupon": "0.125%",
+    "clean": 82.61,
+    "dirty": 133.223,
+    "realYield": 2.031,
+    "face": 64738.30281458272,
+    "realAmount": 104401.77842715355,
+    "estCost": 86246.30915867155,
+    "coversYears": [
+     2036
+    ],
+    "notes": []
+   },
+   {
+    "epic": "TR37",
+    "giltName": "1 1/8% Index-linked Treasury Gilt 2037",
+    "maturity": "22-Nov-2037",
+    "matYear": 2037,
+    "coupon": "1.125%",
+    "clean": 90.17,
+    "dirty": 187.693,
+    "realYield": 2.12,
+    "face": 50155.884134072316,
+    "realAmount": 104401.77842715355,
+    "estCost": 94139.08360776436,
+    "coversYears": [
+     2037
+    ],
+    "notes": []
+   },
+   {
+    "epic": "T38",
+    "giltName": "1 3/4% Index-linked Treasury Gilt 2038",
+    "maturity": "22-Sep-2038",
+    "matYear": 2038,
+    "coupon": "1.75%",
+    "clean": 95.35,
+    "dirty": 100.552,
+    "realYield": 2.194,
+    "face": 99000.61235011824,
+    "realAmount": 104401.77842715355,
+    "estCost": 99547.0957302909,
+    "coversYears": [
+     2038
+    ],
+    "notes": []
+   },
+   {
+    "epic": "TG39",
+    "giltName": "0 1/8% Index-linked Treasury Gilt 2039",
+    "maturity": "22-Mar-2039",
+    "matYear": 2039,
+    "coupon": "0.125%",
+    "clean": 76.61,
+    "dirty": 108.21,
+    "realYield": 2.291,
+    "face": 73913.87344334381,
+    "realAmount": 104401.77842715355,
+    "estCost": 79982.20245304234,
+    "coversYears": [
+     2039
+    ],
+    "notes": []
+   },
+   {
+    "epic": "TR40",
+    "giltName": "0 5/8% Index-linked Treasury Gilt 2040",
+    "maturity": "22-Mar-2040",
+    "matYear": 2040,
+    "coupon": "0.625%",
+    "clean": 80.29,
+    "dirty": 155.439,
+    "realYield": 2.339,
+    "face": 53927.38495433038,
+    "realAmount": 104401.77842715355,
+    "estCost": 83824.18789916158,
+    "coversYears": [
+     2040
+    ],
+    "notes": []
+   },
+   {
+    "epic": "T41",
+    "giltName": "0 1/8% Index-linked Treasury Gilt 2041",
+    "maturity": "10-Aug-2041",
+    "matYear": 2041,
+    "coupon": "0.125%",
+    "clean": 72.03,
+    "dirty": 107.819,
+    "realYield": 2.369,
+    "face": 69747.07704679017,
+    "realAmount": 104401.77842715355,
+    "estCost": 75200.6010010787,
+    "coversYears": [
+     2041
+    ],
+    "notes": []
+   },
+   {
+    "epic": "T42A",
+    "giltName": "0 5/8% Index-linked Treasury Gilt 2042",
+    "maturity": "22-Nov-2042",
+    "matYear": 2042,
+    "coupon": "0.625%",
+    "clean": 76.02,
+    "dirty": 150.396,
+    "realYield": 2.43,
+    "face": 79157.25680236389,
+    "realAmount": 156602.66764073033,
+    "estCost": 119049.34794048319,
+    "coversYears": [
+     2042,
+     2043
+    ],
+    "notes": [
+     "no 2043 linker — half via 2042"
+    ]
+   },
+   {
+    "epic": "T44",
+    "giltName": "0 1/8% Index-linked Treasury Gilt 2044",
+    "maturity": "22-Mar-2044",
+    "matYear": 2044,
+    "coupon": "0.125%",
+    "clean": 66.31,
+    "dirty": 114.642,
+    "realYield": 2.52,
+    "face": 90580.44077438311,
+    "realAmount": 156602.66764073033,
+    "estCost": 103843.22891256827,
+    "coversYears": [
+     2043,
+     2044
+    ],
+    "notes": [
+     "no 2043 linker — half via 2044"
+    ]
+   },
+   {
+    "epic": "TR45",
+    "giltName": "0 5/8% Index-linked Treasury Gilt 2045",
+    "maturity": "22-Mar-2045",
+    "matYear": 2045,
+    "coupon": "0.625%",
+    "clean": 71.89,
+    "dirty": 82.804,
+    "realYield": 2.541,
+    "face": 90641.07834317266,
+    "realAmount": 104401.77842715355,
+    "estCost": 75054.43851128069,
+    "coversYears": [
+     2045
+    ],
+    "notes": []
+   }
+  ],
+  "totals": {
+   "face": 769204.9899930827,
+   "estCost": 914617,
+   "realAmount": 1148419.562698689
+  },
+  "coupons": {
+   "2027": 7047.120043832865,
+   "2028": 7047.120043832865,
+   "2029": 7047.120043832865,
+   "2030": 7047.120043832865,
+   "2031": 7047.120043832865,
+   "2032": 7047.120043832865,
+   "2033": 7047.120043832865,
+   "2034": 7047.120043832865,
+   "2035": 7047.120043832865,
+   "2036": 5872.600036527387,
+   "2037": 5742.097813493445,
+   "2038": 4567.577806187968,
+   "2039": 2740.5466837127806,
+   "2040": 2610.0444606788387,
+   "2041": 1957.5333455091293,
+   "2042": 1827.0311224751872,
+   "2043": 848.2644497206226,
+   "2044": 848.2644497206226,
+   "2045": 652.5111151697097
+  },
+  "pricesAsOf": "2026-10-01T06:30:04.109Z",
+  "isa": {
+   "amountPerYear": 100614.87737158722,
+   "firstYear": 2035,
+   "lastYear": 2040,
+   "allocations": [
+    {
+     "targetYear": 2035,
+     "epic": "TR35",
+     "giltName": "1 1/8% Index-linked Treasury Gilt 2035",
+     "maturity": "22-Sep-2035",
+     "dirty": 100.398,
+     "realYield": 1.903,
+     "indexRatio": 1.0725136203397072,
+     "realAmount": 100614.87737158722,
+     "face": 93812.21409544295,
+     "estCost": 94185.58670754281,
+     "note": ""
+    },
+    {
+     "targetYear": 2036,
+     "epic": "TG36",
+     "giltName": "0 1/8% Index-linked Treasury Gilt 2036",
+     "maturity": "22-Nov-2036",
+     "dirty": 133.223,
+     "realYield": 2.031,
+     "indexRatio": 1.612674010410362,
+     "realAmount": 100614.87737158722,
+     "face": 62390.09044734633,
+     "estCost": 83117.95019666821,
+     "note": ""
+    },
+    {
+     "targetYear": 2037,
+     "epic": "TR37",
+     "giltName": "1 1/8% Index-linked Treasury Gilt 2037",
+     "maturity": "22-Nov-2037",
+     "dirty": 187.693,
+     "realYield": 2.12,
+     "indexRatio": 2.0815459687257403,
+     "realAmount": 100614.87737158722,
+     "face": 48336.61080911925,
+     "estCost": 90724.4349259602,
+     "note": ""
+    },
+    {
+     "targetYear": 2038,
+     "epic": "T38",
+     "giltName": "1 3/4% Index-linked Treasury Gilt 2038",
+     "maturity": "22-Sep-2038",
+     "dirty": 100.552,
+     "realYield": 2.194,
+     "indexRatio": 1.0545568956476141,
+     "realAmount": 100614.87737158722,
+     "face": 95409.62444686174,
+     "estCost": 95936.28557380842,
+     "note": ""
+    },
+    {
+     "targetYear": 2039,
+     "epic": "TG39",
+     "giltName": "0 1/8% Index-linked Treasury Gilt 2039",
+     "maturity": "22-Mar-2039",
+     "dirty": 108.21,
+     "realYield": 2.291,
+     "indexRatio": 1.4124787886698864,
+     "realAmount": 100614.87737158722,
+     "face": 71232.841284884,
+     "estCost": 77081.05755437296,
+     "note": ""
+    },
+    {
+     "targetYear": 2040,
+     "epic": "TR40",
+     "giltName": "0 5/8% Index-linked Treasury Gilt 2040",
+     "maturity": "22-Mar-2040",
+     "dirty": 155.439,
+     "realYield": 2.339,
+     "indexRatio": 1.9359696101631583,
+     "realAmount": 100614.87737158722,
+     "face": 51971.310315717026,
+     "estCost": 80783.68504164739,
+     "note": ""
+    }
+   ],
+   "byGilt": [
+    {
+     "epic": "TR35",
+     "giltName": "1 1/8% Index-linked Treasury Gilt 2035",
+     "maturity": "22-Sep-2035",
+     "matYear": 2035,
+     "coupon": "1.125%",
+     "clean": 93.61,
+     "dirty": 100.398,
+     "realYield": 1.903,
+     "face": 93812.21409544295,
+     "realAmount": 100614.87737158722,
+     "estCost": 94185.58670754281,
+     "coversYears": [
+      2035
+     ],
+     "notes": []
+    },
+    {
+     "epic": "TG36",
+     "giltName": "0 1/8% Index-linked Treasury Gilt 2036",
+     "maturity": "22-Nov-2036",
+     "matYear": 2036,
+     "coupon": "0.125%",
+     "clean": 82.61,
+     "dirty": 133.223,
+     "realYield": 2.031,
+     "face": 62390.09044734633,
+     "realAmount": 100614.87737158722,
+     "estCost": 83117.95019666821,
+     "coversYears": [
+      2036
+     ],
+     "notes": []
+    },
+    {
+     "epic": "TR37",
+     "giltName": "1 1/8% Index-linked Treasury Gilt 2037",
+     "maturity": "22-Nov-2037",
+     "matYear": 2037,
+     "coupon": "1.125%",
+     "clean": 90.17,
+     "dirty": 187.693,
+     "realYield": 2.12,
+     "face": 48336.61080911925,
+     "realAmount": 100614.87737158722,
+     "estCost": 90724.4349259602,
+     "coversYears": [
+      2037
+     ],
+     "notes": []
+    },
+    {
+     "epic": "T38",
+     "giltName": "1 3/4% Index-linked Treasury Gilt 2038",
+     "maturity": "22-Sep-2038",
+     "matYear": 2038,
+     "coupon": "1.75%",
+     "clean": 95.35,
+     "dirty": 100.552,
+     "realYield": 2.194,
+     "face": 95409.62444686174,
+     "realAmount": 100614.87737158722,
+     "estCost": 95936.28557380842,
+     "coversYears": [
+      2038
+     ],
+     "notes": []
+    },
+    {
+     "epic": "TG39",
+     "giltName": "0 1/8% Index-linked Treasury Gilt 2039",
+     "maturity": "22-Mar-2039",
+     "matYear": 2039,
+     "coupon": "0.125%",
+     "clean": 76.61,
+     "dirty": 108.21,
+     "realYield": 2.291,
+     "face": 71232.841284884,
+     "realAmount": 100614.87737158722,
+     "estCost": 77081.05755437296,
+     "coversYears": [
+      2039
+     ],
+     "notes": []
+    },
+    {
+     "epic": "TR40",
+     "giltName": "0 5/8% Index-linked Treasury Gilt 2040",
+     "maturity": "22-Mar-2040",
+     "matYear": 2040,
+     "coupon": "0.625%",
+     "clean": 80.29,
+     "dirty": 155.439,
+     "realYield": 2.339,
+     "face": 51971.310315717026,
+     "realAmount": 100614.87737158722,
+     "estCost": 80783.68504164739,
+     "coversYears": [
+      2040
+     ],
+     "notes": []
+    }
+   ],
+   "totals": {
+    "face": 423152.69139937125,
+    "estCost": 521829,
+    "realAmount": 603689.2642295234
+   },
+   "coupons": {
+    "2027": 4904.975271864877,
+    "2028": 4904.975271864877,
+    "2029": 4904.975271864877,
+    "2030": 4904.975271864877,
+    "2031": 4904.975271864877,
+    "2032": 4904.975271864877,
+    "2033": 4904.975271864877,
+    "2034": 4904.975271864877,
+    "2035": 4904.975271864877,
+    "2036": 3773.0579014345208,
+    "2037": 3647.2893047200364,
+    "2038": 2515.3719342896807,
+    "2039": 754.6115802869042,
+    "2040": 628.8429835724202
+   },
+   "byHolder": {
+    "holders": [
+     "chris",
+     "abby"
+    ],
+    "firstBudget": 279029,
+    "rows": [
+     {
+      "epic": "TR35",
+      "giltName": "1 1/8% Index-linked Treasury Gilt 2035",
+      "maturity": "22-Sep-2035",
+      "matYear": 2035,
+      "clean": 93.61,
+      "dirty": 100.398,
+      "realYield": 1.903,
+      "coversYears": [
+       2035
+      ],
+      "notes": [],
+      "holder": "chris",
+      "face": 93812.21409544295,
+      "estCost": 94185.58670754281,
+      "realAmount": 100614.87737158722,
+      "split": false
+     },
+     {
+      "epic": "TG36",
+      "giltName": "0 1/8% Index-linked Treasury Gilt 2036",
+      "maturity": "22-Nov-2036",
+      "matYear": 2036,
+      "clean": 82.61,
+      "dirty": 133.223,
+      "realYield": 2.031,
+      "coversYears": [
+       2036
+      ],
+      "notes": [],
+      "holder": "chris",
+      "face": 62390.09044734633,
+      "estCost": 83117.95019666821,
+      "realAmount": 100614.87737158722,
+      "split": false
+     },
+     {
+      "epic": "TR37",
+      "giltName": "1 1/8% Index-linked Treasury Gilt 2037",
+      "maturity": "22-Nov-2037",
+      "matYear": 2037,
+      "clean": 90.17,
+      "dirty": 187.693,
+      "realYield": 2.12,
+      "coversYears": [
+       2037
+      ],
+      "notes": [],
+      "holder": "chris",
+      "face": 48336.61080911925,
+      "estCost": 90724.4349259602,
+      "realAmount": 100614.87737158722,
+      "split": false
+     },
+     {
+      "epic": "T38",
+      "giltName": "1 3/4% Index-linked Treasury Gilt 2038",
+      "maturity": "22-Sep-2038",
+      "matYear": 2038,
+      "clean": 95.35,
+      "dirty": 100.552,
+      "realYield": 2.194,
+      "coversYears": [
+       2038
+      ],
+      "notes": [],
+      "holder": "chris",
+      "face": 10940.635859882208,
+      "estCost": 11001.028169828758,
+      "realAmount": 11537.522988808347,
+      "split": true
+     },
+     {
+      "epic": "T38",
+      "giltName": "1 3/4% Index-linked Treasury Gilt 2038",
+      "maturity": "22-Sep-2038",
+      "matYear": 2038,
+      "clean": 95.35,
+      "dirty": 100.552,
+      "realYield": 2.194,
+      "coversYears": [
+       2038
+      ],
+      "notes": [],
+      "holder": "abby",
+      "face": 84468.98858697954,
+      "estCost": 84935.25740397966,
+      "realAmount": 89077.35438277888,
+      "split": true
+     },
+     {
+      "epic": "TG39",
+      "giltName": "0 1/8% Index-linked Treasury Gilt 2039",
+      "maturity": "22-Mar-2039",
+      "matYear": 2039,
+      "clean": 76.61,
+      "dirty": 108.21,
+      "realYield": 2.291,
+      "coversYears": [
+       2039
+      ],
+      "notes": [],
+      "holder": "abby",
+      "face": 71232.841284884,
+      "estCost": 77081.05755437296,
+      "realAmount": 100614.87737158722,
+      "split": false
+     },
+     {
+      "epic": "TR40",
+      "giltName": "0 5/8% Index-linked Treasury Gilt 2040",
+      "maturity": "22-Mar-2040",
+      "matYear": 2040,
+      "clean": 80.29,
+      "dirty": 155.439,
+      "realYield": 2.339,
+      "coversYears": [
+       2040
+      ],
+      "notes": [],
+      "holder": "abby",
+      "face": 51971.310315717026,
+      "estCost": 80783.68504164739,
+      "realAmount": 100614.87737158722,
+      "split": false
+     }
+    ],
+    "totals": {
+     "chris": {
+      "face": 215479.55121179073,
+      "estCost": 279029,
+      "realAmount": 313382.15510357
+     },
+     "abby": {
+      "face": 207673.14018758055,
+      "estCost": 242800,
+      "realAmount": 290307.10912595334
+     }
+    }
+   }
+  },
+  "sipp": {
+   "amountPerYear": 109896.89856329476,
+   "firstYear": 2041,
+   "lastYear": 2045,
+   "allocations": [
+    {
+     "targetYear": 2041,
+     "epic": "T41",
+     "giltName": "0 1/8% Index-linked Treasury Gilt 2041",
+     "maturity": "10-Aug-2041",
+     "dirty": 107.819,
+     "realYield": 2.369,
+     "indexRatio": 1.4968624184367625,
+     "realAmount": 109896.89856329476,
+     "face": 73418.16937194856,
+     "estCost": 79158.73603514124,
+     "note": ""
+    },
+    {
+     "targetYear": 2042,
+     "epic": "T42A",
+     "giltName": "0 5/8% Index-linked Treasury Gilt 2042",
+     "maturity": "22-Nov-2042",
+     "dirty": 150.396,
+     "realYield": 2.43,
+     "indexRatio": 1.9783741120757694,
+     "realAmount": 109896.89856329476,
+     "face": 55549.09857164863,
+     "estCost": 83543.62228781667,
+     "note": ""
+    },
+    {
+     "targetYear": 2043,
+     "epic": "T42A",
+     "giltName": "0 5/8% Index-linked Treasury Gilt 2042",
+     "maturity": "22-Nov-2042",
+     "dirty": 150.396,
+     "realYield": 2.43,
+     "indexRatio": 1.9783741120757694,
+     "realAmount": 54948.44928164738,
+     "face": 27774.549285824316,
+     "estCost": 41771.81114390834,
+     "note": "no 2043 linker — half via 2042"
+    },
+    {
+     "targetYear": 2043,
+     "epic": "T44",
+     "giltName": "0 1/8% Index-linked Treasury Gilt 2044",
+     "maturity": "22-Mar-2044",
+     "dirty": 114.642,
+     "realYield": 2.52,
+     "indexRatio": 1.7288795053536419,
+     "realAmount": 54948.44928164738,
+     "face": 31782.694578479422,
+     "estCost": 36436.31671866038,
+     "note": "no 2043 linker — half via 2044"
+    },
+    {
+     "targetYear": 2044,
+     "epic": "T44",
+     "giltName": "0 1/8% Index-linked Treasury Gilt 2044",
+     "maturity": "22-Mar-2044",
+     "dirty": 114.642,
+     "realYield": 2.52,
+     "indexRatio": 1.7288795053536419,
+     "realAmount": 109896.89856329476,
+     "face": 63565.389156958845,
+     "estCost": 72872.63343732076,
+     "note": ""
+    },
+    {
+     "targetYear": 2045,
+     "epic": "TR45",
+     "giltName": "0 5/8% Index-linked Treasury Gilt 2045",
+     "maturity": "22-Mar-2045",
+     "dirty": 82.804,
+     "realYield": 2.541,
+     "indexRatio": 1.1518152733342606,
+     "realAmount": 109896.89856329476,
+     "face": 95411.91292347304,
+     "estCost": 79004.88037715261,
+     "note": ""
+    }
+   ],
+   "byGilt": [
+    {
+     "epic": "T41",
+     "giltName": "0 1/8% Index-linked Treasury Gilt 2041",
+     "maturity": "10-Aug-2041",
+     "matYear": 2041,
+     "coupon": "0.125%",
+     "clean": 72.03,
+     "dirty": 107.819,
+     "realYield": 2.369,
+     "face": 73418.16937194856,
+     "realAmount": 109896.89856329476,
+     "estCost": 79158.73603514124,
+     "coversYears": [
+      2041
+     ],
+     "notes": []
+    },
+    {
+     "epic": "T42A",
+     "giltName": "0 5/8% Index-linked Treasury Gilt 2042",
+     "maturity": "22-Nov-2042",
+     "matYear": 2042,
+     "coupon": "0.625%",
+     "clean": 76.02,
+     "dirty": 150.396,
+     "realYield": 2.43,
+     "face": 83323.64785747294,
+     "realAmount": 164845.34784494212,
+     "estCost": 125315.43343172502,
+     "coversYears": [
+      2042,
+      2043
+     ],
+     "notes": [
+      "no 2043 linker — half via 2042"
+     ]
+    },
+    {
+     "epic": "T44",
+     "giltName": "0 1/8% Index-linked Treasury Gilt 2044",
+     "maturity": "22-Mar-2044",
+     "matYear": 2044,
+     "coupon": "0.125%",
+     "clean": 66.31,
+     "dirty": 114.642,
+     "realYield": 2.52,
+     "face": 95348.08373543827,
+     "realAmount": 164845.34784494212,
+     "estCost": 109308.95015598115,
+     "coversYears": [
+      2043,
+      2044
+     ],
+     "notes": [
+      "no 2043 linker — half via 2044"
+     ]
+    },
+    {
+     "epic": "TR45",
+     "giltName": "0 5/8% Index-linked Treasury Gilt 2045",
+     "maturity": "22-Mar-2045",
+     "matYear": 2045,
+     "coupon": "0.625%",
+     "clean": 71.89,
+     "dirty": 82.804,
+     "realYield": 2.541,
+     "face": 95411.91292347304,
+     "realAmount": 109896.89856329476,
+     "estCost": 79004.88037715261,
+     "coversYears": [
+      2045
+     ],
+     "notes": []
+    }
+   ],
+   "totals": {
+    "face": 347501.8138883328,
+    "estCost": 392788,
+    "realAmount": 549484.4928164738
+   },
+   "coupons": {
+    "2027": 2060.5668480617765,
+    "2028": 2060.5668480617765,
+    "2029": 2060.5668480617765,
+    "2030": 2060.5668480617765,
+    "2031": 2060.5668480617765,
+    "2032": 2060.5668480617765,
+    "2033": 2060.5668480617765,
+    "2034": 2060.5668480617765,
+    "2035": 2060.5668480617765,
+    "2036": 2060.5668480617765,
+    "2037": 2060.5668480617765,
+    "2038": 2060.5668480617765,
+    "2039": 2060.5668480617765,
+    "2040": 2060.5668480617765,
+    "2041": 2060.5668480617765,
+    "2042": 1923.1957248576582,
+    "2043": 892.91230082677,
+    "2044": 892.91230082677,
+    "2045": 686.8556160205923
+   }
+  }
+ },
+ "ledger": {
+  "G": 0.02,
+  "gPath": false,
+  "baseYear": 2026,
+  "yieldsAsOf": "2026-09-21",
+  "drawdown": "basicBand",
+  "avcSchedule": [
+   22.036989000000002,
+   23.059930176470584,
+   24.06281368281432,
+   25.0460328066807,
+   26.009973124196758,
+   26.955012651173277,
+   27.88152199134635,
+   28.789864481712115,
+   29.680396335011885
+  ],
+  "avcScheduleNominal": [
+   22.036989000000002,
+   23.521128779999998,
+   25.03495135560002,
+   26.579050382712012,
+   28.154031390366246,
+   29.760512018173554,
+   31.399122258537027,
+   33.070504703707776,
+   34.775314797781945
+  ],
+  "payrollReal": 12.183236999999998,
+  "spendSchedule": [
+   {
+    "fromYear": 2035,
+    "spend": 60000
+   }
+  ],
+  "preRetirement": null,
+  "extension": null,
+  "wrappers": {
+   "isa": {
+    "budget": 521.829,
+    "R": 99.14817805697311,
+    "irr": 0.020101243384868295,
+    "flows": {
+     "2027": {
+      "coupon": 4.8334736802774385,
+      "redemption": 0
+     },
+     "2028": {
+      "coupon": 4.8334736802774385,
+      "redemption": 0
+     },
+     "2029": {
+      "coupon": 4.8334736802774385,
+      "redemption": 0
+     },
+     "2030": {
+      "coupon": 4.8334736802774385,
+      "redemption": 0
+     },
+     "2031": {
+      "coupon": 4.8334736802774385,
+      "redemption": 0
+     },
+     "2032": {
+      "coupon": 4.8334736802774385,
+      "redemption": 0
+     },
+     "2033": {
+      "coupon": 4.8334736802774385,
+      "redemption": 0
+     },
+     "2034": {
+      "coupon": 4.8334736802774385,
+      "redemption": 0
+     },
+     "2035": {
+      "coupon": 4.8334736802774385,
+      "redemption": 99.14817805697311
+     },
+     "2036": {
+      "coupon": 3.718056677136492,
+      "redemption": 99.14817805697311
+     },
+     "2037": {
+      "coupon": 3.594121454565275,
+      "redemption": 99.14817805697311
+     },
+     "2038": {
+      "coupon": 2.4787044514243277,
+      "redemption": 99.14817805697311
+     },
+     "2039": {
+      "coupon": 0.7436113354272983,
+      "redemption": 99.14817805697311
+     },
+     "2040": {
+      "coupon": 0.6196761128560819,
+      "redemption": 99.14817805697311
+     }
+    },
+    "rungs": [
+     {
+      "y": 2035,
+      "epic": "TR35",
+      "cpn": 0.01125,
+      "yld": 0.01769,
+      "mult": 1,
+      "price": 0.9468509038628783,
+      "cost": 93.87854200960258
+     },
+     {
+      "y": 2036,
+      "epic": "TG36",
+      "cpn": 0.00125,
+      "yld": 0.01894,
+      "mult": 1,
+      "price": 0.840213177695775,
+      "cost": 83.30560574799588
+     },
+     {
+      "y": 2037,
+      "epic": "TR37",
+      "cpn": 0.01125,
+      "yld": 0.0198,
+      "mult": 1,
+      "price": 0.9162271719498234,
+      "cost": 90.842254785118
+     },
+     {
+      "y": 2038,
+      "epic": "T38",
+      "cpn": 0.0175,
+      "yld": 0.02051,
+      "mult": 1,
+      "price": 0.9682676959810236,
+      "cost": 96.00197792794162
+     },
+     {
+      "y": 2039,
+      "epic": "TG39",
+      "cpn": 0.00125,
+      "yld": 0.02125,
+      "mult": 1,
+      "price": 0.7748913497865564,
+      "cost": 76.82906552344572
+     },
+     {
+      "y": 2040,
+      "epic": "TR40",
+      "cpn": 0.00625,
+      "yld": 0.02156,
+      "mult": 1,
+      "price": 0.8166721324860624,
+      "cost": 80.97155400589605
+     }
+    ]
+   },
+   "sipp": {
+    "budget": 392.788,
+    "R": 107.01615479683878,
+    "irr": 0.022847202291346513,
+    "flows": {
+     "2027": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2028": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2029": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2030": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2031": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2032": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2033": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2034": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2035": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2036": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2037": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2038": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2039": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2040": {
+      "coupon": 2.006552902440727,
+      "redemption": 0
+     },
+     "2041": {
+      "coupon": 2.006552902440727,
+      "redemption": 107.01615479683878
+     },
+     "2042": {
+      "coupon": 1.872782708944679,
+      "redemption": 107.01615479683878
+     },
+     "2043": {
+      "coupon": 0.8695062577243151,
+      "redemption": 107.01615479683878
+     },
+     "2044": {
+      "coupon": 0.8695062577243151,
+      "redemption": 107.01615479683878
+     },
+     "2045": {
+      "coupon": 0.6688509674802424,
+      "redemption": 107.01615479683878
+     }
+    },
+    "rungs": [
+     {
+      "y": 2041,
+      "epic": "T41",
+      "cpn": 0.00125,
+      "yld": 0.0219,
+      "mult": 1,
+      "price": 0.7383957683181198,
+      "cost": 79.02027584366262
+     },
+     {
+      "y": 2042,
+      "epic": "T42A",
+      "cpn": 0.00625,
+      "yld": 0.02246,
+      "mult": 1.5,
+      "price": 0.7841344574836496,
+      "cost": 125.87258172540815
+     },
+     {
+      "y": 2044,
+      "epic": "T44",
+      "cpn": 0.00125,
+      "yld": 0.02328,
+      "mult": 1.5,
+      "price": 0.679055130798239,
+      "cost": 109.00480348963791
+     },
+     {
+      "y": 2045,
+      "epic": "TR45",
+      "cpn": 0.00625,
+      "yld": 0.02357,
+      "mult": 1,
+      "price": 0.7371815880607745,
+      "cost": 78.89033894129128
+     }
+    ]
+   }
+  },
+  "rows": [
+   {
+    "year": 2026,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0,
+    "spend": 0,
+    "surplus": 0,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 279,
+    "isaLadA": 242.8,
+    "sippLad": 392.8,
+    "extLad": 0,
+    "sippEq": 49.7,
+    "acn": 193.1,
+    "abbyDC": 282.9,
+    "abbyIsaEq": 69.8,
+    "isaEqNew": 0,
+    "gia": 0,
+    "cash": 66,
+    "crypto": 53.9,
+    "shares": 2,
+    "ladderBal": 914.6,
+    "pensionEq": 525.7,
+    "isaEq": 69.8,
+    "total": 1632,
+    "lsaC": 268.3,
+    "lsaA": 268.3,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2027,
+    "ladder": 0,
+    "coupons": 6.840026582718165,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0,
+    "spend": 0,
+    "surplus": 0,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 282.1,
+    "isaLadA": 245.4,
+    "sippLad": 399.8,
+    "extLad": 0,
+    "sippEq": 52.7,
+    "acn": 196.9,
+    "abbyDC": 322.8,
+    "abbyIsaEq": 71.2,
+    "isaEqNew": 4.8,
+    "gia": 0,
+    "cash": 66.3,
+    "crypto": 55,
+    "shares": 2,
+    "ladderBal": 927.2,
+    "pensionEq": 572.4,
+    "isaEq": 76,
+    "total": 1699,
+    "lsaC": 263,
+    "lsaA": 263,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2028,
+    "ladder": 0,
+    "coupons": 6.840026582718165,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0,
+    "spend": 0,
+    "surplus": 0,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 285.1,
+    "isaLadA": 248.1,
+    "sippLad": 406.9,
+    "extLad": 0,
+    "sippEq": 55.8,
+    "acn": 200.9,
+    "abbyDC": 364.5,
+    "abbyIsaEq": 72.6,
+    "isaEqNew": 9.8,
+    "gia": 0,
+    "cash": 66.7,
+    "crypto": 56.1,
+    "shares": 2,
+    "ladderBal": 940.1,
+    "pensionEq": 621.1,
+    "isaEq": 82.4,
+    "total": 1768.4,
+    "lsaC": 257.9,
+    "lsaA": 257.9,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2029,
+    "ladder": 0,
+    "coupons": 6.840026582718165,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0,
+    "spend": 0,
+    "surplus": 0,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 288.3,
+    "isaLadA": 250.9,
+    "sippLad": 414.2,
+    "extLad": 0,
+    "sippEq": 58.9,
+    "acn": 204.9,
+    "abbyDC": 408,
+    "abbyIsaEq": 74,
+    "isaEqNew": 14.8,
+    "gia": 0,
+    "cash": 67,
+    "crypto": 57.2,
+    "shares": 2.1,
+    "ladderBal": 953.3,
+    "pensionEq": 671.8,
+    "isaEq": 88.8,
+    "total": 1840.3,
+    "lsaC": 252.8,
+    "lsaA": 252.8,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2030,
+    "ladder": 0,
+    "coupons": 6.840026582718165,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0,
+    "spend": 0,
+    "surplus": 0,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 291.5,
+    "isaLadA": 253.6,
+    "sippLad": 421.6,
+    "extLad": 0,
+    "sippEq": 62.1,
+    "acn": 209,
+    "abbyDC": 453.4,
+    "abbyIsaEq": 75.5,
+    "isaEqNew": 19.9,
+    "gia": 0,
+    "cash": 67.3,
+    "crypto": 58.4,
+    "shares": 2.1,
+    "ladderBal": 966.8,
+    "pensionEq": 724.5,
+    "isaEq": 95.4,
+    "total": 1914.5,
+    "lsaC": 247.8,
+    "lsaA": 247.8,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2031,
+    "ladder": 0,
+    "coupons": 6.840026582718165,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0,
+    "spend": 0,
+    "surplus": 0,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 294.8,
+    "isaLadA": 256.5,
+    "sippLad": 429.3,
+    "extLad": 0,
+    "sippEq": 65.3,
+    "acn": 213.2,
+    "abbyDC": 500.7,
+    "abbyIsaEq": 77,
+    "isaEqNew": 25.2,
+    "gia": 0,
+    "cash": 67.7,
+    "crypto": 59.5,
+    "shares": 2.2,
+    "ladderBal": 980.5,
+    "pensionEq": 779.2,
+    "isaEq": 102.2,
+    "total": 1991.3,
+    "lsaC": 243,
+    "lsaA": 243,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2032,
+    "ladder": 0,
+    "coupons": 6.840026582718165,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0,
+    "spend": 0,
+    "surplus": 0,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 298.1,
+    "isaLadA": 259.4,
+    "sippLad": 437.1,
+    "extLad": 0,
+    "sippEq": 68.6,
+    "acn": 217.4,
+    "abbyDC": 549.8,
+    "abbyIsaEq": 78.6,
+    "isaEqNew": 30.5,
+    "gia": 0,
+    "cash": 68,
+    "crypto": 60.7,
+    "shares": 2.2,
+    "ladderBal": 994.6,
+    "pensionEq": 835.9,
+    "isaEq": 109.1,
+    "total": 2070.5,
+    "lsaC": 238.2,
+    "lsaA": 238.2,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2033,
+    "ladder": 0,
+    "coupons": 6.840026582718165,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0,
+    "spend": 0,
+    "surplus": 0,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 301.5,
+    "isaLadA": 262.4,
+    "sippLad": 445,
+    "extLad": 0,
+    "sippEq": 72,
+    "acn": 221.8,
+    "abbyDC": 600.9,
+    "abbyIsaEq": 80.1,
+    "isaEqNew": 35.9,
+    "gia": 0,
+    "cash": 68.3,
+    "crypto": 61.9,
+    "shares": 2.3,
+    "ladderBal": 1008.9,
+    "pensionEq": 894.7,
+    "isaEq": 116.1,
+    "total": 2152.2,
+    "lsaC": 233.5,
+    "lsaA": 233.5,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2034,
+    "ladder": 0,
+    "coupons": 6.840026582718165,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0,
+    "spend": 0,
+    "surplus": 0,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 305,
+    "isaLadA": 265.4,
+    "sippLad": 453.2,
+    "extLad": 0,
+    "sippEq": 75.5,
+    "acn": 226.2,
+    "abbyDC": 653.9,
+    "abbyIsaEq": 81.8,
+    "isaEqNew": 41.5,
+    "gia": 0,
+    "cash": 68.7,
+    "crypto": 63.2,
+    "shares": 2.3,
+    "ladderBal": 1023.6,
+    "pensionEq": 955.6,
+    "isaEq": 123.2,
+    "total": 2236.6,
+    "lsaC": 229,
+    "lsaA": 229,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2035,
+    "ladder": 105.98820463969128,
+    "coupons": 6.840026582718165,
+    "hb": 13,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.2774525989693433,
+    "spend": 60,
+    "surplus": 56.704199138281204,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 255.5,
+    "isaLadA": 222.3,
+    "sippLad": 461.5,
+    "extLad": 0,
+    "sippEq": 79,
+    "acn": 230.7,
+    "abbyDC": 708.8,
+    "abbyIsaEq": 83.4,
+    "isaEqNew": 99,
+    "gia": 0,
+    "cash": 69,
+    "crypto": 64.4,
+    "shares": 2.3,
+    "ladderBal": 939.4,
+    "pensionEq": 1018.6,
+    "isaEq": 182.4,
+    "total": 2276.2,
+    "lsaC": 224.5,
+    "lsaA": 224.5,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2036,
+    "ladder": 104.87278763655033,
+    "coupons": 5.724609579577219,
+    "hb": 13,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.2774525989693433,
+    "spend": 60,
+    "surplus": 55.58878213514026,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 205.7,
+    "isaLadA": 179,
+    "sippLad": 470.1,
+    "extLad": 0,
+    "sippEq": 82.6,
+    "acn": 235.4,
+    "abbyDC": 723,
+    "abbyIsaEq": 85.1,
+    "isaEqNew": 156.6,
+    "gia": 0,
+    "cash": 69.4,
+    "crypto": 65.7,
+    "shares": 2.4,
+    "ladderBal": 854.7,
+    "pensionEq": 1040.9,
+    "isaEq": 241.6,
+    "total": 2274.8,
+    "lsaC": 220.1,
+    "lsaA": 220.1,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2037,
+    "ladder": 104.74885241397911,
+    "coupons": 5.600674357006002,
+    "hb": 13,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.2774525989693433,
+    "spend": 60,
+    "surplus": 55.46484691256904,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 154.9,
+    "isaLadA": 134.7,
+    "sippLad": 478.8,
+    "extLad": 0,
+    "sippEq": 86.2,
+    "acn": 240.1,
+    "abbyDC": 737.5,
+    "abbyIsaEq": 86.8,
+    "isaEqNew": 215.2,
+    "gia": 0,
+    "cash": 69.7,
+    "crypto": 67,
+    "shares": 2.4,
+    "ladderBal": 768.4,
+    "pensionEq": 1063.8,
+    "isaEq": 301.9,
+    "total": 2273.3,
+    "lsaC": 215.8,
+    "lsaA": 215.8,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2038,
+    "ladder": 103.63343541083817,
+    "coupons": 4.485257353865055,
+    "hb": 13,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.2774525989693433,
+    "spend": 60,
+    "surplus": 54.3494299094281,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 103.6,
+    "isaLadA": 90.2,
+    "sippLad": 487.7,
+    "extLad": 0,
+    "sippEq": 89.9,
+    "acn": 244.9,
+    "abbyDC": 752.2,
+    "abbyIsaEq": 88.5,
+    "isaEqNew": 273.8,
+    "gia": 0,
+    "cash": 70.1,
+    "crypto": 68.4,
+    "shares": 2.5,
+    "ladderBal": 681.5,
+    "pensionEq": 1087,
+    "isaEq": 362.3,
+    "total": 2271.9,
+    "lsaC": 211.5,
+    "lsaA": 211.5,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2039,
+    "ladder": 101.89834229484114,
+    "coupons": 2.7501642378680256,
+    "hb": 13,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.2774525989693433,
+    "spend": 60,
+    "surplus": 52.61433679343107,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 52.3,
+    "isaLadA": 45.5,
+    "sippLad": 496.9,
+    "extLad": 0,
+    "sippEq": 93.7,
+    "acn": 249.8,
+    "abbyDC": 767.3,
+    "abbyIsaEq": 90.3,
+    "isaEqNew": 331.9,
+    "gia": 0,
+    "cash": 70.4,
+    "crypto": 69.8,
+    "shares": 2.5,
+    "ladderBal": 594.7,
+    "pensionEq": 1110.8,
+    "isaEq": 422.2,
+    "total": 2270.4,
+    "lsaC": 207.4,
+    "lsaA": 207.4,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2040,
+    "ladder": 101.77440707226992,
+    "coupons": 2.626229015296809,
+    "hb": 13,
+    "sp": 0,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.2774525989693433,
+    "spend": 60,
+    "surplus": 52.49040157085985,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 506.2,
+    "extLad": 0,
+    "sippEq": 97.6,
+    "acn": 254.8,
+    "abbyDC": 782.6,
+    "abbyIsaEq": 92.1,
+    "isaEqNew": 391.1,
+    "gia": 0,
+    "cash": 70.8,
+    "crypto": 71.2,
+    "shares": 2.6,
+    "ladderBal": 506.2,
+    "pensionEq": 1135,
+    "isaEq": 483.1,
+    "total": 2268.9,
+    "lsaC": 203.3,
+    "lsaA": 203.3,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2041,
+    "ladder": 109.02270769927951,
+    "coupons": 2.006552902440727,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 0,
+    "tfc": 15.480569855450957,
+    "tax": 6.965794512239917,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 5.043515090436088,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 408.8,
+    "extLad": 0,
+    "sippEq": 146.7,
+    "acn": 259.9,
+    "abbyDC": 798.3,
+    "abbyIsaEq": 93.9,
+    "isaEqNew": 393.8,
+    "gia": 0,
+    "cash": 71.1,
+    "crypto": 72.6,
+    "shares": 2.6,
+    "ladderBal": 408.8,
+    "pensionEq": 1204.8,
+    "isaEq": 487.7,
+    "total": 2247.7,
+    "lsaC": 183.9,
+    "lsaA": 199.3,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2042,
+    "ladder": 108.88893750578346,
+    "coupons": 1.872782708944679,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 0,
+    "tfc": 15.480569855450957,
+    "tax": 6.965794512239917,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 5.043515090436088,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 309.2,
+    "extLad": 0,
+    "sippEq": 196.6,
+    "acn": 265.1,
+    "abbyDC": 814.2,
+    "abbyIsaEq": 95.8,
+    "isaEqNew": 396.7,
+    "gia": 0,
+    "cash": 71.5,
+    "crypto": 74,
+    "shares": 2.7,
+    "ladderBal": 309.2,
+    "pensionEq": 1275.9,
+    "isaEq": 492.5,
+    "total": 2225.7,
+    "lsaC": 164.8,
+    "lsaA": 195.4,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2043,
+    "ladder": 107.88566105456309,
+    "coupons": 0.8695062577243151,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 61.92227942180383,
+    "tfc": 30.961139710901914,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 49.912969819127824,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 208.4,
+    "extLad": 0,
+    "sippEq": 246.5,
+    "acn": 270.4,
+    "abbyDC": 768.6,
+    "abbyIsaEq": 97.7,
+    "isaEqNew": 444.6,
+    "gia": 9.9,
+    "cash": 71.8,
+    "crypto": 75.5,
+    "shares": 2.7,
+    "ladderBal": 208.4,
+    "pensionEq": 1285.4,
+    "isaEq": 542.3,
+    "total": 2196.1,
+    "lsaC": 146.1,
+    "lsaA": 176.1,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2044,
+    "ladder": 107.88566105456309,
+    "coupons": 0.8695062577243151,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 61.92227942180383,
+    "tfc": 30.961139710901914,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 49.912969819127824,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 105.3,
+    "extLad": 0,
+    "sippEq": 297.4,
+    "acn": 275.8,
+    "abbyDC": 722,
+    "abbyIsaEq": 99.7,
+    "isaEqNew": 493.5,
+    "gia": 20,
+    "cash": 72.2,
+    "crypto": 77,
+    "shares": 2.8,
+    "ladderBal": 105.3,
+    "pensionEq": 1295.2,
+    "isaEq": 593.1,
+    "total": 2165.6,
+    "lsaC": 127.7,
+    "lsaA": 157.2,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2045,
+    "ladder": 107.68500576431738,
+    "coupons": 0.6688509674802424,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 61.92227942180383,
+    "tfc": 30.961139710901914,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 49.912969819127824,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 349.1,
+    "acn": 281.3,
+    "abbyDC": 674.6,
+    "abbyIsaEq": 101.6,
+    "isaEqNew": 543.4,
+    "gia": 30.3,
+    "cash": 72.6,
+    "crypto": 78.6,
+    "shares": 2.9,
+    "ladderBal": 0,
+    "pensionEq": 1304.9,
+    "isaEq": 645,
+    "total": 2134.2,
+    "lsaC": 109.7,
+    "lsaA": 138.6,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2046,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 61.92227942180383,
+    "tfc": 30.961139710901914,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 49.912969819127824,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 294.1,
+    "acn": 286.9,
+    "abbyDC": 626.1,
+    "abbyIsaEq": 103.7,
+    "isaEqNew": 594.2,
+    "gia": 40.9,
+    "cash": 72.9,
+    "crypto": 80.1,
+    "shares": 2.9,
+    "ladderBal": 0,
+    "pensionEq": 1207.2,
+    "isaEq": 697.9,
+    "total": 2101.9,
+    "lsaC": 92.1,
+    "lsaA": 120.4,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2047,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 61.92227942180383,
+    "tfc": 30.961139710901914,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 49.912969819127824,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 238.1,
+    "acn": 292.6,
+    "abbyDC": 576.7,
+    "abbyIsaEq": 105.8,
+    "isaEqNew": 646.1,
+    "gia": 51.6,
+    "cash": 73.3,
+    "crypto": 81.7,
+    "shares": 3,
+    "ladderBal": 0,
+    "pensionEq": 1107.5,
+    "isaEq": 751.9,
+    "total": 2068.9,
+    "lsaC": 74.8,
+    "lsaA": 102.6,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2048,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 61.92227942180383,
+    "tfc": 30.961139710901914,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 49.912969819127824,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 180.9,
+    "acn": 298.5,
+    "abbyDC": 526.3,
+    "abbyIsaEq": 107.9,
+    "isaEqNew": 699,
+    "gia": 62.5,
+    "cash": 73.7,
+    "crypto": 83.4,
+    "shares": 3,
+    "ladderBal": 0,
+    "pensionEq": 1005.8,
+    "isaEq": 806.9,
+    "total": 2035.3,
+    "lsaC": 57.9,
+    "lsaA": 85.1,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2049,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 61.92227942180383,
+    "tfc": 30.961139710901914,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 49.912969819127824,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 122.6,
+    "acn": 304.5,
+    "abbyDC": 474.9,
+    "abbyIsaEq": 110,
+    "isaEqNew": 753,
+    "gia": 73.7,
+    "cash": 74,
+    "crypto": 85,
+    "shares": 3.1,
+    "ladderBal": 0,
+    "pensionEq": 902,
+    "isaEq": 863,
+    "total": 2000.9,
+    "lsaC": 41.2,
+    "lsaA": 67.9,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2050,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 61.92227942180383,
+    "tfc": 30.961139710901914,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 49.912969819127824,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 63.2,
+    "acn": 310.6,
+    "abbyDC": 422.5,
+    "abbyIsaEq": 112.2,
+    "isaEqNew": 808.1,
+    "gia": 85.1,
+    "cash": 74.4,
+    "crypto": 86.7,
+    "shares": 3.2,
+    "ladderBal": 0,
+    "pensionEq": 796.2,
+    "isaEq": 920.3,
+    "total": 1965.9,
+    "lsaC": 25,
+    "lsaA": 51.1,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2051,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 0,
+    "drawC": 61.92227942180383,
+    "drawA": 61.92227942180383,
+    "tfc": 30.961139710901914,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 49.912969819127824,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 2.5,
+    "acn": 316.8,
+    "abbyDC": 369,
+    "abbyIsaEq": 114.5,
+    "isaEqNew": 864.2,
+    "gia": 96.7,
+    "cash": 74.8,
+    "crypto": 88.5,
+    "shares": 3.2,
+    "ladderBal": 0,
+    "pensionEq": 688.3,
+    "isaEq": 978.7,
+    "total": 1930.2,
+    "lsaC": 9,
+    "lsaA": 34.6,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2052,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 12.548,
+    "drawC": 42.70330737406245,
+    "drawA": 61.92227942180383,
+    "tfc": 24.29016766316054,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 43.24199777138644,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 283,
+    "abbyDC": 314.5,
+    "abbyIsaEq": 116.8,
+    "isaEqNew": 921.5,
+    "gia": 101.9,
+    "cash": 75.1,
+    "crypto": 90.2,
+    "shares": 3.3,
+    "ladderBal": 0,
+    "pensionEq": 597.5,
+    "isaEq": 1038.3,
+    "total": 1906.3,
+    "lsaC": 0,
+    "lsaA": 18.5,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2053,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 12.548,
+    "drawC": 33.89370956635287,
+    "drawA": 61.92227942180383,
+    "tfc": 15.480569855450959,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 34.43239996367687,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 254.7,
+    "abbyDC": 258.9,
+    "abbyIsaEq": 119.1,
+    "isaEqNew": 974.4,
+    "gia": 103.9,
+    "cash": 75.5,
+    "crypto": 92,
+    "shares": 3.3,
+    "ladderBal": 0,
+    "pensionEq": 513.6,
+    "isaEq": 1093.5,
+    "total": 1881.9,
+    "lsaC": 0,
+    "lsaA": 2.6,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2054,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 12.548,
+    "drawC": 33.89370956635287,
+    "drawA": 49.02605791367828,
+    "tfc": 2.5843483473254127,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 21.53617845555131,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 225.9,
+    "abbyDC": 215,
+    "abbyIsaEq": 121.5,
+    "isaEqNew": 1015.4,
+    "gia": 106,
+    "cash": 75.9,
+    "crypto": 93.9,
+    "shares": 3.4,
+    "ladderBal": 0,
+    "pensionEq": 441,
+    "isaEq": 1136.9,
+    "total": 1857,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2055,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 33.89370956635287,
+    "drawA": 33.89370956635287,
+    "tfc": 0,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 18.951830108225906,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 196.6,
+    "abbyDC": 185.4,
+    "abbyIsaEq": 123.9,
+    "isaEqNew": 1054.7,
+    "gia": 108.1,
+    "cash": 76.3,
+    "crypto": 95.8,
+    "shares": 3.5,
+    "ladderBal": 0,
+    "pensionEq": 382,
+    "isaEq": 1178.6,
+    "total": 1844.2,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2056,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 33.89370956635287,
+    "drawA": 33.89370956635287,
+    "tfc": 0,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 18.951830108225906,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 166.6,
+    "abbyDC": 155.2,
+    "abbyIsaEq": 126.4,
+    "isaEqNew": 1094.7,
+    "gia": 110.3,
+    "cash": 76.7,
+    "crypto": 97.7,
+    "shares": 3.6,
+    "ladderBal": 0,
+    "pensionEq": 321.8,
+    "isaEq": 1221.1,
+    "total": 1831.1,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2057,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 33.89370956635287,
+    "drawA": 33.89370956635287,
+    "tfc": 0,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 18.951830108225906,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 136,
+    "abbyDC": 124.5,
+    "abbyIsaEq": 128.9,
+    "isaEqNew": 1135.6,
+    "gia": 112.5,
+    "cash": 77,
+    "crypto": 99.6,
+    "shares": 3.6,
+    "ladderBal": 0,
+    "pensionEq": 260.5,
+    "isaEq": 1264.5,
+    "total": 1817.7,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2058,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 33.89370956635287,
+    "drawA": 33.89370956635287,
+    "tfc": 0,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 18.951830108225906,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 104.9,
+    "abbyDC": 93.1,
+    "abbyIsaEq": 131.5,
+    "isaEqNew": 1177.2,
+    "gia": 114.7,
+    "cash": 77.4,
+    "crypto": 101.6,
+    "shares": 3.7,
+    "ladderBal": 0,
+    "pensionEq": 197.9,
+    "isaEq": 1308.7,
+    "total": 1804.1,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2059,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 33.89370956635287,
+    "drawA": 33.89370956635287,
+    "tfc": 0,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 18.951830108225906,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 73.1,
+    "abbyDC": 61,
+    "abbyIsaEq": 134.1,
+    "isaEqNew": 1219.7,
+    "gia": 117,
+    "cash": 77.8,
+    "crypto": 103.7,
+    "shares": 3.8,
+    "ladderBal": 0,
+    "pensionEq": 134.1,
+    "isaEq": 1353.8,
+    "total": 1790.2,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2060,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 33.89370956635287,
+    "drawA": 33.89370956635287,
+    "tfc": 0,
+    "tax": 13.931589024479834,
+    "spend": 60,
+    "surplus": 18.951830108225906,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 18.951830108225906,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 40.6,
+    "abbyDC": 28.3,
+    "abbyIsaEq": 136.8,
+    "isaEqNew": 1263.1,
+    "gia": 119.4,
+    "cash": 78.2,
+    "crypto": 105.7,
+    "shares": 3.8,
+    "ladderBal": 0,
+    "pensionEq": 69,
+    "isaEq": 1399.9,
+    "total": 1776,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2061,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 33.89370956635287,
+    "drawA": 28.913557007238232,
+    "tfc": 0,
+    "tax": 12.935558512656907,
+    "spend": 60,
+    "surplus": 14.967708060934203,
+    "isaSell": 0,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 14.9677080609342,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 7.5,
+    "abbyDC": 0,
+    "abbyIsaEq": 139.5,
+    "isaEqNew": 1303.3,
+    "gia": 121.7,
+    "cash": 78.6,
+    "crypto": 107.8,
+    "shares": 3.9,
+    "ladderBal": 0,
+    "pensionEq": 7.5,
+    "isaEq": 1442.8,
+    "total": 1762.5,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2062,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 7.6963596608707965,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 1.9133771301128457,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 29.12101746924205,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 142.3,
+    "isaEqNew": 1300.2,
+    "gia": 124.2,
+    "cash": 79,
+    "crypto": 110,
+    "shares": 4,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1442.6,
+    "total": 1759.7,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2063,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 145.2,
+    "isaEqNew": 1291,
+    "gia": 126.7,
+    "cash": 79.4,
+    "crypto": 112.2,
+    "shares": 4.1,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1436.1,
+    "total": 1758.5,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2064,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 148.1,
+    "isaEqNew": 1281.5,
+    "gia": 129.2,
+    "cash": 79.8,
+    "crypto": 114.4,
+    "shares": 4.2,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1429.6,
+    "total": 1757.2,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2065,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 151,
+    "isaEqNew": 1271.9,
+    "gia": 131.8,
+    "cash": 80.2,
+    "crypto": 116.7,
+    "shares": 4.2,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1422.9,
+    "total": 1755.8,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2066,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 154.1,
+    "isaEqNew": 1262,
+    "gia": 134.4,
+    "cash": 80.6,
+    "crypto": 119.1,
+    "shares": 4.3,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1416.1,
+    "total": 1754.5,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2067,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 157.1,
+    "isaEqNew": 1252,
+    "gia": 137.1,
+    "cash": 81,
+    "crypto": 121.4,
+    "shares": 4.4,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1409.1,
+    "total": 1753.1,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2068,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 160.3,
+    "isaEqNew": 1241.7,
+    "gia": 139.9,
+    "cash": 81.4,
+    "crypto": 123.9,
+    "shares": 4.5,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1402,
+    "total": 1751.6,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2069,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 163.5,
+    "isaEqNew": 1231.3,
+    "gia": 142.6,
+    "cash": 81.8,
+    "crypto": 126.4,
+    "shares": 4.6,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1394.8,
+    "total": 1750.2,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2070,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 166.8,
+    "isaEqNew": 1220.7,
+    "gia": 145.5,
+    "cash": 82.2,
+    "crypto": 128.9,
+    "shares": 4.7,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1387.4,
+    "total": 1748.7,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2071,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 170.1,
+    "isaEqNew": 1209.8,
+    "gia": 148.4,
+    "cash": 82.6,
+    "crypto": 131.5,
+    "shares": 4.8,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1379.9,
+    "total": 1747.1,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2072,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 173.5,
+    "isaEqNew": 1198.7,
+    "gia": 151.4,
+    "cash": 83,
+    "crypto": 134.1,
+    "shares": 4.9,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1372.2,
+    "total": 1745.6,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2073,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 177,
+    "isaEqNew": 1187.4,
+    "gia": 154.4,
+    "cash": 83.4,
+    "crypto": 136.8,
+    "shares": 5,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1364.4,
+    "total": 1744,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2074,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 180.5,
+    "isaEqNew": 1175.9,
+    "gia": 157.5,
+    "cash": 83.9,
+    "crypto": 139.5,
+    "shares": 5.1,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1356.4,
+    "total": 1742.3,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   },
+   {
+    "year": 2075,
+    "ladder": 0,
+    "coupons": 0,
+    "hb": 0,
+    "sp": 25.096,
+    "drawC": 0,
+    "drawA": 0,
+    "tfc": 0,
+    "tax": 0.37410519793868663,
+    "spend": 60,
+    "surplus": 0,
+    "isaSell": 35.278105197938686,
+    "taxedDraw": 0,
+    "preDelta": 0,
+    "giftable": 0,
+    "isaLadC": 0,
+    "isaLadA": 0,
+    "sippLad": 0,
+    "extLad": 0,
+    "sippEq": 0,
+    "acn": 0,
+    "abbyDC": 0,
+    "abbyIsaEq": 184.1,
+    "isaEqNew": 1164.1,
+    "gia": 160.6,
+    "cash": 84.3,
+    "crypto": 142.3,
+    "shares": 5.2,
+    "ladderBal": 0,
+    "pensionEq": 0,
+    "isaEq": 1348.2,
+    "total": 1740.6,
+    "lsaC": 0,
+    "lsaA": 0,
+    "crysC": 0,
+    "crysA": 0
+   }
+  ],
+  "lifeTax": 286.0772102749051,
+  "estate": {
+   "year": 2075,
+   "total": 1740.6,
+   "pensions": 0,
+   "nilRateBands": 600.5,
+   "iht": 456,
+   "beneficiaryTax": 0,
+   "netToHeirs": 1284.6,
+   "giftableTotal": 356.1,
+   "giftableFrom": 2043,
+   "giftableAvg": 10.8
+  },
+  "headline": {
+   "atRetirement": 2276.2,
+   "atLastRung": 2134.2,
+   "atEnd": 1740.6,
+   "firstCashNegative": null,
+   "preRetirementDraw": 0,
+   "iht": 456,
+   "netToHeirs": 1284.6
+  }
+ },
+ "ledgerFlat": [
+  {
+   "G": 0,
+   "atRetirement": 2116.4,
+   "atLastRung": 1646.7,
+   "atEnd": 299.6,
+   "firstCashNegative": null,
+   "preRetirementDraw": 0,
+   "iht": 0,
+   "netToHeirs": 299.6,
+   "lifeTax": 180.82097575749978
+  },
+  {
+   "G": 0.02,
+   "atRetirement": 2276.2,
+   "atLastRung": 2134.2,
+   "atEnd": 1740.6,
+   "firstCashNegative": null,
+   "preRetirementDraw": 0,
+   "iht": 456,
+   "netToHeirs": 1284.6,
+   "lifeTax": 286.0772102749051
+  },
+  {
+   "G": 0.04,
+   "atRetirement": 2460.7,
+   "atLastRung": 2794.6,
+   "atEnd": 5657.9,
+   "firstCashNegative": null,
+   "preRetirementDraw": 0,
+   "iht": 2023,
+   "netToHeirs": 3402.9,
+   "lifeTax": 475.33874242613007
+  }
+ ],
+ "scenarios": {
+  "asOfYields": "2026-09-21",
+  "stepDownYear": 2040,
+  "scenarios": {
+   "baseline": {
+    "id": "baseline",
+    "title": "Planning case: 60k a year for life",
+    "note": "the accepted plan",
+    "cases": [
+     {
+      "atRetirement": 2116.4,
+      "atLastRung": 1646.7,
+      "atEnd": 299.6,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 299.6,
+      "lifeTax": 180.8,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2276.2,
+      "atLastRung": 2134.2,
+      "atEnd": 1740.6,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 456,
+      "netToHeirs": 1284.6,
+      "lifeTax": 286.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2460.7,
+      "atLastRung": 2794.6,
+      "atEnd": 5657.9,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 2023,
+      "netToHeirs": 3402.9,
+      "lifeTax": 475.3,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     }
+    ],
+    "extension": null
+   },
+   "spendPlanLine": {
+    "id": "spendPlanLine",
+    "title": "70k a year for life",
+    "note": "the pre-retirement plan line carried on for life",
+    "cases": [
+     {
+      "atRetirement": 2106.4,
+      "atLastRung": 1536.7,
+      "atEnd": -113.2,
+      "firstCashNegative": 2072,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 0,
+      "lifeTax": 180.8,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 70000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2266.2,
+      "atLastRung": 2012.6,
+      "atEnd": 1114.5,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 205.6,
+      "netToHeirs": 908.9,
+      "lifeTax": 286.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 70000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2450.7,
+      "atLastRung": 2659.7,
+      "atEnd": 4659.7,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 1623.7,
+      "netToHeirs": 2800.7,
+      "lifeTax": 475.3,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 70000
+       }
+      ]
+     }
+    ],
+    "extension": null
+   },
+   "spendPlanLinePlus10": {
+    "id": "spendPlanLinePlus10",
+    "title": "80k a year for life",
+    "note": "the 2026 pace carried on for life",
+    "cases": [
+     {
+      "atRetirement": 2096.4,
+      "atLastRung": 1426.7,
+      "atEnd": -538.7,
+      "firstCashNegative": 2065,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 0,
+      "lifeTax": 180.8,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2256.2,
+      "atLastRung": 1890.9,
+      "atEnd": 488.4,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 488.4,
+      "lifeTax": 286.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2440.7,
+      "atLastRung": 2524.8,
+      "atEnd": 3661.4,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 1224.4,
+      "netToHeirs": 2196.6,
+      "lifeTax": 475.3,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       }
+      ]
+     }
+    ],
+    "extension": null
+   },
+   "stepDown": {
+    "id": "stepDown",
+    "title": "80k to 2040, then 65k",
+    "note": "heavy years while the children are at home, then 65k",
+    "cases": [
+     {
+      "atRetirement": 2096.4,
+      "atLastRung": 1516.7,
+      "atEnd": 19,
+      "firstCashNegative": 2075,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 19,
+      "lifeTax": 180.8,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       },
+       {
+        "fromYear": 2040,
+        "spend": 65000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2256.2,
+      "atLastRung": 1985.5,
+      "atEnd": 1268.3,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 267.1,
+      "netToHeirs": 1001.2,
+      "lifeTax": 286.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       },
+       {
+        "fromYear": 2040,
+        "spend": 65000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2440.7,
+      "atLastRung": 2624.3,
+      "atEnd": 4825.4,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 1690,
+      "netToHeirs": 2900.7,
+      "lifeTax": 475.3,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       },
+       {
+        "fromYear": 2040,
+        "spend": 65000
+       }
+      ]
+     }
+    ],
+    "extension": null
+   },
+   "reserveSpent": {
+    "id": "reserveSpent",
+    "title": "Reserve spent before retirement",
+    "note": "cash buffer and crypto both gone by 2035; otherwise the planning case",
+    "cases": [
+     {
+      "atRetirement": 1993.5,
+      "atLastRung": 1520.2,
+      "atEnd": 161.4,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 161.4,
+      "lifeTax": 180.8,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2142.7,
+      "atLastRung": 1983.1,
+      "atEnd": 1514,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 365.4,
+      "netToHeirs": 1148.6,
+      "lifeTax": 286.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2314.9,
+      "atLastRung": 2608.4,
+      "atEnd": 5205.2,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 1841.9,
+      "netToHeirs": 3129.9,
+      "lifeTax": 475.3,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     }
+    ],
+    "extension": null
+   },
+   "chris20kPlanLine": {
+    "id": "chris20kPlanLine",
+    "title": "Chris £20k take-home, spend 70k, to retirement",
+    "note": "household cash flow to 2035 with HB + side income at £20k take-home; shortfalls from the reserve",
+    "cases": [
+     {
+      "atRetirement": 2080.8,
+      "atLastRung": 1609.3,
+      "atEnd": 256.2,
+      "firstCashNegative": null,
+      "preRetirementDraw": 35,
+      "iht": 0,
+      "netToHeirs": 256.2,
+      "lifeTax": 180.8,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2240.6,
+      "atLastRung": 2096.8,
+      "atEnd": 1697.2,
+      "firstCashNegative": null,
+      "preRetirementDraw": 35,
+      "iht": 438.7,
+      "netToHeirs": 1258.5,
+      "lifeTax": 286.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2425.1,
+      "atLastRung": 2757.2,
+      "atEnd": 5614.5,
+      "firstCashNegative": null,
+      "preRetirementDraw": 35,
+      "iht": 2005.6,
+      "netToHeirs": 3376.7,
+      "lifeTax": 475.3,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     }
+    ],
+    "extension": null
+   },
+   "chris20kPlus10": {
+    "id": "chris20kPlus10",
+    "title": "Chris £20k take-home, spend 80k, to retirement",
+    "note": "as above at the 2026 spending pace",
+    "cases": [
+     {
+      "atRetirement": 1999.5,
+      "atLastRung": 1526.2,
+      "atEnd": 167.5,
+      "firstCashNegative": null,
+      "preRetirementDraw": 115,
+      "iht": 0,
+      "netToHeirs": 167.5,
+      "lifeTax": 180.8,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2157.4,
+      "atLastRung": 2001,
+      "atEnd": 1546.4,
+      "firstCashNegative": null,
+      "preRetirementDraw": 115,
+      "iht": 378.4,
+      "netToHeirs": 1168,
+      "lifeTax": 286.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2339.9,
+      "atLastRung": 2645.5,
+      "atEnd": 5325.4,
+      "firstCashNegative": null,
+      "preRetirementDraw": 115,
+      "iht": 1890,
+      "netToHeirs": 3202.4,
+      "lifeTax": 475.3,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     }
+    ],
+    "extension": null
+   },
+   "paFillDrawdown": {
+    "id": "paFillDrawdown",
+    "title": "Previous drawdown: personal allowance, tax-free cash first",
+    "note": "the planning case with the drawdown assumed before 23 Sep 2026: pensions drawn only to the personal allowance, shortfalls from tax-free cash; compare what is left to the children",
+    "cases": [
+     {
+      "atRetirement": 2116.4,
+      "atLastRung": 1702.4,
+      "atEnd": 318,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 225.1,
+      "lifeTax": 159.2,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2276.2,
+      "atLastRung": 2191.8,
+      "atEnd": 2136.2,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 614.3,
+      "netToHeirs": 963.7,
+      "lifeTax": 59.6,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2460.7,
+      "atLastRung": 2854,
+      "atEnd": 6618.9,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 2407.4,
+      "netToHeirs": 2795.6,
+      "lifeTax": 10.1,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     }
+    ],
+    "extension": null
+   },
+   "ratchetTo2050": {
+    "id": "ratchetTo2050",
+    "title": "Ratchet forward: Accenture pot → 2046–50 rungs",
+    "note": "option only — the pot stays at L&G (decision 3 Sep 2026); taking this would mean transferring it to the SIPP to buy five more rungs at the observed yields; floor extends to 2050",
+    "cases": [
+     {
+      "atRetirement": 2160.1,
+      "atLastRung": 1746.5,
+      "atEnd": 394.3,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 394.3,
+      "lifeTax": 204.5,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2283.6,
+      "atLastRung": 2152.8,
+      "atEnd": 1771.5,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 468.4,
+      "netToHeirs": 1303.1,
+      "lifeTax": 292.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2425.5,
+      "atLastRung": 2696.4,
+      "atEnd": 5329.1,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 1891.4,
+      "netToHeirs": 3261.3,
+      "lifeTax": 449.5,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     }
+    ],
+    "extension": {
+     "budget": 193081,
+     "fromYear": 2046,
+     "toYear": 2050,
+     "source": "acn",
+     "R": 54.0490791908777,
+     "irr": 0.023700469127462154
+    }
+   }
+  },
+  "grid": [
+   {
+    "spend": 60000,
+    "byReturn": [
+     {
+      "atRetirement": 2116.4,
+      "atLastRung": 1646.7,
+      "atEnd": 299.6,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 299.6,
+      "lifeTax": 180.8,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2193.4,
+      "atLastRung": 1872,
+      "atEnd": 848.1,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 99,
+      "netToHeirs": 749.1,
+      "lifeTax": 219.6,
+      "G": 0.01,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2276.2,
+      "atLastRung": 2134.2,
+      "atEnd": 1740.6,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 456,
+      "netToHeirs": 1284.6,
+      "lifeTax": 286.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2365.1,
+      "atLastRung": 2439.4,
+      "atEnd": 3182.1,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 1032.6,
+      "netToHeirs": 2149.5,
+      "lifeTax": 402.7,
+      "G": 0.03,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2460.7,
+      "atLastRung": 2794.6,
+      "atEnd": 5657.9,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 2023,
+      "netToHeirs": 3402.9,
+      "lifeTax": 475.3,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 60000
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "spend": 70000,
+    "byReturn": [
+     {
+      "atRetirement": 2106.4,
+      "atLastRung": 1536.7,
+      "atEnd": -113.2,
+      "firstCashNegative": 2072,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 0,
+      "lifeTax": 180.8,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 70000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2183.4,
+      "atLastRung": 1756.4,
+      "atEnd": 344.4,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 344.4,
+      "lifeTax": 219.6,
+      "G": 0.01,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 70000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2266.2,
+      "atLastRung": 2012.6,
+      "atEnd": 1114.5,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 205.6,
+      "netToHeirs": 908.9,
+      "lifeTax": 286.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 70000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2355.1,
+      "atLastRung": 2311.3,
+      "atEnd": 2395.5,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 718,
+      "netToHeirs": 1677.5,
+      "lifeTax": 402.7,
+      "G": 0.03,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 70000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2450.7,
+      "atLastRung": 2659.7,
+      "atEnd": 4659.7,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 1623.7,
+      "netToHeirs": 2800.7,
+      "lifeTax": 475.3,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 70000
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "spend": 80000,
+    "byReturn": [
+     {
+      "atRetirement": 2096.4,
+      "atLastRung": 1426.7,
+      "atEnd": -538.7,
+      "firstCashNegative": 2065,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 0,
+      "lifeTax": 180.8,
+      "G": 0,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2173.4,
+      "atLastRung": 1640.7,
+      "atEnd": -155.3,
+      "firstCashNegative": 2071,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 0,
+      "lifeTax": 219.6,
+      "G": 0.01,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2256.2,
+      "atLastRung": 1890.9,
+      "atEnd": 488.4,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 0,
+      "netToHeirs": 488.4,
+      "lifeTax": 286.1,
+      "G": 0.02,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2345.1,
+      "atLastRung": 2183.2,
+      "atEnd": 1608.9,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 403.4,
+      "netToHeirs": 1205.5,
+      "lifeTax": 402.7,
+      "G": 0.03,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       }
+      ]
+     },
+     {
+      "atRetirement": 2440.7,
+      "atLastRung": 2524.8,
+      "atEnd": 3661.4,
+      "firstCashNegative": null,
+      "preRetirementDraw": 0,
+      "iht": 1224.4,
+      "netToHeirs": 2196.6,
+      "lifeTax": 475.3,
+      "G": 0.04,
+      "spendSchedule": [
+       {
+        "fromYear": 2035,
+        "spend": 80000
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "returns": [
+   0,
+   0.01,
+   0.02,
+   0.03,
+   0.04
+  ],
+  "spends": [
+   60000,
+   70000,
+   80000
+  ],
+  "replay": {
+   "yearsPerPath": 49,
+   "all": {
+    "starts": 1274,
+    "failRate": 0,
+    "p5": 9087.7,
+    "p50": 20186.9,
+    "p95": 48906.3,
+    "worst": 6298.3,
+    "best": 66832.1
+   },
+   "highCape": {
+    "threshold": 25,
+    "starts": 14,
+    "failRate": 0,
+    "p5": 9305.3,
+    "p50": 12886.3,
+    "p95": 13749.2,
+    "worst": 9305.3,
+    "best": 13749.2
+   },
+   "currentCape": 39,
+   "firstStartYear": 1871,
+   "lastStartYear": 1977
+  }
+ },
+ "outlook": {
+  "options": {
+   "retireYear": 2035,
+   "realReturn": 0.02,
+   "retirementSpend": 60000,
+   "aniTarget": 60000,
+   "hbPostRetirement": 13000
+  },
+  "pots": {
+   "chrisPension": 759563.7887467137,
+   "abbyPension": 712521.3764944738,
+   "nonPension": 826343.6332595693,
+   "total": 2298428.7985007567
+  },
+  "sustainableSpend": 97722.59113657752,
+  "drawdown": {
+   "surplusAt92": 2192549.0414876975,
+   "chrisPensionAt92": 1030050.0271834035,
+   "abbyPensionAt92": 1162499.0143042943,
+   "nonPensionAt92": 0,
+   "firstTaxedYear": 2071,
+   "depletedYear": null,
+   "totalTax": 36901.56392284989,
+   "pensionWithdrawn": 683163.3048928683,
+   "effectiveTaxRate": 0.05401572897513383,
+   "fundingByYear": [
+    {
+     "year": 2035,
+     "hb": 13000,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 47000,
+     "isaDraw": 0,
+     "nonPensionDraw": 47000,
+     "tax": 0
+    },
+    {
+     "year": 2036,
+     "hb": 13000,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 47000,
+     "isaDraw": 0,
+     "nonPensionDraw": 47000,
+     "tax": 0
+    },
+    {
+     "year": 2037,
+     "hb": 13000,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 47000,
+     "isaDraw": 0,
+     "nonPensionDraw": 47000,
+     "tax": 0
+    },
+    {
+     "year": 2038,
+     "hb": 13000,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 47000,
+     "isaDraw": 0,
+     "nonPensionDraw": 47000,
+     "tax": 0
+    },
+    {
+     "year": 2039,
+     "hb": 13000,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 47000,
+     "isaDraw": 0,
+     "nonPensionDraw": 47000,
+     "tax": 0
+    },
+    {
+     "year": 2040,
+     "hb": 13000,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 47000,
+     "isaDraw": 0,
+     "nonPensionDraw": 47000,
+     "tax": 0
+    },
+    {
+     "year": 2041,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 60000,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 0
+    },
+    {
+     "year": 2042,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 60000,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 0
+    },
+    {
+     "year": 2043,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 60000,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 0
+    },
+    {
+     "year": 2044,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 44516.35065979562,
+     "abbyPensionDraw": 15483.649340204378,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 0
+    },
+    {
+     "year": 2045,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 26699.427499479785,
+     "abbyPensionDraw": 33300.57250052021,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 0
+    },
+    {
+     "year": 2046,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 60000,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 0
+    },
+    {
+     "year": 2047,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 60000,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 0
+    },
+    {
+     "year": 2048,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 60000,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 0
+    },
+    {
+     "year": 2049,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 18655.485278618864,
+     "ladderDraw": 0,
+     "isaDraw": 41344.514721381136,
+     "nonPensionDraw": 41344.514721381136,
+     "tax": 0
+    },
+    {
+     "year": 2050,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 60000,
+     "nonPensionDraw": 60000,
+     "tax": 0
+    },
+    {
+     "year": 2051,
+     "hb": 0,
+     "statePension": 0,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 60000,
+     "nonPensionDraw": 60000,
+     "tax": 0
+    },
+    {
+     "year": 2052,
+     "hb": 0,
+     "statePension": 12548,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 47452,
+     "nonPensionDraw": 47452,
+     "tax": 0
+    },
+    {
+     "year": 2053,
+     "hb": 0,
+     "statePension": 12548,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 47452,
+     "nonPensionDraw": 47452,
+     "tax": 0
+    },
+    {
+     "year": 2054,
+     "hb": 0,
+     "statePension": 12548,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 47452,
+     "nonPensionDraw": 47452,
+     "tax": 0
+    },
+    {
+     "year": 2055,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2056,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2057,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2058,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2059,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2060,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2061,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2062,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2063,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2064,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2065,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2066,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2067,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2068,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2069,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2070,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 0,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 34904,
+     "nonPensionDraw": 34904,
+     "tax": 0
+    },
+    {
+     "year": 2071,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 9987.819614249447,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 26913.744308600442,
+     "nonPensionDraw": 26913.744308600442,
+     "tax": 1997.5639228498894
+    },
+    {
+     "year": 2072,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 43630,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 8726
+    },
+    {
+     "year": 2073,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 43630,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 8726
+    },
+    {
+     "year": 2074,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 43630,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 8726
+    },
+    {
+     "year": 2075,
+     "hb": 0,
+     "statePension": 25096,
+     "chrisPensionDraw": 43630,
+     "abbyPensionDraw": 0,
+     "ladderDraw": 0,
+     "isaDraw": 0,
+     "nonPensionDraw": 0,
+     "tax": 8726
+    }
+   ]
+  }
+ },
+ "brief": {
+  "retire": {
+   "year": 2035,
+   "turns": {
+    "chris": 52,
+    "abby": 49
+   }
+  },
+  "iht": {
+   "pensionsInEstateFrom": 2027
+  },
+  "where": {
+   "total": 1631976,
+   "rows": [
+    {
+     "id": "chrisIsaGilts",
+     "account": "ii ISA",
+     "holder": "Chris",
+     "holds": "Index-linked gilts",
+     "role": "ladder",
+     "amount": 279029,
+     "share": 0.17097616631617132,
+     "from": 2035,
+     "to": 2038
+    },
+    {
+     "id": "abbyIsaGilts",
+     "account": "ii ISA (new, from Vanguard)",
+     "holder": "Abby",
+     "holds": "Index-linked gilts",
+     "role": "ladder",
+     "amount": 242800,
+     "share": 0.14877669769653476,
+     "from": 2038,
+     "to": 2040
+    },
+    {
+     "id": "chrisSippGilts",
+     "account": "ii SIPP",
+     "holder": "Chris",
+     "holds": "Index-linked gilts",
+     "role": "ladder",
+     "amount": 392788,
+     "share": 0.24068246101658358,
+     "from": 2041,
+     "to": 2045
+    },
+    {
+     "id": "abbyDc",
+     "account": "Accenture pension (L&G)",
+     "holder": "Abby",
+     "holds": "Global shares; receives the salary-sacrifice AVCs",
+     "role": "growth",
+     "amount": 282921,
+     "share": 0.1733610053089016
+    },
+    {
+     "id": "chrisAcn",
+     "account": "Accenture pension (L&G)",
+     "holder": "Chris",
+     "holds": "Global Equity Tracker",
+     "role": "growth",
+     "amount": 193081,
+     "share": 0.11831117614474723
+    },
+    {
+     "id": "abbyVanguard",
+     "account": "Vanguard ISA (what stays)",
+     "holder": "Abby",
+     "holds": "Global shares (LifeStrategy)",
+     "role": "growth",
+     "amount": 69773,
+     "share": 0.042753692456261615
+    },
+    {
+     "id": "chrisSippEquity",
+     "account": "ii SIPP (the rest)",
+     "holder": "Chris",
+     "holds": "Global shares",
+     "role": "growth",
+     "amount": 49700,
+     "share": 0.030453879223714075
+    },
+    {
+     "id": "cash",
+     "account": "Savings",
+     "holder": "Joint",
+     "holds": "Cash reserve",
+     "role": "reserve",
+     "amount": 66000,
+     "share": 0.040441771202517685
+    },
+    {
+     "id": "crypto",
+     "account": "Crypto",
+     "holder": "Joint",
+     "holds": "Bitcoin and Ether",
+     "role": "reserve",
+     "amount": 53924,
+     "share": 0.03304215258067521
+    },
+    {
+     "id": "shares",
+     "account": "Accenture shares",
+     "holder": "Abby",
+     "holds": "Employee shares",
+     "role": "reserve",
+     "amount": 1960,
+     "share": 0.0012009980538929493
+    }
+   ],
+   "roles": {
+    "ladder": {
+     "amount": 914617,
+     "share": 0.5604353250292896
+    },
+    "growth": {
+     "amount": 595475,
+     "share": 0.36487975313362453
+    },
+    "reserve": {
+     "amount": 121884,
+     "share": 0.07468492183708585
+    }
+   }
+  },
+  "commitments": {
+   "firstTaxYear": 2026,
+   "lastTaxYearEnd": 2035,
+   "aniHeldAt": 59500,
+   "hicbcFrom": 60000,
+   "extraSacrificeThisYear": 22536.989,
+   "takeHomeCutThisYear": 13071.453620000002,
+   "cbKeptThisYear": 2337.4,
+   "costPerPound": 0.5800000000000001,
+   "intoAbbyPensionReal": 343171.66724940605,
+   "spendLine": 70000,
+   "hbTakeHome": 25000,
+   "couponsPerYear": 7047.120043832865,
+   "reserve": 119924,
+   "cashFloor": 30000,
+   "abbyTransfer": 242800
+  },
+  "floor": {
+   "isaPerYear": 100614.87737158722,
+   "isaFrom": 2035,
+   "isaTo": 2040,
+   "sippPerYear": 109896.89856329476,
+   "sippFrom": 2041,
+   "sippTo": 2045,
+   "cost": 914617,
+   "hbAfter": 13000
+  },
+  "phases": [
+   {
+    "id": "isa",
+    "from": 2035,
+    "to": 2040,
+    "years": 6,
+    "share": 0.14634146341463414,
+    "turnsFrom": {
+     "chris": 52,
+     "abby": 49
+    }
+   },
+   {
+    "id": "sipp",
+    "from": 2041,
+    "to": 2045,
+    "years": 5,
+    "share": 0.12195121951219512,
+    "turnsFrom": {
+     "chris": 58,
+     "abby": 55
+    }
+   },
+   {
+    "id": "growth",
+    "from": 2046,
+    "to": 2051,
+    "years": 6,
+    "share": 0.14634146341463414,
+    "turnsFrom": {
+     "chris": 63,
+     "abby": 60
+    }
+   },
+   {
+    "id": "sp",
+    "from": 2052,
+    "to": 2075,
+    "years": 24,
+    "share": 0.5853658536585366,
+    "turnsFrom": {
+     "chris": 69,
+     "abby": 66
+    }
+   }
+  ],
+  "strip": {
+   "spend": 60000,
+   "G": 0.02,
+   "years": [
+    {
+     "year": 2035,
+     "parts": {
+      "gilts": 0.7843306337696447,
+      "hb": 0.2156693662303553,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2036,
+     "parts": {
+      "gilts": 0.7843306337696447,
+      "hb": 0.2156693662303553,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2037,
+     "parts": {
+      "gilts": 0.7843306337696447,
+      "hb": 0.2156693662303553,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2038,
+     "parts": {
+      "gilts": 0.7843306337696447,
+      "hb": 0.2156693662303553,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2039,
+     "parts": {
+      "gilts": 0.7843306337696447,
+      "hb": 0.2156693662303553,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2040,
+     "parts": {
+      "gilts": 0.7843306337696447,
+      "hb": 0.2156693662303553,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2041,
+     "parts": {
+      "gilts": 1,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2042,
+     "parts": {
+      "gilts": 1,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2043,
+     "parts": {
+      "gilts": 1,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2044,
+     "parts": {
+      "gilts": 1,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2045,
+     "parts": {
+      "gilts": 1,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2046,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 1,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2047,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 1,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2048,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 1,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2049,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 1,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2050,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 1,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2051,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 1,
+      "sp": 0,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2052,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.8302755268002535,
+      "sp": 0.1697244731997465,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2053,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.8302755268002535,
+      "sp": 0.1697244731997465,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2054,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.8302755268002535,
+      "sp": 0.1697244731997465,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2055,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.6605510536005069,
+      "sp": 0.339448946399493,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2056,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.6605510536005069,
+      "sp": 0.339448946399493,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2057,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.6605510536005069,
+      "sp": 0.339448946399493,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2058,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.6605510536005069,
+      "sp": 0.339448946399493,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2059,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.6605510536005069,
+      "sp": 0.339448946399493,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2060,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.6605510536005069,
+      "sp": 0.339448946399493,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2061,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.6559154339560592,
+      "sp": 0.3440845660439407,
+      "savings": 0
+     }
+    },
+    {
+     "year": 2062,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0.12430851001224925,
+      "sp": 0.4053405122330832,
+      "savings": 0.47035097775466755
+     }
+    },
+    {
+     "year": 2063,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2064,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2065,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2066,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2067,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2068,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2069,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2070,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2071,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2072,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2073,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2074,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    },
+    {
+     "year": 2075,
+     "parts": {
+      "gilts": 0,
+      "hb": 0,
+      "pensions": 0,
+      "sp": 0.4156748976688243,
+      "savings": 0.5843251023311756
+     }
+    }
+   ]
+  },
+  "outcomes": {
+   "spends": [
+    60000,
+    70000
+   ],
+   "rows": [
+    {
+     "id": "planning",
+     "G": 0.02,
+     "cells": [
+      {
+       "spend": 60000,
+       "atLastRung": 2134200,
+       "atEnd": 1740600,
+       "runsOut": null,
+       "runsOutTurns": null,
+       "barShare": 0.30764064405521485
+      },
+      {
+       "spend": 70000,
+       "atLastRung": 2012600,
+       "atEnd": 1114500,
+       "runsOut": null,
+       "runsOutTurns": null,
+       "barShare": 0.19698121211050038
+      }
+     ]
+    },
+    {
+     "id": "history",
+     "capeMin": 20,
+     "cut": 0.025,
+     "starts": 176,
+     "fullStarts": 54,
+     "recentStarts": 122,
+     "lastFullYear": 1969,
+     "firstYear": 1898,
+     "lastYear": 2025,
+     "years": 49,
+     "cells": [
+      {
+       "spend": 60000,
+       "atLastRung": 2236700,
+       "atEnd": 3547100,
+       "atLastRungP10": 1307800,
+       "atEndP10": 2088699.9999999998,
+       "failRate": 0,
+       "runsOut": null,
+       "runsOutTurns": null,
+       "barShare": 0.6269287191360752
+      },
+      {
+       "spend": 70000,
+       "atLastRung": 2092400,
+       "atEnd": 2641700,
+       "atLastRungP10": 1214600,
+       "atEndP10": 1362800,
+       "failRate": 0,
+       "runsOut": null,
+       "runsOutTurns": null,
+       "barShare": 0.4669046819491331
+      }
+     ]
+    },
+    {
+     "id": "better",
+     "G": 0.04,
+     "cells": [
+      {
+       "spend": 60000,
+       "atLastRung": 2794600,
+       "atEnd": 5657900,
+       "runsOut": null,
+       "runsOutTurns": null,
+       "barShare": 1
+      },
+      {
+       "spend": 70000,
+       "atLastRung": 2659700,
+       "atEnd": 4659700,
+       "runsOut": null,
+       "runsOutTurns": null,
+       "barShare": 0.823574117605472
+      }
+     ]
+    }
+   ],
+   "endYear": 2075,
+   "endTurns": {
+    "chris": 92,
+    "abby": 89
+   },
+   "allHistory": {
+    "starts": 1274,
+    "failRate": 0,
+    "from": 1871,
+    "years": 49
+   }
+  },
+  "pensionsOpen": {
+   "chris": 2040,
+   "abby": 2043,
+   "turns": {
+    "chris": 57,
+    "abby": 57
+   }
+  },
+  "statePension": {
+   "chris": 2051,
+   "abby": 2054,
+   "each": 12548,
+   "joint": 25096
+  }
+ },
+ "knownLimitations": [
+  {
+   "id": "thresholds-held-real",
+   "raised": "2026-09-20",
+   "text": "The personal allowance and higher-rate threshold are frozen in cash to 2030/31 and CPI-indexed after (modelled from 23 Sep 2026). Still held constant in real terms: the state pension (the triple lock would raise it), the ISA allowance and the cash floor. Small, opposite-signed biases.",
+   "impact": "≈£0.5k/yr of tax from 2041"
+  },
+  {
+   "id": "nic-cap-2029",
+   "raised": "2026-09-20",
+   "fixBy": "2029-04-06",
+   "text": "From April 2029 salary-sacrificed pension contributions above £2,000/yr attract employee and employer NIC. MODELLED from 21 Sep 2026 (tax.salarySacrificeNicCapFromTaxYear / Threshold): the pivot loses the NI part of the relief on the AVC from 2029/30 (about £3.7k over the programme) and take-home reflects it. NOT modelled: Accenture withdrawing or capping the salary-sacrifice AVC facility once its own 15% employer-NIC saving disappears — confirm the facility survives before relying on 2029/30+ years.",
+   "impact": "≈£3.7k take-home now in the numbers; scheme-availability risk unquantified"
+  },
+  {
+   "id": "fees-and-crypto",
+   "raised": "2026-09-20",
+   "text": "Platform and dealing fees (~£8k to 2045) are unmodelled; crypto (~£54k) is treated as equity at 2% real and never drawn; the sustainable-spend column in the ledger document is the 3 Sep outlook figure and £70k/yr does not survive the flat-0% case under the ledger's tax rules.",
+   "impact": "small"
+  },
+  {
+   "id": "iht-estimate",
+   "raised": "2026-09-23",
+   "text": "The estate figure is an order of magnitude: both are assumed to die at the horizon, the house and its residence nil-rate band are outside the model, lifetime gifts (and the seven-year rule) are not modelled, and Emmie and Max are assumed to be higher-rate taxpayers when they draw inherited pensions.",
+   "impact": "estate and net-to-heirs only; survival unaffected"
+  },
+  {
+   "id": "gia-untaxed",
+   "raised": "2026-09-23",
+   "text": "Drawing to the basic-rate band pushes surpluses beyond the ISA allowance into a general account, whose dividends and gains are treated as untaxed. At the planning case the GIA reaches a few hundred £k by the 2060s; dividend and capital gains tax on it are not deducted.",
+   "impact": "slightly flatters the late-life balance under the basicBand strategy"
+  }
+ ]
+}
