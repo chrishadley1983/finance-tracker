@@ -110,6 +110,7 @@ Finance-Tracker/
 ## Patterns
 
 ### API Routes
+- Auth is central: `middleware.ts` gates every `/api/*` call (Supabase session, `x-api-key` = FINANCE_AGENT_KEY / FINANCE_API_KEYS, or `Bearer CRON_SECRET`; policy in `lib/api/access-policy.ts`). A route that must be public (OAuth callback, health) goes in `PUBLIC_API_PATHS`. `API_AUTH_MODE=audit` in Vercel = log-only rollback
 - Wrap database ops in try/catch
 - Validate inputs with Zod
 - Consistent response shapes, proper HTTP status codes

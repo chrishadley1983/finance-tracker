@@ -4,9 +4,9 @@ import { createAuthClient } from '@/lib/supabase/server';
 /**
  * API route-handler auth guard.
  *
- * `middleware.ts` deliberately excludes `/api/*` from its auth gate, so any
- * route handler that mutates data or exposes user-specific financial data
- * must enforce auth itself. Call this at the top of the handler:
+ * `middleware.ts` gates every `/api/*` call (session, agent key or cron bearer;
+ * see lib/api/access-policy.ts). Route handlers that need a *user* specifically,
+ * not an agent, can still call this at the top of the handler:
  *
  *   const unauthorized = await requireUser();
  *   if (unauthorized) return unauthorized;
