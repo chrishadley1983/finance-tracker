@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { apiAuthMode, decideApiAccess } from '@/lib/api/access-policy';
+import { apiAuthMode, decideApiAccess, isAllowedEmail } from '@/lib/api/access-policy';
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -25,6 +25,21 @@ export async function middleware(request: NextRequest) {
   );
 
   const { pathname } = request.nextUrl;
+  const mode = apiAuthMode(process.env.API_AUTH_MODE);
+
+  // The Supabase project is shared with other apps and has other users: only allowlisted emails
+  // count as logged in here. In audit mode a non-listed user is logged and let through.
+  const isAllowedUser = (email: string | undefined): boolean => {
+    if (isAllowedEmail(email, process.env.FINANCE_ALLOWED_EMAILS)) return true;
+    console.warn(
+      JSON.stringify({
+        event: mode === 'audit' ? 'auth_would_deny_email' : 'auth_denied_email',
+        reason: 'not_allowed_email',
+        path: pathname,
+      })
+    );
+    return mode === 'audit';
+  };
 
   // API: a session, an agent key or the cron bearer (lib/api/access-policy.ts).
   if (pathname === '/api' || pathname.startsWith('/api/')) {
@@ -37,7 +52,7 @@ export async function middleware(request: NextRequest) {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        return Boolean(user);
+        return Boolean(user) && isAllowedUser(user?.email);
       },
       env: {
         FINANCE_AGENT_KEY: process.env.FINANCE_AGENT_KEY,
@@ -47,7 +62,6 @@ export async function middleware(request: NextRequest) {
     });
     if (decision.allow) return supabaseResponse;
 
-    const mode = apiAuthMode(process.env.API_AUTH_MODE);
     console.warn(
       JSON.stringify({
         event: mode === 'audit' ? 'api_auth_would_deny' : 'api_auth_denied',
@@ -63,8 +77,9 @@ export async function middleware(request: NextRequest) {
 
   // Refresh session if expired
   const {
-    data: { user },
+    data: { user: sessionUser },
   } = await supabase.auth.getUser();
+  const user = sessionUser && isAllowedUser(sessionUser.email) ? sessionUser : null;
 
   const isAuthPage = pathname.startsWith('/login');
 
@@ -80,6 +95,7 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('redirectTo', pathname);
+    if (sessionUser) url.searchParams.set('error', 'not_allowed');
     return NextResponse.redirect(url);
   }
 

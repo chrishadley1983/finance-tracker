@@ -8,7 +8,9 @@
  * - `x-api-key` matches FINANCE_AGENT_KEY or one of FINANCE_API_KEYS (comma-separated) —
  *   Peter's finance-categorise job, Hadley API, Claude Code skills;
  * - `Authorization: Bearer <CRON_SECRET>` — `scripts/sync-truelayer.ts` and the cron routes;
- * - a logged-in Supabase session (the browser).
+ * - a logged-in Supabase session (the browser) whose email is in FINANCE_ALLOWED_EMAILS.
+ *   The Supabase project is shared with other apps and has other users, so "logged in"
+ *   alone is not enough. Unset allowlist = any user (so a missing env var can't lock Chris out).
  *
  * A present-but-wrong `x-api-key` is refused even with a session, matching
  * `requireAgentOrUser` (a misconfigured agent should fail loudly, not ride a cookie).
@@ -39,7 +41,8 @@ export interface ApiAccessInput {
   path: string;
   apiKey: string | null;
   authorization: string | null;
-  /** Resolves the Supabase user lazily: only called when no key or bearer decides it. */
+  /** Is there an ALLOWED signed-in user (see isAllowedEmail)? Called lazily: only when no key or
+   *  bearer decides it. */
   hasUser: () => Promise<boolean>;
   env: {
     FINANCE_AGENT_KEY?: string;
@@ -70,6 +73,16 @@ export function safeEqual(a: string, b: string): boolean {
     diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
   }
   return diff === 0;
+}
+
+/** Is this signed-in user allowed into the finance app? Unset/empty allowlist = any user. */
+export function isAllowedEmail(email: string | null | undefined, allowlistRaw: string | undefined): boolean {
+  const allow = (allowlistRaw ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  if (allow.length === 0) return true;
+  return Boolean(email) && allow.includes((email as string).trim().toLowerCase());
 }
 
 export function validApiKeys(env: ApiAccessInput['env']): string[] {

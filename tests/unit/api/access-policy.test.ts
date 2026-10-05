@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   apiAuthMode,
   decideApiAccess,
+  isAllowedEmail,
   isPublicApiPath,
   safeEqual,
   validApiKeys,
@@ -123,6 +124,17 @@ describe('helpers', () => {
       AGENT,
       EXTRA,
     ]);
+  });
+
+  it('isAllowedEmail: allowlist is case-insensitive; unset allows any user', () => {
+    const list = ' Chris@Example.com , other@example.com ';
+    expect(isAllowedEmail('chris@example.com', list)).toBe(true);
+    expect(isAllowedEmail('OTHER@example.com', list)).toBe(true);
+    expect(isAllowedEmail('stranger@example.com', list)).toBe(false);
+    expect(isAllowedEmail(null, list)).toBe(false);
+    expect(isAllowedEmail(undefined, list)).toBe(false);
+    expect(isAllowedEmail('anyone@example.com', undefined)).toBe(true);
+    expect(isAllowedEmail('anyone@example.com', ' , ')).toBe(true);
   });
 
   it('apiAuthMode enforces unless explicitly audit', () => {
