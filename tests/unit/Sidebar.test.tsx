@@ -72,7 +72,7 @@ describe('Sidebar', () => {
       render(<Sidebar isOpen={true} onClose={mockOnClose} />);
 
       const links = screen.getAllByRole('link');
-      expect(links.length).toBe(14);
+      expect(links.length).toBe(15);
 
       const hrefs = links.map(link => link.getAttribute('href'));
       expect(hrefs).toContain('/');
@@ -83,6 +83,7 @@ describe('Sidebar', () => {
       expect(hrefs).toContain('/review');
       expect(hrefs).toContain('/categories');
       expect(hrefs).toContain('/budgets');
+      expect(hrefs).toContain('/subscriptions');
       expect(hrefs).toContain('/wealth');
       expect(hrefs).toContain('/fire');
       expect(hrefs).toContain('/reports');
