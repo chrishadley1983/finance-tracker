@@ -100,6 +100,8 @@ describe('assessSubscription', () => {
     const r = assessSubscription(sub(), [charge('2026-08-01', -10.99)], TODAY);
     expect(r.signals.map((s) => s.type)).toEqual(['missed_payment']);
     expect(r.signals[0].message).toContain('66 days');
+    // Nothing is projected for a subscription that has stopped charging.
+    expect(r.next_due).toBeNull();
   });
 
   it('does not flag an annual subscription charged 11 months ago', () => {

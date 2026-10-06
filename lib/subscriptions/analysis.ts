@@ -207,7 +207,8 @@ export function assessSubscription(sub: SubscriptionRow, charges: Charge[], toda
     if (sub.next_renewal_date && sub.next_renewal_date >= today) {
       nextDue = sub.next_renewal_date;
       nextDueSource = 'renewal_date';
-    } else if (latest) {
+    } else if (latest && !signals.some((x) => x.type === 'missed_payment')) {
+      // A subscription that has stopped charging has no believable next date, so none is projected.
       let projected = addDays(latest.date, PERIOD_DAYS[frequency]);
       // Roll forward past today so a slightly late charge still shows the next one.
       for (let i = 0; i < 24 && projected < today; i++) projected = addDays(projected, PERIOD_DAYS[frequency]);
