@@ -16,7 +16,7 @@ interface SyncButtonProps {
 
 const AUTO_CLEAR_MS = 6000;
 const DEFAULT_CLASS_NAME =
-  'text-sm px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5';
+  'text-sm px-3 py-1.5 bg-surface text-ink border border-line rounded-md hover:bg-sunk disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5';
 
 /**
  * Fire-and-forget sync trigger for TrueLayer. Safe to render even when
@@ -111,15 +111,15 @@ export function SyncButton({ accountId, label, className }: SyncButtonProps) {
         )}
       </button>
 
-      {result && <p className="text-xs text-emerald-700">{result}</p>}
+      {result && <p className="text-xs text-in">{result}</p>}
 
       {error && (
-        <p className="text-xs text-red-600">
+        <p className="text-xs text-bad">
           {error}
           {notConfigured && (
             <>
               {' '}
-              <a href="/settings/bank-sync" className="underline hover:text-red-700">
+              <a href="/settings/bank-sync" className="underline hover:opacity-80">
                 Set up Bank Sync
               </a>
             </>

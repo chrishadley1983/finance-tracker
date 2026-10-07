@@ -77,7 +77,7 @@ describe('TransactionPanel', () => {
   it('shows the amount, date, account and bank text', () => {
     renderPanel();
     const dialog = screen.getByRole('dialog', { name: 'Transaction' });
-    expect(within(dialog).getByText('-£42.10')).toHaveClass('fig');
+    expect(within(dialog).getByText('£42.10')).toHaveClass('fig');
     expect(within(dialog).getByText(/7 Oct 2026 · HSBC Current/)).toBeInTheDocument();
     expect(within(dialog).getAllByText('TESCO STORES 3297').length).toBeGreaterThan(0);
     expect(within(dialog).getByText('Needs review')).toBeInTheDocument();

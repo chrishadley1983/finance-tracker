@@ -243,7 +243,7 @@ export function CategorySelect({
       : 'flex h-10 w-full items-center justify-between gap-2 rounded-md border border-line bg-surface px-3 text-left text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-sunk');
 
   return (
-    <div ref={rootRef} className={`relative ${variant === 'field' ? 'w-full' : 'inline-block max-w-full'} ${className}`}>
+    <div ref={rootRef} className={`relative ${variant === 'field' ? 'w-full' : variant === 'inline' ? 'block min-w-0' : 'inline-block max-w-full'} ${className}`}>
       <button
         ref={triggerRef}
         type="button"

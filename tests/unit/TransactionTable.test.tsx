@@ -104,7 +104,7 @@ describe('TransactionTable', () => {
     it('shows income with text-in and a leading +, spending in ink', () => {
       const { container } = render(<TransactionTable {...defaultProps} />);
       const [spend, income] = rows(container);
-      const spendCell = within(spend).getByText('-£50.00');
+      const spendCell = within(spend).getByText('£50.00');
       const incomeCell = within(income).getByText('+£1,500.00');
       expect(spendCell).toHaveClass('fig', 'text-ink');
       expect(incomeCell).toHaveClass('fig', 'text-in');

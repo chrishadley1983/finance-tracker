@@ -99,7 +99,7 @@ describe('Transactions page', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Select all 40 matching' }));
     const bar = await screen.findByRole('region', { name: 'Bulk actions' });
     await waitFor(() => expect(bar.textContent).toContain('40 selected'));
-    expect(bar.textContent).toContain('-£40.00');
+    expect(bar.textContent).toContain('£40.00');
     expect(screen.getByText(/All 40 matching transactions are selected/)).toBeInTheDocument();
     // All share one merchant: "Make a rule" is offered.
     expect(within(bar).getByRole('button', { name: /Make a rule/ })).toBeInTheDocument();
@@ -112,7 +112,7 @@ describe('Transactions page', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: 'Select TESCO STORES 2' }));
     const bar = screen.getByRole('region', { name: 'Bulk actions' });
     expect(bar.textContent).toContain('2 selected');
-    expect(bar.textContent).toContain('-£30.00');
+    expect(bar.textContent).toContain('£30.00');
 
     fireEvent.click(within(bar).getByRole('button', { name: 'Mark validated' }));
     await screen.findByText('2 transactions marked validated');

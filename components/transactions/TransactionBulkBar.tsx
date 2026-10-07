@@ -129,7 +129,7 @@ export function TransactionBulkBar({
       <span className="px-2 text-sm">
         <span className="fig font-medium">{count.toLocaleString('en-GB')}</span> selected
         <span className="opacity-70"> · </span>
-        <span className="fig">{formatGBP(amount, { pence: true })}</span>
+        <span className="fig">{amount > 0 ? formatGBP(amount, { pence: true, signed: true }) : formatGBP(Math.abs(amount), { pence: true })}</span>
       </span>
 
       <CategorySelect

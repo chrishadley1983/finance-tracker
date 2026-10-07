@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, CheckCircle2, Circle, Pencil, Trash2, 
 import type { TransactionWithRelations } from '@/lib/hooks/useTransactions';
 import { CategorySelect } from '@/components/ui/CategorySelect';
 import { formatDateGB, formatDayHeading, formatGBP } from '@/lib/format';
+import { isTypingTarget } from '@/lib/keyboard';
 
 export interface TransactionWithRunningBalance extends TransactionWithRelations {
   running_balance?: number | null;
@@ -29,16 +30,14 @@ interface TransactionTableProps {
   keyboardEnabled?: boolean;
 }
 
-/** Money cell text: income gets a leading "+", spending keeps its "-". */
+/** Money cell text: spending is a plain amount (shown in ink), income gets a leading "+". */
 export function formatAmount(amount: number): string {
-  return formatGBP(amount, { pence: true, signed: amount > 0 });
+  return amount > 0 ? formatGBP(amount, { pence: true, signed: true }) : formatGBP(Math.abs(amount), { pence: true });
 }
 
-function typingInField(target: EventTarget | null): boolean {
-  const el = target as HTMLElement | null;
-  if (!el || !el.tagName) return false;
-  const tag = el.tagName;
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+/** A day's net: signed both ways so a mixed day reads unambiguously. */
+export function formatNet(amount: number): string {
+  return formatGBP(amount, { pence: true, signed: true });
 }
 
 function dialogOpen(): boolean {
@@ -263,7 +262,7 @@ export function TransactionTable({
     if (!keyboardEnabled) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (typingInField(e.target) || dialogOpen()) return;
+      if (isTypingTarget(e.target) || dialogOpen()) return;
       const s = stateRef.current;
       if (s.editingId) return;
       const n = s.transactions.length;
@@ -380,7 +379,7 @@ export function TransactionTable({
                   </span>
                   <span role="cell" className={`fig ${group.net > 0 ? 'text-in' : 'text-ink-3'}`}>
                     <span className="sr-only">Net for the day </span>
-                    {formatAmount(Math.round(group.net * 100) / 100)}
+                    {formatNet(Math.round(group.net * 100) / 100)}
                   </span>
                 </div>
               )}
