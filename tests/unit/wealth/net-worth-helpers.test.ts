@@ -109,7 +109,7 @@ describe('buildMonthlyRows', () => {
     { id: 'a', name: 'A', type: 'isa' },
     { id: 'b', name: 'B', type: 'pension' },
   ];
-  it('pivots by month, newest first, with the change on the month before', () => {
+  it('pivots by month, newest first, with a like-for-like change on the month before', () => {
     const rows = buildMonthlyRows(
       [
         { id: '1', account_id: 'a', date: '2026-09-01', balance: 100, account: null },
@@ -119,9 +119,22 @@ describe('buildMonthlyRows', () => {
       accounts
     );
     expect(rows.map((r) => [r.date, r.total, r.change])).toEqual([
-      ['2026-10-01', 120, -30],
+      ['2026-10-01', 120, 20],
       ['2026-09-01', 150, null],
     ]);
+    // B has no October balance yet, so it is left out of the change.
+    expect(rows[0].changePercent).toBe(20);
     expect(rows[0].accounts.b).toBeNull();
+  });
+
+  it('has no change when the two months share no accounts', () => {
+    const rows = buildMonthlyRows(
+      [
+        { id: '1', account_id: 'a', date: '2026-09-01', balance: 100, account: null },
+        { id: '2', account_id: 'b', date: '2026-10-01', balance: 50, account: null },
+      ],
+      accounts
+    );
+    expect(rows[0].change).toBeNull();
   });
 });

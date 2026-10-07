@@ -36,7 +36,10 @@ export interface MonthlyData {
 
 const TYPE_ORDER: Record<string, number> = { pension: 1, isa: 2, investment: 3, savings: 4, property: 5, current: 6, other: 7 };
 
-/** Pivot snapshots into one row per month (newest first) with the change on the month before. */
+/**
+ * Pivot snapshots into one row per month (newest first) with the change on the
+ * month before, counting only accounts recorded in both months.
+ */
 export function buildMonthlyRows(snapshots: Snapshot[], accounts: Account[]): MonthlyData[] {
   const monthMap = new Map<string, Map<string, { snapshotId: string; balance: number }>>();
   for (const snapshot of snapshots) {
@@ -63,10 +66,23 @@ export function buildMonthlyRows(snapshots: Snapshot[], accounts: Account[]): Mo
       return { date: `${key}-01`, displayDate: `${MONTH_SHORT[parseInt(month) - 1]} ${year}`, accounts: record, total, change: null, changePercent: null };
     });
 
+  // Like for like: only accounts with a balance in both months count, so a
+  // month still being filled in doesn't read as a huge drop.
   for (let i = 0; i < rows.length - 1; i++) {
-    const prev = rows[i + 1].total;
-    rows[i].change = rows[i].total - prev;
-    rows[i].changePercent = prev !== 0 ? ((rows[i].total - prev) / prev) * 100 : null;
+    let now = 0;
+    let before = 0;
+    let shared = 0;
+    for (const account of accounts) {
+      const a = rows[i].accounts[account.id];
+      const b = rows[i + 1].accounts[account.id];
+      if (!a || !b) continue;
+      now += a.balance;
+      before += b.balance;
+      shared++;
+    }
+    if (shared === 0) continue;
+    rows[i].change = now - before;
+    rows[i].changePercent = before !== 0 ? ((now - before) / before) * 100 : null;
   }
   return rows;
 }
@@ -248,7 +264,7 @@ export function SnapshotHistoryTable({ refreshKey = 0, onChange, monthHref }: Sn
     <div className="grid gap-3">
       <p className="text-[14.5px] text-ink-2">
         <strong className="font-semibold text-ink">{monthlyData.length}</strong> months recorded. Select any balance to correct it; Enter saves, Esc cancels. A count such as
-        &ldquo;3 of 8&rdquo; next to a month means some balances are missing.
+        &ldquo;3 of 8&rdquo; next to a month means some balances are missing; its change compares only the accounts recorded in both months.
         <span className="text-ink-3"> Current accounts aren&apos;t shown here: their balances come from transactions.</span>
       </p>
 
