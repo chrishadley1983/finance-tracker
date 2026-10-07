@@ -4,7 +4,7 @@ import { duplicateCheckRequestSchema } from '@/lib/validations/import';
 import { getSessionData, validateRows } from '@/lib/import';
 import type { ParsedTransaction, DuplicateMatchType } from '@/lib/types/import';
 import { ZodError } from 'zod';
-import crypto from 'crypto';
+import { importHash } from '@/lib/import/dedup';
 
 interface DuplicateResult {
   importRow: number;
@@ -18,15 +18,6 @@ interface DuplicateResult {
   };
   matchType: DuplicateMatchType;
   similarity: number;
-}
-
-/**
- * Generate a hash for duplicate detection.
- */
-function generateTransactionHash(date: string, amount: number, description: string): string {
-  const normalizedDesc = description.toLowerCase().trim().replace(/\s+/g, ' ');
-  const data = `${date}|${amount.toFixed(2)}|${normalizedDesc}`;
-  return crypto.createHash('sha256').update(data).digest('hex');
 }
 
 /**
@@ -133,7 +124,7 @@ export async function POST(request: NextRequest) {
 
     // First, check against imported_transaction_hashes for exact matches
     const hashes = transactions.map((tx) =>
-      generateTransactionHash(tx.date, tx.amount, tx.description)
+      importHash(tx.date, tx.amount, tx.description)
     );
 
     const { data: existingHashes } = await supabaseAdmin
@@ -145,7 +136,7 @@ export async function POST(request: NextRequest) {
 
     // For each transaction, check for duplicates based on strategy
     for (const tx of transactions) {
-      const txHash = generateTransactionHash(tx.date, tx.amount, tx.description);
+      const txHash = importHash(tx.date, tx.amount, tx.description);
 
       // Check hash table first
       if (hashSet.has(txHash)) {
