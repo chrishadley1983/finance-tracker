@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { formatGBP } from '@/lib/format';
 
 // =============================================================================
 // TYPES
@@ -161,10 +162,7 @@ export function EditableCell({
     if (type === 'number') {
       const num = typeof value === 'number' ? value : parseFloat(value as string);
       if (!isNaN(num)) {
-        return new Intl.NumberFormat('en-GB', {
-          style: 'currency',
-          currency: 'GBP',
-        }).format(num);
+        return formatGBP(num, { pence: true });
       }
     }
 

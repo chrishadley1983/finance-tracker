@@ -11,20 +11,10 @@ import type {
   Takeaway,
   BudgetComparisonItem,
 } from './types';
+import { formatGBP, MONTH_NAMES as MONTH_NAMES_0 } from '../format';
 
-const MONTH_NAMES = [
-  '', 'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+// 1-indexed (index 0 is blank) so MONTH_NAMES[month] works with 1-12 months.
+const MONTH_NAMES: string[] = ['', ...MONTH_NAMES_0];
 
 function formatPct(value: number): string {
   return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
@@ -47,7 +37,7 @@ export function detectOverBudget(comparisons: BudgetComparisonItem[]): Takeaway[
   return overBudget.map((c) => ({
     tag: 'over budget' as const,
     title: `${c.categoryName} ${(c.actual / c.budget).toFixed(1)}× budget`,
-    body: `${formatCurrency(c.actual)} actual vs ${formatCurrency(c.budget)} budget (${formatCurrency(c.actual - c.budget)} over). ${
+    body: `${formatGBP(c.actual)} actual vs ${formatGBP(c.budget)} budget (${formatGBP(c.actual - c.budget)} over). ${
       c.actual > c.budget * 3
         ? 'The budget figure may need re-baselining — check if this is structural or a one-off.'
         : 'Review whether this is a recurring pattern or exceptional spend.'
@@ -74,7 +64,7 @@ export function analyseIncomeTrend(data: MonthlyReportData): Takeaway | null {
     return {
       tag: 'strong',
       title: 'Income trending upward',
-      body: `${formatCurrency(data.income)} in ${MONTH_NAMES[data.month]} vs ${formatCurrency(data.priorMonth.income)} last month (${formatPct(incomeDeltaPct)}).`,
+      body: `${formatGBP(data.income)} in ${MONTH_NAMES[data.month]} vs ${formatGBP(data.priorMonth.income)} last month (${formatPct(incomeDeltaPct)}).`,
     };
   }
 
@@ -82,7 +72,7 @@ export function analyseIncomeTrend(data: MonthlyReportData): Takeaway | null {
     return {
       tag: 'watch',
       title: 'Income dropped significantly',
-      body: `${formatCurrency(data.income)} in ${MONTH_NAMES[data.month]} vs ${formatCurrency(data.priorMonth.income)} last month (${formatPct(incomeDeltaPct)}). Check if this is seasonal or structural.`,
+      body: `${formatGBP(data.income)} in ${MONTH_NAMES[data.month]} vs ${formatGBP(data.priorMonth.income)} last month (${formatPct(incomeDeltaPct)}). Check if this is seasonal or structural.`,
     };
   }
 
@@ -101,7 +91,7 @@ export function analyseNetWorthTrend(data: MonthlyReportData): Takeaway | null {
     return {
       tag: 'strong',
       title: 'Net worth growing',
-      body: `Net worth reached ${formatCurrency(data.netWorth)}, up ${formatPct(data.netWorthChangePct)} month-on-month (${formatCurrency(data.netWorthChange)}).`,
+      body: `Net worth reached ${formatGBP(data.netWorth)}, up ${formatPct(data.netWorthChangePct)} month-on-month (${formatGBP(data.netWorthChange)}).`,
     };
   }
 
@@ -109,7 +99,7 @@ export function analyseNetWorthTrend(data: MonthlyReportData): Takeaway | null {
     return {
       tag: 'watch',
       title: 'Net worth dipped',
-      body: `Net worth at ${formatCurrency(data.netWorth)}, down ${formatPct(data.netWorthChangePct)} (${formatCurrency(data.netWorthChange)}). Likely market-driven if spending is on track.`,
+      body: `Net worth at ${formatGBP(data.netWorth)}, down ${formatPct(data.netWorthChangePct)} (${formatGBP(data.netWorthChange)}). Likely market-driven if spending is on track.`,
     };
   }
 
@@ -160,7 +150,7 @@ export function analyseFireProgress(data: MonthlyReportData): Takeaway | null {
     return {
       tag: 'strong',
       title: `${bestScenario.name} FIRE target reached`,
-      body: `Your portfolio of ${formatCurrency(data.firePortfolio)} exceeds the ${bestScenario.name} target of ${formatCurrency(bestScenario.targetAmount)} (${bestScenario.progressPct.toFixed(0)}%).`,
+      body: `Your portfolio of ${formatGBP(data.firePortfolio)} exceeds the ${bestScenario.name} target of ${formatGBP(bestScenario.targetAmount)} (${bestScenario.progressPct.toFixed(0)}%).`,
     };
   }
 
@@ -173,7 +163,7 @@ export function analyseFireProgress(data: MonthlyReportData): Takeaway | null {
     return {
       tag: 'strong',
       title: `${closest.progressPct.toFixed(0)}% towards ${closest.name} FIRE`,
-      body: `Portfolio at ${formatCurrency(data.firePortfolio)} vs target of ${formatCurrency(closest.targetAmount)}. ${formatCurrency(closest.targetAmount - data.firePortfolio)} remaining.`,
+      body: `Portfolio at ${formatGBP(data.firePortfolio)} vs target of ${formatGBP(closest.targetAmount)}. ${formatGBP(closest.targetAmount - data.firePortfolio)} remaining.`,
     };
   }
 
@@ -194,7 +184,7 @@ export function suggestBudgetRebaseline(comparisons: BudgetComparisonItem[]): Ta
 
   if (chronic.length === 0) return [];
 
-  const names = chronic.map((c) => `${c.categoryName} (→ ${formatCurrency(c.actual)})`).join(', ');
+  const names = chronic.map((c) => `${c.categoryName} (→ ${formatGBP(c.actual)})`).join(', ');
 
   return [{
     tag: 'budget',

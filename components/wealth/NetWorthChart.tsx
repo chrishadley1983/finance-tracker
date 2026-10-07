@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import type { NetWorthHistory } from '@/lib/types/fire';
 import { ACCOUNT_TYPE_LABELS } from '@/lib/types/fire';
+import { formatGBPCompact } from '@/lib/format';
 
 type Period = 'all' | '1y' | '2y' | '5y';
 
@@ -28,16 +29,6 @@ const TYPE_COLORS: Record<string, string> = {
   current: '#f59e0b',
   property: '#ef4444',
 };
-
-function formatCurrency(amount: number): string {
-  if (amount >= 1000000) {
-    return `£${(amount / 1000000).toFixed(1)}M`;
-  }
-  if (amount >= 1000) {
-    return `£${(amount / 1000).toFixed(0)}k`;
-  }
-  return `£${amount.toFixed(0)}`;
-}
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -156,7 +147,7 @@ export function NetWorthChart({ initialPeriod = '2y' }: NetWorthChartProps) {
               stroke="#9ca3af"
               fontSize={12}
               tickLine={false}
-              tickFormatter={formatCurrency}
+              tickFormatter={formatGBPCompact}
             />
             <Tooltip
               contentStyle={{
@@ -166,7 +157,7 @@ export function NetWorthChart({ initialPeriod = '2y' }: NetWorthChartProps) {
                 color: '#fff',
               }}
               formatter={(value, name) => [
-                formatCurrency(Number(value)),
+                formatGBPCompact(Number(value)),
                 String(name) === 'total' ? 'Total' : ACCOUNT_TYPE_LABELS[String(name)] || String(name),
               ]}
               labelFormatter={(label) => String(label)}

@@ -2,6 +2,7 @@
 
 import { TrendingUp, TrendingDown, Wallet, PiggyBank, BarChart3 } from 'lucide-react';
 import type { NetWorthSummary as NetWorthSummaryType } from '@/lib/types/fire';
+import { formatGBP } from '@/lib/format';
 
 interface NetWorthSummaryProps {
   data: NetWorthSummaryType | null;
@@ -16,15 +17,6 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   isa: <PiggyBank className="h-6 w-6" />,
   property: <Wallet className="h-6 w-6" />,
 };
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 export function NetWorthSummary({ data, isLoading = false }: NetWorthSummaryProps) {
   if (isLoading) {
@@ -60,7 +52,7 @@ export function NetWorthSummary({ data, isLoading = false }: NetWorthSummaryProp
         <div className="flex items-center justify-between">
           <div>
             <p className="text-emerald-100 text-sm font-medium">Total Net Worth</p>
-            <p className="text-4xl font-bold mt-1">{formatCurrency(data.total)}</p>
+            <p className="text-4xl font-bold mt-1">{formatGBP(data.total)}</p>
             {data.change !== null && (
               <div className="flex items-center mt-2 gap-2">
                 {isPositiveChange ? (
@@ -70,7 +62,7 @@ export function NetWorthSummary({ data, isLoading = false }: NetWorthSummaryProp
                 )}
                 <span className="text-sm">
                   {isPositiveChange ? '+' : ''}
-                  {formatCurrency(data.change)}
+                  {formatGBP(data.change)}
                   {data.changePercent !== null && (
                     <span className="ml-1 opacity-80">
                       ({isPositiveChange ? '+' : ''}
@@ -98,7 +90,7 @@ export function NetWorthSummary({ data, isLoading = false }: NetWorthSummaryProp
               <span className="text-sm font-medium">{typeData.label}</span>
             </div>
             <p className="text-xl font-bold text-gray-900 dark:text-white">
-              {formatCurrency(typeData.total)}
+              {formatGBP(typeData.total)}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {data.total > 0

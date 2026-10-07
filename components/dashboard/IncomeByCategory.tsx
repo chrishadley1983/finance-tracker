@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CategorySpend } from '@/lib/hooks/useDashboardData';
+import { formatGBP } from '@/lib/format';
 
 const INITIAL_DISPLAY_COUNT = 8;
 
@@ -11,15 +12,6 @@ interface IncomeByCategoryProps {
   isLoading: boolean;
   dateFrom?: string;
   dateTo?: string;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function SkeletonRow() {
@@ -76,7 +68,7 @@ export function IncomeByCategory({ data, isLoading, dateFrom, dateTo }: IncomeBy
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm text-slate-300">{category.categoryName}</span>
                   <span className="text-sm text-slate-400">
-                    {formatCurrency(category.amount)}
+                    {formatGBP(category.amount)}
                   </span>
                 </div>
                 <div className="h-2 bg-slate-700 rounded-full overflow-hidden">

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import type { Template } from './TemplateSelector';
+import { formatDateGB } from '@/lib/format';
 
 // =============================================================================
 // TYPES
@@ -136,17 +137,9 @@ export function TemplateManager({
     }
   }, [onTemplateDeleted]);
 
-  const formatDate = (dateStr: string): string => {
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
-
   const formatLastUsed = (dateStr: string | null): string => {
     if (!dateStr) return 'Never';
-    return formatDate(dateStr);
+    return formatDateGB(dateStr);
   };
 
   if (!isOpen) return null;
@@ -306,7 +299,7 @@ export function TemplateManager({
                           <p className="text-sm text-slate-400 mt-1 line-clamp-2">{template.notes}</p>
                         )}
                         <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
-                          <span>Created: {formatDate(template.created_at)}</span>
+                          <span>Created: {formatDateGB(template.created_at)}</span>
                           <span>Last used: {formatLastUsed(template.last_used_at)}</span>
                         </div>
                       </div>

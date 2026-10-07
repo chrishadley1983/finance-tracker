@@ -2,19 +2,11 @@
 
 import { SummaryData } from '@/lib/hooks/useDashboardData';
 import type { TimeframePeriod } from './TimeframeSelector';
+import { formatGBP } from '@/lib/format';
 
 interface SummaryCardsProps {
   data: SummaryData | null;
   isLoading: boolean;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function getPeriodLabel(period: TimeframePeriod): string {
@@ -86,7 +78,7 @@ export function SummaryCards({ data, isLoading }: SummaryCardsProps) {
         <div key={card.label} className="bg-slate-800 rounded-lg p-4">
           <p className="text-slate-400 text-sm">{card.label}</p>
           <p className={`text-2xl font-bold ${card.colorClass}`}>
-            {formatCurrency(card.value)}
+            {formatGBP(card.value)}
           </p>
         </div>
       ))}

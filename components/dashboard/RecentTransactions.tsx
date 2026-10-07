@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Transaction } from '@/lib/hooks/useDashboardData';
+import { formatGBP } from '@/lib/format';
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
@@ -14,13 +15,6 @@ function formatDate(dateString: string): string {
     day: '2-digit',
     month: 'short',
   });
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-  }).format(amount);
 }
 
 function SkeletonRow() {
@@ -69,7 +63,7 @@ export function RecentTransactions({ transactions, isLoading }: RecentTransactio
                   transaction.amount >= 0 ? 'text-green-400' : 'text-red-400'
                 }`}
               >
-                {formatCurrency(transaction.amount)}
+                {formatGBP(transaction.amount, { pence: true })}
               </span>
             </div>
           ))

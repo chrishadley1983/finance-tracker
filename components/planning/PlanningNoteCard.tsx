@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { PlanningNote } from '@/lib/validations/planning';
+import { formatDateGB } from '@/lib/format';
 
 interface PlanningNoteCardProps {
   note: PlanningNote;
@@ -21,14 +22,6 @@ export function PlanningNoteCard({
   isDragging,
 }: PlanningNoteCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
 
   // Highlight search matches in content
   const renderContent = () => {
@@ -78,9 +71,9 @@ export function PlanningNoteCard({
 
         {/* Metadata */}
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 dark:text-slate-500">
-          <span>Added {formatDate(note.created_at)}</span>
+          <span>Added {formatDateGB(note.created_at)}</span>
           {note.updated_at !== note.created_at && (
-            <span className="italic">Edited {formatDate(note.updated_at)}</span>
+            <span className="italic">Edited {formatDateGB(note.updated_at)}</span>
           )}
           {note.tags && note.tags.length > 0 && (
             <div className="flex gap-1">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { formatGBP, MONTH_SHORT } from '@/lib/format';
 
 interface Snapshot {
   id: string;
@@ -27,11 +28,6 @@ interface MonthlyData {
   change: number | null;
   changePercent: number | null;
 }
-
-const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
 
 export function SnapshotHistoryTable() {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -109,7 +105,7 @@ export function SnapshotHistoryTable() {
 
         return {
           date: `${monthKey}-01`,
-          displayDate: `${MONTH_NAMES[parseInt(month) - 1]} ${year}`,
+          displayDate: `${MONTH_SHORT[parseInt(month) - 1]} ${year}`,
           accounts: accountsRecord,
           total,
           change,
@@ -143,15 +139,6 @@ export function SnapshotHistoryTable() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
 
   const handleCellClick = (date: string, accountId: string, currentBalance: number | null) => {
     setEditingCell({ date, accountId });
@@ -271,7 +258,7 @@ export function SnapshotHistoryTable() {
                           autoFocus
                         />
                       ) : snapshot ? (
-                        <span className="text-slate-600">{formatCurrency(snapshot.balance)}</span>
+                        <span className="text-slate-600">{formatGBP(snapshot.balance)}</span>
                       ) : (
                         <span className="text-slate-300">-</span>
                       )}
@@ -279,7 +266,7 @@ export function SnapshotHistoryTable() {
                   );
                 })}
                 <td className="px-3 py-2 text-center font-semibold text-slate-900 bg-slate-50">
-                  {formatCurrency(row.total)}
+                  {formatGBP(row.total)}
                 </td>
                 <td className={`px-3 py-2 text-center ${
                   row.change === null ? 'text-slate-300' :
@@ -287,7 +274,7 @@ export function SnapshotHistoryTable() {
                 }`}>
                   {row.change !== null ? (
                     <>
-                      {row.change >= 0 ? '+' : ''}{formatCurrency(row.change)}
+                      {row.change >= 0 ? '+' : ''}{formatGBP(row.change)}
                     </>
                   ) : '-'}
                 </td>
