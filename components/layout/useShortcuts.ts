@@ -1,15 +1,9 @@
 'use client';
 
+import { isTypingTarget } from '@/lib/keyboard';
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ALL_NAV_ITEMS } from './nav-config';
-
-function typingInField(target: EventTarget | null): boolean {
-  const el = target as HTMLElement | null;
-  if (!el) return false;
-  const tag = el.tagName;
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
-}
 
 /**
  * Global keys: ⌘K / Ctrl+K or "/" opens search, "[" toggles the nav column,
@@ -27,7 +21,7 @@ export function useShortcuts(opts: { onSearch: () => void; onToggleColumn: () =>
         onSearch();
         return;
       }
-      if (e.metaKey || e.ctrlKey || e.altKey || typingInField(e.target)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target)) return;
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
 
       if (pendingG.current !== null) {

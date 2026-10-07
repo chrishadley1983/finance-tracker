@@ -99,7 +99,8 @@ const ENGINE_CONFIG = {
  * Rows categorised with confidence below this are applied best-effort but
  * flagged `needs_review`.
  */
-export const CONFIDENCE_REVIEW_THRESHOLD = 0.8;
+import { CONFIDENCE_REVIEW_THRESHOLD } from './thresholds';
+export { CONFIDENCE_REVIEW_THRESHOLD };
 
 /**
  * Resolve the top similar matches into a candidate categorisation.

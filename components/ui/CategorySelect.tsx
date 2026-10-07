@@ -30,6 +30,8 @@ export interface CategorySelectProps {
   /** Horizontal alignment of the popover relative to the trigger. */
   align?: 'left' | 'right';
   className?: string;
+  /** Replace the trigger's default styling (e.g. a quiet chip in a table row). */
+  triggerClassName?: string;
 }
 
 interface Group {
@@ -65,6 +67,7 @@ export function CategorySelect({
   disabled = false,
   align = 'left',
   className = '',
+  triggerClassName,
 }: CategorySelectProps) {
   const { data, isLoading } = useCategories({ enabled: !categoriesProp });
   const categories = useMemo(() => categoriesProp ?? data ?? [], [categoriesProp, data]);
@@ -218,10 +221,10 @@ export function CategorySelect({
       </>
     );
 
-  const triggerClass =
-    variant === 'button'
+  const triggerClass = triggerClassName ??
+    (variant === 'button'
       ? 'inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-accent-ink hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50'
-      : 'flex h-10 w-full items-center justify-between gap-2 rounded-md border border-line bg-surface px-3 text-left text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-sunk';
+      : 'flex h-10 w-full items-center justify-between gap-2 rounded-md border border-line bg-surface px-3 text-left text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-sunk');
 
   return (
     <div ref={rootRef} className={`relative ${variant === 'field' ? 'w-full' : 'inline-block'} ${className}`}>

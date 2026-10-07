@@ -161,6 +161,26 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
       eq(c: string, v: unknown) { filters.push((r) => r[c] === v); return b; },
       neq(c: string, v: unknown) { filters.push((r) => r[c] !== v && r[c] !== null && r[c] !== undefined); return b; },
       in(c: string, vs: unknown[]) { filters.push((r) => vs.includes(r[c])); return b; },
+      /** PostgREST or(): comma-separated `col.is.null` / `col.eq.value` terms. */
+      or(spec: string) {
+        const terms = spec.split(',').map((t) => {
+          const [col, op, ...rest] = t.split('.');
+          const val = rest.join('.');
+          return (r: Row) =>
+            op === 'is' && val === 'null'
+              ? r[col] === null || r[col] === undefined
+              : op === 'eq'
+                ? String(r[col]) === val
+                : false;
+        });
+        filters.push((r) => terms.some((f) => f(r)));
+        return b;
+      },
+      ilike(c: string, pattern: string) {
+        const re = new RegExp(`^${pattern.split('%').map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*')}$`, 'i');
+        filters.push((r) => re.test(String(r[c] ?? '')));
+        return b;
+      },
       is(c: string, v: unknown) { filters.push((r) => (v === null ? r[c] === null || r[c] === undefined : r[c] === v)); return b; },
       not(c: string, o: string, v: unknown) {
         if (o === 'is') filters.push((r) => (v === null ? r[c] !== null && r[c] !== undefined : r[c] !== v));
