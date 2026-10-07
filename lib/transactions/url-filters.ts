@@ -4,7 +4,7 @@
  */
 import type { FilterState, TransactionStatusFilter } from '@/lib/hooks/useTransactions';
 
-const STATUSES: readonly TransactionStatusFilter[] = ['uncategorised', 'needs_review', 'validated'];
+const STATUSES: readonly TransactionStatusFilter[] = ['uncategorised', 'needs_review', 'unvalidated', 'validated'];
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 interface ReadableParams {

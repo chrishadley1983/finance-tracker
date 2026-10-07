@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 /** Status chip on the transactions page (maps to ?status= on the API). */
-export type TransactionStatusFilter = 'uncategorised' | 'needs_review' | 'validated';
+export type TransactionStatusFilter = 'uncategorised' | 'needs_review' | 'unvalidated' | 'validated';
 
 export interface FilterState {
   accountId?: string;
