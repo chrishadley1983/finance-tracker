@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CategoryWithStats } from '@/lib/types/category';
+import { formatGBP } from '@/lib/format';
 
 interface DeleteCategoryDialogProps {
   category: CategoryWithStats | null;
@@ -37,15 +38,6 @@ export function DeleteCategoryDialog({
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
   };
 
   return (
@@ -98,7 +90,7 @@ export function DeleteCategoryDialog({
                     This category has transactions
                   </p>
                   <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                    {category.transaction_count} transactions totalling {formatAmount(category.total_amount)}
+                    {category.transaction_count} transactions totalling {formatGBP(category.total_amount)}
                   </p>
                 </div>
               </div>

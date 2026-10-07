@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
+import { formatPercent } from '@/lib/format';
 
 interface CapeScatterPoint {
   cape: number;
@@ -22,10 +23,6 @@ interface CapeScatterChartProps {
   personalWr?: number;
   ernDynamicWr?: number;
   isLoading?: boolean;
-}
-
-function formatPct(value: number): string {
-  return `${value.toFixed(2)}%`;
 }
 
 export function CapeScatterChart({
@@ -74,7 +71,7 @@ export function CapeScatterChart({
               stroke="#9ca3af"
               fontSize={12}
               tickLine={false}
-              tickFormatter={formatPct}
+              tickFormatter={(v: number) => formatPercent(v)}
               label={{ value: 'SWR %', angle: -90, position: 'insideLeft', offset: 10, fill: '#9ca3af' }}
             />
             <Tooltip
@@ -86,7 +83,7 @@ export function CapeScatterChart({
               }}
               formatter={(value, name) => {
                 const v = Number(value);
-                if (name === 'swr') return [formatPct(v), 'SWR'];
+                if (name === 'swr') return [formatPercent(v), 'SWR'];
                 return [v.toFixed(1), 'CAPE'];
               }}
               labelFormatter={() => ''}
@@ -99,7 +96,7 @@ export function CapeScatterChart({
                 stroke="#ef4444"
                 strokeDasharray="4 4"
                 strokeWidth={2}
-                label={{ value: `Your WR: ${formatPct(personalWr)}`, fill: '#ef4444', fontSize: 11, position: 'right' }}
+                label={{ value: `Your WR: ${formatPercent(personalWr)}`, fill: '#ef4444', fontSize: 11, position: 'right' }}
               />
             )}
 
@@ -110,7 +107,7 @@ export function CapeScatterChart({
                 stroke="#3b82f6"
                 strokeDasharray="6 3"
                 strokeWidth={2}
-                label={{ value: `ERN WR: ${formatPct(ernDynamicWr)}`, fill: '#3b82f6', fontSize: 11, position: 'left' }}
+                label={{ value: `ERN WR: ${formatPercent(ernDynamicWr)}`, fill: '#3b82f6', fontSize: 11, position: 'left' }}
               />
             )}
 

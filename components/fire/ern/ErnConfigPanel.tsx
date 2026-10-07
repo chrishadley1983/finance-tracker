@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Settings, ChevronDown, ChevronUp, Play, Lock, Unlock } from 'lucide-react';
+import { formatGBP } from '@/lib/format';
 
 export interface WrapperBalancesUI {
   isa: number;
@@ -79,17 +80,6 @@ function saveLockedValues(locks: LocksMap, draft: ErnConfig) {
     }
   }
   localStorage.setItem(VALUES_KEY, JSON.stringify(values));
-}
-
-// ---- Helpers ----
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 // ---- Lock button component ----
@@ -243,7 +233,7 @@ export function ErnConfigPanel({
           <div>
             <span className="font-medium text-gray-900 dark:text-white">ERN Configuration</span>
             <span className="text-sm text-gray-500 dark:text-gray-400 ml-3">
-              {formatCurrency(draft.portfolio)} portfolio | {formatCurrency(draft.annualSpend)}/yr ({wrPct}% WR) | {draft.equityAllocation * 100}/{(1 - draft.equityAllocation) * 100} equity/bond | {draft.horizonYears}yr horizon
+              {formatGBP(draft.portfolio)} portfolio | {formatGBP(draft.annualSpend)}/yr ({wrPct}% WR) | {draft.equityAllocation * 100}/{(1 - draft.equityAllocation) * 100} equity/bond | {draft.horizonYears}yr horizon
               {draft.retirementAge && draft.retirementAge > draft.currentAge && (
                 <> | retire at {draft.retirementAge}</>
               )}
@@ -580,10 +570,10 @@ export function ErnConfigPanel({
               </div>
               {draft.wrapperBalances && (
                 <div className="mt-2 text-xs text-gray-500">
-                  Wrapper total: {formatCurrency(wrapperTotal)}
+                  Wrapper total: {formatGBP(wrapperTotal)}
                   {Math.abs(wrapperTotal - draft.portfolio) > 100 && (
                     <span className="text-amber-500 ml-2">
-                      (differs from portfolio by {formatCurrency(Math.abs(wrapperTotal - draft.portfolio))})
+                      (differs from portfolio by {formatGBP(Math.abs(wrapperTotal - draft.portfolio))})
                     </span>
                   )}
                 </div>

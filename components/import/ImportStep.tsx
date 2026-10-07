@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import type { ParsedTransaction, DuplicateMatchType } from '@/lib/types/import';
+import { formatDateGBPadded, formatGBP } from '@/lib/format';
 
 interface DuplicateResult {
   importRow: number;
@@ -134,21 +135,6 @@ export function ImportStep({
         next.add(rowNumber);
       }
       return next;
-    });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(amount);
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
     });
   };
 
@@ -298,8 +284,8 @@ export function ImportStep({
                           {dup.importTransaction.description}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {formatDate(dup.importTransaction.date)} •{' '}
-                          {formatCurrency(dup.importTransaction.amount)}
+                          {formatDateGBPadded(dup.importTransaction.date)} •{' '}
+                          {formatGBP(dup.importTransaction.amount, { pence: true })}
                         </div>
                       </td>
                       <td className="px-3 py-2">
@@ -307,8 +293,8 @@ export function ImportStep({
                           {dup.existingTransaction.description}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {formatDate(dup.existingTransaction.date)} •{' '}
-                          {formatCurrency(dup.existingTransaction.amount)}
+                          {formatDateGBPadded(dup.existingTransaction.date)} •{' '}
+                          {formatGBP(dup.existingTransaction.amount, { pence: true })}
                         </div>
                       </td>
                       <td className="px-3 py-2">

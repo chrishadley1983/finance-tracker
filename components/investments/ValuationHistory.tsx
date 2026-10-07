@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { type ValuationWithChange } from '@/lib/types/investment';
+import { formatDateGB, formatGBP } from '@/lib/format';
 
 interface ValuationHistoryProps {
   isOpen: boolean;
@@ -27,22 +28,6 @@ export function ValuationHistory({
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const limit = 20;
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 2,
-    }).format(value);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
 
   const fetchValuations = useCallback(async () => {
     setIsLoading(true);
@@ -151,9 +136,9 @@ export function ValuationHistory({
                 <tbody className="divide-y divide-gray-100">
                   {valuations.map((v) => (
                     <tr key={v.id} className="hover:bg-gray-50">
-                      <td className="py-3 text-sm">{formatDate(v.date)}</td>
+                      <td className="py-3 text-sm">{formatDateGB(v.date)}</td>
                       <td className="py-3 text-sm text-right font-medium">
-                        {formatCurrency(v.value)}
+                        {formatGBP(v.value, { pence: true })}
                       </td>
                       <td className="py-3 text-sm text-right">
                         {v.change !== undefined ? (
@@ -163,7 +148,7 @@ export function ValuationHistory({
                             }
                           >
                             {v.change >= 0 ? '+' : ''}
-                            {formatCurrency(v.change)}
+                            {formatGBP(v.change, { pence: true })}
                             <span className="text-xs ml-1">
                               ({v.changePercent! >= 0 ? '+' : ''}
                               {v.changePercent!.toFixed(1)}%)

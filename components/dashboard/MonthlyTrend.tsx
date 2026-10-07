@@ -1,19 +1,11 @@
 'use client';
 
 import { MonthlyData } from '@/lib/hooks/useDashboardData';
+import { formatGBP } from '@/lib/format';
 
 interface MonthlyTrendProps {
   data: MonthlyData[];
   isLoading: boolean;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function formatCompactCurrency(amount: number): string {
@@ -172,8 +164,8 @@ export function MonthlyTrend({ data, isLoading }: MonthlyTrendProps) {
               {data.slice(-3).map((month) => (
                 <div key={month.month} className="text-center">
                   <p className="text-slate-500">{month.month}</p>
-                  <p className="text-green-400">{formatCurrency(month.income)}</p>
-                  <p className="text-red-400">{formatCurrency(month.expenses)}</p>
+                  <p className="text-green-400">{formatGBP(month.income)}</p>
+                  <p className="text-red-400">{formatGBP(month.expenses)}</p>
                 </div>
               ))}
             </div>

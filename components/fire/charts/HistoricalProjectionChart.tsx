@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import { Layers, GitBranch } from 'lucide-react';
 import type { HistoricalSimulationResults } from '@/lib/types/fire';
+import { formatGBP, formatGBPCompact } from '@/lib/format';
 
 interface HistoricalProjectionChartProps {
   results: HistoricalSimulationResults | null;
@@ -21,25 +22,6 @@ interface HistoricalProjectionChartProps {
 }
 
 type ChartMode = 'fan' | 'spaghetti';
-
-function formatCurrency(amount: number): string {
-  if (amount >= 1000000) {
-    return `£${(amount / 1000000).toFixed(1)}M`;
-  }
-  if (amount >= 1000) {
-    return `£${(amount / 1000).toFixed(0)}k`;
-  }
-  return `£${amount.toFixed(0)}`;
-}
-
-function formatCurrencyFull(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 interface FanChartProps {
   results: HistoricalSimulationResults;
@@ -75,7 +57,7 @@ function FanChart({ results }: FanChartProps) {
           stroke="#9ca3af"
           fontSize={12}
           tickLine={false}
-          tickFormatter={formatCurrency}
+          tickFormatter={formatGBPCompact}
         />
         <Tooltip
           contentStyle={{
@@ -92,7 +74,7 @@ function FanChart({ results }: FanChartProps) {
               p25: '25th Percentile',
               p10: '10th Percentile',
             };
-            return [formatCurrencyFull(Number(value)), labels[String(name)] || String(name)];
+            return [formatGBP(Number(value)), labels[String(name)] || String(name)];
           }}
           labelFormatter={(year) => `Year ${year}`}
         />
@@ -224,7 +206,7 @@ function SpaghettiChart({ results }: SpaghettiChartProps) {
           stroke="#9ca3af"
           fontSize={12}
           tickLine={false}
-          tickFormatter={formatCurrency}
+          tickFormatter={formatGBPCompact}
         />
         <Tooltip
           contentStyle={{
@@ -235,7 +217,7 @@ function SpaghettiChart({ results }: SpaghettiChartProps) {
           }}
           formatter={(value, name) => {
             const year = String(name).replace('sim_', '');
-            return [formatCurrencyFull(Number(value)), `Started ${year}`];
+            return [formatGBP(Number(value)), `Started ${year}`];
           }}
           labelFormatter={(year) => `Year ${year}`}
         />

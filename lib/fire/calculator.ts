@@ -5,6 +5,7 @@ import type {
   FireResult,
   FiStatus,
 } from '@/lib/types/fire';
+import { formatGBP } from '../format';
 
 /**
  * Calculate the FI target number (amount needed to retire)
@@ -223,10 +224,5 @@ export function calculateMultipleScenarios(
  * Format currency for display
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatGBP(amount);
 }

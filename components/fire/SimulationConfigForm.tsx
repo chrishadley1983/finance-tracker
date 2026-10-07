@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Settings, Save, X, Info } from 'lucide-react';
 import type { SimulationConfig, WithdrawalStrategy, ExtraIncomeSource } from '@/lib/types/fire';
+import { formatGBP } from '@/lib/format';
 
 type WithdrawalMode = 'rate' | 'amount';
 
@@ -14,15 +15,6 @@ interface SimulationConfigFormProps {
   portfolioNote?: string;
   /** Default annual spend amount (from Normal FIRE Spend setting) */
   defaultSpendAmount?: number;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 const WITHDRAWAL_STRATEGIES: { value: WithdrawalStrategy; label: string; description: string }[] = [
@@ -147,13 +139,13 @@ export function SimulationConfigForm({
               Simulation Configuration
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Portfolio at {formData.currentAge}: <span className="font-medium">{formatCurrency(formData.initialPortfolio)}</span>
+              Portfolio at {formData.currentAge}: <span className="font-medium">{formatGBP(formData.initialPortfolio)}</span>
               {' · '}
               Duration: <span className="font-medium">{formData.retirementDuration} years</span>
               {' · '}
               Withdrawal: <span className="font-medium">
                 {formData.initialWithdrawalAmount
-                  ? `${formatCurrency(formData.initialWithdrawalAmount)}/yr`
+                  ? `${formatGBP(formData.initialWithdrawalAmount)}/yr`
                   : `${formData.initialWithdrawalRate}%`}
               </span>
               {' · '}
@@ -328,7 +320,7 @@ export function SimulationConfigForm({
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                = {formatCurrency(calculatedWithdrawal)}/year
+                = {formatGBP(calculatedWithdrawal)}/year
               </p>
             </div>
           )}

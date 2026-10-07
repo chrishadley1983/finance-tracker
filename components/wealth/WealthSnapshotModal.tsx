@@ -10,6 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { formatDateGB, formatGBP } from '@/lib/format';
 
 interface WealthSnapshot {
   id: string;
@@ -25,23 +26,6 @@ interface WealthSnapshotModalProps {
   accountType: string;
   onClose: () => void;
   onUpdate?: () => void;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 2,
-  }).format(amount);
-}
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
 }
 
 function formatChartDate(dateStr: string): string {
@@ -320,7 +304,7 @@ export function WealthSnapshotModal({
                             color: '#fff',
                             fontSize: '12px',
                           }}
-                          formatter={(value) => [formatCurrency(Number(value)), 'Value']}
+                          formatter={(value) => [formatGBP(Number(value), { pence: true }), 'Value']}
                           labelFormatter={(label) => String(label)}
                         />
                         <Line
@@ -410,7 +394,7 @@ export function WealthSnapshotModal({
                         {snapshots.map((snapshot) => (
                           <tr key={snapshot.id} className="hover:bg-gray-50">
                             <td className="px-4 py-2.5 text-sm text-gray-900">
-                              {formatDate(snapshot.date)}
+                              {formatDateGB(snapshot.date)}
                             </td>
                             <td className="px-4 py-2.5 text-sm text-right">
                               {editingId === snapshot.id ? (
@@ -431,7 +415,7 @@ export function WealthSnapshotModal({
                                 </div>
                               ) : (
                                 <span className={snapshot.balance >= 0 ? 'text-gray-900' : 'text-red-600'}>
-                                  {formatCurrency(snapshot.balance)}
+                                  {formatGBP(snapshot.balance, { pence: true })}
                                 </span>
                               )}
                             </td>

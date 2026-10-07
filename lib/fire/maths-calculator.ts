@@ -1,3 +1,5 @@
+import { formatDateGB, formatGBP, formatPercent as sharedFormatPercent } from '../format';
+
 /**
  * Maths Planning Calculator
  *
@@ -423,12 +425,7 @@ export function calculateMathsPlanning(inputs: MathsPlanningInputs): MathsPlanni
  */
 export function formatCurrency(amount: number): string {
   if (!isFinite(amount)) return '---';
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatGBP(amount);
 }
 
 /**
@@ -436,7 +433,7 @@ export function formatCurrency(amount: number): string {
  */
 export function formatPercent(value: number, decimals: number = 2): string {
   if (!isFinite(value)) return '---';
-  return `${value.toFixed(decimals)}%`;
+  return sharedFormatPercent(value, decimals);
 }
 
 /**
@@ -451,9 +448,5 @@ export function formatYears(years: number, decimals: number = 2): string {
  * Format date for display
  */
 export function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+  return formatDateGB(date);
 }

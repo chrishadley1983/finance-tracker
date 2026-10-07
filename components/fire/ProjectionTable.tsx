@@ -3,19 +3,11 @@
 import { useState } from 'react';
 import { Download, ChevronDown, ChevronUp, PartyPopper } from 'lucide-react';
 import type { FireResult, FireProjection } from '@/lib/types/fire';
+import { formatGBP } from '@/lib/format';
 
 interface ProjectionTableProps {
   result: FireResult | null;
   isLoading?: boolean;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function getStatusBadge(projection: FireProjection, fiAge: number | null) {
@@ -209,22 +201,22 @@ export function ProjectionTable({ result, isLoading = false }: ProjectionTablePr
                     <span className="text-gray-400 ml-1">({projection.year})</span>
                   </td>
                   <td className="px-4 py-3 text-sm text-right text-gray-700 dark:text-gray-300">
-                    {formatCurrency(projection.portfolioStart)}
+                    {formatGBP(projection.portfolioStart)}
                   </td>
                   <td className="px-4 py-3 text-sm text-right text-emerald-600 dark:text-emerald-400">
-                    {projection.contributions > 0 ? `+${formatCurrency(projection.contributions)}` : '-'}
+                    {projection.contributions > 0 ? `+${formatGBP(projection.contributions)}` : '-'}
                   </td>
                   <td className="px-4 py-3 text-sm text-right text-blue-600 dark:text-blue-400">
-                    {projection.growth > 0 ? `+${formatCurrency(projection.growth)}` : formatCurrency(projection.growth)}
+                    {projection.growth > 0 ? `+${formatGBP(projection.growth)}` : formatGBP(projection.growth)}
                   </td>
                   <td className="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">
-                    {projection.withdrawals > 0 ? `-${formatCurrency(projection.withdrawals)}` : '-'}
+                    {projection.withdrawals > 0 ? `-${formatGBP(projection.withdrawals)}` : '-'}
                   </td>
                   <td className="px-4 py-3 text-sm text-right text-purple-600 dark:text-purple-400">
-                    {projection.statePension > 0 ? `+${formatCurrency(projection.statePension)}` : '-'}
+                    {projection.statePension > 0 ? `+${formatGBP(projection.statePension)}` : '-'}
                   </td>
                   <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white">
-                    {formatCurrency(projection.portfolioEnd)}
+                    {formatGBP(projection.portfolioEnd)}
                   </td>
                   <td className="px-4 py-3 text-center">
                     {getStatusBadge(projection, result.fiAge)}

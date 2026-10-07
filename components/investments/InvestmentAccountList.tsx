@@ -2,6 +2,7 @@
 
 import { type InvestmentAccount } from '@/lib/types/investment';
 import { InvestmentAccountCard } from './InvestmentAccountCard';
+import { formatGBP } from '@/lib/format';
 
 interface InvestmentAccountListProps {
   accounts: InvestmentAccount[];
@@ -22,13 +23,6 @@ export function InvestmentAccountList({
   onDelete,
   onAddAccount,
 }: InvestmentAccountListProps) {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 2,
-    }).format(value);
-  };
 
   // Calculate total value
   const totalValue = accounts.reduce((sum, account) => {
@@ -84,7 +78,7 @@ export function InvestmentAccountList({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-gray-500">Total Portfolio Value</p>
-          <p className="text-3xl font-bold text-gray-900">{formatCurrency(totalValue)}</p>
+          <p className="text-3xl font-bold text-gray-900">{formatGBP(totalValue, { pence: true })}</p>
         </div>
         <p className="text-sm text-gray-500">{accounts.length} account{accounts.length !== 1 ? 's' : ''}</p>
       </div>

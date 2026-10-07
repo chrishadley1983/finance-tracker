@@ -1,3 +1,5 @@
+import { MONTH_NAMES } from '../format';
+
 // Budget comparison types for the budgets page
 
 export interface BudgetComparison {
@@ -54,11 +56,8 @@ export interface BulkBudgetRequest {
 // View mode for the budgets page
 export type BudgetViewMode = 'month' | 'year';
 
-// Month names for display
-export const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-] as const;
+// Month names for display (shared constant, re-exported for existing importers)
+export { MONTH_NAMES };
 
 // Helper to get month name
 export function getMonthName(month: number): string {

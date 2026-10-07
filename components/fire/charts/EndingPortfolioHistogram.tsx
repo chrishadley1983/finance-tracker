@@ -11,20 +11,11 @@ import {
   Cell,
 } from 'recharts';
 import type { HistoricalSimulationResults } from '@/lib/types/fire';
+import { formatGBPCompact } from '@/lib/format';
 
 interface EndingPortfolioHistogramProps {
   results: HistoricalSimulationResults | null;
   isLoading?: boolean;
-}
-
-function formatCurrency(amount: number): string {
-  if (amount >= 1000000) {
-    return `£${(amount / 1000000).toFixed(1)}M`;
-  }
-  if (amount >= 1000) {
-    return `£${(amount / 1000).toFixed(0)}k`;
-  }
-  return `£${amount.toFixed(0)}`;
 }
 
 interface HistogramBin {
@@ -78,8 +69,8 @@ function createHistogramBins(results: HistoricalSimulationResults): HistogramBin
     if (binSize < initialPortfolio * 0.1) {
       const count = successfulValues.length;
       bins.push({
-        label: formatCurrency(minValue),
-        range: `${formatCurrency(minValue)} - ${formatCurrency(maxValue)}`,
+        label: formatGBPCompact(minValue),
+        range: `${formatGBPCompact(minValue)} - ${formatGBPCompact(maxValue)}`,
         count,
         percentage: (count / totalCount) * 100,
         isFailed: false,
@@ -95,8 +86,8 @@ function createHistogramBins(results: HistoricalSimulationResults): HistogramBin
 
         if (count > 0) {
           bins.push({
-            label: formatCurrency(binMin + binSize / 2),
-            range: `${formatCurrency(binMin)} - ${formatCurrency(binMax)}`,
+            label: formatGBPCompact(binMin + binSize / 2),
+            range: `${formatGBPCompact(binMin)} - ${formatGBPCompact(binMax)}`,
             count,
             percentage: (count / totalCount) * 100,
             isFailed: false,
@@ -220,7 +211,7 @@ export function EndingPortfolioHistogram({
           </div>
         )}
         <div className="text-gray-500 dark:text-gray-400">
-          Median: {formatCurrency(results.medianFinalPortfolio)}
+          Median: {formatGBPCompact(results.medianFinalPortfolio)}
         </div>
       </div>
     </div>

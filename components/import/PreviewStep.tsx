@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { ParsedTransaction, ImportFormat } from '@/lib/types/import';
 import type { ColumnMapping } from '@/lib/validations/import';
+import { formatDateGBPadded, formatGBP } from '@/lib/format';
 
 interface PreviewResult {
   transactions: ParsedTransaction[];
@@ -107,21 +108,6 @@ export function PreviewStep({
     onComplete(previewData, selectedAccountId);
   }, [previewData, selectedAccountId, onComplete]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(amount);
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
-
   if (isLoading) {
     return (
       <div className="py-12 text-center">
@@ -202,7 +188,7 @@ export function PreviewStep({
         <div className="bg-blue-50 rounded-lg p-4">
           <p className="text-sm text-blue-600">Net Total</p>
           <p className="text-2xl font-semibold text-blue-700">
-            {formatCurrency(validation.totalCredits - validation.totalDebits)}
+            {formatGBP(validation.totalCredits - validation.totalDebits, { pence: true })}
           </p>
         </div>
       </div>
@@ -214,20 +200,20 @@ export function PreviewStep({
             <span className="text-slate-600">Date Range: </span>
             <span className="font-medium text-slate-900">
               {validation.dateRange
-                ? `${formatDate(validation.dateRange.earliest)} - ${formatDate(validation.dateRange.latest)}`
+                ? `${formatDateGBPadded(validation.dateRange.earliest)} - ${formatDateGBPadded(validation.dateRange.latest)}`
                 : 'N/A'}
             </span>
           </div>
           <div>
             <span className="text-slate-600">Total Credits: </span>
             <span className="font-medium text-green-600">
-              {formatCurrency(validation.totalCredits)}
+              {formatGBP(validation.totalCredits, { pence: true })}
             </span>
           </div>
           <div>
             <span className="text-slate-600">Total Debits: </span>
             <span className="font-medium text-red-600">
-              {formatCurrency(validation.totalDebits)}
+              {formatGBP(validation.totalDebits, { pence: true })}
             </span>
           </div>
         </div>
@@ -330,7 +316,7 @@ export function PreviewStep({
                 {displayTransactions.map((tx, i) => (
                   <tr key={i} className="hover:bg-slate-50">
                     <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
-                      {formatDate(tx.date)}
+                      {formatDateGBPadded(tx.date)}
                     </td>
                     <td className="px-4 py-2 text-slate-900 max-w-md truncate">
                       {tx.description}
@@ -340,7 +326,7 @@ export function PreviewStep({
                         tx.amount >= 0 ? 'text-green-600' : 'text-red-600'
                       }`}
                     >
-                      {formatCurrency(tx.amount)}
+                      {formatGBP(tx.amount, { pence: true })}
                     </td>
                   </tr>
                 ))}

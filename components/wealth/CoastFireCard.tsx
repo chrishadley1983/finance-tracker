@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatGBP } from '@/lib/format';
 
 interface CoastFireData {
   coastFire: {
@@ -52,15 +53,6 @@ export function CoastFireCard() {
     fetchCoastFire();
   }, []);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg border border-slate-200 p-6">
@@ -101,7 +93,7 @@ export function CoastFireCard() {
       </div>
 
       <div className="mb-4">
-        <p className="text-3xl font-bold text-slate-900">{formatCurrency(coastFire.value)}</p>
+        <p className="text-3xl font-bold text-slate-900">{formatGBP(coastFire.value)}</p>
         <p className="text-sm text-slate-500 mt-1">
           Required today to retire at {inputs.targetRetirementAge} ({inputs.yearsLeft} years)
         </p>
@@ -124,8 +116,8 @@ export function CoastFireCard() {
           />
         </div>
         <div className="flex justify-between text-xs text-slate-400 mt-1">
-          <span>Current: {formatCurrency(coastFire.currentNetWorth)}</span>
-          <span>Target: {formatCurrency(coastFire.value)}</span>
+          <span>Current: {formatGBP(coastFire.currentNetWorth)}</span>
+          <span>Target: {formatGBP(coastFire.value)}</span>
         </div>
       </div>
 
@@ -136,7 +128,7 @@ export function CoastFireCard() {
             {coastFire.surplus >= 0 ? 'Surplus' : 'Gap to Coast FI'}
           </span>
           <span className={`font-semibold ${coastFire.surplus >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
-            {coastFire.surplus >= 0 ? '+' : ''}{formatCurrency(coastFire.surplus)}
+            {coastFire.surplus >= 0 ? '+' : ''}{formatGBP(coastFire.surplus)}
           </span>
         </div>
       </div>
@@ -144,10 +136,10 @@ export function CoastFireCard() {
       {/* Settings details */}
       <div className="mt-4 pt-4 border-t border-slate-100">
         <p className="text-xs text-slate-400">
-          {formatCurrency(settings.annualSpend)}/yr spend, {settings.withdrawalRate}% SWR, {settings.expectedReturn}% return
+          {formatGBP(settings.annualSpend)}/yr spend, {settings.withdrawalRate}% SWR, {settings.expectedReturn}% return
         </p>
         <p className="text-xs text-slate-400 mt-1">
-          FIRE number at retirement: {formatCurrency(coastFire.fireNumberAtRetirement)}
+          FIRE number at retirement: {formatGBP(coastFire.fireNumberAtRetirement)}
         </p>
       </div>
     </div>

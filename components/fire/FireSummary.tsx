@@ -2,19 +2,11 @@
 
 import { Target, Calendar, TrendingUp, Sparkles } from 'lucide-react';
 import type { FireResult } from '@/lib/types/fire';
+import { formatGBP } from '@/lib/format';
 
 interface FireSummaryProps {
   result: FireResult | null;
   isLoading?: boolean;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 export function FireSummary({ result, isLoading = false }: FireSummaryProps) {
@@ -44,7 +36,7 @@ export function FireSummary({ result, isLoading = false }: FireSummaryProps) {
   const stats = [
     {
       label: 'FI Number',
-      value: formatCurrency(result.targetNumber),
+      value: formatGBP(result.targetNumber),
       subtext: `${result.scenario.withdrawalRate}% withdrawal rate`,
       icon: Target,
       color: 'text-blue-500',
@@ -60,7 +52,7 @@ export function FireSummary({ result, isLoading = false }: FireSummaryProps) {
     },
     {
       label: 'Coast FI',
-      value: hasReachedCoastFi ? 'Reached!' : result.coastFiNumber ? formatCurrency(result.coastFiNumber) : 'N/A',
+      value: hasReachedCoastFi ? 'Reached!' : result.coastFiNumber ? formatGBP(result.coastFiNumber) : 'N/A',
       subtext: hasReachedCoastFi
         ? 'You can stop saving now'
         : result.coastFiNumber

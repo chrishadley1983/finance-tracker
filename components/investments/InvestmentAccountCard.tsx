@@ -6,6 +6,7 @@ import {
   INVESTMENT_TYPE_LABELS,
   type InvestmentType,
 } from '@/lib/types/investment';
+import { formatDateGB, formatGBP } from '@/lib/format';
 
 interface InvestmentAccountCardProps {
   account: InvestmentAccount;
@@ -23,22 +24,6 @@ export function InvestmentAccountCard({
   onDelete,
 }: InvestmentAccountCardProps) {
   const [showMenu, setShowMenu] = useState(false);
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 2,
-    }).format(value);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
 
   const typeLabel = account.investmentType
     ? INVESTMENT_TYPE_LABELS[account.investmentType as InvestmentType]
@@ -103,10 +88,10 @@ export function InvestmentAccountCard({
         {account.latestValuation ? (
           <>
             <p className="text-2xl font-bold text-gray-900">
-              {formatCurrency(account.latestValuation.value)}
+              {formatGBP(account.latestValuation.value, { pence: true })}
             </p>
             <p className="text-sm text-gray-500">
-              as of {formatDate(account.latestValuation.date)}
+              as of {formatDateGB(account.latestValuation.date)}
             </p>
           </>
         ) : (

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { type InvestmentSummary } from '@/lib/types/investment';
+import { formatGBP } from '@/lib/format';
 
 interface InvestmentSummaryCardProps {
   summary: InvestmentSummary | null;
@@ -9,14 +10,6 @@ interface InvestmentSummaryCardProps {
 }
 
 export function InvestmentSummaryCard({ summary, isLoading }: InvestmentSummaryCardProps) {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -82,7 +75,7 @@ export function InvestmentSummaryCard({ summary, isLoading }: InvestmentSummaryC
 
       {/* Total Value */}
       <p className="text-2xl font-bold text-gray-900 mb-1">
-        {formatCurrency(summary.totalValue)}
+        {formatGBP(summary.totalValue)}
       </p>
       <p className="text-xs text-gray-500 mb-3">
         {summary.accountCount} account{summary.accountCount !== 1 ? 's' : ''}
@@ -96,7 +89,7 @@ export function InvestmentSummaryCard({ summary, isLoading }: InvestmentSummaryC
             <div key={item.type} className="flex items-center justify-between text-sm">
               <span className="text-gray-600">{item.label}</span>
               <span className="font-medium text-gray-900">
-                {formatCurrency(item.value)}
+                {formatGBP(item.value)}
               </span>
             </div>
           ))}

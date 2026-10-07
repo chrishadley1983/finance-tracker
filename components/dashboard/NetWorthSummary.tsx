@@ -1,5 +1,7 @@
 'use client';
 
+import { formatGBP } from '@/lib/format';
+
 interface AccountTypeBalance {
   type: string;
   label: string;
@@ -10,15 +12,6 @@ interface NetWorthSummaryProps {
   netWorth: number;
   accountTypeBalances: AccountTypeBalance[];
   isLoading: boolean;
-}
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
 }
 
 export function NetWorthSummary({ netWorth, accountTypeBalances, isLoading }: NetWorthSummaryProps) {
@@ -52,7 +45,7 @@ export function NetWorthSummary({ netWorth, accountTypeBalances, isLoading }: Ne
         <div className="flex-shrink-0 pr-6 lg:border-r lg:border-gray-200">
           <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">Net Worth</div>
           <div className={`text-3xl lg:text-4xl font-bold ${netWorth >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
-            {formatCurrency(netWorth)}
+            {formatGBP(netWorth)}
           </div>
         </div>
 
@@ -65,7 +58,7 @@ export function NetWorthSummary({ netWorth, accountTypeBalances, isLoading }: Ne
             >
               <div className="text-xs font-medium text-gray-500">{item.label}</div>
               <div className={`text-lg font-semibold ${item.balance >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
-                {formatCurrency(item.balance)}
+                {formatGBP(item.balance)}
               </div>
             </div>
           ))}

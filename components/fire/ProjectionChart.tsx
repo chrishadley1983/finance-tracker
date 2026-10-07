@@ -13,20 +13,11 @@ import {
   ComposedChart,
 } from 'recharts';
 import type { FireResult } from '@/lib/types/fire';
+import { formatGBPCompact } from '@/lib/format';
 
 interface ProjectionChartProps {
   result: FireResult | null;
   isLoading?: boolean;
-}
-
-function formatCurrency(amount: number): string {
-  if (amount >= 1000000) {
-    return `£${(amount / 1000000).toFixed(1)}M`;
-  }
-  if (amount >= 1000) {
-    return `£${(amount / 1000).toFixed(0)}k`;
-  }
-  return `£${amount.toFixed(0)}`;
 }
 
 export function ProjectionChart({ result, isLoading = false }: ProjectionChartProps) {
@@ -84,7 +75,7 @@ export function ProjectionChart({ result, isLoading = false }: ProjectionChartPr
               stroke="#9ca3af"
               fontSize={12}
               tickLine={false}
-              tickFormatter={formatCurrency}
+              tickFormatter={formatGBPCompact}
             />
             <Tooltip
               contentStyle={{
@@ -99,7 +90,7 @@ export function ProjectionChart({ result, isLoading = false }: ProjectionChartPr
                   contributions: 'Annual Contributions',
                   withdrawals: 'Annual Withdrawals',
                 };
-                return [formatCurrency(Number(value)), labels[String(name)] || String(name)];
+                return [formatGBPCompact(Number(value)), labels[String(name)] || String(name)];
               }}
               labelFormatter={(age) => `Age ${age}`}
             />
@@ -111,7 +102,7 @@ export function ProjectionChart({ result, isLoading = false }: ProjectionChartPr
               strokeDasharray="8 4"
               strokeWidth={2}
               label={{
-                value: `FI Target: ${formatCurrency(targetNumber)}`,
+                value: `FI Target: ${formatGBPCompact(targetNumber)}`,
                 position: 'right',
                 fill: '#10b981',
                 fontSize: 12,
