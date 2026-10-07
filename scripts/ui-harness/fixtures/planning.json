@@ -1,0 +1,126 @@
+{
+  "/api/planning-sections": {
+    "sections": [
+      {
+        "id": "10000000-0000-4000-8000-000000000001",
+        "name": "Principles",
+        "description": "How we decide what to do with money",
+        "year_label": null,
+        "colour": "#14b8a6",
+        "icon": null,
+        "display_order": 0,
+        "is_archived": false,
+        "created_at": "2025-01-04T09:00:00Z",
+        "updated_at": "2025-01-04T09:00:00Z",
+        "notes": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "section_id": "10000000-0000-4000-8000-000000000001",
+            "content": "Keep six months of spending in easy-access savings before investing more.",
+            "display_order": 0,
+            "is_pinned": true,
+            "tags": [
+              "emergency fund"
+            ],
+            "created_at": "2026-03-14T10:00:00Z",
+            "updated_at": "2026-03-14T10:00:00Z"
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "section_id": "10000000-0000-4000-8000-000000000001",
+            "content": "Fill both ISAs before adding extra to pensions, unless salary sacrifice saves NI.",
+            "display_order": 1,
+            "is_pinned": false,
+            "tags": [
+              "tax"
+            ],
+            "created_at": "2025-02-10T09:00:00Z",
+            "updated_at": "2026-04-02T09:00:00Z"
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000003",
+            "section_id": "10000000-0000-4000-8000-000000000001",
+            "content": "Review subscriptions every January and cancel anything unused for three months.",
+            "display_order": 2,
+            "is_pinned": false,
+            "tags": null,
+            "created_at": "2026-03-14T10:00:00Z",
+            "updated_at": "2026-03-14T10:00:00Z"
+          }
+        ]
+      },
+      {
+        "id": "10000000-0000-4000-8000-000000000002",
+        "name": "2026/27 plan",
+        "description": null,
+        "year_label": "2026/27",
+        "colour": "#6366f1",
+        "icon": null,
+        "display_order": 1,
+        "is_archived": false,
+        "created_at": "2026-04-06T09:00:00Z",
+        "updated_at": "2026-04-06T09:00:00Z",
+        "notes": [
+          {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "section_id": "10000000-0000-4000-8000-000000000002",
+            "content": "Pension: Abby to stay below the higher-rate band, top up via salary sacrifice in March.",
+            "display_order": 0,
+            "is_pinned": true,
+            "tags": [
+              "pension",
+              "tax"
+            ],
+            "created_at": "2026-03-14T10:00:00Z",
+            "updated_at": "2026-03-14T10:00:00Z"
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000005",
+            "section_id": "10000000-0000-4000-8000-000000000002",
+            "content": "Car replacement around summer 2027, budget about \u00a318,000 from savings.",
+            "display_order": 1,
+            "is_pinned": false,
+            "tags": null,
+            "created_at": "2026-03-14T10:00:00Z",
+            "updated_at": "2026-03-14T10:00:00Z"
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000006",
+            "section_id": "10000000-0000-4000-8000-000000000002",
+            "content": "Overpay the mortgage by \u00a3300 a month once the fix ends in November.\nCheck the early repayment charge first.",
+            "display_order": 2,
+            "is_pinned": false,
+            "tags": [
+              "mortgage"
+            ],
+            "created_at": "2026-03-14T10:00:00Z",
+            "updated_at": "2026-03-14T10:00:00Z"
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000007",
+            "section_id": "10000000-0000-4000-8000-000000000002",
+            "content": "Kids: swimming and Beavers continue, music lessons from September.",
+            "display_order": 3,
+            "is_pinned": false,
+            "tags": null,
+            "created_at": "2026-03-14T10:00:00Z",
+            "updated_at": "2026-03-14T10:00:00Z"
+          }
+        ]
+      },
+      {
+        "id": "10000000-0000-4000-8000-000000000003",
+        "name": "House",
+        "description": "Maintenance and bigger projects",
+        "year_label": null,
+        "colour": "#f97316",
+        "icon": null,
+        "display_order": 2,
+        "is_archived": false,
+        "created_at": "2025-06-01T09:00:00Z",
+        "updated_at": "2025-06-01T09:00:00Z",
+        "notes": []
+      }
+    ]
+  }
+}

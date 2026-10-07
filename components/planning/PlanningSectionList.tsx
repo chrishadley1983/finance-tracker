@@ -7,14 +7,12 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
+  type DragEndEvent,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { PlanningSection } from './PlanningSection';
+import { noteMatches } from './order';
+import { EmptyState, SkeletonRows } from '@/components/ui/Notice';
 import type { PlanningNote, PlanningSectionWithNotes } from '@/lib/validations/planning';
 
 interface PlanningSectionListProps {
@@ -27,8 +25,11 @@ interface PlanningSectionListProps {
   onDeleteSection: (section: PlanningSectionWithNotes) => void;
   onArchiveSection: (section: PlanningSectionWithNotes) => void;
   onEditNote: (note: PlanningNote) => void;
-  onDeleteNote: (noteId: string) => void;
+  onDeleteNote: (note: PlanningNote) => void;
   onTogglePinNote: (noteId: string, isPinned: boolean) => void;
+  onMoveNote?: (sectionId: string, noteId: string, dir: -1 | 1) => void;
+  /** Shown in the empty state (e.g. a "New section" button). */
+  emptyAction?: React.ReactNode;
 }
 
 export function PlanningSectionList({
@@ -43,56 +44,31 @@ export function PlanningSectionList({
   onEditNote,
   onDeleteNote,
   onTogglePinNote,
+  onMoveNote,
+  emptyAction,
 }: PlanningSectionListProps) {
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const oldIndex = sections.findIndex((s) => s.id === active.id);
-      const newIndex = sections.findIndex((s) => s.id === over.id);
-
-      // Calculate new order
-      const reorderedSections = [...sections];
-      const [movedSection] = reorderedSections.splice(oldIndex, 1);
-      reorderedSections.splice(newIndex, 0, movedSection);
-
-      // Create reorder items
-      const items = reorderedSections.map((section, index) => ({
-        id: section.id,
-        display_order: index,
-      }));
-
-      onReorder(items);
-    }
+    if (!over || active.id === over.id) return;
+    const oldIndex = sections.findIndex((s) => s.id === active.id);
+    const newIndex = sections.findIndex((s) => s.id === over.id);
+    const next = [...sections];
+    const [moved] = next.splice(oldIndex, 1);
+    next.splice(newIndex, 0, moved);
+    onReorder(next.map((section, index) => ({ id: section.id, display_order: index })));
   };
 
-  if (isLoading) {
+  if (isLoading && sections.length === 0) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 animate-pulse"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 bg-slate-200 dark:bg-slate-700 rounded" />
-              <div className="w-5 h-5 bg-slate-200 dark:bg-slate-700 rounded" />
-              <div className="flex-1">
-                <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-48 mb-2" />
-                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-32" />
-              </div>
-            </div>
+      <div className="grid gap-8">
+        {[0, 1].map((i) => (
+          <div key={i} className="border-t-[1.5px] border-ink pt-3">
+            <SkeletonRows rows={3} />
           </div>
         ))}
       </div>
@@ -101,83 +77,31 @@ export function PlanningSectionList({
 
   if (sections.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
-          <svg
-            className="w-8 h-8 text-slate-400 dark:text-slate-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
-        </div>
-        <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">
-          No planning sections yet
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400 mb-4">
-          Create sections to organize your financial planning notes and assumptions.
-        </p>
-      </div>
+      <EmptyState title="No notes yet" action={emptyAction}>
+        Make a section for each topic (pensions, the house, this year&apos;s plan), then jot down the assumptions and decisions
+        you want to remember.
+      </EmptyState>
     );
   }
 
-  // Filter sections based on search (show sections that have matching notes)
-  const filteredSections = searchQuery
+  const q = searchQuery?.trim().toLowerCase() ?? '';
+  const filteredSections = q
     ? sections.filter(
-        (section) =>
-          section.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          section.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          section.notes.some((note) =>
-            note.content.toLowerCase().includes(searchQuery.toLowerCase())
-          )
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.description?.toLowerCase().includes(q) ||
+          s.notes.some((n) => noteMatches(n, q))
       )
     : sections;
 
-  if (searchQuery && filteredSections.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
-          <svg
-            className="w-8 h-8 text-slate-400 dark:text-slate-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </div>
-        <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">
-          No results found
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400">
-          Try a different search term
-        </p>
-      </div>
-    );
+  if (q && filteredSections.length === 0) {
+    return <EmptyState title={`Nothing matches "${searchQuery?.trim()}"`}>Try a different word, or clear the search.</EmptyState>;
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={filteredSections.map((s) => s.id)}
-        strategy={verticalListSortingStrategy}
-      >
-        <div className="space-y-4">
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={filteredSections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+        <div className={`grid gap-6 ${isLoading ? 'opacity-60' : ''}`}>
           {filteredSections.map((section) => (
             <PlanningSection
               key={section.id}
@@ -190,6 +114,7 @@ export function PlanningSectionList({
               onEditNote={onEditNote}
               onDeleteNote={onDeleteNote}
               onTogglePinNote={onTogglePinNote}
+              onMoveNote={onMoveNote}
             />
           ))}
         </div>

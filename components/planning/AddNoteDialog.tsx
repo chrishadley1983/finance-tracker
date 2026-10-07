@@ -1,5 +1,6 @@
 'use client';
 
+import { useEscape } from './useEscape';
 import { useState, useEffect } from 'react';
 import type { PlanningNote, CreatePlanningNote, UpdatePlanningNote, PlanningSectionWithNotes } from '@/lib/validations/planning';
 
@@ -78,6 +79,8 @@ export function AddNoteDialog({
     }
   };
 
+  useEscape(open, () => onOpenChange(false));
+
   if (!open) return null;
 
   const effectiveSectionId = selectedSectionId || sectionId;
@@ -87,20 +90,20 @@ export function AddNoteDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/40" aria-hidden="true"
         onClick={() => onOpenChange(false)}
       />
 
       {/* Dialog */}
-      <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-lg w-full mx-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="note-dialog-title" className="relative border border-line bg-surface rounded-md shadow-xl max-w-lg w-full mx-4">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            {isEditing ? 'Edit Note' : 'Add Note'}
+        <div className="flex items-center justify-between p-4 border-b border-line">
+          <h2 id="note-dialog-title" className="text-base font-semibold text-ink">
+            {isEditing ? 'Edit note' : 'Add a note'}
           </h2>
           <button
             onClick={() => onOpenChange(false)}
-            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            aria-label="Close" className="p-1 text-ink-3 hover:text-ink-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -111,7 +114,7 @@ export function AddNoteDialog({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400">
+            <div className="p-3 bg-bad-soft border border-bad/40 rounded-md text-sm text-bad">
               {error}
             </div>
           )}
@@ -119,13 +122,13 @@ export function AddNoteDialog({
           {/* Section Selector (only show if no sectionId provided or editing) */}
           {(!sectionId || isEditing) && sections && sections.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-sm font-medium text-ink-2 mb-1">
                 Section
               </label>
               <select
                 value={selectedSectionId}
                 onChange={(e) => setSelectedSectionId(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-line rounded-md bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-accent"
               >
                 <option value="">Select a section...</option>
                 {sections.map((section) => (
@@ -140,7 +143,7 @@ export function AddNoteDialog({
 
           {/* Current section indicator */}
           {currentSection && sectionId && !isEditing && (
-            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-ink-3">
               <span>Adding to:</span>
               <span
                 className="px-2 py-1 rounded font-medium"
@@ -154,22 +157,22 @@ export function AddNoteDialog({
 
           {/* Content */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Note Content *
+            <label className="block text-sm font-medium text-ink-2 mb-1">
+              Note
             </label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Enter your note..."
               rows={4}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              className="w-full px-3 py-2 border border-line rounded-md bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-accent resize-none"
               autoFocus
             />
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-ink-2 mb-1">
               Tags
             </label>
             <input
@@ -177,9 +180,9 @@ export function AddNoteDialog({
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="e.g., urgent, review-2025 (comma-separated)"
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-line rounded-md bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-accent"
             />
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-ink-3">
               Separate multiple tags with commas
             </p>
           </div>
@@ -190,16 +193,16 @@ export function AddNoteDialog({
               type="button"
               onClick={() => setIsPinned(!isPinned)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                isPinned ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-600'
+                isPinned ? 'bg-accent' : 'bg-line-2'
               }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-4 w-4 transform rounded-full bg-surface transition-transform ${
                   isPinned ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>
-            <span className="text-sm text-slate-700 dark:text-slate-300">
+            <span className="text-sm text-ink-2">
               Pin to top of section
             </span>
           </div>
@@ -209,16 +212,16 @@ export function AddNoteDialog({
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-ink-2 bg-sunk rounded-md hover:bg-line-2 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm font-medium text-accent-ink bg-accent rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Note'}
+              {isLoading ? 'Saving...' : isEditing ? 'Save note' : 'Add note'}
             </button>
           </div>
         </form>

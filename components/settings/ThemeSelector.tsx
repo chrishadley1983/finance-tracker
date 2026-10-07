@@ -5,7 +5,7 @@ import { applyThemePreference, readThemePreference, type ThemePreference } from 
 
 const OPTIONS: { value: ThemePreference; label: string; hint: string }[] = [
   { value: 'light', label: 'Light', hint: 'Default' },
-  { value: 'dark', label: 'Dark', hint: 'Pages are being restyled; some older screens may look mixed' },
+  { value: 'dark', label: 'Dark', hint: 'Easier on the eyes at night' },
   { value: 'system', label: 'Match system', hint: 'Follows your device setting' },
 ];
 

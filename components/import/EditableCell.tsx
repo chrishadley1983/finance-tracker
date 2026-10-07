@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { formatGBP } from '@/lib/format';
+import { formatDateGB } from '@/lib/format';
+import { formatAmount } from '@/components/transactions/TransactionTable';
 
 // =============================================================================
 // TYPES
@@ -125,13 +126,13 @@ export function EditableCell({
     const states: string[] = [base];
 
     if (isSkipped) {
-      states.push('line-through text-slate-400 bg-slate-100');
+      states.push('line-through text-ink-3 bg-sunk');
     } else if (hasError) {
-      states.push('bg-red-50 border border-red-300');
+      states.push('bg-bad-soft border border-bad/40');
     } else if (isModified) {
-      states.push('bg-amber-50');
+      states.push('bg-warn-soft');
     } else {
-      states.push('hover:bg-slate-50');
+      states.push('hover:bg-sunk');
     }
 
     if (disabled) {
@@ -144,31 +145,25 @@ export function EditableCell({
   // Format display value
   const getDisplayValue = () => {
     if (value === null || value === undefined || value === '') {
-      return <span className="text-slate-400 italic">{placeholder || '—'}</span>;
+      return <span className="text-ink-3 italic">{placeholder || '—'}</span>;
     }
 
     if (type === 'date') {
-      try {
-        return new Date(value as string).toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        });
-      } catch {
-        return String(value);
-      }
+      const d = new Date(value as string);
+      return Number.isNaN(d.getTime()) ? String(value) : <span className="whitespace-nowrap">{formatDateGB(d)}</span>;
     }
 
     if (type === 'number') {
       const num = typeof value === 'number' ? value : parseFloat(value as string);
       if (!isNaN(num)) {
-        return formatGBP(num, { pence: true });
+        // Same convention as the Transactions table: spending in ink, money in with a leading +.
+        return <span className={`fig whitespace-nowrap ${num > 0 ? 'text-in' : 'text-ink'}`}>{formatAmount(num)}</span>;
       }
     }
 
     if (type === 'category') {
       const cat = categories.find((c) => c.id === value);
-      return cat ? cat.name : <span className="text-slate-400 italic">Uncategorised</span>;
+      return cat ? cat.name : <span className="text-ink-3 italic">Uncategorised</span>;
     }
 
     return String(value);
@@ -218,7 +213,7 @@ export function EditableCell({
         <div className="flex items-center gap-1">
           {getDisplayValue()}
           {isModified && !isSkipped && (
-            <span className="inline-block w-1.5 h-1.5 bg-amber-500 rounded-full" title="Modified" />
+            <span className="inline-block w-1.5 h-1.5 bg-warn rounded-full" title="Modified" />
           )}
         </div>
       </div>
@@ -229,7 +224,7 @@ export function EditableCell({
   if (type === 'category') {
     return (
       <div className="relative" ref={dropdownRef}>
-        <div className={`${getCellClasses()} ring-2 ring-blue-500`}>
+        <div className={`${getCellClasses()} ring-2 ring-accent`}>
           <input
             ref={inputRef}
             type="text"
@@ -240,21 +235,21 @@ export function EditableCell({
             className="w-full bg-transparent outline-none text-sm"
           />
         </div>
-        <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-lg shadow-lg border border-slate-200 z-30 max-h-60 overflow-y-auto">
+        <div className="absolute left-0 top-full mt-1 w-56 bg-surface rounded-md shadow-lg border border-line z-30 max-h-60 overflow-y-auto">
           {Object.entries(groupedCategories).length === 0 ? (
-            <div className="px-3 py-2 text-sm text-slate-400">No categories found</div>
+            <div className="px-3 py-2 text-sm text-ink-3">No categories found</div>
           ) : (
             Object.entries(groupedCategories).map(([group, cats]) => (
               <div key={group}>
-                <div className="px-3 py-1.5 text-xs text-slate-500 bg-slate-50 sticky top-0">
+                <div className="px-3 py-1.5 text-xs text-ink-3 bg-sunk sticky top-0">
                   {group}
                 </div>
                 {cats.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => handleCategorySelect(cat.id)}
-                    className={`w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 ${
-                      cat.id === value ? 'bg-blue-50 text-blue-700' : ''
+                    className={`w-full px-3 py-1.5 text-left text-sm hover:bg-sunk ${
+                      cat.id === value ? 'bg-accent-soft text-accent' : ''
                     }`}
                   >
                     {cat.name}
@@ -270,7 +265,7 @@ export function EditableCell({
 
   // Text/Number/Date input
   return (
-    <div className={`${getCellClasses()} ring-2 ring-blue-500`}>
+    <div className={`${getCellClasses()} ring-2 ring-accent`}>
       <input
         ref={inputRef}
         type={type === 'date' ? 'date' : type === 'number' ? 'number' : 'text'}

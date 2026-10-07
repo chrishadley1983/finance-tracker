@@ -176,22 +176,22 @@ export function TransactionSplitter({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div className="bg-surface rounded-md shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">Split Transaction</h2>
-          <p className="text-sm text-slate-500 mt-1">
+        <div className="px-6 py-4 border-b border-line">
+          <h2 className="text-lg font-semibold text-ink">Split Transaction</h2>
+          <p className="text-sm text-ink-3 mt-1">
             Divide this transaction into multiple parts with different categories.
           </p>
         </div>
 
         {/* Original Transaction */}
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
-          <div className="text-xs text-slate-500 mb-1">Original Transaction</div>
+        <div className="px-6 py-4 bg-sunk border-b border-line">
+          <div className="text-xs text-ink-3 mb-1">Original Transaction</div>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-slate-900">{transaction.description}</p>
-              <p className="text-sm text-slate-500">
+              <p className="font-medium text-ink">{transaction.description}</p>
+              <p className="text-sm text-ink-3">
                 {new Date(transaction.date).toLocaleDateString('en-GB', {
                   day: '2-digit',
                   month: 'short',
@@ -199,7 +199,7 @@ export function TransactionSplitter({
                 })}
               </p>
             </div>
-            <p className={`text-lg font-semibold ${transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-lg font-semibold ${transaction.amount >= 0 ? 'text-in' : 'text-bad'}`}>
               {formatGBP(transaction.amount, { pence: true })}
             </p>
           </div>
@@ -209,13 +209,13 @@ export function TransactionSplitter({
         <div className="px-6 py-4 overflow-y-auto max-h-[40vh]">
           <div className="space-y-4">
             {splits.map((split, index) => (
-              <div key={split.id} className="bg-slate-50 rounded-lg p-4">
+              <div key={split.id} className="bg-sunk rounded-md p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-slate-700">Split {index + 1}</span>
+                  <span className="text-sm font-medium text-ink-2">Split {index + 1}</span>
                   {splits.length > 1 && (
                     <button
                       onClick={() => handleRemoveSplit(split.id)}
-                      className="text-red-500 hover:text-red-700 text-sm"
+                      className="text-bad hover:text-bad text-sm"
                     >
                       Remove
                     </button>
@@ -224,35 +224,35 @@ export function TransactionSplitter({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {/* Description */}
                   <div className="md:col-span-1">
-                    <label className="block text-xs text-slate-500 mb-1">Description</label>
+                    <label className="block text-xs text-ink-3 mb-1">Description</label>
                     <input
                       type="text"
                       value={split.description}
                       onChange={(e) => handleSplitChange(split.id, 'description', e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 text-sm border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                       placeholder="Description"
                     />
                   </div>
 
                   {/* Amount */}
                   <div>
-                    <label className="block text-xs text-slate-500 mb-1">Amount</label>
+                    <label className="block text-xs text-ink-3 mb-1">Amount</label>
                     <input
                       type="number"
                       value={split.amount}
                       onChange={(e) => handleSplitChange(split.id, 'amount', parseFloat(e.target.value) || 0)}
                       step="0.01"
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 text-sm border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                   </div>
 
                   {/* Category */}
                   <div>
-                    <label className="block text-xs text-slate-500 mb-1">Category</label>
+                    <label className="block text-xs text-ink-3 mb-1">Category</label>
                     <select
                       value={split.categoryId || ''}
                       onChange={(e) => handleCategoryChange(split.id, e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 text-sm border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                       <option value="">-- Select category --</option>
                       {Object.entries(
@@ -284,7 +284,7 @@ export function TransactionSplitter({
           <div className="mt-4 flex gap-2">
             <button
               onClick={handleAddSplit}
-              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              className="text-sm text-accent hover:text-accent flex items-center gap-1"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -294,7 +294,7 @@ export function TransactionSplitter({
             {splits.length >= 2 && (
               <button
                 onClick={handleDistributeEvenly}
-                className="text-sm text-slate-600 hover:text-slate-700 flex items-center gap-1"
+                className="text-sm text-ink-2 hover:text-ink-2 flex items-center gap-1"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -306,33 +306,33 @@ export function TransactionSplitter({
         </div>
 
         {/* Balance Check */}
-        <div className={`px-6 py-3 border-t border-slate-200 ${isBalanced ? 'bg-green-50' : 'bg-amber-50'}`}>
+        <div className={`px-6 py-3 border-t border-line ${isBalanced ? 'bg-accent-soft' : 'bg-warn-soft'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div>
-                <span className="text-xs text-slate-500">Original</span>
+                <span className="text-xs text-ink-3">Original</span>
                 <p className="font-medium">{formatGBP(transaction.amount, { pence: true })}</p>
               </div>
-              <div className="text-slate-400">=</div>
+              <div className="text-ink-3">=</div>
               <div>
-                <span className="text-xs text-slate-500">Splits Total</span>
+                <span className="text-xs text-ink-3">Splits Total</span>
                 <p className="font-medium">{formatGBP(splitsTotal, { pence: true })}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {isBalanced ? (
                 <>
-                  <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-in" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-green-700 font-medium">Balanced</span>
+                  <span className="text-in font-medium">Balanced</span>
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-warn" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
-                  <span className="text-amber-700 font-medium">
+                  <span className="text-warn font-medium">
                     Difference: {formatGBP(difference, { pence: true })}
                   </span>
                 </>
@@ -343,8 +343,8 @@ export function TransactionSplitter({
 
         {/* Errors */}
         {errors.length > 0 && (
-          <div className="px-6 py-3 bg-red-50 border-t border-red-100">
-            <ul className="text-sm text-red-700 list-disc list-inside">
+          <div className="px-6 py-3 bg-bad-soft border-t border-bad/40">
+            <ul className="text-sm text-bad list-disc list-inside">
               {errors.map((error, i) => (
                 <li key={i}>{error}</li>
               ))}
@@ -353,17 +353,17 @@ export function TransactionSplitter({
         )}
 
         {/* Actions */}
-        <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
+        <div className="px-6 py-4 border-t border-line flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+            className="px-4 py-2 text-ink-2 hover:text-ink transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
             disabled={!isBalanced}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
+            className="px-4 py-2 bg-accent text-accent-ink rounded-md hover:opacity-90 disabled:opacity-50 transition-colors"
           >
             Split Transaction
           </button>

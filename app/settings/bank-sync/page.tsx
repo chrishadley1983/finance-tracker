@@ -4,23 +4,14 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AppLayout } from '@/components/layout';
 import { SyncButton, AccountLinkPanel } from '@/components/bank-sync';
-
-interface StatusAccount {
-  id: string;
-  name: string;
-  type: string;
-  linked: boolean;
-  syncEnabled: boolean;
-  lastSyncAt: string | null;
-  provider: string | null;
-  connectionActive: boolean;
-  needsReconsent: boolean;
-}
-
-interface StatusResponse {
-  configured: boolean;
-  accounts: StatusAccount[];
-}
+import { LINK_LABEL, LINK_TONE, linkState, summarise, syncedWhen, type StatusAccount, type StatusResponse } from '@/components/bank-sync/status';
+import { PageIntro } from '@/components/ui/PageIntro';
+import { Panel } from '@/components/ui/Panel';
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { Notice, EmptyState, SkeletonRows } from '@/components/ui/Notice';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useToast } from '@/components/ui/Toast';
 
 interface LinkResponse {
   connection: {
@@ -59,51 +50,24 @@ interface SyncTotals {
   alreadyPresent: number;
 }
 
-function formatDate(dateString: string | null) {
-  if (!dateString) return null;
-  return new Date(dateString).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function formatRelativeTime(dateString: string | null) {
-  if (!dateString) return 'Never synced';
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-  return formatDate(dateString) || 'Unknown';
-}
+const syncButtonClass =
+  'inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-surface px-2.5 text-[13px] text-ink hover:bg-sunk focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50';
 
 export default function BankSyncPage() {
   return (
-    <Suspense
-      fallback={
-        <AppLayout title="Bank Sync">
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" />
-          </div>
-        </AppLayout>
-      }
-    >
-      <BankSyncPageContent />
-    </Suspense>
+    <AppLayout title="Bank sync">
+      <Suspense fallback={<SkeletonRows rows={5} />}>
+        <BankSyncPageContent />
+      </Suspense>
+    </AppLayout>
   );
 }
 
 function BankSyncPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const [unlinking, setUnlinking] = useState<StatusAccount | null>(null);
 
   const [status, setStatus] = useState<StatusResponse | null>(null);
   const [statusLoading, setStatusLoading] = useState(true);
@@ -218,8 +182,9 @@ function BankSyncPageContent() {
         throw new Error(data.error || 'Failed to unlink account');
       }
       fetchStatus();
+      toast({ message: 'Account unlinked' });
     } catch (err) {
-      setStatusError(err instanceof Error ? err.message : 'Failed to unlink account');
+      toast({ message: err instanceof Error ? err.message : 'Failed to unlink account', tone: 'error' });
     }
   };
 
@@ -251,245 +216,197 @@ function BankSyncPageContent() {
   const linkedAccounts = status?.accounts.filter((a) => a.linked) ?? [];
   const unlinkedAccounts = status?.accounts.filter((a) => !a.linked) ?? [];
   const orderedAccounts = [...linkedAccounts, ...unlinkedAccounts];
+  const summary = summarise(status?.accounts ?? []);
+  const providers = Array.from(new Set(linkedAccounts.map((a) => a.provider).filter(Boolean))) as string[];
+
+  const intro = statusLoading && !status ? (
+    'Checking your bank connections...'
+  ) : !status ? (
+    'Connect your bank through Open Banking (TrueLayer) to bring in transactions automatically.'
+  ) : summary.linked === 0 ? (
+    'No accounts are linked yet. Connect your bank through Open Banking (TrueLayer) to bring in transactions automatically.'
+  ) : (
+    <>
+      <strong className="fig">{summary.linked}</strong> of {status.accounts.length} accounts linked
+      {providers.length > 0 ? ` to ${providers.join(' and ')}` : ''}.{' '}
+      {summary.lastSyncAt ? `Last synced ${syncedWhen(summary.lastSyncAt)}.` : 'Not synced yet.'}
+      {summary.reconnect > 0 && (
+        <>
+          {' '}
+          <strong>{summary.reconnect}</strong> {summary.reconnect === 1 ? 'needs' : 'need'} reconnecting.
+        </>
+      )}
+    </>
+  );
 
   return (
-    <AppLayout title="Bank Sync">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <p className="text-sm text-slate-500">
-          Connect your bank via Open Banking (TrueLayer) to automatically import transactions.
-        </p>
+    <div className="grid max-w-3xl gap-6">
+      <PageIntro
+        actions={
+          status?.configured ? (
+            <>
+              {linkedAccounts.length > 0 && (
+                <Button onClick={handleSyncAll} loading={globalSyncLoading}>
+                  {globalSyncLoading ? 'Syncing...' : 'Sync all now'}
+                </Button>
+              )}
+              <Button variant={linkedAccounts.length > 0 ? 'secondary' : 'primary'} onClick={handleConnect} loading={isConnecting}>
+                {isConnecting ? 'Redirecting...' : linkedAccounts.length > 0 ? 'Connect another bank' : 'Connect a bank'}
+              </Button>
+            </>
+          ) : undefined
+        }
+      >
+        {intro}
+      </PageIntro>
 
-        {/* Not configured banner */}
-        {!statusLoading && status && !status.configured && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-            <div className="flex items-start gap-3">
-              <svg
-                className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              <div>
-                <h3 className="text-sm font-medium text-amber-800">TrueLayer is not configured</h3>
-                <p className="text-sm text-amber-700 mt-1">
-                  Bank sync isn&apos;t set up for this app yet. Ask an admin to configure TrueLayer credentials.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+      {!statusLoading && status && !status.configured && (
+        <Notice tone="warn">
+          <p className="font-medium">Bank sync isn&apos;t set up</p>
+          <p className="mt-0.5">TrueLayer credentials are missing for this app. You can still import statements from the Import page.</p>
+        </Notice>
+      )}
 
-        {/* URL error banner (redirect from consent flow) */}
-        {urlErrorMessage && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-            <div className="flex items-start gap-3">
-              <svg
-                className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <div>
-                <h3 className="text-sm font-medium text-red-800">Couldn&apos;t connect your bank</h3>
-                <p className="text-sm text-red-700 mt-1">{urlErrorMessage}</p>
-              </div>
-            </div>
-          </div>
-        )}
+      {urlErrorMessage && (
+        <Notice tone="error">
+          <p className="font-medium">Couldn&apos;t connect your bank</p>
+          <p className="mt-0.5">{urlErrorMessage}</p>
+        </Notice>
+      )}
 
-        {/* Connect action */}
-        {status?.configured && (
-          <div className="rounded-lg border border-slate-200 bg-white p-6">
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">Connect a bank account</h2>
-                <p className="text-slate-500 text-sm mt-1">
-                  Start a secure Open Banking connection with your bank (defaults to all UK banks — pick HSBC on the next screen).
-                </p>
-              </div>
-              <button
-                onClick={handleConnect}
-                disabled={isConnecting}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isConnecting && (
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                )}
-                {isConnecting ? 'Redirecting…' : 'Connect bank'}
-              </button>
-            </div>
-            {connectError && <p className="text-sm text-red-600 mt-3">{connectError}</p>}
-          </div>
-        )}
+      {connectError && <Notice tone="error">{connectError}</Notice>}
 
-        {/* Account mapping panel, shown after returning from the consent flow */}
-        {linkLoading && (
-          <div className="rounded-lg border border-slate-200 bg-white p-6 flex items-center gap-3">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-emerald-600" />
-            <p className="text-sm text-slate-500">Loading accounts from your bank…</p>
-          </div>
-        )}
-        {linkError && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-            <p className="text-sm text-red-700">{linkError}</p>
-          </div>
-        )}
-        {linkSuccessMessage && (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-            <p className="text-sm text-emerald-800">{linkSuccessMessage}</p>
-          </div>
-        )}
-        {linkData && (
-          <AccountLinkPanel
-            connectionRowId={linkData.connection.id}
-            provider={linkData.connection.provider}
-            tlAccounts={linkData.tlAccounts}
-            financeAccounts={linkData.financeAccounts}
-            onLinked={handleLinked}
-          />
-        )}
+      {status?.configured && summary.reconnect > 0 && (
+        <Notice
+          tone="warn"
+          action={
+            <Button size="sm" onClick={handleConnect} loading={isConnecting}>
+              Reconnect
+            </Button>
+          }
+        >
+          <p className="font-medium">
+            {summary.reconnect === 1 ? 'One account needs' : `${summary.reconnect} accounts need`} reconnecting
+          </p>
+          <p className="mt-0.5">Bank consent runs out every 90 days. Reconnect to keep transactions syncing.</p>
+        </Notice>
+      )}
 
-        {/* Sync all */}
-        {status?.configured && linkedAccounts.length > 0 && (
-          <div className="rounded-lg border border-slate-200 bg-white p-6">
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">Sync all accounts</h2>
-                <p className="text-slate-500 text-sm mt-1">
-                  Fetch the latest transactions for every linked account.
-                </p>
-              </div>
-              <button
-                onClick={handleSyncAll}
-                disabled={globalSyncLoading}
-                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {globalSyncLoading && (
-                  <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-                )}
-                {globalSyncLoading ? 'Syncing…' : 'Sync all now'}
-              </button>
-            </div>
-
-            {globalSyncError && <p className="text-sm text-red-600 mt-3">{globalSyncError}</p>}
-
-            {globalSyncTotals && (
-              <div className="mt-4 rounded-lg bg-slate-50 p-3">
-                <p className="text-sm text-slate-700">
-                  Imported <span className="font-semibold">{globalSyncTotals.imported}</span> ·{' '}
-                  <span className="font-semibold">{globalSyncTotals.alreadyPresent}</span> already up to date
-                </p>
-                {globalSyncResults && globalSyncResults.length > 0 && (
-                  <ul className="mt-2 space-y-1">
-                    {globalSyncResults.map((r) => (
-                      <li key={r.accountId} className="text-xs text-slate-600 flex items-center justify-between gap-2">
-                        <span className="font-medium text-slate-700">{r.accountName}</span>
-                        {r.error ? (
-                          <span className="text-red-600">{r.error}</span>
-                        ) : (
-                          <span>
-                            {r.imported} imported · {r.alreadyPresent} already present
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Account list */}
-        <div className="rounded-lg border border-slate-200 bg-white p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Accounts</h2>
-
-          {statusLoading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" />
-            </div>
-          )}
-
-          {statusError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 mb-4">
-              <p className="text-sm text-red-700">{statusError}</p>
-            </div>
-          )}
-
-          {!statusLoading && !statusError && status && status.accounts.length === 0 && (
-            <p className="text-sm text-slate-500">No accounts found.</p>
-          )}
-
-          {!statusLoading && !statusError && status && status.accounts.length > 0 && (
-            <div className="space-y-3">
-              {orderedAccounts.map((account) => (
-                <div key={account.id} className="border border-slate-200 rounded-lg p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">{account.name}</p>
-                      {account.linked ? (
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {account.provider || 'Linked'} · Last synced: {formatRelativeTime(account.lastSyncAt)}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-slate-400 mt-0.5">Not linked</p>
-                      )}
-                      {account.linked && (
-                        <p className="text-xs mt-1">
-                          {account.needsReconsent ? (
-                            <span className="text-red-600 font-medium">Reconnect needed</span>
-                          ) : (
-                            <span className="text-emerald-700">
-                              Connected via {account.provider || 'your bank'}
-                            </span>
-                          )}
-                        </p>
-                      )}
-                    </div>
-
-                    {account.linked && (
-                      <div className="flex items-center gap-2">
-                        <SyncButton
-                          accountId={account.id}
-                          label="Sync now"
-                          className="text-xs px-2.5 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                        />
-                        <button
-                          onClick={() => handleUnlink(account.id)}
-                          className="text-xs px-2.5 py-1.5 text-red-600 border border-red-200 rounded hover:bg-red-50"
-                        >
-                          Unlink
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      {/* Account mapping panel, shown after returning from the consent flow */}
+      {linkLoading && (
+        <div className="grid gap-2" role="status">
+          <p className="text-sm text-ink-2">Loading accounts from your bank...</p>
+          <SkeletonRows rows={2} />
         </div>
-      </div>
-    </AppLayout>
+      )}
+      {linkError && <Notice tone="error">{linkError}</Notice>}
+      {linkSuccessMessage && <Notice tone="success">{linkSuccessMessage}</Notice>}
+      {linkData && (
+        <AccountLinkPanel
+          connectionRowId={linkData.connection.id}
+          provider={linkData.connection.provider}
+          tlAccounts={linkData.tlAccounts}
+          financeAccounts={linkData.financeAccounts}
+          onLinked={handleLinked}
+        />
+      )}
+
+      {globalSyncError && <Notice tone="error">{globalSyncError}</Notice>}
+      {globalSyncTotals && (
+        <Notice tone="success">
+          <p>
+            Imported <span className="fig font-semibold">{globalSyncTotals.imported}</span>,{' '}
+            <span className="fig">{globalSyncTotals.alreadyPresent}</span> already up to date.
+          </p>
+          {globalSyncResults && globalSyncResults.length > 0 && (
+            <ul className="mt-1.5 grid gap-0.5 text-ink-2">
+              {globalSyncResults.map((r) => (
+                <li key={r.accountId} className="flex flex-wrap justify-between gap-x-3">
+                  <span className="text-ink">{r.accountName}</span>
+                  {r.error ? (
+                    <span className="text-bad">{r.error}</span>
+                  ) : (
+                    <span>
+                      <span className="fig">{r.imported}</span> imported, <span className="fig">{r.alreadyPresent}</span> already there
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Notice>
+      )}
+
+      <Panel title="Accounts" action={status ? `${summary.linked} linked` : undefined}>
+        {statusLoading && !status ? (
+          <SkeletonRows rows={4} />
+        ) : statusError ? (
+          <Notice tone="error" action={<Button size="sm" onClick={fetchStatus}>Try again</Button>}>
+            {statusError}
+          </Notice>
+        ) : status && status.accounts.length === 0 ? (
+          <EmptyState title="No accounts yet">Add your accounts on the Accounts page, then link them here.</EmptyState>
+        ) : (
+          <ul className={statusLoading ? 'opacity-60' : ''}>
+            {orderedAccounts.map((account) => {
+              const state = linkState(account);
+              return (
+                <li
+                  key={account.id}
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-line-2 py-3 last:border-b-0"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="truncate text-sm font-medium text-ink">{account.name}</span>
+                      <Chip tone={LINK_TONE[state]}>{LINK_LABEL[state]}</Chip>
+                    </div>
+                    <p className="mt-0.5 text-xs text-ink-3">
+                      {account.linked ? (
+                        <>
+                          {account.provider || 'Linked'} · {account.lastSyncAt ? `Synced ${syncedWhen(account.lastSyncAt)}` : 'Never synced'}
+                        </>
+                      ) : (
+                        <span className="capitalize">{account.type}</span>
+                      )}
+                    </p>
+                  </div>
+
+                  {account.linked && (
+                    <div className="flex items-start justify-end gap-1.5">
+                      {state === 'reconnect' ? (
+                        <Button size="sm" onClick={handleConnect} disabled={isConnecting}>
+                          Reconnect
+                        </Button>
+                      ) : (
+                        <SyncButton accountId={account.id} label="Sync now" className={syncButtonClass} onDone={() => fetchStatus()} />
+                      )}
+                      <Button size="sm" variant="ghost" onClick={() => setUnlinking(account)}>
+                        Unlink
+                      </Button>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Panel>
+
+      {unlinking && (
+        <ConfirmDialog
+          isOpen
+          title={`Unlink ${unlinking.name}?`}
+          message="New transactions will stop syncing for this account. Transactions already imported stay where they are. You can link it again at any time."
+          confirmLabel="Unlink"
+          variant="danger"
+          onConfirm={() => {
+            const a = unlinking;
+            setUnlinking(null);
+            handleUnlink(a.id);
+          }}
+          onCancel={() => setUnlinking(null)}
+        />
+      )}
+    </div>
   );
 }

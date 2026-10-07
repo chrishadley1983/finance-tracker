@@ -55,9 +55,9 @@ describe('BulkCategorise', () => {
     expect(screen.getByRole('button', { name: /uncategorised \(3\)/i })).toBeInTheDocument();
   });
 
-  it('shows low confidence count button', () => {
+  it('shows the unsure count button', () => {
     render(<BulkCategorise {...createProps()} />);
-    expect(screen.getByRole('button', { name: /low confidence \(2\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /unsure \(2\)/i })).toBeInTheDocument();
   });
 
   it('calls onSelectAll when Select all clicked', () => {
@@ -84,7 +84,7 @@ describe('BulkCategorise', () => {
   it('calls onSelectLowConfidence when clicked', () => {
     const onSelectLowConfidence = vi.fn();
     render(<BulkCategorise {...createProps({ onSelectLowConfidence })} />);
-    fireEvent.click(screen.getByRole('button', { name: /low confidence \(2\)/i }));
+    fireEvent.click(screen.getByRole('button', { name: /unsure \(2\)/i }));
     expect(onSelectLowConfidence).toHaveBeenCalled();
   });
 

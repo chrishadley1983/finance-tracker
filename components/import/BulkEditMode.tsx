@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/ui/Button';
+import { Notice } from '@/components/ui/Notice';
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { EditableCell } from './EditableCell';
@@ -651,22 +653,9 @@ export function BulkEditMode({
 
   return (
     <div className="space-y-4">
-      {/* Warning Banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-3">
-        <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-        <div className="flex-1">
-          <p className="text-sm text-amber-800 font-medium">Edit Mode Active</p>
-          <p className="text-xs text-amber-600">Changes will be applied when you import. Click cells to edit.</p>
-        </div>
-        <button
-          onClick={onExit}
-          className="px-3 py-1.5 text-sm text-amber-700 border border-amber-300 rounded hover:bg-amber-100"
-        >
-          Exit Edit Mode
-        </button>
-      </div>
+      <Notice tone="info">
+        Editing rows: click a cell to change it. Nothing is saved until you apply the changes and import.
+      </Notice>
 
       {/* Toolbar */}
       <BulkEditToolbar
@@ -692,25 +681,26 @@ export function BulkEditMode({
       />
 
       {/* Keyboard Shortcuts Help */}
-      <div className="text-xs text-slate-500 flex flex-wrap gap-4">
-        <span><kbd className="px-1 py-0.5 bg-slate-100 rounded">Ctrl+A</kbd> Select all</span>
-        <span><kbd className="px-1 py-0.5 bg-slate-100 rounded">Shift+Click</kbd> Range select</span>
-        <span><kbd className="px-1 py-0.5 bg-slate-100 rounded">Ctrl+Z</kbd> Undo</span>
-        <span><kbd className="px-1 py-0.5 bg-slate-100 rounded">Delete</kbd> Skip selected</span>
-        <span><kbd className="px-1 py-0.5 bg-slate-100 rounded">Tab</kbd> Next cell</span>
+      <div className="text-xs text-ink-3 flex flex-wrap gap-4">
+        <span><kbd className="px-1 py-0.5 bg-sunk rounded">Ctrl+A</kbd> Select all</span>
+        <span><kbd className="px-1 py-0.5 bg-sunk rounded">Shift+Click</kbd> Range select</span>
+        <span><kbd className="px-1 py-0.5 bg-sunk rounded">Ctrl+Z</kbd> Undo</span>
+        <span><kbd className="px-1 py-0.5 bg-sunk rounded">Delete</kbd> Skip selected</span>
+        <span><kbd className="px-1 py-0.5 bg-sunk rounded">Tab</kbd> Next cell</span>
       </div>
 
-      {/* Virtual Table */}
-      <div className="border border-slate-200 rounded-lg overflow-hidden">
+      {/* Virtual Table (scrolls sideways inside its box on narrow screens) */}
+      <div className="overflow-x-auto rounded-md border border-line bg-surface">
+       <div className="min-w-[760px]">
         {/* Header */}
-        <div className="bg-slate-50 border-b border-slate-200">
-          <div className="flex items-center text-sm font-medium text-slate-600">
+        <div className="bg-sunk border-b border-line">
+          <div className="flex items-center text-xs font-medium uppercase tracking-wide text-ink-3">
             <div className="w-12 px-2 py-2 text-center">
               <input
                 type="checkbox"
                 checked={selectedRows.size === transactions.length && transactions.length > 0}
                 onChange={(e) => e.target.checked ? handleSelectAll() : handleSelectNone()}
-                className="rounded border-slate-300"
+                className="h-4 w-4 accent-accent"
               />
             </div>
             <div className="w-12 px-2 py-2 text-center">#</div>
@@ -749,8 +739,8 @@ export function BulkEditMode({
                   key={rowIndex}
                   data-index={rowIndex}
                   ref={rowVirtualizer.measureElement}
-                  className={`flex items-center border-b border-slate-100 ${
-                    isSelected ? 'bg-blue-50' : isSkipped ? 'bg-slate-100' : 'hover:bg-slate-50'
+                  className={`flex items-center border-b border-line-2 ${
+                    isSelected ? 'bg-sel' : isSkipped ? 'bg-sunk' : 'hover:bg-sunk'
                   }`}
                   style={{
                     position: 'absolute',
@@ -772,12 +762,12 @@ export function BulkEditMode({
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleCheckboxChange(rowIndex)}
-                      className="rounded border-slate-300"
+                      className="h-4 w-4 accent-accent"
                     />
                   </div>
 
                   {/* Row Number */}
-                  <div className="w-12 px-2 py-2 text-center text-xs text-slate-400">
+                  <div className="w-12 px-2 py-2 text-center text-xs text-ink-3">
                     {tx.rowNumber}
                   </div>
 
@@ -852,8 +842,9 @@ export function BulkEditMode({
                   <div className="w-24 px-2 py-2 flex items-center justify-center gap-1">
                     <button
                       onClick={() => handleToggleSkip(rowIndex)}
-                      className={`p-1 rounded ${isSkipped ? 'text-green-600 hover:bg-green-100' : 'text-slate-400 hover:bg-slate-100'}`}
+                      className={`p-1 rounded ${isSkipped ? 'text-in hover:bg-accent-soft' : 'text-ink-3 hover:bg-sunk'}`}
                       title={isSkipped ? 'Include in import' : 'Skip this row'}
+                      aria-label={isSkipped ? 'Include in import' : 'Skip this row'}
                     >
                       {isSkipped ? (
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -868,8 +859,9 @@ export function BulkEditMode({
                     <button
                       onClick={() => handleSplitTransaction(rowIndex)}
                       disabled={isSkipped}
-                      className="p-1 text-slate-400 hover:bg-slate-100 rounded disabled:opacity-50"
+                      className="p-1 text-ink-3 hover:bg-sunk rounded disabled:opacity-50"
                       title="Split transaction"
+                      aria-label="Split transaction"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -878,8 +870,9 @@ export function BulkEditMode({
                     <button
                       onClick={() => handleDuplicateRow(rowIndex)}
                       disabled={isSkipped}
-                      className="p-1 text-slate-400 hover:bg-slate-100 rounded disabled:opacity-50"
+                      className="p-1 text-ink-3 hover:bg-sunk rounded disabled:opacity-50"
                       title="Duplicate row"
+                      aria-label="Duplicate row"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -891,22 +884,17 @@ export function BulkEditMode({
             })}
           </div>
         </div>
+       </div>
       </div>
 
       {/* Footer Actions */}
-      <div className="flex justify-between pt-4 border-t border-slate-200">
-        <button
-          onClick={onExit}
-          className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
-        >
+      <div className="flex justify-between gap-3 border-t border-line pt-4">
+        <Button variant="ghost" onClick={onExit}>
           Cancel
-        </button>
-        <button
-          onClick={handleSave}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
+        </Button>
+        <Button variant="primary" onClick={handleSave}>
           Apply Changes ({transactions.length - skippedCount} rows)
-        </button>
+        </Button>
       </div>
 
       {/* Transaction Splitter Modal */}
