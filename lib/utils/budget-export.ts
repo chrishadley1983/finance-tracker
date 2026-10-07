@@ -1,6 +1,6 @@
 import type { BudgetGroupComparison, SavingsRate } from '@/lib/types/budget';
 import { MONTH_NAMES } from '@/lib/types/budget';
-import { formatGBP } from '@/lib/format';
+import { formatGBP, gbDate } from '@/lib/format';
 
 interface ExportData {
   year: number;
@@ -138,7 +138,7 @@ export function exportBudgetToPDFHtml(data: ExportData): string {
     <tbody>${rows}
     </tbody>
   </table>
-  <footer>Printed ${new Date().toLocaleDateString('en-GB', { dateStyle: 'long' })} from Hadley Finance Tracker.</footer>
+  <footer>Printed ${gbDate(new Date(), { dateStyle: 'long' })} from Hadley Finance Tracker.</footer>
 </body>
 </html>
 `;

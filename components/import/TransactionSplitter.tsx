@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import type { ParsedTransaction } from '@/lib/types/import';
-import { formatGBP } from '@/lib/format';
+import { formatGBP, gbDate } from '@/lib/format';
 
 // =============================================================================
 // TYPES
@@ -192,7 +192,7 @@ export function TransactionSplitter({
             <div>
               <p className="font-medium text-ink">{transaction.description}</p>
               <p className="text-sm text-ink-3">
-                {new Date(transaction.date).toLocaleDateString('en-GB', {
+                {gbDate(new Date(transaction.date), {
                   day: '2-digit',
                   month: 'short',
                   year: 'numeric',

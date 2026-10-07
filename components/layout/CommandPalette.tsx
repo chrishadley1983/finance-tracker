@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatGBP } from '@/lib/format';
+import { formatGBP, gbDate } from '@/lib/format';
 import { applyThemePreference } from '@/lib/theme';
 import { useToast } from '@/components/ui/Toast';
 import { ALL_NAV_ITEMS } from './nav-config';
@@ -128,7 +128,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       id: `tx:${h.id}`,
       group: 'Transactions',
       label: h.description,
-      hint: `${formatGBP(h.amount, { pence: true })} · ${new Date(`${h.date}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`,
+      hint: `${formatGBP(h.amount, { pence: true })} · ${gbDate(new Date(`${h.date}T00:00:00`), { day: 'numeric', month: 'short' })}`,
       run: () => go(`/transactions?search=${encodeURIComponent(query.trim())}`),
     }));
     const searchAll: Entry[] =

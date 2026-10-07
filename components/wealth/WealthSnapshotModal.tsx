@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Check, Pencil, Trash2, X } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { formatDateGB, formatGBP, formatGBPCompact } from '@/lib/format';
+import { formatDateGB, formatGBP, formatGBPCompact, gbDate } from '@/lib/format';
 import { axisProps, chart, gridProps, tooltipProps } from '@/lib/chart-theme';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -28,7 +28,7 @@ interface WealthSnapshotModalProps {
 
 function formatChartDate(dateStr: string): string {
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+  return gbDate(date, { month: 'short', year: '2-digit' });
 }
 
 export function WealthSnapshotModal({

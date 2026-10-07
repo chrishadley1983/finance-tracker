@@ -7,7 +7,7 @@ import { Search } from 'lucide-react';
 import { CategorySelect } from '@/components/ui/CategorySelect';
 import { useToast } from '@/components/ui/Toast';
 import { refreshNavSummary } from '@/components/layout/useNavSummary';
-import { formatGBP } from '@/lib/format';
+import { formatGBP, gbDate } from '@/lib/format';
 import { groupByMerchant, isUnsure, type ReviewRow } from '@/lib/review/queue';
 
 type Filter = 'all' | 'uncategorised' | 'flagged';
@@ -27,7 +27,7 @@ interface Answer {
 
 const money = (n: number) => formatGBP(Math.abs(n), { pence: true });
 const shortDate = (iso: string) =>
-  new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+  gbDate(new Date(`${iso}T00:00:00`), { day: '2-digit', month: 'short' });
 
 function Checkbox({ state, onChange, label }: { state: 'on' | 'off' | 'part'; onChange: (shift: boolean) => void; label: string }) {
   return (

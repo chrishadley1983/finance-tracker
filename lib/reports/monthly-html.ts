@@ -6,6 +6,7 @@
  */
 
 import type { MonthlyReportData, Takeaway } from './types';
+import { gbDate } from '@/lib/format';
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -61,7 +62,7 @@ function tagColour(tag: string): { bg: string; text: string } {
  */
 export function generateMonthlyReportHtml(data: MonthlyReportData): string {
   const title = `${data.monthName} ${data.year} — Monthly Financial Report`;
-  const generated = new Date(data.generatedAt).toLocaleDateString('en-GB', {
+  const generated = gbDate(new Date(data.generatedAt), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

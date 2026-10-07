@@ -2,10 +2,10 @@
 
 import { Chip } from '@/components/ui/Chip';
 import { EmptyState } from '@/components/ui/Notice';
-import { formatGBP } from '@/lib/format';
+import { formatGBP, gbDate } from '@/lib/format';
 import type { Transaction } from '@/lib/hooks/useDashboardData';
 
-const shortDate = (iso: string) => new Date(`${iso.slice(0, 10)}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+const shortDate = (iso: string) => gbDate(new Date(`${iso.slice(0, 10)}T00:00:00`), { day: 'numeric', month: 'short' });
 
 /** The latest few transactions; ones without a category are marked. */
 export function RecentTransactions({ transactions }: { transactions: Transaction[] }) {

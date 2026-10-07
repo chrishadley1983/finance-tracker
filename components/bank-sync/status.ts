@@ -1,5 +1,7 @@
 /** Shapes and helpers for GET /api/truelayer/status, shared by Bank sync and Settings. */
 
+import { gbDate } from '@/lib/format';
+
 export interface StatusAccount {
   id: string;
   name: string;
@@ -36,7 +38,7 @@ export function syncedAgo(iso: string | null, now: Date = new Date()): string {
   const days = Math.floor(hrs / 24);
   if (days === 1) return 'Yesterday';
   if (days < 7) return `${days} days ago`;
-  return then.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return gbDate(then, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 /** For use mid-sentence: "5 hours ago", "yesterday", "on 28 Sept 2026", "never". */

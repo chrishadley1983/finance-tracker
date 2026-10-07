@@ -117,3 +117,11 @@ export function formatDayHeading(isoDate: string, now: Date = new Date()): strin
   const base = `${weekday} ${d} ${MONTH_NAMES[m - 1]}`;
   return y === now.getFullYear() ? base : `${base} ${y}`;
 }
+
+/**
+ * `toLocaleDateString('en-GB', opts)` with "Sep" for September: newer ICU data
+ * prints "Sept", which no other month abbreviation matches.
+ */
+export function gbDate(date: string | number | Date, opts: Intl.DateTimeFormatOptions): string {
+  return new Date(date).toLocaleDateString('en-GB', opts).replace(/\bSept\b/, 'Sep');
+}

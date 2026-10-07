@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Notice, EmptyState, SkeletonRows } from '@/components/ui/Notice';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
-import { formatGBP, MONTH_NAMES } from '@/lib/format';
+import { formatGBP, MONTH_NAMES, gbDate } from '@/lib/format';
 
 const MONTH = /^(\d{4})-(0[1-9]|1[0-2])$/;
 
@@ -24,7 +24,7 @@ type State = { status: 'loading' } | { status: 'missing' } | { status: 'error'; 
 
 function savedAt(iso: string): string {
   const d = new Date(iso);
-  const day = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const day = gbDate(d, { day: 'numeric', month: 'short', year: 'numeric' });
   const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   return `${day} at ${time}`;
 }
