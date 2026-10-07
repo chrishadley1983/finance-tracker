@@ -1,16 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
-import { formatDateGB, formatGBP } from '@/lib/format';
+import { Check, Pencil, Trash2, X } from 'lucide-react';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { formatDateGB, formatGBP, formatGBPCompact } from '@/lib/format';
+import { axisProps, chart, gridProps, tooltipProps } from '@/lib/chart-theme';
+import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Input } from '@/components/ui/Field';
+import { EmptyState, Notice, SkeletonRows } from '@/components/ui/Notice';
 
 interface WealthSnapshot {
   id: string;
@@ -45,12 +43,14 @@ export function WealthSnapshotModal({
   const [snapshots, setSnapshots] = useState<WealthSnapshot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newDate, setNewDate] = useState('');
   const [newBalance, setNewBalance] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<WealthSnapshot | null>(null);
 
   const fetchSnapshots = useCallback(async () => {
     setIsLoading(true);
@@ -65,7 +65,7 @@ export function WealthSnapshotModal({
         `/api/accounts/${accountId}/snapshots?from=${fromDate}`
       );
       if (!response.ok) {
-        throw new Error('Failed to fetch snapshots');
+        throw new Error('Couldn’t load the valuations for this account.');
       }
       const data = await response.json();
       setSnapshots(data.snapshots || []);
@@ -87,14 +87,15 @@ export function WealthSnapshotModal({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      // While the delete confirmation is open, Esc closes that instead.
+      if (e.key === 'Escape' && !confirmDelete) {
         onClose();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, confirmDelete]);
 
   // Focus trap
   useEffect(() => {
@@ -120,6 +121,7 @@ export function WealthSnapshotModal({
     }
 
     setIsSaving(true);
+    setActionError(null);
     try {
       const response = await fetch(`/api/accounts/${accountId}/snapshots/${snapshotId}`, {
         method: 'PUT',
@@ -128,44 +130,36 @@ export function WealthSnapshotModal({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update snapshot');
+        throw new Error('The change wasn’t saved. Try again.');
       }
 
-      // Update local state
-      setSnapshots((prev) =>
-        prev.map((s) =>
-          s.id === snapshotId ? { ...s, balance: newBalance } : s
-        )
-      );
+      setSnapshots((prev) => prev.map((s) => (s.id === snapshotId ? { ...s, balance: newBalance } : s)));
       setEditingId(null);
       setEditValue('');
       onUpdate?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
+      setActionError(err instanceof Error ? err.message : 'The change wasn’t saved. Try again.');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async (snapshotId: string) => {
-    if (!confirm('Are you sure you want to delete this snapshot?')) {
-      return;
-    }
-
     setIsSaving(true);
+    setActionError(null);
     try {
       const response = await fetch(`/api/accounts/${accountId}/snapshots/${snapshotId}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete snapshot');
+        throw new Error('The valuation wasn’t deleted. Try again.');
       }
 
       setSnapshots((prev) => prev.filter((s) => s.id !== snapshotId));
       onUpdate?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete');
+      setActionError(err instanceof Error ? err.message : 'The valuation wasn’t deleted. Try again.');
     } finally {
       setIsSaving(false);
     }
@@ -178,6 +172,7 @@ export function WealthSnapshotModal({
     if (isNaN(balance)) return;
 
     setIsSaving(true);
+    setActionError(null);
     try {
       const response = await fetch(`/api/accounts/${accountId}/snapshots`, {
         method: 'POST',
@@ -186,20 +181,18 @@ export function WealthSnapshotModal({
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to add snapshot');
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'The valuation wasn’t added. Try again.');
       }
 
       const data = await response.json();
-      setSnapshots((prev) => [...prev, data.snapshot].sort((a, b) =>
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      ));
+      setSnapshots((prev) => [...prev, data.snapshot].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       setIsAdding(false);
       setNewDate('');
       setNewBalance('');
       onUpdate?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add snapshot');
+      setActionError(err instanceof Error ? err.message : 'The valuation wasn’t added. Try again.');
     } finally {
       setIsSaving(false);
     }
@@ -216,254 +209,222 @@ export function WealthSnapshotModal({
       balance: s.balance,
     }));
 
-  const typeLabel = {
-    pension: 'Pension',
-    investment: 'Investment',
-    isa: 'ISA',
-    property: 'Property',
-  }[accountType] || 'Account';
+  const typeLabel =
+    {
+      pension: 'Pension',
+      investment: 'Investment',
+      isa: 'ISA',
+      property: 'Property',
+    }[accountType] || 'Account';
+
+  const iconButton = 'rounded-md p-1 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
 
-      {/* Dialog */}
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="snapshot-modal-title"
         tabIndex={-1}
-        className="relative bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden focus:outline-none flex flex-col"
+        className="relative mx-4 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-md border border-line bg-surface shadow-xl focus:outline-none"
       >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <div>
-            <h2
-              id="snapshot-modal-title"
-              className="text-lg font-semibold text-gray-900"
-            >
+        <div className="flex items-start justify-between gap-3 border-b border-line-2 px-5 py-3.5">
+          <div className="min-w-0">
+            <h2 id="snapshot-modal-title" className="truncate text-[15px] font-semibold text-ink">
               {accountName}
             </h2>
-            <p className="text-sm text-gray-500">{typeLabel} Value History</p>
+            <p className="text-[13px] text-ink-3">{typeLabel} valuations</p>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Close"
+            className="rounded-md p-1.5 text-ink-3 hover:bg-line-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="h-5 w-5" aria-hidden />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto px-5 py-4">
           {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-pulse text-gray-400">Loading...</div>
-            </div>
+            <SkeletonRows rows={6} />
           ) : error ? (
-            <div className="flex items-center justify-center h-64">
-              <p className="text-red-500">{error}</p>
-            </div>
+            <Notice tone="error" action={<Button size="sm" onClick={fetchSnapshots}>Try again</Button>}>
+              {error}
+            </Notice>
           ) : (
-            <>
-              {/* Chart */}
+            <div className="grid gap-5">
+              {actionError && <Notice tone="error">{actionError}</Notice>}
+
               {chartData.length > 1 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Value Over Time</h3>
-                  <div className="h-48 bg-gray-50 rounded-lg p-4">
+                <section>
+                  <h3 className="mb-2 text-[13px] font-semibold text-ink">Value over time</h3>
+                  <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis
-                          dataKey="formattedDate"
-                          stroke="#9ca3af"
-                          fontSize={11}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          stroke="#9ca3af"
-                          fontSize={11}
-                          tickLine={false}
-                          tickFormatter={(value) =>
-                            value >= 1000 ? `£${(value / 1000).toFixed(0)}k` : `£${value}`
-                          }
-                        />
+                      <AreaChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                        <CartesianGrid {...gridProps} />
+                        <XAxis dataKey="formattedDate" {...axisProps} minTickGap={20} />
+                        <YAxis {...axisProps} axisLine={false} width={52} tickFormatter={(v: number) => formatGBPCompact(v)} domain={['auto', 'auto']} />
                         <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#1f2937',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: '#fff',
-                            fontSize: '12px',
-                          }}
+                          {...tooltipProps}
+                          cursor={{ stroke: chart.grid }}
                           formatter={(value) => [formatGBP(Number(value), { pence: true }), 'Value']}
                           labelFormatter={(label) => String(label)}
                         />
-                        <Line
+                        <Area
                           type="monotone"
                           dataKey="balance"
-                          stroke="#10b981"
+                          stroke={chart.accent}
                           strokeWidth={2}
-                          dot={{ fill: '#10b981', strokeWidth: 0, r: 3 }}
-                          activeDot={{ r: 5, fill: '#10b981' }}
+                          fill={chart.accent}
+                          fillOpacity={0.08}
+                          dot={{ r: 2.5, fill: chart.accent, strokeWidth: 0 }}
+                          activeDot={{ r: 4, fill: chart.accent, stroke: chart.surface }}
+                          isAnimationActive={false}
                         />
-                      </LineChart>
+                      </AreaChart>
                     </ResponsiveContainer>
                   </div>
-                </div>
+                  <p className="mt-1 text-[12px] text-ink-3">Each point is a recorded valuation from the last two years.</p>
+                </section>
               )}
 
-              {/* Snapshots Table */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-gray-700">Valuations</h3>
-                  <button
-                    onClick={() => setIsAdding(true)}
-                    disabled={isAdding}
-                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium disabled:opacity-50"
-                  >
-                    + Add Valuation
-                  </button>
+              <section>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <h3 className="text-[13px] font-semibold text-ink">Valuations</h3>
+                  {!isAdding && (
+                    <Button size="sm" variant="ghost" onClick={() => setIsAdding(true)}>
+                      Add a valuation
+                    </Button>
+                  )}
                 </div>
 
-                {/* Add form */}
                 {isAdding && (
-                  <div className="mb-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="date"
-                        value={newDate}
-                        onChange={(e) => setNewDate(e.target.value)}
-                        className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  <form
+                    className="mb-3 flex flex-wrap items-end gap-2 rounded-[3px] border border-line bg-sunk p-3"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleAddSnapshot();
+                    }}
+                  >
+                    <label className="grid gap-1 text-[12.5px] text-ink-2">
+                      Date
+                      <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="h-8 w-auto py-1" required />
+                    </label>
+                    <label className="grid gap-1 text-[12.5px] text-ink-2">
+                      Value (£)
+                      <Input
+                        type="number"
+                        step="0.01"
+                        inputMode="decimal"
+                        value={newBalance}
+                        onChange={(e) => setNewBalance(e.target.value)}
+                        placeholder="0.00"
+                        className="fig h-8 w-36 py-1 text-right"
+                        required
                       />
-                      <div className="flex items-center">
-                        <span className="text-gray-500 mr-1">£</span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={newBalance}
-                          onChange={(e) => setNewBalance(e.target.value)}
-                          placeholder="0.00"
-                          className="w-32 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        />
-                      </div>
-                      <button
-                        onClick={handleAddSnapshot}
-                        disabled={isSaving || !newDate || !newBalance}
-                        className="px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-                      >
-                        Save
-                      </button>
-                      <button
+                    </label>
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm" variant="primary" loading={isSaving} disabled={!newDate || !newBalance}>
+                        Save valuation
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
                         onClick={() => {
                           setIsAdding(false);
                           setNewDate('');
                           setNewBalance('');
                         }}
-                        className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-800"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </div>
-                  </div>
+                  </form>
                 )}
 
                 {snapshots.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-8">
-                    No valuations recorded. Add a valuation to track this account&apos;s value over time.
-                  </p>
+                  <EmptyState title="No valuations yet">Add a valuation to track this account&apos;s value over time.</EmptyState>
                 ) : (
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
-                    <table className="w-full">
-                      <thead className="bg-gray-50">
+                  <div className="overflow-hidden rounded-[3px] border border-line">
+                    <table className="w-full text-[13px]">
+                      <thead className="bg-sunk text-[11.5px] text-ink-3">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Value</th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase w-24">Actions</th>
+                          <th scope="col" className="px-3 py-2 text-left font-medium">
+                            Date
+                          </th>
+                          <th scope="col" className="px-3 py-2 text-right font-medium">
+                            Value
+                          </th>
+                          <th scope="col" className="w-20 px-3 py-2 text-right font-medium">
+                            <span className="sr-only">Actions</span>
+                          </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-line-2">
                         {snapshots.map((snapshot) => (
-                          <tr key={snapshot.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-2.5 text-sm text-gray-900">
-                              {formatDateGB(snapshot.date)}
-                            </td>
-                            <td className="px-4 py-2.5 text-sm text-right">
+                          <tr key={snapshot.id} className="hover:bg-sunk">
+                            <td className="whitespace-nowrap px-3 py-2 text-ink">{formatDateGB(snapshot.date)}</td>
+                            <td className="px-3 py-2 text-right">
                               {editingId === snapshot.id ? (
-                                <div className="flex items-center justify-end gap-2">
-                                  <span className="text-gray-500">£</span>
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    value={editValue}
-                                    onChange={(e) => setEditValue(e.target.value)}
-                                    className="w-28 px-2 py-1 text-sm border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                    autoFocus
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') handleSaveEdit(snapshot.id);
-                                      if (e.key === 'Escape') handleCancelEdit();
-                                    }}
-                                  />
-                                </div>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  aria-label={`Value on ${formatDateGB(snapshot.date)}`}
+                                  className="fig ml-auto h-8 w-32 py-1 text-right"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleSaveEdit(snapshot.id);
+                                    if (e.key === 'Escape') {
+                                      e.nativeEvent.stopImmediatePropagation();
+                                      handleCancelEdit();
+                                    }
+                                  }}
+                                />
                               ) : (
-                                <span className={snapshot.balance >= 0 ? 'text-gray-900' : 'text-red-600'}>
-                                  {formatGBP(snapshot.balance, { pence: true })}
-                                </span>
+                                <span className="fig text-ink">{formatGBP(snapshot.balance, { pence: true })}</span>
                               )}
                             </td>
-                            <td className="px-4 py-2.5 text-right">
-                              {editingId === snapshot.id ? (
-                                <div className="flex items-center justify-end gap-1">
-                                  <button
-                                    onClick={() => handleSaveEdit(snapshot.id)}
-                                    disabled={isSaving}
-                                    className="p-1 text-emerald-600 hover:text-emerald-700 disabled:opacity-50"
-                                    title="Save"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={handleCancelEdit}
-                                    className="p-1 text-gray-400 hover:text-gray-600"
-                                    title="Cancel"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                  </button>
-                                </div>
-                              ) : (
-                                <div className="flex items-center justify-end gap-1">
-                                  <button
-                                    onClick={() => handleStartEdit(snapshot)}
-                                    className="p-1 text-gray-400 hover:text-gray-600"
-                                    title="Edit"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(snapshot.id)}
-                                    className="p-1 text-gray-400 hover:text-red-600"
-                                    title="Delete"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                  </button>
-                                </div>
-                              )}
+                            <td className="px-3 py-2 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                {editingId === snapshot.id ? (
+                                  <>
+                                    <button type="button" onClick={() => handleSaveEdit(snapshot.id)} disabled={isSaving} aria-label="Save" title="Save" className={`${iconButton} text-accent hover:bg-line-2`}>
+                                      <Check className="h-4 w-4" aria-hidden />
+                                    </button>
+                                    <button type="button" onClick={handleCancelEdit} aria-label="Cancel" title="Cancel" className={`${iconButton} text-ink-3 hover:bg-line-2 hover:text-ink`}>
+                                      <X className="h-4 w-4" aria-hidden />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleStartEdit(snapshot)}
+                                      aria-label={`Edit valuation on ${formatDateGB(snapshot.date)}`}
+                                      title="Edit"
+                                      className={`${iconButton} text-ink-3 hover:bg-line-2 hover:text-ink`}
+                                    >
+                                      <Pencil className="h-4 w-4" aria-hidden />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setConfirmDelete(snapshot)}
+                                      disabled={isSaving}
+                                      aria-label={`Delete valuation on ${formatDateGB(snapshot.date)}`}
+                                      title="Delete"
+                                      className={`${iconButton} text-ink-3 hover:bg-bad-soft hover:text-bad`}
+                                    >
+                                      <Trash2 className="h-4 w-4" aria-hidden />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -471,21 +432,33 @@ export function WealthSnapshotModal({
                     </table>
                   </div>
                 )}
-              </div>
-            </>
+              </section>
+            </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-          <button
-            onClick={onClose}
-            className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Close
-          </button>
+        <div className="flex justify-end border-t border-line-2 px-5 py-3">
+          <Button onClick={onClose}>Close</Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDelete !== null}
+        title="Delete this valuation?"
+        message={
+          confirmDelete
+            ? `The ${formatGBP(confirmDelete.balance, { pence: true })} valuation on ${formatDateGB(confirmDelete.date)} will be removed. This can't be undone.`
+            : ''
+        }
+        confirmLabel="Delete valuation"
+        variant="danger"
+        onConfirm={() => {
+          const target = confirmDelete;
+          setConfirmDelete(null);
+          if (target) handleDelete(target.id);
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

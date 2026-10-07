@@ -15,6 +15,10 @@ import {
   type MathsPlanningInputs,
 } from '@/lib/fire/maths-calculator';
 import type { FireInputs, NetWorthSummary } from '@/lib/types/fire';
+import { PageIntro } from '@/components/ui/PageIntro';
+import { SkeletonRows } from '@/components/ui/Notice';
+import { formatGBP, MONTH_NAMES } from '@/lib/format';
+import { readableGBP } from './readable';
 
 interface MathsPlanningTabProps {
   fireInputs: FireInputs | null;
@@ -101,32 +105,49 @@ export function MathsPlanningTab({
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        {/* Loading skeleton */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {[1, 2].map(i => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
-              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4" />
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
-              </div>
-            </div>
-          ))}
+      <div className="grid gap-8" aria-busy="true">
+        <SkeletonRows rows={2} />
+        <div className="grid gap-8 md:grid-cols-2">
+          <SkeletonRows rows={6} />
+          <SkeletonRows rows={6} />
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4" />
-          <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded" />
-        </div>
+        <SkeletonRows rows={8} />
       </div>
     );
   }
 
+  const reached = results.percentOfTarget >= 100;
+  const monthsAway = (results.targetRetireDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30.4375);
+  const dateKnown = Number.isFinite(results.targetRetireDate.getTime()) && monthsAway < 12 * 80;
+  const ageThen = inputs.currentAge + Math.max(0, monthsAway) / 12;
+
   return (
-    <div className="space-y-6">
-      {/* Row 1: Current Position + Target Calculation */}
-      <div className="grid md:grid-cols-2 gap-6">
+    <div className="grid gap-8">
+      <PageIntro>
+        <p>
+          You have <strong className="fig">{readableGBP(inputs.currentSavings)}</strong> towards a{' '}
+          <strong className="fig">{readableGBP(results.amountNeeded)}</strong> target (
+          <strong className="fig">{Math.round(results.percentOfTarget)}%</strong>), enough to spend{' '}
+          {formatGBP(inputs.fireSpend)} a year at a {inputs.swr}% withdrawal rate.{' '}
+          {reached ? (
+            <>You&apos;ve already reached it.</>
+          ) : dateKnown ? (
+            <>
+              Saving <span className="fig">{formatGBP(inputs.monthlySavings)}</span> a month at {inputs.expectedReturn}% growth, you&apos;d
+              get there around <strong>{MONTH_NAMES[results.targetRetireDate.getMonth()]} {results.targetRetireDate.getFullYear()}</strong>, at
+              about {Math.floor(ageThen)}.
+            </>
+          ) : (
+            <>At the current savings and growth you wouldn&apos;t reach it; try a higher saving or return below.</>
+          )}
+        </p>
+      </PageIntro>
+
+      <p className="-mt-4 text-[12.5px] text-ink-3">
+        Figures below are for exploring: changes here aren&apos;t saved. Set the defaults on the Settings tab.
+      </p>
+
+      <div className="grid gap-8 md:grid-cols-2">
         <CurrentPositionCard
           currentAge={inputs.currentAge}
           dateOfBirth={inputs.dateOfBirth}
@@ -147,7 +168,6 @@ export function MathsPlanningTab({
         />
       </div>
 
-      {/* Row 2: Scenario Comparison (Normal vs FAT) */}
       <ScenarioComparisonCard
         normal={results.normal}
         fat={results.fat}
@@ -159,7 +179,6 @@ export function MathsPlanningTab({
         onMonthlySavingsChange={(v) => updateInput('monthlySavings', v)}
       />
 
-      {/* Row 3: Coast FI Analysis */}
       <CoastAnalysisCard
         coastNow={results.coastNow}
         coastAfterMinFire={results.coastAfterMinFire}

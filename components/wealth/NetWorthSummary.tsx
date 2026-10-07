@@ -1,105 +1,68 @@
 'use client';
 
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, BarChart3 } from 'lucide-react';
-import type { NetWorthSummary as NetWorthSummaryType } from '@/lib/types/fire';
-import { formatGBP } from '@/lib/format';
+import type { NetWorthHistoryPoint, NetWorthSummary as NetWorthSummaryType } from '@/lib/types/fire';
+import { formatDateGB, formatGBP } from '@/lib/format';
+import { describeChange, netWorthChanges } from './net-worth-helpers';
 
 interface NetWorthSummaryProps {
   data: NetWorthSummaryType | null;
+  /** Monthly history, used for the change since January. */
+  history?: NetWorthHistoryPoint[];
   isLoading?: boolean;
 }
 
-const TYPE_ICONS: Record<string, React.ReactNode> = {
-  investment: <BarChart3 className="h-6 w-6" />,
-  savings: <PiggyBank className="h-6 w-6" />,
-  current: <Wallet className="h-6 w-6" />,
-  pension: <BarChart3 className="h-6 w-6" />,
-  isa: <PiggyBank className="h-6 w-6" />,
-  property: <Wallet className="h-6 w-6" />,
-};
+function Change({ amount, label, first = false }: { amount: number; label: string; first?: boolean }) {
+  const text = describeChange(amount, (n) => formatGBP(n));
+  const [w, ...rest] = text.split(' ');
+  const word = first ? w[0].toUpperCase() + w.slice(1) : w;
+  if (rest.length === 0) return <>{word} {label}</>;
+  return (
+    <>
+      {word} <span className={`fig font-medium ${amount > 0 ? 'text-in' : 'text-ink'}`}>{rest.join(' ')}</span> {label}
+    </>
+  );
+}
 
-export function NetWorthSummary({ data, isLoading = false }: NetWorthSummaryProps) {
-  if (isLoading) {
+/** The page's one headline figure, with this month's and this year's change in a sentence. */
+export function NetWorthSummary({ data, history = [], isLoading = false }: NetWorthSummaryProps) {
+  if (isLoading && !data) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm animate-pulse"
-          >
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-3" />
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
-          </div>
-        ))}
+      <div className="grid gap-3" aria-busy="true" aria-label="Loading net worth">
+        <div className="h-4 w-24 animate-pulse rounded bg-line-2" />
+        <div className="h-10 w-56 animate-pulse rounded bg-line-2" />
+        <div className="h-4 w-80 max-w-full animate-pulse rounded bg-line-2" />
       </div>
     );
   }
+  if (!data) return null;
 
-  if (!data) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-6">
-        <p className="text-gray-500 dark:text-gray-400">No data available</p>
-      </div>
-    );
-  }
-
-  const isPositiveChange = data.change !== null && data.change >= 0;
+  const changes = netWorthChanges(data.total, data.change, history);
+  const pct = data.changePercent;
 
   return (
-    <div className="space-y-4 mb-6">
-      {/* Main Total Card */}
-      <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg p-6 shadow-lg text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-emerald-100 text-sm font-medium">Total Net Worth</p>
-            <p className="text-4xl font-bold mt-1">{formatGBP(data.total)}</p>
-            {data.change !== null && (
-              <div className="flex items-center mt-2 gap-2">
-                {isPositiveChange ? (
-                  <TrendingUp className="h-4 w-4" />
-                ) : (
-                  <TrendingDown className="h-4 w-4" />
-                )}
-                <span className="text-sm">
-                  {isPositiveChange ? '+' : ''}
-                  {formatGBP(data.change)}
-                  {data.changePercent !== null && (
-                    <span className="ml-1 opacity-80">
-                      ({isPositiveChange ? '+' : ''}
-                      {data.changePercent.toFixed(1)}%)
-                    </span>
-                  )}
-                </span>
-                <span className="text-sm opacity-70">vs last month</span>
-              </div>
+    <div>
+      <p className="text-[13px] text-ink-3">Net worth today</p>
+      <p className="fig mt-0.5 text-[34px] font-medium leading-tight tracking-tight text-ink sm:text-[40px]" title={formatGBP(data.total, { pence: true })}>
+        {formatGBP(data.total)}
+      </p>
+      <p className="mt-1.5 max-w-[70ch] text-[14.5px] text-ink-2">
+        {changes.month === null && changes.year === null ? (
+          <>Add month-end balances for a few months to see how it&apos;s changing.</>
+        ) : (
+          <>
+            {changes.month !== null && (
+              <>
+                <Change amount={changes.month} label="since last month" first />
+                {pct !== null && Math.round(changes.month) !== 0 && <span className="text-ink-3"> ({Math.abs(pct) < 10 ? Math.abs(pct).toFixed(1) : Math.round(Math.abs(pct))}%)</span>}
+              </>
             )}
-          </div>
-          <Wallet className="h-16 w-16 opacity-20" />
-        </div>
-      </div>
-
-      {/* Type Breakdown Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {data.byType.map((typeData) => (
-          <div
-            key={typeData.type}
-            className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm"
-          >
-            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
-              {TYPE_ICONS[typeData.type] || <Wallet className="h-5 w-5" />}
-              <span className="text-sm font-medium">{typeData.label}</span>
-            </div>
-            <p className="text-xl font-bold text-gray-900 dark:text-white">
-              {formatGBP(typeData.total)}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {data.total > 0
-                ? `${((typeData.total / data.total) * 100).toFixed(1)}% of total`
-                : '0%'}
-            </p>
-          </div>
-        ))}
-      </div>
+            {changes.month !== null && changes.year !== null && ', and '}
+            {changes.year !== null && <Change amount={changes.year} label="since January" first={changes.month === null} />}
+            .
+          </>
+        )}
+        {data.date && <span className="text-ink-3"> As of {formatDateGB(data.date)}.</span>}
+      </p>
     </div>
   );
 }

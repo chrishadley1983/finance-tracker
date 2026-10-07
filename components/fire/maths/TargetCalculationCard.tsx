@@ -1,6 +1,9 @@
 'use client';
 
-import { formatCurrency, formatPercent, formatDate } from '@/lib/fire/maths-calculator';
+import { useId } from 'react';
+import { formatCurrency, formatDate } from '@/lib/fire/maths-calculator';
+import { Panel } from '@/components/ui/Panel';
+import { MoneyInput } from './MoneyInput';
 
 interface TargetCalculationCardProps {
   fireSpend: number;
@@ -19,92 +22,48 @@ export function TargetCalculationCard({
   targetRetireDate,
   onFireSpendChange,
 }: TargetCalculationCardProps) {
-  const progressCapped = Math.min(percentOfTarget, 100);
+  const id = useId();
+  const progress = Math.max(0, Math.min(percentOfTarget, 100));
+  const reached = percentOfTarget >= 100;
+  const dateOk = Number.isFinite(targetRetireDate.getTime());
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Target Calculation
-      </h3>
-
-      <div className="space-y-4">
-        {/* Fire Spend Input */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            FIRE Spend (Annual)
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-              £
-            </span>
-            <input
-              type="number"
-              value={fireSpend}
-              onChange={(e) => onFireSpendChange(parseFloat(e.target.value) || 0)}
-              className="w-full pl-7 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                         focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              step="1000"
-            />
-          </div>
-        </div>
-
-        {/* Calculated Values */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
-              SWR
-            </label>
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-              {formatPercent(swr)}
-            </p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
-              Amount Needed
-            </label>
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-              {formatCurrency(amountNeeded)}
-            </p>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div>
-          <div className="flex justify-between items-center mb-1">
-            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
-              Progress
-            </label>
-            <span className={`text-sm font-bold ${
-              percentOfTarget >= 100
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-blue-600 dark:text-blue-400'
-            }`}>
-              {formatPercent(percentOfTarget, 1)}
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-            <div
-              className={`h-4 rounded-full transition-all duration-300 ${
-                percentOfTarget >= 100
-                  ? 'bg-green-500'
-                  : 'bg-blue-600'
-              }`}
-              style={{ width: `${progressCapped}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Target Date */}
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-          <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
-            Target Retire Date
-          </label>
-          <p className="text-xl font-bold text-green-600 dark:text-green-400">
-            {percentOfTarget >= 100 ? 'Already achieved!' : formatDate(targetRetireDate)}
-          </p>
-        </div>
+    <Panel title="Your target">
+      <div className="grid gap-1.5">
+        <label htmlFor={id} className="text-[13px] font-medium text-ink-2">
+          Spending a year in retirement
+        </label>
+        <MoneyInput id={id} value={fireSpend} onChange={onFireSpendChange} step={1000} />
       </div>
-    </div>
+
+      <dl className="mt-3 divide-y divide-line-2 text-sm">
+        <div className="flex items-baseline justify-between gap-3 py-2">
+          <dt className="text-ink-2">Pot needed at {swr}% withdrawal</dt>
+          <dd className="fig font-medium text-ink">{formatCurrency(amountNeeded)}</dd>
+        </div>
+        <div className="py-2">
+          <div className="flex items-baseline justify-between gap-3">
+            <dt className="text-ink-2">How far along</dt>
+            <dd className="fig font-medium text-ink" title={`${percentOfTarget.toFixed(1)}%`}>
+              {Math.round(percentOfTarget)}%
+            </dd>
+          </div>
+          <div
+            role="meter"
+            aria-label="Progress to target"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(progress)}
+            className="relative mt-2 h-1.5 rounded-full bg-line-2"
+          >
+            <div className={`absolute inset-y-0 left-0 rounded-full ${reached ? 'bg-accent' : 'bg-ink-2'}`} style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+        <div className="flex items-baseline justify-between gap-3 py-2">
+          <dt className="text-ink-2">Reached around</dt>
+          <dd className="font-medium text-ink">{reached ? 'Already reached' : dateOk ? formatDate(targetRetireDate) : 'Not at this rate'}</dd>
+        </div>
+      </dl>
+    </Panel>
   );
 }

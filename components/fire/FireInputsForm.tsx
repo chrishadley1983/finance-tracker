@@ -1,62 +1,111 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Settings, Save, X } from 'lucide-react';
+import { useState, useEffect, useMemo, useId, type ReactNode } from 'react';
 import type { FireInputs } from '@/lib/types/fire';
 import { formatGBP } from '@/lib/format';
+import { Button } from '@/components/ui/Button';
+import { Field, Input } from '@/components/ui/Field';
+import { Notice, SkeletonRows } from '@/components/ui/Notice';
+import { useToast } from '@/components/ui/Toast';
 
 interface FireInputsFormProps {
   inputs: FireInputs | null;
   portfolioValue?: number;
+  /** Save the changed inputs. Throw (or reject) to show an error. */
   onSave: (inputs: Partial<FireInputs>) => Promise<void>;
   isLoading?: boolean;
 }
 
-export function FireInputsForm({
-  inputs,
-  portfolioValue,
-  onSave,
-  isLoading = false,
-}: FireInputsFormProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState({
+interface FormData {
+  currentAge: number;
+  dateOfBirth: string;
+  targetRetirementAge: number;
+  currentPortfolioValue: number;
+  annualIncome: number;
+  annualSavings: number;
+  annualSpend: number;
+  expectedReturn: number;
+  withdrawalRate: number;
+  includeStatePension: boolean;
+  partnerStatePension: boolean;
+  excludePropertyFromFire: boolean;
+  normalFireSpend: number;
+  fatFireSpend: number;
+}
+
+export function toFormData(inputs: FireInputs | null): FormData {
+  return {
     currentAge: inputs?.currentAge ?? 35,
     dateOfBirth: inputs?.dateOfBirth ?? '',
     targetRetirementAge: inputs?.targetRetirementAge ?? 55,
-    currentPortfolioValue: inputs?.currentPortfolioValue ?? portfolioValue ?? 0,
+    // Blank means "use account balances", so never prefill it with them.
+    currentPortfolioValue: inputs?.currentPortfolioValue ?? 0,
     annualIncome: inputs?.annualIncome ?? 0,
     annualSavings: inputs?.annualSavings ?? 18000, // Default £1,500/month
+    annualSpend: inputs?.annualSpend ?? 50000,
     expectedReturn: inputs?.expectedReturn ?? 7,
     withdrawalRate: inputs?.withdrawalRate ?? 4,
     includeStatePension: inputs?.includeStatePension ?? true,
     partnerStatePension: inputs?.partnerStatePension ?? false,
+    excludePropertyFromFire: inputs?.excludePropertyFromFire ?? true,
     normalFireSpend: inputs?.normalFireSpend ?? 55000,
     fatFireSpend: inputs?.fatFireSpend ?? 65000,
-  });
+  };
+}
 
-  // Update form data when inputs load from API
+function Section({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
+  return (
+    <fieldset className="grid gap-4 border-t border-line-2 pt-4 first:border-t-0 first:pt-0">
+      <legend className="sr-only">{title}</legend>
+      <div aria-hidden>
+        <h3 className="text-[13.5px] font-semibold text-ink">{title}</h3>
+        {note && <p className="mt-0.5 text-xs text-ink-3">{note}</p>}
+      </div>
+      <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
+    </fieldset>
+  );
+}
+
+function Check({ checked, onChange, label, hint }: { checked: boolean; onChange: (v: boolean) => void; label: string; hint?: string }) {
+  return (
+    <label className="flex cursor-pointer items-start gap-2.5">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--accent)]" />
+      <span>
+        <span className="block text-sm text-ink">{label}</span>
+        {hint && <span className="block text-xs text-ink-3">{hint}</span>}
+      </span>
+    </label>
+  );
+}
+
+/**
+ * The one place FIRE inputs are edited. They drive the ERN analysis, the
+ * maths planning tab and the Coast FIRE figure on the Net worth page.
+ */
+export function FireInputsForm({ inputs, portfolioValue, onSave, isLoading = false }: FireInputsFormProps) {
+  const { toast } = useToast();
+  const idp = useId();
+  const id = (k: string) => `${idp}-${k}`;
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData>(() => toFormData(inputs));
+  const saved = useMemo(() => toFormData(inputs), [inputs]);
+
+  // Update form data when inputs load from the API (or after a save)
   useEffect(() => {
-    if (inputs) {
-      setFormData({
-        currentAge: inputs.currentAge ?? 35,
-        dateOfBirth: inputs.dateOfBirth ?? '',
-        targetRetirementAge: inputs.targetRetirementAge ?? 55,
-        currentPortfolioValue: inputs.currentPortfolioValue ?? portfolioValue ?? 0,
-        annualIncome: inputs.annualIncome ?? 0,
-        annualSavings: inputs.annualSavings ?? 18000,
-        expectedReturn: inputs.expectedReturn ?? 7,
-        withdrawalRate: inputs.withdrawalRate ?? 4,
-        includeStatePension: inputs.includeStatePension ?? true,
-        partnerStatePension: inputs.partnerStatePension ?? false,
-        normalFireSpend: inputs.normalFireSpend ?? 55000,
-        fatFireSpend: inputs.fatFireSpend ?? 65000,
-      });
-    }
-  }, [inputs, portfolioValue]);
+    if (inputs) setFormData(toFormData(inputs));
+  }, [inputs]);
+
+  const dirty = JSON.stringify(formData) !== JSON.stringify(saved);
+  const set = <K extends keyof FormData>(k: K, v: FormData[K]) => setFormData((f) => ({ ...f, [k]: v }));
+  const num = (v: string, fallback = 0) => {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : fallback;
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
+    setError(null);
     try {
       await onSave({
         currentAge: formData.currentAge,
@@ -65,277 +114,129 @@ export function FireInputsForm({
         currentPortfolioValue: formData.currentPortfolioValue || null,
         annualIncome: formData.annualIncome || null,
         annualSavings: formData.annualSavings || null,
+        annualSpend: formData.annualSpend,
         expectedReturn: formData.expectedReturn,
         withdrawalRate: formData.withdrawalRate,
         includeStatePension: formData.includeStatePension,
         partnerStatePension: formData.partnerStatePension,
+        excludePropertyFromFire: formData.excludePropertyFromFire,
         normalFireSpend: formData.normalFireSpend,
         fatFireSpend: formData.fatFireSpend,
       });
-      setIsEditing(false);
+      toast({ message: 'FIRE settings saved; the analysis will update', tone: 'success' });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'The settings weren’t saved. Try again.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const displayPortfolio = inputs?.currentPortfolioValue ?? portfolioValue ?? 0;
-  const displaySavings = inputs?.annualSavings ?? 0;
-
-  if (isLoading) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm mb-6 animate-pulse">
-        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2" />
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
-      </div>
-    );
-  }
-
-  if (!isEditing) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-              Your Inputs
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Age: <span className="font-medium">{inputs?.currentAge ?? 35}</span>
-              {' · '}
-              Portfolio: <span className="font-medium">{formatGBP(displayPortfolio)}</span>
-              {' · '}
-              Saving: <span className="font-medium">{formatGBP(displaySavings)}/yr</span>
-              {' · '}
-              Return: <span className="font-medium">{inputs?.expectedReturn ?? 7}%</span>
-              {' · '}
-              SWR: <span className="font-medium">{inputs?.withdrawalRate ?? 4}%</span>
-              {inputs?.includeStatePension && (
-                <>
-                  {' · '}
-                  <span className="text-emerald-600 dark:text-emerald-400">State Pension included</span>
-                </>
-              )}
-            </p>
-          </div>
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <Settings className="h-4 w-4" />
-            Edit
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <SkeletonRows rows={8} />;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900 dark:text-white">Edit Your Inputs</h3>
-        <button
-          onClick={() => setIsEditing(false)}
-          className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </div>
+    <form
+      className="grid max-w-5xl gap-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSave();
+      }}
+    >
+      {error && <Notice tone="error">{error}</Notice>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Date of Birth
-          </label>
-          <input
-            type="date"
-            value={formData.dateOfBirth || ''}
-            onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          />
-          <p className="text-xs text-gray-500 mt-1">For exact age calculation</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Current Age
-          </label>
-          <input
+      <Section title="You">
+        <Field label="Date of birth" htmlFor={id('dob')} hint="Used to work out your exact age">
+          <Input id={id('dob')} type="date" value={formData.dateOfBirth || ''} onChange={(e) => set('dateOfBirth', e.target.value)} />
+        </Field>
+        <Field label="Age" htmlFor={id('age')} hint={formData.dateOfBirth ? 'Your date of birth takes priority' : undefined}>
+          <Input id={id('age')} type="number" min={18} max={100} className="fig" value={formData.currentAge} onChange={(e) => set('currentAge', parseInt(e.target.value) || 0)} />
+        </Field>
+        <Field label="Target retirement age" htmlFor={id('retire')}>
+          <Input
+            id={id('retire')}
             type="number"
-            value={formData.currentAge}
-            onChange={(e) => setFormData({ ...formData, currentAge: parseInt(e.target.value) || 0 })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            min={18}
-            max={100}
-          />
-          {formData.dateOfBirth && (
-            <p className="text-xs text-gray-500 mt-1">DOB will override this</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Target Retirement Age
-          </label>
-          <input
-            type="number"
-            value={formData.targetRetirementAge || ''}
-            onChange={(e) => setFormData({ ...formData, targetRetirementAge: parseInt(e.target.value) || 0 })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             min={30}
             max={100}
+            className="fig"
             placeholder="Optional"
+            value={formData.targetRetirementAge || ''}
+            onChange={(e) => set('targetRetirementAge', parseInt(e.target.value) || 0)}
           />
-        </div>
+        </Field>
+      </Section>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Current Portfolio Value
-          </label>
-          <input
+      <Section title="Money in and out">
+        <Field label="Spending a year in retirement" htmlFor={id('spend')} hint="Used by the analysis and Coast FIRE">
+          <Input id={id('spend')} type="number" min={0} step={1000} className="fig" value={formData.annualSpend || ''} onChange={(e) => set('annualSpend', num(e.target.value, 0))} />
+        </Field>
+        <Field label="Saving a month" htmlFor={id('save')} hint={`${formatGBP(formData.annualSavings || 0)} a year`}>
+          <Input
+            id={id('save')}
             type="number"
+            min={0}
+            step={100}
+            className="fig"
+            placeholder="1500"
+            value={Math.round((formData.annualSavings || 0) / 12) || ''}
+            onChange={(e) => set('annualSavings', num(e.target.value) * 12)}
+          />
+        </Field>
+        <Field label="Income a year" htmlFor={id('income')} hint="Optional">
+          <Input id={id('income')} type="number" min={0} className="fig" placeholder="Optional" value={formData.annualIncome || ''} onChange={(e) => set('annualIncome', num(e.target.value))} />
+        </Field>
+        <Field
+          label="Portfolio value"
+          htmlFor={id('portfolio')}
+          hint="Leave blank to use your account balances"
+        >
+          <Input
+            id={id('portfolio')}
+            type="number"
+            min={0}
+            className="fig"
+            placeholder={portfolioValue ? `From accounts: ${formatGBP(portfolioValue)}` : 'From your accounts'}
             value={formData.currentPortfolioValue || ''}
-            onChange={(e) => setFormData({ ...formData, currentPortfolioValue: parseFloat(e.target.value) || 0 })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            min={0}
-            placeholder={portfolioValue ? `Auto: ${formatGBP(portfolioValue)}` : '0'}
+            onChange={(e) => set('currentPortfolioValue', num(e.target.value))}
           />
-          {portfolioValue && !formData.currentPortfolioValue && (
-            <p className="text-xs text-gray-500 mt-1">Auto-calculated from investments</p>
-          )}
-        </div>
+        </Field>
+      </Section>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Annual Income
-          </label>
-          <input
-            type="number"
-            value={formData.annualIncome || ''}
-            onChange={(e) => setFormData({ ...formData, annualIncome: parseFloat(e.target.value) || 0 })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            min={0}
-            placeholder="Optional"
+      <Section title="Assumptions">
+        <Field label="Growth a year, after inflation (%)" htmlFor={id('return')} hint="Usually 4 to 7">
+          <Input id={id('return')} type="number" min={0} max={15} step={0.5} className="fig" value={formData.expectedReturn} onChange={(e) => set('expectedReturn', num(e.target.value, 7))} />
+        </Field>
+        <Field label="Withdrawal rate (%)" htmlFor={id('swr')} hint="Share of the pot spent each year; 4 is the classic rule">
+          <Input id={id('swr')} type="number" min={1} max={10} step={0.25} className="fig" value={formData.withdrawalRate} onChange={(e) => set('withdrawalRate', num(e.target.value, 4))} />
+        </Field>
+        <div className="grid content-start gap-3 sm:col-span-2 lg:col-span-1">
+          <Check checked={formData.includeStatePension} onChange={(v) => set('includeStatePension', v)} label="Include my state pension" />
+          <Check checked={formData.partnerStatePension} onChange={(v) => set('partnerStatePension', v)} label="Include my partner's state pension" />
+          <Check
+            checked={formData.excludePropertyFromFire}
+            onChange={(v) => set('excludePropertyFromFire', v)}
+            label="Leave property out"
+            hint="Don't count your home towards Coast FIRE"
           />
         </div>
+      </Section>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Monthly Savings
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">£</span>
-            <input
-              type="number"
-              value={Math.round((formData.annualSavings || 0) / 12) || ''}
-              onChange={(e) => setFormData({ ...formData, annualSavings: (parseFloat(e.target.value) || 0) * 12 })}
-              className="w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              min={0}
-              step={100}
-              placeholder="1500"
-            />
-          </div>
-          <p className="text-xs text-gray-500 mt-1">Annual: {formatGBP(formData.annualSavings || 0)}</p>
-        </div>
+      <Section title="Targets for the maths tab" note="Two spending levels to compare: comfortable and generous.">
+        <Field label="Comfortable spending a year" htmlFor={id('normal')}>
+          <Input id={id('normal')} type="number" min={0} step={1000} className="fig" value={formData.normalFireSpend || ''} onChange={(e) => set('normalFireSpend', num(e.target.value, 55000))} />
+        </Field>
+        <Field label="Generous (FAT) spending a year" htmlFor={id('fat')}>
+          <Input id={id('fat')} type="number" min={0} step={1000} className="fig" value={formData.fatFireSpend || ''} onChange={(e) => set('fatFireSpend', num(e.target.value, 65000))} />
+        </Field>
+      </Section>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Expected Real Return (%)
-          </label>
-          <input
-            type="number"
-            value={formData.expectedReturn}
-            onChange={(e) => setFormData({ ...formData, expectedReturn: parseFloat(e.target.value) || 7 })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            min={0}
-            max={15}
-            step={0.5}
-          />
-          <p className="text-xs text-gray-500 mt-1">After inflation (default 7%)</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Safe Withdrawal Rate (%)
-          </label>
-          <input
-            type="number"
-            value={formData.withdrawalRate}
-            onChange={(e) => setFormData({ ...formData, withdrawalRate: parseFloat(e.target.value) || 4 })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            min={1}
-            max={10}
-            step={0.25}
-          />
-          <p className="text-xs text-gray-500 mt-1">For FIRE target calc (default 4%)</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Normal FIRE Spend
-          </label>
-          <input
-            type="number"
-            value={formData.normalFireSpend || ''}
-            onChange={(e) => setFormData({ ...formData, normalFireSpend: parseFloat(e.target.value) || 55000 })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            min={0}
-            step={1000}
-          />
-          <p className="text-xs text-gray-500 mt-1">Annual spend for Normal FIRE</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            FAT FIRE Spend
-          </label>
-          <input
-            type="number"
-            value={formData.fatFireSpend || ''}
-            onChange={(e) => setFormData({ ...formData, fatFireSpend: parseFloat(e.target.value) || 65000 })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            min={0}
-            step={1000}
-          />
-          <p className="text-xs text-gray-500 mt-1">Annual spend for FAT FIRE</p>
-        </div>
-
-        <div className="flex flex-col justify-end">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.includeStatePension}
-              onChange={(e) => setFormData({ ...formData, includeStatePension: e.target.checked })}
-              className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-            />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Include State Pension</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer mt-2">
-            <input
-              type="checkbox"
-              checked={formData.partnerStatePension}
-              onChange={(e) => setFormData({ ...formData, partnerStatePension: e.target.checked })}
-              className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-            />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Partner State Pension</span>
-          </label>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line pt-4">
+        {dirty && <span className="mr-auto text-[12.5px] text-warn">Unsaved changes</span>}
+        <Button variant="ghost" disabled={!dirty || isSaving} onClick={() => setFormData(saved)}>
+          Undo changes
+        </Button>
+        <Button type="submit" variant="primary" loading={isSaving} disabled={!dirty}>
+          {isSaving ? 'Saving…' : 'Save settings'}
+        </Button>
       </div>
-
-      <div className="flex justify-end gap-2 mt-6">
-        <button
-          onClick={() => setIsEditing(false)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-        >
-          <Save className="h-4 w-4" />
-          {isSaving ? 'Saving...' : 'Save Changes'}
-        </button>
-      </div>
-    </div>
+    </form>
   );
 }
