@@ -1,13 +1,110 @@
 @import "tailwindcss";
 
-/* Base styles */
-html {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+/*
+ * Design tokens (Hadley Finance Tracker redesign).
+ * Light ledger workspace; dark mode is its own palette, not an inversion.
+ * Colour carries meaning: ink for normal money, --in for money in,
+ * --warn for "ahead of pace", --bad only for real problems (over budget).
+ */
+:root {
+  --ground: #f3f4f2;
+  --surface: #ffffff;
+  --sunk: #f7f8f6;
+  --ink: #17201c;
+  --ink-2: #4f5b56;
+  --ink-3: #6f7a75;
+  --line: #e1e4e1;
+  --line-2: #eceeec;
+  --accent: #1d5847;
+  --accent-soft: #e3eee9;
+  --accent-ink: #ffffff;
+  --in: #1f7a4d;
+  --warn: #a76a12;
+  --warn-soft: #fbf1df;
+  --bad: #b3261e;
+  --bad-soft: #fbeae8;
+  --sel: #eaf1ee;
+  --rail: #e4e7e3;
+  --rail-ink: #4f5b56;
+  --rail-on: #ffffff;
+  --bar: #17201c;
+  --bar-ink: #ffffff;
+  color-scheme: light;
 }
 
-/* Smooth scrolling */
+:root[data-theme='dark'] {
+  --ground: #17181a;
+  --surface: #1e1f22;
+  --sunk: #1a1b1e;
+  --ink: #ecedea;
+  --ink-2: #b5b8b2;
+  --ink-3: #979b95;
+  --line: #303236;
+  --line-2: #26282b;
+  --accent: #6e9a7d;
+  --accent-soft: #25312a;
+  --accent-ink: #0f1210;
+  --in: #6bc796;
+  --warn: #e0a84b;
+  --warn-soft: #2e2617;
+  --bad: #f08a80;
+  --bad-soft: #341d1b;
+  --sel: #252b27;
+  --rail: #0c0d0e;
+  --rail-ink: #979b95;
+  --rail-on: #26282b;
+  --bar: #0e0f10;
+  --bar-ink: #ecedea;
+  color-scheme: dark;
+}
+
+/* `dark:` utilities follow the app's theme setting, not the OS directly. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme inline {
+  --font-sans: var(--font-ui), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-fig), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-in: var(--in);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-sel: var(--sel);
+  --color-rail: var(--rail);
+  --color-rail-ink: var(--rail-ink);
+  --color-rail-on: var(--rail-on);
+  --color-bar: var(--bar);
+  --color-bar-ink: var(--bar-ink);
+}
+
 html {
+  font-family: var(--font-sans);
   scroll-behavior: smooth;
+}
+
+/* Money figures line up in columns. */
+.fig {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* Custom scrollbar for webkit browsers */
@@ -17,14 +114,14 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--line-2);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--line);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--ink-3);
 }
