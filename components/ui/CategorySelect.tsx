@@ -35,6 +35,8 @@ export interface CategorySelectProps {
   /** Extra classes for the 'button' variant trigger (overrides its colours). */
   buttonClassName?: string;
   className?: string;
+  /** Replace the trigger's default styling (e.g. a quiet chip in a table row). */
+  triggerClassName?: string;
 }
 
 interface Group {
@@ -72,6 +74,7 @@ export function CategorySelect({
   placement = 'bottom',
   buttonClassName,
   className = '',
+  triggerClassName,
 }: CategorySelectProps) {
   const { data, isLoading } = useCategories({ enabled: !categoriesProp });
   const categories = useMemo(() => categoriesProp ?? data ?? [], [categoriesProp, data]);
@@ -230,13 +233,14 @@ export function CategorySelect({
     );
 
   const triggerClass =
-    variant === 'button'
+    triggerClassName ??
+    (variant === 'button'
       ? `inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
           buttonClassName ?? 'bg-accent text-accent-ink'
         }`
       : variant === 'inline'
       ? 'flex max-w-full items-center rounded-md px-1.5 py-0.5 -mx-1.5 text-left text-sm hover:bg-sunk focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed'
-      : 'flex h-10 w-full items-center justify-between gap-2 rounded-md border border-line bg-surface px-3 text-left text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-sunk';
+      : 'flex h-10 w-full items-center justify-between gap-2 rounded-md border border-line bg-surface px-3 text-left text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-sunk');
 
   return (
     <div ref={rootRef} className={`relative ${variant === 'field' ? 'w-full' : 'inline-block max-w-full'} ${className}`}>

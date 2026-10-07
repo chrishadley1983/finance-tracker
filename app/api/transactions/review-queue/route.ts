@@ -1,23 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { applyManualCategories, InvalidCategoryError } from '@/lib/categorisation/apply';
-import type { Database } from '@/lib/supabase/database.types';
+import { categoriseMultiple } from '@/lib/categorisation/engine';
+import { merchantKey } from '@/lib/categorisation/normalise';
+import { reasonFor, type ReviewRow, type Suggestion } from '@/lib/review/queue';
 
-type TransactionRow = Database['finance']['Tables']['transactions']['Row'];
-
-interface ReviewQueueTransaction {
-  id: string;
-  date: string;
-  description: string;
-  amount: number;
-  type: string;
-  categoryId: string | null;
-  categoryName: string | null;
-  accountId: string;
-  accountName: string;
-  needsReview: boolean;
-  createdAt: string;
-}
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 interface ReviewQueueStats {
   total: number;
@@ -25,102 +14,126 @@ interface ReviewQueueStats {
   flagged: number;
 }
 
+type Filter = 'all' | 'uncategorised' | 'flagged';
+
 // =============================================================================
-// GET - List transactions needing review with stats
+// GET - Transactions needing review, with a suggestion and reason for each
 // =============================================================================
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '50', 10);
-    const offset = parseInt(searchParams.get('offset') || '0', 10);
-    const filter = searchParams.get('filter') || 'all'; // 'all', 'uncategorised', 'flagged'
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '200', 10) || 200, 1), 500);
+    const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10) || 0, 0);
+    const filter = (['all', 'uncategorised', 'flagged'].includes(searchParams.get('filter') ?? '')
+      ? searchParams.get('filter')
+      : 'all') as Filter;
+    const search = (searchParams.get('search') || '').trim();
 
-    // Build base query for review queue
     let query = supabaseAdmin
       .from('transactions')
-      .select(`
-        *,
-        categories(name),
-        accounts(name)
-      `, { count: 'exact' });
-
-    // Apply filter
-    if (filter === 'uncategorised') {
-      query = query.is('category_id', null);
-    } else if (filter === 'flagged') {
-      query = query.eq('needs_review', true);
-    } else {
-      // 'all' - show uncategorised OR flagged
-      query = query.or('category_id.is.null,needs_review.eq.true');
-    }
-
-    // Get total count before pagination
-    const countQuery = supabaseAdmin
-      .from('transactions')
-      .select('*', { count: 'exact', head: true })
-      .or('category_id.is.null,needs_review.eq.true');
-
-    const { count: totalCount } = await countQuery;
-
-    // Get uncategorised count
-    const { count: uncategorisedCount } = await supabaseAdmin
-      .from('transactions')
-      .select('*', { count: 'exact', head: true })
-      .is('category_id', null);
-
-    // Get flagged count
-    const { count: flaggedCount } = await supabaseAdmin
-      .from('transactions')
-      .select('*', { count: 'exact', head: true })
-      .eq('needs_review', true);
-
-    // Apply pagination and ordering
-    const { data: transactions, error, count } = await query
-      .order('date', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (error) {
-      console.error('Error fetching review queue:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch review queue' },
-        { status: 500 }
+      .select(
+        'id, date, description, amount, account_id, category_id, needs_review, is_validated, categorisation_source, categorisation_confidence, engine_source, categories(name), accounts(name)',
+        { count: 'exact' }
       );
+    if (filter === 'uncategorised') query = query.is('category_id', null);
+    else if (filter === 'flagged') query = query.eq('needs_review', true).not('category_id', 'is', null);
+    else query = query.or('category_id.is.null,needs_review.eq.true');
+    if (search) query = query.ilike('description', `%${search.replace(/[%_]/g, '')}%`);
+
+    const head = () => supabaseAdmin.from('transactions').select('id', { count: 'exact', head: true });
+    const [list, total, uncategorised, flagged] = await Promise.all([
+      query.order('date', { ascending: false }).range(offset, offset + limit - 1),
+      head().or('category_id.is.null,needs_review.eq.true'),
+      head().is('category_id', null),
+      head().eq('needs_review', true).not('category_id', 'is', null),
+    ]);
+    if (list.error) {
+      console.error('Error fetching review queue:', list.error);
+      return NextResponse.json({ error: 'Failed to fetch review queue' }, { status: 500 });
     }
 
-    const result: ReviewQueueTransaction[] = (transactions || []).map((t: TransactionRow & { categories: { name: string } | null; accounts: { name: string } | null }) => ({
-      id: t.id,
-      date: t.date,
-      description: t.description,
-      amount: t.amount,
-      type: t.amount >= 0 ? 'income' : 'expense',
-      categoryId: t.category_id,
-      categoryName: t.categories?.name || null,
-      accountId: t.account_id,
-      accountName: t.accounts?.name || 'Unknown',
-      needsReview: t.needs_review ?? false,
-      createdAt: t.created_at || '',
-    }));
+    type Row = {
+      id: string;
+      date: string;
+      description: string;
+      amount: number;
+      account_id: string;
+      category_id: string | null;
+      needs_review: boolean | null;
+      is_validated: boolean;
+      categorisation_source: 'manual' | 'rule' | 'ai' | 'import';
+      categorisation_confidence: number | null;
+      engine_source: string | null;
+      categories: { name: string } | null;
+      accounts: { name: string } | null;
+    };
+    const rows = (list.data ?? []) as unknown as Row[];
+
+    // Suggestions for uncategorised rows from rules and past transactions only:
+    // no AI calls, so opening the queue never costs anything.
+    const uncat = rows.filter((r) => !r.category_id);
+    const engine = uncat.length
+      ? await categoriseMultiple(
+          uncat.map((r) => ({ date: r.date, description: r.description, amount: r.amount, accountId: r.account_id })),
+          { allowAI: false }
+        ).catch((e) => {
+          console.warn('Review queue suggestions failed:', e);
+          return [];
+        })
+      : [];
+    const suggested = new Map<string, Suggestion>();
+    uncat.forEach((r, i) => {
+      const s = engine[i];
+      if (s?.categoryId) {
+        suggested.set(r.id, {
+          categoryId: s.categoryId,
+          categoryName: s.categoryName ?? 'Unknown',
+          confidence: s.confidence ?? null,
+          source: s.source ?? null,
+        });
+      }
+    });
+
+    const transactions: ReviewRow[] = rows.map((t) => {
+      const suggestion: Suggestion | null = t.category_id
+        ? {
+            categoryId: t.category_id,
+            categoryName: t.categories?.name ?? 'Unknown',
+            confidence: t.categorisation_confidence,
+            source: t.engine_source,
+          }
+        : suggested.get(t.id) ?? null;
+      const base = {
+        id: t.id,
+        date: t.date,
+        description: t.description,
+        amount: Number(t.amount),
+        accountId: t.account_id,
+        accountName: t.accounts?.name ?? 'Unknown',
+        categoryId: t.category_id,
+        categoryName: t.categories?.name ?? null,
+        needsReview: t.needs_review ?? false,
+        isValidated: t.is_validated ?? false,
+        categorisationSource: t.categorisation_source,
+        confidence: t.categorisation_confidence,
+        engineSource: t.engine_source,
+        merchant: merchantKey(t.description) || t.description.toLowerCase().trim(),
+        suggestion,
+      };
+      return { ...base, reason: reasonFor(base) };
+    });
 
     const stats: ReviewQueueStats = {
-      total: totalCount || 0,
-      uncategorised: uncategorisedCount || 0,
-      flagged: flaggedCount || 0,
+      total: total.count ?? 0,
+      uncategorised: uncategorised.count ?? 0,
+      flagged: flagged.count ?? 0,
     };
 
-    return NextResponse.json({
-      transactions: result,
-      stats,
-      total: count || 0,
-      limit,
-      offset,
-    });
+    return NextResponse.json({ transactions, stats, total: list.count ?? 0, limit, offset });
   } catch (error) {
     console.error('Unexpected error:', error);
-    return NextResponse.json(
-      { error: 'An unexpected error occurred' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
 
