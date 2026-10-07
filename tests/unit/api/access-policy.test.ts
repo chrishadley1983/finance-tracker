@@ -94,7 +94,6 @@ describe('decideApiAccess', () => {
       '/api/auth/callback',
       '/api/auth/logout',
       '/api/truelayer/callback',
-      '/api/enable-banking/callback/',
     ]) {
       expect(await decideApiAccess(input({ path }))).toEqual({ allow: true, reason: 'public' });
     }

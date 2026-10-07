@@ -24,7 +24,6 @@ export const PUBLIC_API_PATHS: readonly string[] = [
   '/api/auth/callback', // Supabase login callback
   '/api/auth/logout', // only clears the session cookie
   '/api/truelayer/callback', // bank OAuth redirect (validates its own state)
-  '/api/enable-banking/callback', // bank OAuth redirect (validates its own state)
 ];
 
 export type ApiAuthMode = 'audit' | 'enforce';
