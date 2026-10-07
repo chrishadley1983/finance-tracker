@@ -6,6 +6,9 @@ import type { ColumnMapping } from '@/lib/validations/import';
 import { TemplateSelector, type Template } from './TemplateSelector';
 import { SaveTemplateDialog, type SaveTemplateData } from './SaveTemplateDialog';
 import { TemplateManager } from './TemplateManager';
+import { Button } from '@/components/ui/Button';
+import { Field, Select } from '@/components/ui/Field';
+import { Notice } from '@/components/ui/Notice';
 
 interface AISuggestionResponse {
   suggestion: {
@@ -347,128 +350,63 @@ export function MappingStep({
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-slate-900 mb-2">Map Columns</h2>
-        <p className="text-slate-600">
-          Match your CSV columns to the required fields. We&apos;ll try to auto-detect them for you.
-        </p>
-      </div>
+    <div className="grid gap-6">
+      <h2 className="text-[15px] font-semibold text-ink">Match columns</h2>
 
       {detectedFormat && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="text-sm font-medium text-blue-800">
-              Detected format: {detectedFormat.name} ({Math.round(detectedFormat.confidence * 100)}%
-              confidence)
-            </span>
-          </div>
-        </div>
+        <Notice tone="success">
+          Detected format: {detectedFormat.name}.{' '}
+          {detectedFormat.confidence < 0.8
+            ? `Only a partial match (${Math.round(detectedFormat.confidence * 100)}% confidence), so check the columns below.`
+            : 'The columns below are filled in for you.'}
+        </Notice>
       )}
 
       {/* AI Suggestion Section */}
       {shouldOfferAI && !aiResult && (
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
-              <div>
-                <span className="text-sm font-medium text-purple-800">
-                  Unknown format detected
-                </span>
-                <p className="text-xs text-purple-600">
-                  Let AI analyse your CSV and suggest column mappings
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={handleGetAISuggestion}
-              disabled={aiLoading || rateLimitRemaining === 0}
-              className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:bg-purple-300 transition-colors flex items-center gap-2"
-            >
-              {aiLoading ? (
-                <>
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Analysing...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  Get AI Suggestion
-                </>
-              )}
-            </button>
-          </div>
-          {rateLimitRemaining !== null && rateLimitRemaining > 0 && (
-            <p className="text-xs text-purple-500 mt-2">
-              {rateLimitRemaining} AI suggestions remaining today
-            </p>
-          )}
-        </div>
+        <Notice
+          tone="info"
+          action={
+            <Button size="sm" onClick={handleGetAISuggestion} loading={aiLoading} disabled={rateLimitRemaining === 0}>
+              {aiLoading ? 'Analysing...' : 'Suggest columns with AI'}
+            </Button>
+          }
+        >
+          <p className="font-medium text-ink">This file&apos;s format isn&apos;t one we know</p>
+          <p className="mt-0.5">
+            AI can read the headers and sample rows and suggest a mapping.
+            {rateLimitRemaining !== null && rateLimitRemaining > 0 && ` ${rateLimitRemaining} suggestions left today.`}
+          </p>
+        </Notice>
       )}
 
       {/* AI Result Display */}
       {aiResult && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span className="text-sm font-medium text-green-800">
-              AI suggestion applied ({Math.round(aiResult.confidence * 100)}% confidence)
-            </span>
-          </div>
-          <p className="text-sm text-green-700">{aiResult.reasoning}</p>
+        <Notice tone="success" action={<Button size="sm" variant="ghost" onClick={() => setAiResult(null)}>Clear AI suggestion</Button>}>
+          <p className="font-medium">
+            AI suggestion applied
+            {aiResult.confidence < 0.8 && ` (${Math.round(aiResult.confidence * 100)}% confidence, so check it)`}
+          </p>
+          <p className="mt-0.5 text-ink-2">{aiResult.reasoning}</p>
           {aiResult.warnings.length > 0 && (
-            <div className="text-sm text-amber-700 bg-amber-50 rounded p-2">
-              <strong>Warnings:</strong>
-              <ul className="list-disc list-inside mt-1">
-                {aiResult.warnings.map((warning, i) => (
-                  <li key={i}>{warning}</li>
-                ))}
-              </ul>
-            </div>
+            <ul className="mt-1 list-disc pl-5 text-warn">
+              {aiResult.warnings.map((warning, i) => (
+                <li key={i}>{warning}</li>
+              ))}
+            </ul>
           )}
-          <button
-            onClick={() => setAiResult(null)}
-            className="text-xs text-green-600 hover:text-green-800 underline"
-          >
-            Clear AI suggestion
-          </button>
-        </div>
+        </Notice>
       )}
 
       {/* Template Selection */}
       {templates.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-slate-700">
-              Saved Templates
-            </label>
+        <div className="grid gap-1.5">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[13px] font-medium text-ink-2">Saved templates</span>
             {mapping.date && mapping.description && (
-              <button
-                onClick={() => setShowSaveDialog(true)}
-                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                </svg>
-                Save as Template
-              </button>
+              <Button size="sm" variant="ghost" onClick={() => setShowSaveDialog(true)}>
+                Save as template
+              </Button>
             )}
           </div>
           <TemplateSelector
@@ -482,80 +420,51 @@ export function MappingStep({
         </div>
       )}
 
-      {/* Save Template Button (when no templates exist) */}
-      {templates.length === 0 && mapping.date && mapping.description && (
-        <div className="bg-slate-50 border border-slate-200 border-dashed rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-700">Save as Template</p>
-              <p className="text-xs text-slate-500">
-                Save this mapping for future imports from the same source.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowSaveDialog(true)}
-              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-              </svg>
-              Save Template
-            </button>
-          </div>
-        </div>
-      )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Bank format" htmlFor="import-format">
+          <Select id="import-format" value={selectedFormatId || ''} onChange={(e) => setSelectedFormatId(e.target.value || null)}>
+            <option value="">Custom mapping</option>
+            {formats.map((format) => (
+              <option key={format.id} value={format.id}>
+                {format.provider} - {format.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
 
-      {/* Format Selection */}
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-2">
-          Import Format
-        </label>
-        <select
-          value={selectedFormatId || ''}
-          onChange={(e) => setSelectedFormatId(e.target.value || null)}
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Custom Mapping</option>
-          {formats.map((format) => (
-            <option key={format.id} value={format.id}>
-              {format.provider} - {format.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Amount Mode Toggle */}
-      <div className="bg-slate-50 rounded-lg p-4">
-        <label className="block text-sm font-medium text-slate-700 mb-3">
-          Amount Format
-        </label>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2 cursor-pointer">
+        <fieldset className="grid gap-1.5">
+          <legend className="mb-1.5 text-[13px] font-medium text-ink-2">Amounts</legend>
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-ink">
             <input
               type="radio"
               name="amountMode"
               checked={!useDebitCredit}
               onChange={() => handleAmountModeChange(false)}
-              className="w-4 h-4 text-blue-600"
+              className="h-4 w-4 accent-accent"
             />
-            <span className="text-sm text-slate-700">Single amount column</span>
+            Single amount column
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-ink">
             <input
               type="radio"
               name="amountMode"
               checked={useDebitCredit}
               onChange={() => handleAmountModeChange(true)}
-              className="w-4 h-4 text-blue-600"
+              className="h-4 w-4 accent-accent"
             />
-            <span className="text-sm text-slate-700">Separate debit/credit columns</span>
+            Separate debit/credit columns
           </label>
-        </div>
+        </fieldset>
       </div>
 
       {/* Column Mapping */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-slate-700">Required Fields</h3>
+      <div className="grid gap-1">
+        <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 border-b border-line pb-1.5 text-xs font-medium uppercase tracking-wide text-ink-3 md:grid">
+          <span>Field</span>
+          <span>Column in your file</span>
+          <span>First row</span>
+        </div>
+        <h3 className="pt-2 text-[13px] font-semibold text-ink">Required</h3>
 
         {REQUIRED_FIELDS.map((field) => (
           <ColumnMapper
@@ -600,7 +509,7 @@ export function MappingStep({
           />
         )}
 
-        <h3 className="text-sm font-medium text-slate-700 mt-6">Optional Fields</h3>
+        <h3 className="pt-5 text-[13px] font-semibold text-ink">Optional</h3>
 
         {OPTIONAL_FIELDS.map((field) => (
           <ColumnMapper
@@ -616,27 +525,25 @@ export function MappingStep({
         ))}
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-sm text-red-700">{error}</p>
+      {templates.length === 0 && mapping.date && mapping.description && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-line px-4 py-3">
+          <p className="text-sm text-ink-2">Importing from this bank again? Save this mapping as a template.</p>
+          <Button size="sm" onClick={() => setShowSaveDialog(true)}>
+            Save template
+          </Button>
         </div>
       )}
 
+      {error && <Notice tone="error">{error}</Notice>}
+
       {/* Navigation */}
-      <div className="flex justify-between pt-4 border-t border-slate-200">
-        <button
-          onClick={onBack}
-          className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
-        >
+      <div className="flex justify-between gap-3 border-t border-line pt-4">
+        <Button variant="ghost" onClick={onBack}>
           Back
-        </button>
-        <button
-          onClick={handleContinue}
-          disabled={isLoading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
-        >
-          {isLoading ? 'Validating...' : 'Continue'}
-        </button>
+        </Button>
+        <Button variant="primary" onClick={handleContinue} loading={isLoading}>
+          {isLoading ? 'Checking...' : 'Continue'}
+        </Button>
       </div>
 
       {/* Save Template Dialog */}
@@ -684,37 +591,32 @@ function ColumnMapper({
   getPreviewValue,
   required = false,
 }: ColumnMapperProps) {
+  const id = `map-${_field}`;
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start py-3 border-b border-slate-100">
-      <div>
-        <label className="block text-sm font-medium text-slate-900">
+    <div className="grid grid-cols-1 items-center gap-x-4 gap-y-1.5 border-b border-line-2 py-2.5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="min-w-0">
+        <label htmlFor={id} className="block text-sm font-medium text-ink">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="sr-only"> (required)</span>}
         </label>
-        <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+        <p className="text-xs text-ink-3">{description}</p>
       </div>
-      <div>
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">-- Select column --</option>
-          {headers.map((header) => (
-            <option key={header} value={header}>
-              {header}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="text-sm text-slate-600 bg-slate-50 px-3 py-2 rounded truncate">
+      <Select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">Choose a column</option>
+        {headers.map((header) => (
+          <option key={header} value={header}>
+            {header}
+          </option>
+        ))}
+      </Select>
+      <div className={`min-w-0 truncate text-sm ${value ? '' : 'hidden md:block'}`}>
         {value ? (
-          <>
-            <span className="text-slate-400">Preview: </span>
+          <span className="fig text-ink-2" title={getPreviewValue(value)}>
+            <span className="sr-only">Preview: </span>
             {getPreviewValue(value)}
-          </>
+          </span>
         ) : (
-          <span className="text-slate-400">No column selected</span>
+          <span className="text-ink-3">Not used</span>
         )}
       </div>
     </div>

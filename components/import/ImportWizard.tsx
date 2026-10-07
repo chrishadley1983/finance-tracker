@@ -5,6 +5,8 @@ import { UploadStep } from './UploadStep';
 import { MappingStep } from './MappingStep';
 import { CategorisedPreview } from './CategorisedPreview';
 import { ImportStep } from './ImportStep';
+import { PageIntro } from '@/components/ui/PageIntro';
+import { ImportDone } from './ImportDone';
 import type { ParsedTransaction, ImportFormat } from '@/lib/types/import';
 import type { ColumnMapping } from '@/lib/validations/import';
 
@@ -38,7 +40,7 @@ interface PreviewResult {
   };
 }
 
-interface ImportResult {
+export interface ImportResult {
   success: boolean;
   imported: number;
   skipped: number;
@@ -61,15 +63,28 @@ export interface ImportWizardState {
 const STEP_ORDER: WizardStep[] = ['upload', 'mapping', 'preview', 'import', 'done'];
 
 const STEP_TITLES: Record<WizardStep, string> = {
-  upload: 'Upload File',
-  mapping: 'Map Columns',
-  preview: 'Preview Data',
+  upload: 'Upload',
+  mapping: 'Match columns',
+  preview: 'Check and categorise',
   import: 'Import',
-  done: 'Complete',
+  done: 'Done',
 };
 
-export function ImportWizard() {
-  const [state, setState] = useState<ImportWizardState>({
+const STEP_INTRO: Record<WizardStep, string> = {
+  upload: 'Bring in transactions from a bank statement. CSV exports and HSBC PDF statements both work.',
+  mapping: 'Tell us which column holds the date, description and amount. Known bank formats are matched for you.',
+  preview: 'Check the rows and their categories before anything is saved. Nothing is imported yet.',
+  import: 'Look for duplicates of transactions you already have, then import.',
+  done: 'That file is done. Check anything that needs a look, or bring in another statement.',
+};
+
+export interface ImportWizardProps {
+  /** Start part-way through (tests and the UI harness). Defaults to the upload step. */
+  initialState?: Partial<ImportWizardState>;
+}
+
+export function ImportWizard({ initialState }: ImportWizardProps = {}) {
+  const [state, setState] = useState<ImportWizardState>(() => ({
     step: 'upload',
     uploadResult: null,
     selectedFormat: null,
@@ -78,7 +93,8 @@ export function ImportWizard() {
     importResult: null,
     selectedAccountId: null,
     categoryOverrides: new Map(),
-  });
+    ...initialState,
+  }));
 
   const currentStepIndex = STEP_ORDER.indexOf(state.step);
 
@@ -148,60 +164,53 @@ export function ImportWizard() {
   }, [state.step, goToStep]);
 
   return (
-    <div className="space-y-6">
-      {/* Progress Indicator */}
-      <div className="flex items-center justify-between">
-        {STEP_ORDER.map((step, index) => {
-          const isActive = step === state.step;
-          const isCompleted = index < currentStepIndex;
-          const isClickable = isCompleted && step !== 'done';
-
-          return (
-            <div key={step} className="flex items-center flex-1">
-              <button
-                onClick={() => isClickable && goToStep(step)}
-                disabled={!isClickable}
-                className={`
-                  flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium
-                  transition-colors
-                  ${isActive ? 'bg-blue-600 text-white' : ''}
-                  ${isCompleted ? 'bg-green-600 text-white cursor-pointer hover:bg-green-700' : ''}
-                  ${!isActive && !isCompleted ? 'bg-slate-200 text-slate-500' : ''}
-                `}
-              >
-                {isCompleted ? (
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ) : (
-                  index + 1
-                )}
-              </button>
-              <span
-                className={`ml-2 text-sm font-medium hidden sm:block ${
-                  isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-slate-500'
-                }`}
-              >
-                {STEP_TITLES[step]}
-              </span>
-              {index < STEP_ORDER.length - 1 && (
-                <div
-                  className={`flex-1 h-0.5 mx-4 ${
-                    index < currentStepIndex ? 'bg-green-600' : 'bg-slate-200'
-                  }`}
-                />
-              )}
-            </div>
-          );
-        })}
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+      <div className="grid gap-3">
+        <PageIntro>{STEP_INTRO[state.step]}</PageIntro>
+        <nav aria-label="Import steps">
+          <ol className="flex flex-wrap items-center gap-x-1 gap-y-1 text-[13px]">
+            {STEP_ORDER.map((step, index) => {
+              const isActive = step === state.step;
+              const isCompleted = index < currentStepIndex;
+              const isClickable = isCompleted && step !== 'done' && state.step !== 'done';
+              const label = (
+                <>
+                  <span className="fig mr-1.5 text-[12px]">{index + 1}</span>
+                  {STEP_TITLES[step]}
+                </>
+              );
+              return (
+                <li key={step} className="flex items-center gap-1">
+                  {isClickable ? (
+                    <button
+                      type="button"
+                      onClick={() => goToStep(step)}
+                      className="rounded-md px-1.5 py-0.5 text-ink-2 underline-offset-2 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-accent"
+                    >
+                      {label}
+                    </button>
+                  ) : (
+                    <span
+                      aria-current={isActive ? 'step' : undefined}
+                      className={`px-1.5 py-0.5 ${isActive ? 'font-semibold text-ink' : isCompleted ? 'text-ink-2' : 'text-ink-3'}`}
+                    >
+                      {label}
+                    </span>
+                  )}
+                  {index < STEP_ORDER.length - 1 && (
+                    <span aria-hidden="true" className="text-ink-3">
+                      /
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
       </div>
 
       {/* Step Content */}
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div className="min-w-0 border-t-[1.5px] border-ink pt-5">
         {state.step === 'upload' && <UploadStep onComplete={handleUploadComplete} />}
 
         {state.step === 'mapping' && state.uploadResult && (
@@ -240,43 +249,7 @@ export function ImportWizard() {
           )}
 
         {state.step === 'done' && state.importResult && (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-semibold text-slate-900 mb-2">Import Complete!</h2>
-            <p className="text-slate-600 mb-6">
-              Successfully imported {state.importResult.imported} transactions.
-              {state.importResult.skipped > 0 && ` Skipped ${state.importResult.skipped} duplicates.`}
-              {state.importResult.failed > 0 && ` ${state.importResult.failed} failed.`}
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={handleReset}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Import Another File
-              </button>
-              <a
-                href="/transactions"
-                className="px-6 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
-              >
-                View Transactions
-              </a>
-            </div>
-          </div>
+          <ImportDone result={state.importResult} onReset={handleReset} />
         )}
       </div>
     </div>

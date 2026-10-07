@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { CategoryConfidence, SourceBadge } from './CategoryConfidence';
+import { CategoryConfidence, confidenceText } from './CategoryConfidence';
 import type { CategorisationResult } from '@/lib/categorisation';
 
 interface Category {
@@ -114,11 +114,9 @@ export function CategoryCell({
 
   if (disabled) {
     return (
-      <div className="flex items-center gap-2 text-slate-400">
+      <div className="flex min-w-0 items-center gap-1.5 text-ink-3">
+        <span className="truncate">{result.categoryName || '-'}</span>
         <CategoryConfidence result={result} />
-        <span className="truncate max-w-[150px]">
-          {result.categoryName || '—'}
-        </span>
       </div>
     );
   }
@@ -128,23 +126,21 @@ export function CategoryCell({
       {/* Display Mode */}
       <button
         onClick={() => setIsEditing(true)}
-        className={`flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-100 transition-colors text-left w-full ${
-          !result.categoryId ? 'text-slate-400 italic' : ''
+        className={`-mx-1.5 flex w-full min-w-0 items-center gap-1.5 rounded-md px-1.5 py-0.5 text-left text-sm transition-colors hover:bg-sunk focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+          result.categoryId ? 'text-ink-2' : 'text-ink-3'
         }`}
         type="button"
+        title={confidenceText(result)}
       >
-        <CategoryConfidence result={result} />
-        <span className="truncate max-w-[120px]">
-          {result.categoryName || 'Uncategorised'}
-        </span>
-        <SourceBadge source={result.source} />
+        <span className="truncate">{result.categoryName || 'Uncategorised'}</span>
+        <CategoryConfidence result={result} showTooltip={false} />
       </button>
 
       {/* Edit Mode - Dropdown */}
       {isEditing && (
-        <div className="absolute left-0 top-full mt-1 w-64 bg-white rounded-lg shadow-lg border border-slate-200 z-20 max-h-80 overflow-hidden">
+        <div className="absolute left-0 top-full mt-1 w-64 bg-surface rounded-md shadow-lg border border-line z-20 max-h-80 overflow-hidden">
           {/* Search Input */}
-          <div className="p-2 border-b border-slate-100">
+          <div className="p-2 border-b border-line-2">
             <input
               ref={inputRef}
               type="text"
@@ -152,20 +148,20 @@ export function CategoryCell({
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search categories..."
-              className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2 py-1.5 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
 
           <div className="overflow-y-auto max-h-60">
             {/* Copy from above */}
             {onCopyFromAbove && (
-              <div className="border-b border-slate-100">
+              <div className="border-b border-line-2">
                 <button
                   onClick={() => {
                     onCopyFromAbove();
                     setIsEditing(false);
                   }}
-                  className="w-full px-3 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-sm text-accent hover:bg-accent-soft flex items-center gap-2"
                 >
                   <svg
                     className="w-4 h-4"
@@ -187,18 +183,18 @@ export function CategoryCell({
 
             {/* Alternatives */}
             {alternatives.length > 0 && !searchTerm && (
-              <div className="border-b border-slate-100">
-                <div className="px-3 py-1.5 text-xs text-slate-500 bg-slate-50">
+              <div className="border-b border-line-2">
+                <div className="px-3 py-1.5 text-xs text-ink-3 bg-sunk">
                   Suggestions
                 </div>
                 {alternatives.map((alt) => (
                   <button
                     key={alt.categoryId}
                     onClick={() => handleSelect(alt.categoryId)}
-                    className="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 flex items-center justify-between"
+                    className="w-full px-3 py-1.5 text-left text-sm hover:bg-sunk flex items-center justify-between"
                   >
                     <span>{alt.categoryName}</span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-ink-3">
                       {Math.round(alt.confidence * 100)}%
                     </span>
                   </button>
@@ -208,15 +204,15 @@ export function CategoryCell({
 
             {/* Recent Categories */}
             {recentCats.length > 0 && !searchTerm && (
-              <div className="border-b border-slate-100">
-                <div className="px-3 py-1.5 text-xs text-slate-500 bg-slate-50">
+              <div className="border-b border-line-2">
+                <div className="px-3 py-1.5 text-xs text-ink-3 bg-sunk">
                   Recent
                 </div>
                 {recentCats.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => handleSelect(cat.id)}
-                    className="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50"
+                    className="w-full px-3 py-1.5 text-left text-sm hover:bg-sunk"
                   >
                     {cat.name}
                   </button>
@@ -229,7 +225,7 @@ export function CategoryCell({
               // Flat list when searching
               <div>
                 {filteredCategories.length === 0 ? (
-                  <div className="px-3 py-2 text-sm text-slate-400">
+                  <div className="px-3 py-2 text-sm text-ink-3">
                     No categories found
                   </div>
                 ) : (
@@ -237,10 +233,10 @@ export function CategoryCell({
                     <button
                       key={cat.id}
                       onClick={() => handleSelect(cat.id)}
-                      className="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 flex items-center justify-between"
+                      className="w-full px-3 py-1.5 text-left text-sm hover:bg-sunk flex items-center justify-between"
                     >
                       <span>{cat.name}</span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-ink-3">
                         {cat.group_name}
                       </span>
                     </button>
@@ -251,16 +247,16 @@ export function CategoryCell({
               // Grouped when not searching
               Object.entries(groupedCategories).map(([group, cats]) => (
                 <div key={group}>
-                  <div className="px-3 py-1.5 text-xs text-slate-500 bg-slate-50 sticky top-0">
+                  <div className="px-3 py-1.5 text-xs text-ink-3 bg-sunk sticky top-0">
                     {group}
                   </div>
                   {cats.map((cat) => (
                     <button
                       key={cat.id}
                       onClick={() => handleSelect(cat.id)}
-                      className={`w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 ${
+                      className={`w-full px-3 py-1.5 text-left text-sm hover:bg-sunk ${
                         cat.id === result.categoryId
-                          ? 'bg-blue-50 text-blue-700'
+                          ? 'bg-accent-soft text-accent'
                           : ''
                       }`}
                     >

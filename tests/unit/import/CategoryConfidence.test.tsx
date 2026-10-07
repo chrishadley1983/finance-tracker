@@ -20,42 +20,26 @@ describe('CategoryConfidence', () => {
     ...overrides,
   });
 
-  describe('confidence indicator colors', () => {
-    it('shows green dot for high confidence (>=0.8)', () => {
-      const result = createResult({ confidence: 0.9 });
-      const { container } = render(<CategoryConfidence result={result} />);
-
-      const dot = container.querySelector('.bg-green-500');
-      expect(dot).toBeInTheDocument();
+  describe('unsure marker', () => {
+    it('shows nothing for confident results', () => {
+      const { container } = render(<CategoryConfidence result={createResult({ confidence: 0.9 })} />);
+      expect(container.firstChild).toBeNull();
     });
 
-    it('shows yellow dot for medium confidence (0.5-0.8)', () => {
-      const result = createResult({ confidence: 0.6 });
-      const { container } = render(<CategoryConfidence result={result} />);
-
-      const dot = container.querySelector('.bg-yellow-500');
-      expect(dot).toBeInTheDocument();
+    it('marks results below the review threshold as unsure', () => {
+      render(<CategoryConfidence result={createResult({ confidence: 0.6 })} />);
+      expect(screen.getByText('unsure')).toBeInTheDocument();
     });
 
-    it('shows red dot for low confidence (<0.5)', () => {
-      const result = createResult({ confidence: 0.3 });
-      const { container } = render(<CategoryConfidence result={result} />);
-
-      const dot = container.querySelector('.bg-red-500');
-      expect(dot).toBeInTheDocument();
+    it('marks low confidence results as unsure', () => {
+      render(<CategoryConfidence result={createResult({ confidence: 0.3 })} />);
+      expect(screen.getByText('unsure')).toBeInTheDocument();
     });
 
-    it('shows gray dot for uncategorised', () => {
-      const result = createResult({
-        categoryId: null,
-        categoryName: null,
-        source: 'none',
-        confidence: 0,
-      });
+    it('shows nothing for uncategorised rows', () => {
+      const result = createResult({ categoryId: null, categoryName: null, source: 'none', confidence: 0 });
       const { container } = render(<CategoryConfidence result={result} />);
-
-      const dot = container.querySelector('.bg-slate-300');
-      expect(dot).toBeInTheDocument();
+      expect(container.firstChild).toBeNull();
     });
   });
 
@@ -63,6 +47,7 @@ describe('CategoryConfidence', () => {
     it('shows exact match tooltip for rule_exact source', () => {
       const result = createResult({
         source: 'rule_exact',
+        confidence: 0.5,
         matchDetails: 'Exact match: TESCO',
       });
       const { container } = render(<CategoryConfidence result={result} />);
@@ -74,6 +59,7 @@ describe('CategoryConfidence', () => {
     it('shows pattern match tooltip for rule_pattern source', () => {
       const result = createResult({
         source: 'rule_pattern',
+        confidence: 0.5,
         matchDetails: 'Pattern match: Contains TESCO',
       });
       const { container } = render(<CategoryConfidence result={result} />);
@@ -85,19 +71,20 @@ describe('CategoryConfidence', () => {
     it('shows AI tooltip with confidence for ai source', () => {
       const result = createResult({
         source: 'ai',
-        confidence: 0.85,
+        confidence: 0.65,
         matchDetails: 'Looks like a grocery store',
       });
       const { container } = render(<CategoryConfidence result={result} />);
 
       const dot = container.querySelector('[aria-label]');
       expect(dot?.getAttribute('aria-label')).toContain('AI suggestion');
-      expect(dot?.getAttribute('aria-label')).toContain('85%');
+      expect(dot?.getAttribute('aria-label')).toContain('65%');
     });
 
     it('shows similar tooltip for similar source', () => {
       const result = createResult({
         source: 'similar',
+        confidence: 0.5,
         matchDetails: 'Similar to TESCO STORES',
       });
       const { container } = render(<CategoryConfidence result={result} />);
@@ -134,18 +121,10 @@ describe('SourceBadge', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('applies blue color for rule source', () => {
-    const { container } = render(<SourceBadge source="rule_exact" />);
-    expect(container.querySelector('.bg-blue-100')).toBeInTheDocument();
-  });
-
-  it('applies purple color for similar source', () => {
-    const { container } = render(<SourceBadge source="similar" />);
-    expect(container.querySelector('.bg-purple-100')).toBeInTheDocument();
-  });
-
-  it('applies amber color for ai source', () => {
-    const { container } = render(<SourceBadge source="ai" />);
-    expect(container.querySelector('.bg-amber-100')).toBeInTheDocument();
+  it('uses a neutral chip, except policy "ask" which is flagged', () => {
+    const { container, rerender } = render(<SourceBadge source="rule_exact" />);
+    expect(container.querySelector('.bg-line-2')).toBeInTheDocument();
+    rerender(<SourceBadge source="policy_ask" />);
+    expect(container.querySelector('.bg-warn-soft')).toBeInTheDocument();
   });
 });

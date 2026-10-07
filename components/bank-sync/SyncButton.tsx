@@ -12,6 +12,8 @@ interface SyncButtonProps {
   accountId?: string;
   label?: string;
   className?: string;
+  /** Called after a successful sync (e.g. to refresh last-synced times). */
+  onDone?: (totals: SyncTotals) => void;
 }
 
 const AUTO_CLEAR_MS = 6000;
@@ -22,7 +24,7 @@ const DEFAULT_CLASS_NAME =
  * Fire-and-forget sync trigger for TrueLayer. Safe to render even when
  * TrueLayer isn't configured — the error simply surfaces on click.
  */
-export function SyncButton({ accountId, label, className }: SyncButtonProps) {
+export function SyncButton({ accountId, label, className, onDone }: SyncButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +73,8 @@ export function SyncButton({ accountId, label, className }: SyncButtonProps) {
       }
 
       const totals: SyncTotals = data.totals ?? { imported: 0, alreadyPresent: 0 };
-      setResult(`Imported ${totals.imported} • ${totals.alreadyPresent} already up to date`);
+      setResult(`Imported ${totals.imported}, ${totals.alreadyPresent} already up to date`);
+      onDone?.(totals);
       scheduleClear();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sync failed');
@@ -83,7 +86,7 @@ export function SyncButton({ accountId, label, className }: SyncButtonProps) {
 
   return (
     <div className="inline-flex flex-col items-start gap-1">
-      <button onClick={handleSync} disabled={isLoading} className={className || DEFAULT_CLASS_NAME}>
+      <button type="button" onClick={handleSync} disabled={isLoading} className={className || DEFAULT_CLASS_NAME}>
         {isLoading ? (
           <>
             <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -111,7 +114,7 @@ export function SyncButton({ accountId, label, className }: SyncButtonProps) {
         )}
       </button>
 
-      {result && <p className="text-xs text-in">{result}</p>}
+      {result && <p className="text-xs text-ink-2" role="status">{result}</p>}
 
       {error && (
         <p className="text-xs text-bad">

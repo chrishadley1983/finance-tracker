@@ -130,11 +130,11 @@ export function SaveTemplateDialog({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div className="bg-surface rounded-md shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">Save as Template</h2>
-          <p className="text-sm text-slate-500 mt-1">
+        <div className="px-6 py-4 border-b border-line">
+          <h2 className="text-lg font-semibold text-ink">Save as Template</h2>
+          <p className="text-sm text-ink-3 mt-1">
             Save this column mapping for future imports from the same source.
           </p>
         </div>
@@ -144,8 +144,8 @@ export function SaveTemplateDialog({
           <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
             {/* Template Name */}
             <div>
-              <label htmlFor="template-name" className="block text-sm font-medium text-slate-700 mb-1">
-                Template Name <span className="text-red-500">*</span>
+              <label htmlFor="template-name" className="block text-sm font-medium text-ink-2 mb-1">
+                Template Name <span className="text-bad">*</span>
               </label>
               <input
                 id="template-name"
@@ -153,7 +153,7 @@ export function SaveTemplateDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Barclays Current Account"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                 maxLength={100}
                 autoFocus
               />
@@ -161,8 +161,8 @@ export function SaveTemplateDialog({
 
             {/* Provider */}
             <div>
-              <label htmlFor="template-provider" className="block text-sm font-medium text-slate-700 mb-1">
-                Bank / Provider <span className="text-red-500">*</span>
+              <label htmlFor="template-provider" className="block text-sm font-medium text-ink-2 mb-1">
+                Bank / Provider <span className="text-bad">*</span>
               </label>
               <input
                 id="template-provider"
@@ -170,33 +170,33 @@ export function SaveTemplateDialog({
                 value={provider}
                 onChange={(e) => setProvider(e.target.value)}
                 placeholder="e.g., Barclays"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                 maxLength={100}
               />
             </div>
 
             {/* Mapping Summary */}
-            <div className="bg-slate-50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-slate-700 mb-2">Column Mapping</h3>
-              <ul className="text-sm text-slate-600 space-y-1">
+            <div className="bg-sunk rounded-md p-4">
+              <h3 className="text-sm font-medium text-ink-2 mb-2">Column Mapping</h3>
+              <ul className="text-sm text-ink-2 space-y-1">
                 {mappingSummary.map((item, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-in" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     {item}
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-slate-500 mt-2">
+              <p className="text-xs text-ink-3 mt-2">
                 Format: {dateFormat} | Decimal: {decimalSeparator === '.' ? 'Period (.)' : 'Comma (,)'}
               </p>
             </div>
 
             {/* Notes */}
             <div>
-              <label htmlFor="template-notes" className="block text-sm font-medium text-slate-700 mb-1">
-                Notes <span className="text-slate-400">(optional)</span>
+              <label htmlFor="template-notes" className="block text-sm font-medium text-ink-2 mb-1">
+                Notes <span className="text-ink-3">(optional)</span>
               </label>
               <textarea
                 id="template-notes"
@@ -204,34 +204,34 @@ export function SaveTemplateDialog({
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add any notes about this template..."
                 rows={3}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full px-3 py-2 border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                 maxLength={500}
               />
-              <p className="text-xs text-slate-400 mt-1">{notes.length}/500</p>
+              <p className="text-xs text-ink-3 mt-1">{notes.length}/500</p>
             </div>
 
             {/* Error */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-sm text-red-700">{error}</p>
+              <div className="bg-bad-soft border border-bad/40 rounded-md p-3">
+                <p className="text-sm text-bad">{error}</p>
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3 bg-slate-50">
+          <div className="px-6 py-4 border-t border-line flex justify-end gap-3 bg-sunk">
             <button
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-ink-2 hover:text-ink transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-accent text-accent-ink rounded-md hover:opacity-90 disabled:opacity-50 transition-colors flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

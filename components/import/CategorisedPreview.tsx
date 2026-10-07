@@ -8,7 +8,13 @@ import { RuleSuggestionToast, useRuleSuggestions, type RuleSuggestionData } from
 import type { ParsedTransaction, ImportFormat } from '@/lib/types/import';
 import type { ColumnMapping } from '@/lib/validations/import';
 import type { CategorisationResult, CategorisationStats } from '@/lib/categorisation';
-import { formatDateGBPadded, formatGBP } from '@/lib/format';
+import { formatDateGB, formatGBP } from '@/lib/format';
+import { isUnsure } from '@/lib/review/queue';
+import { Button } from '@/components/ui/Button';
+import { Field, Select } from '@/components/ui/Field';
+import { Notice, SkeletonRows } from '@/components/ui/Notice';
+import { Tabs } from '@/components/ui/Tabs';
+import { formatAmount } from '@/components/transactions/TransactionTable';
 
 // =============================================================================
 // TYPES
@@ -319,7 +325,7 @@ export function CategorisedPreview({
       const override = categoryOverrides.get(i);
       if (override) return; // User already overrode
       const result = categorisationResults.get(i);
-      if (result && result.confidence < 0.5 && result.categoryId) {
+      if (result && isUnsure(result.confidence) && result.categoryId) {
         lowConf.add(i);
       }
     });
@@ -486,7 +492,7 @@ export function CategorisedPreview({
       const result = getEffectiveResult(i);
       if (result.categoryId) {
         categorised++;
-        if (result.confidence < 0.5 && !categoryOverrides.has(i)) {
+        if (isUnsure(result.confidence) && !categoryOverrides.has(i)) {
           lowConfidence++;
         }
       } else {
@@ -509,7 +515,7 @@ export function CategorisedPreview({
         case 'uncategorised':
           return !result.categoryId;
         case 'low_confidence':
-          return result.categoryId && result.confidence < 0.5 && !categoryOverrides.has(i);
+          return result.categoryId && isUnsure(result.confidence) && !categoryOverrides.has(i);
         default:
           return true;
       }
@@ -526,46 +532,23 @@ export function CategorisedPreview({
 
   if (isLoading) {
     return (
-      <div className="py-12 text-center">
-        <div className="w-12 h-12 mx-auto mb-4">
-          <svg
-            className="animate-spin text-blue-600"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-        </div>
-        <p className="text-slate-600">Generating preview...</p>
+      <div className="grid gap-4">
+        <p className="text-sm text-ink-2" role="status">
+          Reading the rows and suggesting categories...
+        </p>
+        <SkeletonRows rows={6} />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="space-y-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
-        <div className="flex justify-between">
-          <button
-            onClick={onBack}
-            className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
-          >
+      <div className="grid gap-5">
+        <Notice tone="error">{error}</Notice>
+        <div className="flex justify-between border-t border-line pt-4">
+          <Button variant="ghost" onClick={onBack}>
             Back
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -574,76 +557,78 @@ export function CategorisedPreview({
   if (!previewData) return null;
 
   const { validation, transactions } = previewData;
+  const stats = {
+    categorised: effectiveStats?.categorised ?? categorisationStats?.categorised ?? 0,
+    uncategorised: effectiveStats?.uncategorised ?? categorisationStats?.uncategorised ?? 0,
+    unsure: effectiveStats?.lowConfidence ?? categorisationStats?.lowConfidence ?? 0,
+  };
+  const net = validation.totalCredits - validation.totalDebits;
+  const filterTabs = [
+    { id: 'all' as FilterMode, label: `All ${transactions.length}` },
+    { id: 'categorised' as FilterMode, label: `Categorised ${stats.categorised}` },
+    { id: 'uncategorised' as FilterMode, label: `No category ${stats.uncategorised}` },
+    { id: 'low_confidence' as FilterMode, label: `Unsure ${stats.unsure}` },
+  ];
+  const allSelected = selectedRows.size === transactions.length && transactions.length > 0;
+  const someSelected = selectedRows.size > 0 && !allSelected;
+  const COLS =
+    'grid-cols-[1.75rem_minmax(0,1fr)_auto] md:grid-cols-[2rem_6.5rem_minmax(0,1fr)_minmax(9rem,13rem)_7.5rem]';
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-slate-900 mb-2">Preview Import</h2>
-        <p className="text-slate-600">
-          Review the parsed transactions and their suggested categories before importing.
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
+      <div className="grid gap-1">
+        <h2 className="text-[15px] font-semibold text-ink">Check and categorise</h2>
+        <p className="text-sm text-ink-2" data-testid="preview-summary">
+          <span className="fig text-ink">{validation.totalRows}</span> rows
+          {validation.dateRange && (
+            <>
+              {' '}
+              from {formatDateGB(validation.dateRange.earliest)} to {formatDateGB(validation.dateRange.latest)}
+            </>
+          )}
+          , net{' '}
+          <span className={`fig whitespace-nowrap ${net > 0 ? 'text-in' : 'text-ink'}`}>{formatGBP(net, { pence: true, signed: true })}</span>.{' '}
+          {stats.uncategorised === 0 && stats.unsure === 0
+            ? 'Every row has a confident category.'
+            : `${stats.categorised} categorised, ${stats.uncategorised} without a category${stats.unsure > 0 ? `, ${stats.unsure} unsure` : ''}.`}
         </p>
       </div>
 
-      {/* Categorisation Progress */}
       {isCategorising && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <svg
-              className="w-5 h-5 text-blue-600 animate-spin"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-            <span className="text-blue-700">
-              Categorising transactions... {categorisationProgress.current}/{categorisationProgress.total}
-            </span>
-          </div>
-        </div>
+        <Notice tone="info">
+          Suggesting categories...{' '}
+          <span className="fig">
+            {categorisationProgress.current}/{categorisationProgress.total}
+          </span>
+        </Notice>
       )}
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-slate-50 rounded-lg p-4">
-          <p className="text-sm text-slate-600">Total Rows</p>
-          <p className="text-2xl font-semibold text-slate-900">{validation.totalRows}</p>
-        </div>
-        <div className="bg-green-50 rounded-lg p-4">
-          <p className="text-sm text-green-600">Categorised</p>
-          <p className="text-2xl font-semibold text-green-700">
-            {effectiveStats?.categorised ?? categorisationStats?.categorised ?? 0}
+      {validation.invalidRows > 0 && (
+        <Notice tone="warn">
+          {validation.invalidRows} row{validation.invalidRows === 1 ? '' : 's'} could not be read and will be left out.
+        </Notice>
+      )}
+
+      <div className="grid gap-1 sm:max-w-md">
+        <Field label="Import into account" htmlFor="import-account">
+          <Select id="import-account" value={selectedAccountId} onChange={(e) => setSelectedAccountId(e.target.value)}>
+            <option value="">Choose an account</option>
+            {accounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name} ({account.type})
+              </option>
+            ))}
+          </Select>
+        </Field>
+        {accounts.length === 0 && (
+          <p className="text-xs text-ink-3">
+            No accounts yet.{' '}
+            <a href="/accounts" className="text-accent underline underline-offset-2">
+              Create an account
+            </a>{' '}
+            first.
           </p>
-        </div>
-        <div className="bg-yellow-50 rounded-lg p-4">
-          <p className="text-sm text-yellow-600">Need Review</p>
-          <p className="text-2xl font-semibold text-yellow-700">
-            {effectiveStats?.uncategorised ?? categorisationStats?.uncategorised ?? 0}
-          </p>
-        </div>
-        <div className="bg-red-50 rounded-lg p-4">
-          <p className="text-sm text-red-600">Low Confidence</p>
-          <p className="text-2xl font-semibold text-red-700">
-            {effectiveStats?.lowConfidence ?? categorisationStats?.lowConfidence ?? 0}
-          </p>
-        </div>
-        <div className="bg-blue-50 rounded-lg p-4">
-          <p className="text-sm text-blue-600">Net Total</p>
-          <p className="text-2xl font-semibold text-blue-700">
-            {formatGBP(validation.totalCredits - validation.totalDebits, { pence: true })}
-          </p>
-        </div>
+        )}
       </div>
 
       {/* Bulk Categorise Toolbar */}
@@ -662,83 +647,17 @@ export function CategorisedPreview({
         isRecategorising={isCategorising}
       />
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-1 border-b border-slate-200">
-        {[
-          { mode: 'all' as FilterMode, label: 'All', count: transactions.length },
-          { mode: 'categorised' as FilterMode, label: 'Categorised', count: effectiveStats?.categorised ?? 0 },
-          { mode: 'uncategorised' as FilterMode, label: 'Uncategorised', count: effectiveStats?.uncategorised ?? 0 },
-          { mode: 'low_confidence' as FilterMode, label: 'Low Confidence', count: effectiveStats?.lowConfidence ?? 0 },
-        ].map(({ mode, label, count }) => (
-          <button
-            key={mode}
-            onClick={() => setFilterMode(mode)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              filterMode === mode
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-600 hover:text-slate-800'
-            }`}
-          >
-            {label} ({count})
-          </button>
-        ))}
-      </div>
-
-      {/* Account Selection */}
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-2">
-          Import to Account <span className="text-red-500">*</span>
-        </label>
-        <select
-          value={selectedAccountId}
-          onChange={(e) => setSelectedAccountId(e.target.value)}
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">-- Select account --</option>
-          {accounts.map((account) => (
-            <option key={account.id} value={account.id}>
-              {account.name} ({account.type})
-            </option>
-          ))}
-        </select>
-        {accounts.length === 0 && (
-          <p className="text-sm text-slate-500 mt-1">
-            No accounts found.{' '}
-            <a href="/accounts" className="text-blue-600 hover:underline">
-              Create an account
-            </a>{' '}
-            first.
-          </p>
-        )}
-      </div>
-
-      {/* Edit Mode Toggle */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-slate-700">
-          Transaction Preview ({filteredTransactions.length} transactions)
-        </h3>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <Tabs tabs={filterTabs} active={filterMode} onChange={setFilterMode} label="Filter rows" />
+        <div className="flex items-center gap-2">
           {filteredTransactions.length > 10 && !isEditMode && (
-            <button
-              onClick={() => setShowAllTransactions(!showAllTransactions)}
-              className="text-sm text-blue-600 hover:text-blue-800"
-            >
-              {showAllTransactions ? 'Show less' : `Show all ${filteredTransactions.length}`}
-            </button>
+            <Button size="sm" variant="ghost" onClick={() => setShowAllTransactions(!showAllTransactions)}>
+              {showAllTransactions ? 'Show first 10' : `Show all ${filteredTransactions.length}`}
+            </Button>
           )}
-          <button
-            onClick={() => setIsEditMode(!isEditMode)}
-            className={`text-sm px-3 py-1.5 rounded flex items-center gap-2 transition-colors ${
-              isEditMode
-                ? 'bg-amber-100 text-amber-700 border border-amber-300'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
+          <Button size="sm" onClick={() => setIsEditMode(!isEditMode)} aria-pressed={isEditMode}>
             {isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -754,95 +673,107 @@ export function CategorisedPreview({
           onExit={() => setIsEditMode(false)}
         />
       ) : (
-      /* Transaction Preview Table */
-      <div>
-        <div className="border border-slate-200 rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="px-2 py-2 w-10">
+        <div role="table" aria-label="Rows to import" className="rounded-md border border-line bg-surface">
+          <div role="rowgroup">
+            <div
+              role="row"
+              className={`grid ${COLS} items-center gap-x-3 rounded-t-md border-b border-line bg-sunk px-3 py-2 text-xs font-medium uppercase tracking-wide text-ink-3`}
+            >
+              <div role="columnheader" className="flex items-center">
+                <input
+                  type="checkbox"
+                  aria-label="Select all rows"
+                  checked={allSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = someSelected;
+                  }}
+                  onChange={(e) => (e.target.checked ? handleSelectAll() : handleSelectNone())}
+                  className="h-4 w-4 accent-accent"
+                />
+              </div>
+              <div role="columnheader" className="hidden md:block">
+                Date
+              </div>
+              <div role="columnheader">Description</div>
+              <div role="columnheader" className="hidden md:block">
+                Category
+              </div>
+              <div role="columnheader" className="text-right">
+                Amount
+              </div>
+            </div>
+          </div>
+          <div role="rowgroup">
+            {displayTransactions.length === 0 && (
+              <div className="px-4 py-8 text-center text-sm text-ink-3">No rows match this filter.</div>
+            )}
+            {displayTransactions.map((tx) => {
+              const originalIndex = transactions.findIndex((t) => t === tx);
+              const result = getEffectiveResult(originalIndex);
+              const isSelected = selectedRows.has(originalIndex);
+              const cell = (
+                <CategoryCell
+                  result={result}
+                  categories={categories}
+                  recentCategories={recentCategories}
+                  onCategoryChange={(catId, catName) => handleCategoryChange(originalIndex, catId, catName)}
+                  onCopyFromAbove={originalIndex > 0 ? () => handleCopyFromAbove(originalIndex) : undefined}
+                />
+              );
+              return (
+                <div
+                  key={originalIndex}
+                  role="row"
+                  aria-selected={isSelected}
+                  className={`grid ${COLS} items-center gap-x-3 border-b border-line-2 px-3 py-2 text-sm last:border-b-0 ${
+                    isSelected ? 'bg-sel' : 'hover:bg-sunk'
+                  }`}
+                >
+                  <div role="cell" className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={selectedRows.size === transactions.length && transactions.length > 0}
-                      onChange={(e) => e.target.checked ? handleSelectAll() : handleSelectNone()}
-                      className="rounded border-slate-300"
+                      aria-label={`Select ${tx.description}`}
+                      checked={isSelected}
+                      onChange={() => handleRowSelect(originalIndex)}
+                      className="h-4 w-4 accent-accent"
                     />
-                  </th>
-                  <th className="px-4 py-2 text-left text-slate-600 font-medium">Date</th>
-                  <th className="px-4 py-2 text-left text-slate-600 font-medium">Description</th>
-                  <th className="px-4 py-2 text-right text-slate-600 font-medium">Amount</th>
-                  <th className="px-4 py-2 text-left text-slate-600 font-medium">Category</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {displayTransactions.map((tx) => {
-                  // Find original index
-                  const originalIndex = transactions.findIndex((t) => t === tx);
-                  const result = getEffectiveResult(originalIndex);
-                  const isSelected = selectedRows.has(originalIndex);
-
-                  return (
-                    <tr
-                      key={originalIndex}
-                      className={`hover:bg-slate-50 ${isSelected ? 'bg-blue-50' : ''}`}
-                    >
-                      <td className="px-2 py-2 text-center">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleRowSelect(originalIndex)}
-                          className="rounded border-slate-300"
-                        />
-                      </td>
-                      <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
-                        {formatDateGBPadded(tx.date)}
-                      </td>
-                      <td className="px-4 py-2 text-slate-900 max-w-xs truncate">
-                        {tx.description}
-                      </td>
-                      <td
-                        className={`px-4 py-2 text-right whitespace-nowrap font-medium ${
-                          tx.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                        }`}
-                      >
-                        {formatGBP(tx.amount, { pence: true })}
-                      </td>
-                      <td className="px-4 py-2">
-                        <CategoryCell
-                          result={result}
-                          categories={categories}
-                          recentCategories={recentCategories}
-                          onCategoryChange={(catId, catName) => handleCategoryChange(originalIndex, catId, catName)}
-                          onCopyFromAbove={originalIndex > 0 ? () => handleCopyFromAbove(originalIndex) : undefined}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </div>
+                  <div role="cell" className="hidden whitespace-nowrap text-ink-2 md:block" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {formatDateGB(tx.date)}
+                  </div>
+                  <div role="cell" className="min-w-0">
+                    <span className="block truncate text-ink" title={tx.description}>
+                      {tx.description}
+                    </span>
+                    <div className="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-ink-3 md:hidden">
+                      <span className="shrink-0">{formatDateGB(tx.date)}</span>
+                      <div className="min-w-0 flex-1">{cell}</div>
+                    </div>
+                  </div>
+                  <div role="cell" className="hidden min-w-0 md:block">
+                    {cell}
+                  </div>
+                  <div role="cell" className={`fig whitespace-nowrap text-right ${tx.amount > 0 ? 'text-in' : 'text-ink'}`}>
+                    {formatAmount(tx.amount)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-      </div>
       )}
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-4 border-t border-slate-200">
-        <button
-          onClick={onBack}
-          className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
-        >
-          Back
-        </button>
-        <button
-          onClick={handleContinue}
-          disabled={!selectedAccountId || validation.validRows === 0}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
-        >
-          Continue to Import
-        </button>
-      </div>
+      {/* Navigation (Edit Mode has its own Apply / Cancel) */}
+      {!isEditMode && (
+        <div className="flex justify-between gap-3 border-t border-line pt-4">
+          <Button variant="ghost" onClick={onBack}>
+            Back
+          </Button>
+          <Button variant="primary" onClick={handleContinue} disabled={!selectedAccountId || validation.validRows === 0}>
+            Continue to Import
+          </Button>
+        </div>
+      )}
 
       {/* Rule Suggestion Toast */}
       <RuleSuggestionToast

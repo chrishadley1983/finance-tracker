@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { ChevronRight, GripVertical, MoreHorizontal, Plus } from 'lucide-react';
 import { PlanningNoteCard } from './PlanningNoteCard';
+import { canMove, noteMatches, sortNotes } from './order';
+import { Chip } from '@/components/ui/Chip';
 import type { PlanningNote, PlanningSectionWithNotes } from '@/lib/validations/planning';
 
 interface PlanningSectionProps {
@@ -14,9 +17,12 @@ interface PlanningSectionProps {
   onDeleteSection: () => void;
   onArchiveSection: () => void;
   onEditNote: (note: PlanningNote) => void;
-  onDeleteNote: (noteId: string) => void;
+  onDeleteNote: (note: PlanningNote) => void;
   onTogglePinNote: (noteId: string, isPinned: boolean) => void;
+  onMoveNote?: (sectionId: string, noteId: string, dir: -1 | 1) => void;
 }
+
+const menuItem = 'block w-full px-3 py-1.5 text-left text-sm text-ink hover:bg-sunk focus:bg-sunk focus:outline-none';
 
 export function PlanningSection({
   section,
@@ -28,239 +34,167 @@ export function PlanningSection({
   onEditNote,
   onDeleteNote,
   onTogglePinNote,
+  onMoveNote,
 }: PlanningSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: section.id });
+  useEffect(() => {
+    if (!showMenu) return;
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowMenu(false);
+        menuRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+      }
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    menuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [showMenu]);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  const searching = Boolean(searchQuery?.trim());
+  const sectionMatches =
+    searching &&
+    (section.name.toLowerCase().includes(searchQuery!.trim().toLowerCase()) ||
+      Boolean(section.description?.toLowerCase().includes(searchQuery!.trim().toLowerCase())));
+  const ordered = sortNotes(section.notes);
+  const visible = searching && !sectionMatches ? ordered.filter((n) => noteMatches(n, searchQuery!)) : ordered;
+  const noteCount = section.notes.length;
+  const listId = `section-notes-${section.id}`;
+
+  const run = (fn: () => void) => () => {
+    setShowMenu(false);
+    fn();
   };
 
-  // Filter and sort notes
-  const filteredNotes = searchQuery
-    ? section.notes.filter((n) =>
-        n.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : section.notes;
-
-  const sortedNotes = [...filteredNotes].sort((a, b) => {
-    // Pinned first
-    if (a.is_pinned && !b.is_pinned) return -1;
-    if (!a.is_pinned && b.is_pinned) return 1;
-    // Then by display_order
-    return a.display_order - b.display_order;
-  });
-
-  const noteCount = section.notes.length;
-  const filteredCount = filteredNotes.length;
-
   return (
-    <div
+    <section
       ref={setNodeRef}
-      style={style}
-      className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm overflow-hidden ${
-        isDragging ? 'opacity-50 shadow-lg' : ''
-      }`}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      aria-label={section.name}
+      className={`border-t-[1.5px] border-ink ${isDragging ? 'relative z-10 bg-surface opacity-80 shadow-lg' : ''}`}
     >
-      {/* Section Header */}
-      <div
-        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-        style={{ borderLeft: `4px solid ${section.colour || '#6366f1'}` }}
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <div className="flex items-center gap-3">
-          {/* Drag handle */}
-          <button
-            {...attributes}
-            {...listeners}
-            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-grab active:cursor-grabbing"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
-            </svg>
-          </button>
+      <div className="flex items-start gap-1 py-2">
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          aria-label={`Reorder section ${section.name}`}
+          title="Drag to reorder (or focus and use the arrow keys)"
+          className="mt-0.5 hidden h-7 w-6 shrink-0 cursor-grab items-center justify-center rounded-md text-ink-3 hover:text-ink active:cursor-grabbing focus-visible:outline-2 focus-visible:outline-accent sm:inline-flex"
+        >
+          <GripVertical className="h-4 w-4" aria-hidden="true" />
+        </button>
 
-          {/* Expand/collapse */}
-          <button
-            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsExpanded(!isExpanded);
-            }}
-          >
-            <svg
-              className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Icon and name */}
-          {section.icon && <span className="text-xl">{section.icon}</span>}
-
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100">
+        <button
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          aria-expanded={isExpanded}
+          aria-controls={listId}
+          className="flex min-w-0 flex-1 items-start gap-1.5 rounded-md py-0.5 text-left focus-visible:outline-2 focus-visible:outline-accent"
+        >
+          <ChevronRight
+            className={`mt-0.5 h-4 w-4 shrink-0 text-ink-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+            aria-hidden="true"
+          />
+          <span className="min-w-0">
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              {section.colour && (
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: section.colour }} aria-hidden="true" />
+              )}
+              <h2 className="text-[14px] font-semibold text-ink">
+                {section.icon && <span className="mr-1" aria-hidden="true">{section.icon}</span>}
                 {section.name}
-              </h3>
-              {section.year_label && (
-                <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded">
-                  {section.year_label}
-                </span>
-              )}
-              {section.is_archived && (
-                <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded">
-                  Archived
-                </span>
-              )}
-            </div>
-            {section.description && (
-              <p className="text-sm text-slate-500 dark:text-slate-400">{section.description}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-400 dark:text-slate-500">
-            {searchQuery && filteredCount !== noteCount
-              ? `${filteredCount} of ${noteCount}`
-              : noteCount}{' '}
-            note{noteCount !== 1 ? 's' : ''}
+              </h2>
+              {section.year_label && <Chip>{section.year_label}</Chip>}
+              {section.is_archived && <Chip tone="warn">Archived</Chip>}
+            </span>
+            {section.description && <span className="mt-0.5 block text-[13px] text-ink-3">{section.description}</span>}
           </span>
+        </button>
 
-          {/* Action menu */}
-          <div className="relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(!showMenu);
-              }}
-              className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded transition-colors"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-              </svg>
-            </button>
+        <span className="mt-1 shrink-0 text-xs text-ink-3">
+          <span className="fig">{searching && visible.length !== noteCount ? `${visible.length} of ${noteCount}` : noteCount}</span>{' '}
+          note{noteCount !== 1 ? 's' : ''}
+        </span>
 
-            {showMenu && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowMenu(false)}
-                />
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 py-1">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddNote();
-                      setShowMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  >
-                    Add note
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditSection();
-                      setShowMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  >
-                    Edit section
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onArchiveSection();
-                      setShowMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  >
-                    {section.is_archived ? 'Unarchive' : 'Archive'} section
-                  </button>
-                  <hr className="my-1 border-slate-200 dark:border-slate-700" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteSection();
-                      setShowMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  >
-                    Delete section
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Notes List */}
-      {isExpanded && (
-        <div className="border-t border-slate-100 dark:border-slate-700">
-          {sortedNotes.length > 0 ? (
-            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-              {sortedNotes.map((note) => (
-                <PlanningNoteCard
-                  key={note.id}
-                  note={note}
-                  onEdit={() => onEditNote(note)}
-                  onDelete={() => onDeleteNote(note.id)}
-                  onTogglePin={() => onTogglePinNote(note.id, !note.is_pinned)}
-                  highlightText={searchQuery}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="px-4 py-8 text-center text-slate-400 dark:text-slate-500">
-              {searchQuery ? (
-                <p>No notes match your search</p>
-              ) : (
-                <>
-                  <p>No notes in this section</p>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddNote();
-                    }}
-                    className="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                  >
-                    Add your first note
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Add note button at bottom */}
-          {sortedNotes.length > 0 && !searchQuery && (
-            <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-700">
-              <button
-                onClick={onAddNote}
-                className="w-full py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded transition-colors"
-              >
-                + Add note
+        <div className="relative shrink-0" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setShowMenu(!showMenu)}
+            aria-haspopup="menu"
+            aria-expanded={showMenu}
+            aria-label={`Actions for ${section.name}`}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 hover:bg-line-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+          >
+            <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+          </button>
+          {showMenu && (
+            <div role="menu" className="absolute right-0 top-full z-20 mt-1 w-44 rounded-md border border-line bg-surface py-1 shadow-lg">
+              <button type="button" role="menuitem" className={menuItem} onClick={run(onAddNote)}>
+                Add note
+              </button>
+              <button type="button" role="menuitem" className={menuItem} onClick={run(onEditSection)}>
+                Edit section
+              </button>
+              <button type="button" role="menuitem" className={menuItem} onClick={run(onArchiveSection)}>
+                {section.is_archived ? 'Unarchive' : 'Archive'} section
+              </button>
+              <div className="my-1 border-t border-line-2" />
+              <button type="button" role="menuitem" className={`${menuItem} text-bad`} onClick={run(onDeleteSection)}>
+                Delete section
               </button>
             </div>
           )}
         </div>
+      </div>
+
+      {isExpanded && (
+        <div id={listId} className="pb-3 sm:pl-[3.25rem]">
+          {visible.length > 0 ? (
+            <ul aria-label={`Notes in ${section.name}`}>
+              {visible.map((note) => {
+                const moves = canMove(section.notes, note.id);
+                return (
+                  <PlanningNoteCard
+                    key={note.id}
+                    note={note}
+                    onEdit={() => onEditNote(note)}
+                    onDelete={() => onDeleteNote(note)}
+                    onTogglePin={() => onTogglePinNote(note.id, !note.is_pinned)}
+                    onMoveUp={!searching && onMoveNote ? () => onMoveNote(section.id, note.id, -1) : undefined}
+                    onMoveDown={!searching && onMoveNote ? () => onMoveNote(section.id, note.id, 1) : undefined}
+                    canMoveUp={moves.up}
+                    canMoveDown={moves.down}
+                    highlightText={searchQuery}
+                  />
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="py-2 text-sm text-ink-3">{searching ? 'No notes in this section match your search.' : 'No notes in this section yet.'}</p>
+          )}
+          {!searching && (
+            <button
+              type="button"
+              onClick={onAddNote}
+              className="mt-1 inline-flex items-center gap-1 rounded-md px-1 py-1 text-[13px] text-ink-3 hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+              Add note
+            </button>
+          )}
+        </div>
       )}
-    </div>
+    </section>
   );
 }
