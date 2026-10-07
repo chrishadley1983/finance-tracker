@@ -4,8 +4,8 @@
  */
 import { config } from 'dotenv';
 config({ path: '.env.local' });
-import { aggregateMonthlyReport } from '../lib/reports/aggregate';
-import { generateMonthlyReportHtml } from '../lib/reports/monthly-html';
+import { aggregateMonthlyReport } from '../../lib/reports/aggregate';
+import { generateMonthlyReportHtml } from '../../lib/reports/monthly-html';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(

@@ -3,8 +3,8 @@
  * Run with: NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npx tsx scripts/fix-feb-report.ts
  */
 import { createClient } from '@supabase/supabase-js';
-import { generateMonthlyReportHtml } from '../lib/reports/monthly-html';
-import type { MonthlyReportData } from '../lib/reports/types';
+import { generateMonthlyReportHtml } from '../../lib/reports/monthly-html';
+import type { MonthlyReportData } from '../../lib/reports/types';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -102,7 +102,7 @@ async function fix() {
   }
 
   // Generate takeaways from the data
-  const { generateTakeaways } = await import('../lib/reports/takeaways');
+  const { generateTakeaways } = await import('../../lib/reports/takeaways');
   const { takeaways, ideas } = generateTakeaways(reportData);
   reportData.takeaways = takeaways;
   reportData.ideas = ideas;
