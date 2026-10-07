@@ -2,7 +2,7 @@
  * Server-side TrueLayer sync: refresh the access token, fetch transactions for
  * a linked account, reconcile against the ledger and insert only what's
  * missing. INSERT-ONLY — never updates existing rows (preserves user edits).
- * Reuses the provider-agnostic reconcile engine from lib/enable-banking.
+ * Reuses the provider-agnostic reconcile engine from lib/bank-sync.
  *
  * NOTE: not marked `server-only` so it can also be driven from a local Node
  * script (scripts/sync-truelayer.ts) for scheduled syncs without the Vercel
@@ -18,8 +18,8 @@ import {
 import {
   planReconcile,
   type ExistingDbRow,
-  type MappedEbTransaction,
-} from '@/lib/enable-banking/reconcile';
+  type MappedBankTransaction,
+} from '@/lib/bank-sync/reconcile';
 import { refreshAccessToken } from './client';
 import { getAccountBalance, getCardBalance } from './accounts';
 import { getAccountTransactions, getCardTransactions } from './transactions';
@@ -127,9 +127,9 @@ export async function syncAccount(
   const raw = isCard
     ? await getCardTransactions(accessToken, account.truelayer_account_id, dateFrom, dateTo)
     : await getAccountTransactions(accessToken, account.truelayer_account_id, dateFrom, dateTo);
-  const mapped: MappedEbTransaction[] = raw
+  const mapped: MappedBankTransaction[] = raw
     .map(mapTrueLayerTransaction)
-    .filter((t): t is MappedEbTransaction => t !== null);
+    .filter((t): t is MappedBankTransaction => t !== null);
 
   // 2. Existing DB rows over the span.
   let minDate = dateFrom;

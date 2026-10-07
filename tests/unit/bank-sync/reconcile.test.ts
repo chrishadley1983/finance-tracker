@@ -1,25 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import {
-  mapEbTransaction,
-  planReconcile,
-  ebTransactionDate,
-  ebTransactionDescription,
-  type MappedEbTransaction,
-  type ExistingDbRow,
-} from '@/lib/enable-banking/reconcile';
-import type { EnableBankingTransaction } from '@/lib/enable-banking/types';
+import { planReconcile, type MappedBankTransaction, type ExistingDbRow } from '@/lib/bank-sync/reconcile';
 
-function eb(partial: Partial<EnableBankingTransaction>): EnableBankingTransaction {
-  return {
-    transaction_amount: { amount: '10.00', currency: 'GBP' },
-    credit_debit_indicator: 'DBIT',
-    status: 'BOOK',
-    booking_date: '2026-01-10',
-    ...partial,
-  };
-}
-
-function mapped(partial: Partial<MappedEbTransaction>): MappedEbTransaction {
+function mapped(partial: Partial<MappedBankTransaction>): MappedBankTransaction {
   return {
     date: '2026-01-10',
     amount: -10,
@@ -32,34 +14,6 @@ function mapped(partial: Partial<MappedEbTransaction>): MappedEbTransaction {
 function existing(partial: Partial<ExistingDbRow>): ExistingDbRow {
   return { id: crypto.randomUUID(), date: '2026-01-10', amount: -10, ref: null, ...partial };
 }
-
-describe('mapEbTransaction', () => {
-  it('signs DBIT negative and CRDT positive', () => {
-    expect(mapEbTransaction(eb({ credit_debit_indicator: 'DBIT' }))?.amount).toBe(-10);
-    expect(mapEbTransaction(eb({ credit_debit_indicator: 'CRDT' }))?.amount).toBe(10);
-  });
-
-  it('always signs by indicator even if amount already negative', () => {
-    const m = mapEbTransaction(eb({ transaction_amount: { amount: '-10.00', currency: 'GBP' }, credit_debit_indicator: 'DBIT' }));
-    expect(m?.amount).toBe(-10);
-  });
-
-  it('falls back date booking → value → transaction', () => {
-    expect(ebTransactionDate(eb({ booking_date: undefined, value_date: '2026-02-01' }))).toBe('2026-02-01');
-    expect(ebTransactionDate(eb({ booking_date: undefined, value_date: undefined, transaction_date: '2026-03-01' }))).toBe('2026-03-01');
-  });
-
-  it('builds description from remittance, then creditor/debtor', () => {
-    expect(ebTransactionDescription(eb({ remittance_information: ['TESCO', 'STORES'] }))).toBe('TESCO STORES');
-    expect(ebTransactionDescription(eb({ remittance_information: [], creditor: { name: 'ACME' } }))).toBe('ACME');
-    expect(ebTransactionDescription(eb({ remittance_information: undefined, debtor: { name: 'BOB' } }))).toBe('BOB');
-  });
-
-  it('returns null when unusable (no date or amount)', () => {
-    expect(mapEbTransaction(eb({ booking_date: undefined, value_date: undefined, transaction_date: undefined }))).toBeNull();
-    expect(mapEbTransaction(eb({ transaction_amount: { amount: 'not-a-number', currency: 'GBP' } }))).toBeNull();
-  });
-});
 
 describe('planReconcile', () => {
   it('inserts everything when the ledger is empty', () => {
