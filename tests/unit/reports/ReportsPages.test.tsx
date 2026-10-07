@@ -84,7 +84,19 @@ describe('readiness checklist copy', () => {
       ['3 transactions uncategorised or flagged', '/review'],
       ['Every September transaction validated', null],
     ]);
-    expect(readinessHeadline(notReady())).toBe('September 2026 has 3 things to finish before its report is complete.');
+    expect(readinessHeadline(notReady())).toBe('September 2026 has 3 of 4 checks still to do before its report is complete.');
+  });
+  it('counts the same lines it lists, including a late change to a saved report', () => {
+    const r = { ...notReady(), reportExists: true, changedSinceReport: true, lateTransactions: 2 };
+    const items = readinessChecklist(r);
+    expect(items).toHaveLength(5);
+    expect(items.filter((i) => !i.ok)).toHaveLength(4);
+    expect(readinessHeadline(r)).toBe('September 2026 has 4 of 5 checks still to do before its report is complete.');
+  });
+  it('says "all" when nothing is done yet', () => {
+    const r = notReady();
+    r.checks[3] = { key: 'validated', ok: false, detail: '1 unvalidated', count: 1, byAccount: { HSBC: 1 } };
+    expect(readinessHeadline(r)).toBe('September 2026 has all 4 checks still to do before its report is complete.');
   });
   it('links unvalidated transactions to the month on the Transactions page', () => {
     const r = notReady();
@@ -111,7 +123,8 @@ describe('ReportsView', () => {
 
   it('checks the last complete month and offers "Generate anyway" when it is not ready', async () => {
     wrap(<ReportsView now={NOW} />);
-    await screen.findByText('September 2026 has 3 things to finish before its report is complete.');
+    await screen.findByText('September 2026 has 3 of 4 checks still to do before its report is complete.');
+    expect(screen.getByRole('list', { name: 'September 2026 checklist' }).querySelectorAll('li')).toHaveLength(4);
     expect(calls.some((c) => c.url === '/api/monthly-reports/readiness?year=2026&month=9')).toBe(true);
     expect(screen.getByRole('link', { name: 'Enter balances' }).getAttribute('href')).toBe('/wealth');
     expect(screen.getByRole('link', { name: 'Review them' }).getAttribute('href')).toBe('/review');

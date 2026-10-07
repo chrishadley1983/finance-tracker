@@ -1,7 +1,6 @@
 'use client';
 
 import { SkeletonRows } from '@/components/ui/Notice';
-import { Chip } from '@/components/ui/Chip';
 import { readablePct } from '../readable';
 
 interface ErnSummaryCardsProps {
@@ -22,12 +21,14 @@ interface RateRow {
   precise: string;
   note: string;
   detail: string;
-  chip?: { tone: 'in' | 'warn' | 'bad' | 'neutral'; text: string };
+  /** A short verdict after the label; `concern` sets it in amber. */
+  status?: { concern: boolean; text: string };
 }
 
 /**
- * The four rates that matter, as a list (label and plain note on the left,
- * the figure on the right). Figures are rounded; hover shows the precise value.
+ * The four rates that matter, as a plain list: label and explanation on the
+ * left, the figure on the right, hairlines between. Figures are rounded; hover
+ * or tap-and-hold shows the precise value.
  */
 export function ErnSummaryCards({
   failSafeSwr,
@@ -57,12 +58,12 @@ export function ErnSummaryCards({
       note: 'Your yearly spending as a share of the pot at retirement.',
       detail:
         "This is what you're planning to withdraw. If it's above the market-adjusted rate, you're taking more risk than today's valuations suggest is safe.",
-      chip:
+      status:
         wrDelta <= 0
-          ? { tone: 'in', text: 'at or below the adjusted rate' }
+          ? { concern: false, text: 'at or below the adjusted rate' }
           : wrDelta < 0.5
-            ? { tone: 'warn', text: 'a little above the adjusted rate' }
-            : { tone: 'bad', text: 'well above the adjusted rate' },
+            ? { concern: true, text: 'a little above the adjusted rate' }
+            : { concern: true, text: 'well above the adjusted rate' },
     },
     {
       label: 'Market-adjusted rate',
@@ -88,14 +89,14 @@ export function ErnSummaryCards({
           ? `Of ${mcPaths.toLocaleString('en-GB')} futures built from real historical returns, the share where the money lasts. 95% or more is robust.`
           : "The Monte Carlo simulation didn't return a result.",
       detail: 'Uses 60-month blocks of real returns so good and bad periods cluster as they do in real markets. Includes state pension and spending rules.',
-      chip:
+      status:
         mcSurvivalRate === null
           ? undefined
           : mcSurvivalRate >= 95
-            ? { tone: 'in', text: 'robust' }
+            ? { concern: false, text: 'robust' }
             : mcSurvivalRate >= 85
-              ? { tone: 'warn', text: 'some risk' }
-              : { tone: 'bad', text: 'fragile' },
+              ? { concern: true, text: 'some risk' }
+              : { concern: true, text: 'fragile' },
     },
   ];
 
@@ -104,17 +105,17 @@ export function ErnSummaryCards({
       <h2 id="ern-rates-title" className="py-2.5 text-[13.5px] font-semibold text-ink">
         The key rates
       </h2>
-      <dl className="grid divide-y divide-line-2 md:grid-cols-2 md:gap-x-10 md:divide-y-0">
+      <dl className="divide-y divide-line-2 border-t border-line-2">
         {rows.map((r) => (
-          <div key={r.label} className="flex items-start justify-between gap-4 py-3 md:border-t md:border-line-2" title={r.detail}>
-            <div className="min-w-0">
-              <dt className="flex flex-wrap items-center gap-2 text-sm font-medium text-ink">
-                {r.label}
-                {r.chip && <Chip tone={r.chip.tone}>{r.chip.text}</Chip>}
+          <div key={r.label} className="flex items-start justify-between gap-4 py-2.5" title={r.detail}>
+            <div className="min-w-0 max-w-[68ch]">
+              <dt className="text-sm text-ink">
+                <span className="font-medium">{r.label}</span>
+                {r.status && <span className={`ml-1.5 ${r.status.concern ? 'text-warn' : 'text-ink-2'}`}>· {r.status.text}</span>}
               </dt>
               <dd className="mt-0.5 text-[12.5px] leading-snug text-ink-3">{r.note}</dd>
             </div>
-            <dd className="fig shrink-0 text-[22px] font-medium leading-none text-ink" title={r.precise}>
+            <dd className="fig shrink-0 text-[17px] font-medium leading-6 text-ink" title={r.precise}>
               {r.value}
             </dd>
           </div>

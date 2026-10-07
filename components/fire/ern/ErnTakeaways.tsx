@@ -2,7 +2,6 @@
 
 import type { FireTakeaway } from '@/lib/fire/ern/types';
 import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
 import { Notice, SkeletonRows } from '@/components/ui/Notice';
 import { Panel } from '@/components/ui/Panel';
 
@@ -19,11 +18,10 @@ interface ErnTakeawaysProps {
   onRetry?: () => void;
 }
 
-const TAG: Record<string, { tone: 'in' | 'warn' | 'neutral'; label: string }> = {
-  strong: { tone: 'in', label: 'Strong' },
-  watch: { tone: 'warn', label: 'Watch' },
-  idea: { tone: 'neutral', label: 'Idea' },
-};
+/** Drop a leading label such as "Example:" that the model sometimes adds. */
+export function cleanTakeawayBody(body: string): string {
+  return body.replace(/^\s*(?:for\s+)?(?:example|e\.g\.)\s*[:,\-–—]\s*/i, '').replace(/^./, (c) => c.toUpperCase());
+}
 
 /** AI-written takeaways from the simulation results, with loading, unavailable and retry states. */
 export function ErnTakeaways({ state, onRetry }: ErnTakeawaysProps) {
@@ -61,18 +59,12 @@ export function ErnTakeaways({ state, onRetry }: ErnTakeawaysProps) {
           <p className="py-2 text-sm text-ink-3">No takeaways came back for this run.</p>
         ) : (
           <ul className="grid gap-x-10 md:grid-cols-2">
-            {state.items.map((t, i) => {
-              const tag = TAG[t.tag] ?? TAG.idea;
-              return (
-                <li key={i} className="border-t border-line-2 py-3 first:border-t-0 md:[&:nth-child(2)]:border-t-0">
-                  <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-ink">
-                    <Chip tone={tag.tone}>{tag.label}</Chip>
-                    {t.title}
-                  </p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-ink-2">{t.body}</p>
-                </li>
-              );
-            })}
+            {state.items.map((t, i) => (
+              <li key={i} className="border-t border-line-2 py-3 first:border-t-0 md:[&:nth-child(2)]:border-t-0">
+                <p className="text-sm font-medium text-ink">{t.title}</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-ink-2">{cleanTakeawayBody(t.body)}</p>
+              </li>
+            ))}
           </ul>
         ))}
     </Panel>

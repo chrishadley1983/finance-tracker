@@ -23,7 +23,7 @@ import { MONTH_NAMES as MONTH_NAMES_0, MONTH_SHORT } from '../format';
 const MONTH_NAMES: string[] = ['', ...MONTH_NAMES_0];
 
 const TYPE_LABELS: Record<string, string> = {
-  current: 'Current Accounts',
+  current: 'Current accounts',
   savings: 'Savings',
   isa: 'ISAs',
   pension: 'Pensions',

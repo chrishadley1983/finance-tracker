@@ -3,7 +3,6 @@
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { axisProps, chart, gridProps, tooltipProps } from '@/lib/chart-theme';
 import { formatGBP } from '@/lib/format';
-import { Chip } from '@/components/ui/Chip';
 import { Panel } from '@/components/ui/Panel';
 import { SkeletonRows } from '@/components/ui/Notice';
 import { readableGBP, readablePct } from '../readable';
@@ -81,10 +80,11 @@ export function MonteCarloFanChart({
   // The best 5% of futures can grow huge; cap the axis so the middle of the fan stays readable.
   const yMax = niceCeil(Math.max(initialPortfolio, ...chartData.map((d) => d.p75)) * 1.3);
   const capped = chartData.some((d) => d.p95 > yMax);
-  const tone = survivalRate >= 95 ? 'in' : survivalRate >= 85 ? 'warn' : 'bad';
+  // Plain text; amber only when fewer than 95% of futures last.
+  const concern = survivalRate < 95;
 
   return (
-    <Panel title="Simulated futures" action={<Chip tone={tone}>{readablePct(survivalRate)} last the distance</Chip>}>
+    <Panel title="Simulated futures" action={<span className={concern ? 'text-warn' : 'text-ink-2'}>{readablePct(survivalRate)} last the distance</span>}>
       <p className="mb-3 max-w-[75ch] text-[13px] text-ink-2">
         {paths.toLocaleString('en-GB')} possible futures built from real historical returns, in today&apos;s money. After{' '}
         {last.year} years the median ends near <span className="fig">{readableGBP(last.p50)}</span>
@@ -95,7 +95,7 @@ export function MonteCarloFanChart({
         ) : (
           <>; the worst 5% run out of money.</>
         )}
-        {capped && <> The best outcomes run off the top of the chart; hover for the figures.</>}
+        {capped && <> The best outcomes run off the top of the chart; hover or tap for the figures.</>}
       </p>
       <div className="h-72 sm:h-80">
         <ResponsiveContainer width="100%" height="100%">

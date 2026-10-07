@@ -120,7 +120,7 @@ export function generateMonthlyReportHtml(data: MonthlyReportData): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(title)}</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root {
     --bg: #ffffff; --bg2: #f9fafb; --bg3: #f3f4f6;
@@ -430,7 +430,7 @@ new Chart(document.getElementById('trendChart'), {
     },
   }
 });
-<\/script>
+</script>
 
 </body>
 </html>`;

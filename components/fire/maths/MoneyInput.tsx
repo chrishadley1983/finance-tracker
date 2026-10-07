@@ -1,38 +1,33 @@
 'use client';
 
-import { controlClass } from '@/components/ui/Field';
+import { MoneyInput as BaseMoneyInput } from '@/components/ui/MoneyInput';
 
-/** A £ amount input using the shared control style; empty or invalid reads as 0. */
+/** The shared £ input for the maths tab: an empty field reads as 0. */
 export function MoneyInput({
   id,
   value,
   onChange,
-  step = 100,
   size = 'md',
   label,
 }: {
   id?: string;
   value: number;
   onChange: (v: number) => void;
+  /** Kept for callers; typing is free-form so there's no stepper. */
   step?: number;
   size?: 'sm' | 'md';
   /** aria-label when there's no visible label. */
   label?: string;
 }) {
   return (
-    <div className={`relative ${size === 'sm' ? 'w-24 sm:w-28' : ''}`}>
-      <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[13px] text-ink-3">£</span>
-      <input
-        id={id}
-        type="number"
-        inputMode="decimal"
-        aria-label={label}
-        value={Number.isFinite(value) ? Math.round(value * 100) / 100 : ''}
-        step={step}
-        min={0}
-        onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-        className={`${controlClass} fig pl-6 text-right ${size === 'sm' ? 'h-8 py-1 text-[13px]' : ''}`}
-      />
-    </div>
+    <BaseMoneyInput
+      id={id}
+      value={Number.isFinite(value) ? value : null}
+      onChange={(v) => onChange(v ?? 0)}
+      size={size}
+      align="right"
+      label={label}
+      className={size === 'sm' ? 'w-28 sm:w-32' : ''}
+    />
   );
 }

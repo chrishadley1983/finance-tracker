@@ -98,9 +98,13 @@ export function readinessChecklist(r: MonthReadiness): ChecklistItem[] {
   return items;
 }
 
-/** One line on where the month stands. */
+/**
+ * One line on where the month stands. The counts come from the same checklist
+ * that is shown beneath it, so "3 of 5" always matches the lines listed.
+ */
 export function readinessHeadline(r: MonthReadiness): string {
-  const open = readinessChecklist(r).filter((i) => !i.ok).length;
+  const items = readinessChecklist(r);
+  const open = items.filter((i) => !i.ok).length;
   switch (r.action) {
     case 'none':
       return `The saved ${r.monthLabel} report is up to date.`;
@@ -109,6 +113,9 @@ export function readinessHeadline(r: MonthReadiness): string {
     case 'generate':
       return `${r.monthLabel} is ready to report.`;
     default:
-      return `${r.monthLabel} has ${plural(open, 'thing')} to finish before its report is complete.`;
+      if (open === 0) return `${r.monthLabel} isn't ready to report yet.`;
+      return open === items.length
+        ? `${r.monthLabel} has ${open === 1 ? '1 check' : `all ${open} checks`} still to do before its report is complete.`
+        : `${r.monthLabel} has ${open} of ${items.length} checks still to do before its report is complete.`;
   }
 }

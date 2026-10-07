@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { formatGBP, MONTH_SHORT } from '@/lib/format';
 import { Button } from '@/components/ui/Button';
+import { MoneyInput } from '@/components/ui/MoneyInput';
 import { EmptyState, Notice, SkeletonRows } from '@/components/ui/Notice';
 import { useToast } from '@/components/ui/Toast';
 
@@ -124,7 +125,7 @@ export function SnapshotHistoryTable({ refreshKey = 0, onChange, monthHref }: Sn
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<{ date: string; accountId: string } | null>(null);
-  const [editValue, setEditValue] = useState('');
+  const [editValue, setEditValue] = useState<number | null>(null);
   const [savingCell, setSavingCell] = useState(false);
   const loaded = useRef(false);
 
@@ -162,7 +163,7 @@ export function SnapshotHistoryTable({ refreshKey = 0, onChange, monthHref }: Sn
 
   const startEdit = (date: string, accountId: string, current: number | null) => {
     setEditingCell({ date, accountId });
-    setEditValue(current === null ? '' : String(current));
+    setEditValue(current);
   };
 
   const handleCellSave = async () => {
@@ -172,8 +173,8 @@ export function SnapshotHistoryTable({ refreshKey = 0, onChange, monthHref }: Sn
     if (!row) return;
     const existing = row.accounts[cell.accountId];
     // A blank or unreadable value cancels the edit; it never writes £0.
-    const newBalance = editValue.trim() === '' ? NaN : Number(editValue);
-    if (!Number.isFinite(newBalance) || (existing && existing.balance === newBalance)) {
+    const newBalance = editValue;
+    if (newBalance === null || !Number.isFinite(newBalance) || (existing && existing.balance === newBalance)) {
       setEditingCell(null);
       return;
     }
@@ -234,16 +235,17 @@ export function SnapshotHistoryTable({ refreshKey = 0, onChange, monthHref }: Sn
     const isEditing = editingCell?.date === row.date && editingCell?.accountId === account.id;
     if (isEditing) {
       return (
-        <input
-          type="number"
-          step="0.01"
+        <MoneyInput
           value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
+          onChange={setEditValue}
           onBlur={handleCellSave}
           onKeyDown={handleKeyDown}
           disabled={savingCell}
-          aria-label={`${account.name}, ${row.displayDate}`}
-          className="fig w-full min-w-[6.5rem] rounded-md border border-accent bg-surface px-2 py-1 text-right text-[13px] text-ink focus:outline-none focus:ring-1 focus:ring-accent"
+          size="sm"
+          align="right"
+          label={`${account.name}, ${row.displayDate}`}
+          className="min-w-[7.5rem]"
+          inputClassName="border-accent"
           autoFocus
         />
       );

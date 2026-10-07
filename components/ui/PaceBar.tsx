@@ -11,12 +11,24 @@ export function paceTone(spent: number, budget: number, pace?: number): 'ok' | '
   return 'ok';
 }
 
+/**
+ * Fill colour. Neutral ink unless there's trouble; a line spent exactly to its
+ * budget (e.g. a fixed bill paid in full) is a solid ink-2 bar, never the
+ * track colour, so a full bar never reads as empty in light or dark.
+ */
+export function paceFill(spent: number, budget: number, tone: 'ok' | 'ahead' | 'over', fixed = false): string {
+  if (tone === 'over') return 'bg-bad';
+  if (tone === 'ahead') return 'bg-warn';
+  const full = budget > 0 && spent >= budget;
+  return fixed && !full ? 'bg-ink-3' : 'bg-ink-2';
+}
+
 export function PaceBar({ spent, budget, pace, fixed = false, label }: { spent: number; budget: number; pace?: number; fixed?: boolean; label: string }) {
   const scale = 0.8;
   const used = budget > 0 ? spent / budget : spent > 0 ? 1.25 : 0;
   const width = Math.min(used * scale, 1) * 100;
   const tone = fixed ? 'ok' : paceTone(spent, budget, pace);
-  const fill = fixed ? 'bg-line' : tone === 'over' ? 'bg-bad' : tone === 'ahead' ? 'bg-warn' : 'bg-ink-2';
+  const fill = paceFill(spent, budget, tone, fixed);
   return (
     <div
       role="meter"
