@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx';
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-import type { Database } from '../lib/supabase/database.types';
+import type { Database } from '../../lib/supabase/database.types';
 
 // ============ DATA NORMALIZATION MAPPINGS ============
 // Maps spreadsheet values to canonical database values
@@ -61,7 +61,7 @@ function shouldSkipBudgetRow(categoryName: string): boolean {
 }
 
 // Load environment variables from .env.local
-dotenv.config({ path: path.join(__dirname, '..', '.env.local') });
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env.local') });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -671,7 +671,7 @@ async function main(): Promise<void> {
   console.log('=== Finance Tracker Spreadsheet Import ===');
   console.log(`Supabase URL: ${supabaseUrl}`);
 
-  const spreadsheetPath = path.join(__dirname, '..', 'data', 'Life Planning V2.xlsx');
+  const spreadsheetPath = path.join(__dirname, '..', '..', 'data', 'Life Planning V2.xlsx');
   console.log(`\nReading spreadsheet: ${spreadsheetPath}`);
 
   let workbook: XLSX.WorkBook;
