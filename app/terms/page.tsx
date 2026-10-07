@@ -7,7 +7,7 @@ export default function TermsPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-12 text-gray-800">
       <h1 className="text-2xl font-bold mb-6">Terms of Service</h1>
-      <p className="text-sm text-gray-500 mb-8">Last updated: July 2026</p>
+      <p className="text-sm text-gray-500 mb-8">Last updated: October 2026</p>
 
       <section className="space-y-4 text-sm leading-6">
         <p>
@@ -17,9 +17,10 @@ export default function TermsPage() {
 
         <h2 className="text-lg font-semibold pt-4">Open Banking access</h2>
         <p>
-          Account information is retrieved via Enable Banking Oy under the UK Open Banking standard,
-          on a read-only basis and only for accounts you explicitly link. The application never
-          initiates payments and never stores your banking credentials.
+          Account information is retrieved via TrueLayer, an FCA-authorised Account Information
+          Service Provider, under the UK Open Banking standard, on a read-only basis and only for
+          accounts you explicitly link. The application never initiates payments and never stores
+          your banking credentials.
         </p>
 
         <h2 className="text-lg font-semibold pt-4">Accuracy</h2>
