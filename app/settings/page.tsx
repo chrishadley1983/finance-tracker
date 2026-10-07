@@ -1,9 +1,17 @@
 import { AppLayout } from '@/components/layout';
+import { ThemeSelector } from '@/components/settings/ThemeSelector';
 
 export default function SettingsPage() {
   return (
     <AppLayout title="Settings">
       <div className="max-w-2xl space-y-6">
+        {/* Appearance */}
+        <div className="rounded-lg border border-slate-200 bg-white p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-1">Appearance</h2>
+          <p className="text-slate-500 mb-4 text-sm">Saved on this device.</p>
+          <ThemeSelector />
+        </div>
+
         {/* Accounts */}
         <div className="rounded-lg border border-slate-200 bg-white p-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Accounts</h2>

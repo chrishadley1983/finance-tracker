@@ -5,9 +5,9 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12 text-gray-800">
+    <main className="mx-auto max-w-3xl px-6 py-12 text-ink">
       <h1 className="text-2xl font-bold mb-6">Terms of Service</h1>
-      <p className="text-sm text-gray-500 mb-8">Last updated: October 2026</p>
+      <p className="text-sm text-ink-3 mb-8">Last updated: October 2026</p>
 
       <section className="space-y-4 text-sm leading-6">
         <p>
@@ -33,7 +33,7 @@ export default function TermsPage() {
         <h2 className="text-lg font-semibold pt-4">Contact</h2>
         <p>
           Questions about these terms:{' '}
-          <a className="text-blue-600 underline" href="mailto:chrishadley1983@gmail.com">
+          <a className="text-accent underline" href="mailto:chrishadley1983@gmail.com">
             chrishadley1983@gmail.com
           </a>
           .
