@@ -415,6 +415,7 @@ export function CategorisedPreview({
           categoryName: result.categoryName,
           categorisationSource: result.source,
           categorisationConfidence: result.confidence,
+          needsReview: result.needsReview,
         };
       }
 

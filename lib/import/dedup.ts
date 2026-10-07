@@ -1,3 +1,5 @@
+import { createHash } from 'crypto';
+
 /**
  * Count-based import dedup.
  *
@@ -120,4 +122,13 @@ export function planImport<T extends CountableTx>(
     (tx) => tupleKey(tx.date, tx.amount, tx.description),
     existing.map((r) => tupleKey(r.date, Number(r.amount), r.description)),
   );
+}
+
+/**
+ * The hash stored in `imported_transaction_hashes` and used to recognise a
+ * previously imported row. Both the duplicate-check preview and the import
+ * itself must use this, or the preview and the real dedup disagree.
+ */
+export function importHash(date: string, amount: number, description: string): string {
+  return createHash('sha256').update(tupleKey(date, amount, description)).digest('hex');
 }

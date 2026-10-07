@@ -92,6 +92,16 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
+    // The live FK from imported_transaction_hashes has no ON DELETE CASCADE,
+    // so the hash rows must go first (as the bulk delete already does).
+    const { error: hashError } = await supabaseAdmin
+      .from('imported_transaction_hashes')
+      .delete()
+      .eq('transaction_id', id);
+    if (hashError) {
+      return NextResponse.json({ error: hashError.message }, { status: 500 });
+    }
+
     const { error } = await supabaseAdmin
       .from('transactions')
       .delete()
