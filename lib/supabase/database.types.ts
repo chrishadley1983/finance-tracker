@@ -906,6 +906,30 @@ export type Database = {
           },
         ]
       }
+      nav_pins: {
+        Row: {
+          created_at: string
+          href: string
+          id: string
+          label: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          href: string
+          id?: string
+          label: string
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          href?: string
+          id?: string
+          label?: string
+          position?: number
+        }
+        Relationships: []
+      }
       planning_notes: {
         Row: {
           content: string
