@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type {
   BudgetGroupComparison,
   SavingsRate,
@@ -30,6 +30,7 @@ export function useBudgets(): UseBudgetsReturn {
   const [savingsRate, setSavingsRate] = useState<SavingsRate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const syncedYears = useRef(new Set<number>());
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -50,12 +51,16 @@ export function useBudgets(): UseBudgetsReturn {
         },
       };
 
-      // First, sync budgets to ensure all categories have entries
-      await fetch('/api/budgets/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ year }),
-      });
+      // Make sure every category has budget rows for this year. Only needed
+      // once per year per visit, not on every month change or refresh.
+      if (!syncedYears.current.has(year)) {
+        const syncRes = await fetch('/api/budgets/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ year }),
+        });
+        if (syncRes.ok) syncedYears.current.add(year);
+      }
 
       // Then fetch the data
       const [comparisonRes, savingsRes] = await Promise.all([

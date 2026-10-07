@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 interface Account {
   id: string;
@@ -13,9 +14,21 @@ interface SnapshotEntry {
   accountId: string;
   accountName: string;
   accountType: string;
-  balance: number;
+  /** null = no value entered; such accounts are never saved */
+  balance: number | null;
   existingSnapshotId?: string;
+  /** Balance already saved for this month, to detect changes */
+  savedBalance?: number;
   previousBalance?: number; // Balance from previous month
+  /** Pre-filled from last month and not yet edited */
+  carried?: boolean;
+}
+
+/** Entries that need writing: new values, or saved values that changed. */
+export function entriesToSave(entries: SnapshotEntry[]): SnapshotEntry[] {
+  return entries.filter(
+    (e) => e.balance !== null && (e.savedBalance === undefined || e.balance !== e.savedBalance)
+  );
 }
 
 interface MonthlySnapshotFormProps {
@@ -35,6 +48,7 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isExcluding, setIsExcluding] = useState<string | null>(null);
+  const [confirmExclude, setConfirmExclude] = useState<SnapshotEntry | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -97,13 +111,18 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
         .map((account: Account) => {
           const existing = snapshotMap.get(account.id);
           const prevBalance = prevSnapshotMap.get(account.id);
+          const previousBalance = prevBalance !== undefined ? Number(prevBalance) : undefined;
+          // Never default to 0: an account with no value this month starts
+          // from last month's balance, or stays blank (and unsaved).
           return {
             accountId: account.id,
             accountName: account.name,
             accountType: account.type,
-            balance: existing ? Number(existing.balance) : 0,
+            balance: existing ? Number(existing.balance) : previousBalance ?? null,
             existingSnapshotId: existing?.id,
-            previousBalance: prevBalance !== undefined ? Number(prevBalance) : undefined,
+            savedBalance: existing ? Number(existing.balance) : undefined,
+            previousBalance,
+            carried: !existing && previousBalance !== undefined,
           };
         })
         .sort((a: SnapshotEntry, b: SnapshotEntry) => {
@@ -128,11 +147,15 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
   }, [fetchData]);
 
   const handleBalanceChange = (accountId: string, value: string) => {
-    const numValue = value === '' ? 0 : parseFloat(value);
+    const numValue = value === '' ? null : parseFloat(value);
     setEntries(prev =>
       prev.map(entry =>
         entry.accountId === accountId
-          ? { ...entry, balance: isNaN(numValue) ? entry.balance : numValue }
+          ? {
+              ...entry,
+              balance: numValue !== null && isNaN(numValue) ? entry.balance : numValue,
+              carried: false,
+            }
           : entry
       )
     );
@@ -142,7 +165,7 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
     setEntries(prev =>
       prev.map(entry =>
         entry.accountId === accountId && entry.previousBalance !== undefined
-          ? { ...entry, balance: entry.previousBalance }
+          ? { ...entry, balance: entry.previousBalance, carried: false }
           : entry
       )
     );
@@ -152,7 +175,7 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
     setEntries(prev =>
       prev.map(entry =>
         entry.previousBalance !== undefined
-          ? { ...entry, balance: entry.previousBalance }
+          ? { ...entry, balance: entry.previousBalance, carried: false }
           : entry
       )
     );
@@ -186,36 +209,29 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
 
     try {
       const dateStr = `${year}-${String(month).padStart(2, '0')}-01`;
-      let created = 0;
-      let updated = 0;
-
-      for (const entry of entries) {
-        if (entry.existingSnapshotId) {
-          // Update existing snapshot
-          const res = await fetch(`/api/wealth-snapshots/${entry.existingSnapshotId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ balance: entry.balance }),
-          });
-          if (!res.ok) throw new Error(`Failed to update ${entry.accountName}`);
-          updated++;
-        } else {
-          // Create new snapshot
-          const res = await fetch('/api/wealth-snapshots', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              account_id: entry.accountId,
-              date: dateStr,
-              balance: entry.balance,
-            }),
-          });
-          if (!res.ok) throw new Error(`Failed to create snapshot for ${entry.accountName}`);
-          created++;
-        }
+      const toSave = entriesToSave(entries);
+      if (toSave.length === 0) {
+        setSuccessMessage('Nothing to save: no balances have changed');
+        return;
       }
 
-      setSuccessMessage(`Saved ${MONTH_NAMES[month - 1]} ${year}: ${created} created, ${updated} updated`);
+      // One request for the whole month, so a failure can't leave it half-saved.
+      const res = await fetch('/api/wealth-snapshots/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: dateStr,
+          entries: toSave.map((e) => ({ account_id: e.accountId, balance: e.balance })),
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || 'Failed to save balances');
+      }
+
+      const created = toSave.filter((e) => !e.existingSnapshotId).length;
+      const updated = toSave.length - created;
+      setSuccessMessage(`Saved ${MONTH_NAMES[month - 1]} ${year}: ${created} added, ${updated} updated`);
 
       // Refresh to get new IDs
       await fetchData();
@@ -230,7 +246,8 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
     }
   };
 
-  const totalBalance = entries.reduce((sum, e) => sum + e.balance, 0);
+  const totalBalance = entries.reduce((sum, e) => sum + (e.balance ?? 0), 0);
+  const pendingCount = entriesToSave(entries).length;
   const hasPreviousData = entries.some(e => e.previousBalance !== undefined);
   const prev = getPreviousMonth();
 
@@ -364,16 +381,20 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
                   <span className="text-slate-500">£</span>
                   <input
                     type="number"
-                    value={entry.balance || ''}
+                    value={entry.balance ?? ''}
                     onChange={(e) => handleBalanceChange(entry.accountId, e.target.value)}
-                    placeholder="0"
-                    className="w-28 px-3 py-1.5 border border-slate-300 rounded-md text-right text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="—"
+                    aria-label={`${entry.accountName} balance`}
+                    title={entry.carried ? `Carried over from ${MONTH_NAMES[prev.month - 1]}` : undefined}
+                    className={`w-28 px-3 py-1.5 border rounded-md text-right text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      entry.carried ? 'border-dashed border-slate-300 text-slate-500' : 'border-slate-300'
+                    }`}
                   />
                 </div>
 
                 {/* Exclude button */}
                 <button
-                  onClick={() => handleExcludeAccount(entry.accountId)}
+                  onClick={() => setConfirmExclude(entry)}
                   disabled={isExcluding === entry.accountId}
                   className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                   title="Exclude from snapshots"
@@ -393,6 +414,12 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
             ))}
           </div>
 
+          {entries.some((e) => e.carried) && (
+            <p className="mt-3 text-xs text-slate-500">
+              Dashed boxes are carried over from {MONTH_NAMES[prev.month - 1]}. They&apos;re saved with this month unless you clear them.
+            </p>
+          )}
+
           <div className="mt-6 pt-4 border-t border-slate-200">
             <div className="flex items-center justify-between">
               <div>
@@ -401,15 +428,28 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
               </div>
               <button
                 onClick={handleSave}
-                disabled={isSaving}
+                disabled={isSaving || pendingCount === 0}
                 className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isSaving ? 'Saving...' : 'Save Snapshots'}
+                {isSaving ? 'Saving...' : pendingCount === 0 ? 'No changes' : `Save ${pendingCount} balance${pendingCount === 1 ? '' : 's'}`}
               </button>
             </div>
           </div>
         </>
       )}
+      <ConfirmDialog
+        isOpen={confirmExclude !== null}
+        title="Exclude account from snapshots?"
+        message={`${confirmExclude?.accountName ?? 'This account'} will no longer appear in monthly balance entry. Its existing snapshots are kept.`}
+        confirmLabel="Exclude"
+        variant="warning"
+        onConfirm={() => {
+          const target = confirmExclude;
+          setConfirmExclude(null);
+          if (target) handleExcludeAccount(target.accountId);
+        }}
+        onCancel={() => setConfirmExclude(null)}
+      />
     </div>
   );
 }
