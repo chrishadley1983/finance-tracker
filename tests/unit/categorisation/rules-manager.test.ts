@@ -47,6 +47,9 @@ vi.mock('@/lib/supabase/server', () => ({
           }),
         };
       }
+      if (table === 'category_rule_events') {
+        return { insert: vi.fn().mockResolvedValue({ error: null }) };
+      }
       if (table === 'category_corrections') {
         return {
           update: vi.fn().mockReturnValue({
@@ -60,7 +63,8 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 // Mock the rule-matcher cache clear
-vi.mock('@/lib/categorisation/rule-matcher', () => ({
+vi.mock('@/lib/categorisation/rule-matcher', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/categorisation/rule-matcher')>()),
   clearRulesCache: vi.fn(),
 }));
 
