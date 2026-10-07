@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { Field, Select } from '@/components/ui/Field';
 import { Notice, SkeletonRows } from '@/components/ui/Notice';
 import { Tabs } from '@/components/ui/Tabs';
-import { formatAmount } from '@/components/transactions/TransactionTable';
+import { formatAmount } from '@/lib/format';
 
 // =============================================================================
 // TYPES

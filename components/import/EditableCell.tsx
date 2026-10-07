@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { formatDateGB } from '@/lib/format';
-import { formatAmount } from '@/components/transactions/TransactionTable';
+import { formatAmount } from '@/lib/format';
 
 // =============================================================================
 // TYPES

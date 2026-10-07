@@ -43,6 +43,16 @@ export function formatGBP(amount: number, opts?: FormatGBPOptions): string {
  * Compact GBP for chart axes and labels: "£1.2M", "£450k", "£999".
  * Values below £1,000 (including negatives) are shown as whole pounds via toFixed.
  */
+/** Money cell text: spending is a plain amount (shown in ink), income gets a leading "+". */
+export function formatAmount(amount: number): string {
+  return amount > 0 ? formatGBP(amount, { pence: true, signed: true }) : formatGBP(Math.abs(amount), { pence: true });
+}
+
+/** A day's net: signed both ways so a mixed day reads unambiguously. */
+export function formatNet(amount: number): string {
+  return formatGBP(amount, { pence: true, signed: true });
+}
+
 export function formatGBPCompact(amount: number): string {
   if (amount >= 1000000) {
     return `£${(amount / 1000000).toFixed(1)}M`;

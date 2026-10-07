@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, ArrowUpDown, CheckCircle2, Circle, Pencil, Trash2, Inbox } from 'lucide-react';
 import type { TransactionWithRelations } from '@/lib/hooks/useTransactions';
 import { CategorySelect } from '@/components/ui/CategorySelect';
-import { formatDateGB, formatDayHeading, formatGBP } from '@/lib/format';
+import { formatAmount, formatDateGB, formatDayHeading, formatGBP, formatNet } from '@/lib/format';
 import { isTypingTarget } from '@/lib/keyboard';
 
 export interface TransactionWithRunningBalance extends TransactionWithRelations {
@@ -30,15 +30,7 @@ interface TransactionTableProps {
   keyboardEnabled?: boolean;
 }
 
-/** Money cell text: spending is a plain amount (shown in ink), income gets a leading "+". */
-export function formatAmount(amount: number): string {
-  return amount > 0 ? formatGBP(amount, { pence: true, signed: true }) : formatGBP(Math.abs(amount), { pence: true });
-}
-
-/** A day's net: signed both ways so a mixed day reads unambiguously. */
-export function formatNet(amount: number): string {
-  return formatGBP(amount, { pence: true, signed: true });
-}
+export { formatAmount, formatNet } from '@/lib/format';
 
 function dialogOpen(): boolean {
   return Boolean(document.querySelector('[role="dialog"][aria-modal="true"], [role="alertdialog"]'));

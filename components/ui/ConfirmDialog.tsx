@@ -1,14 +1,18 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, type ReactNode } from 'react';
+import { Button } from './Button';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
-  message: string;
+  message: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
+  /** danger = destroys something; warning = overwrites or changes a lot; default = neither. */
   variant?: 'danger' | 'warning' | 'default';
+  /** Shows a spinner on the confirm button while the action runs. */
+  busy?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -20,51 +24,42 @@ export function ConfirmDialog({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   variant = 'default',
+  busy = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Close on escape key
+  // Close on Escape (not while the action is running)
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !busy) {
         onCancel();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onCancel]);
+  }, [isOpen, busy, onCancel]);
 
-  // Focus trap
+  // Focus the dialog, and hand focus back to whatever opened it on close
   useEffect(() => {
-    if (isOpen && dialogRef.current) {
-      dialogRef.current.focus();
-    }
+    if (!isOpen || !dialogRef.current) return;
+    const opener = document.activeElement as HTMLElement | null;
+    dialogRef.current.focus();
+    return () => opener?.focus?.();
   }, [isOpen]);
 
   if (!isOpen) return null;
-
-  const getConfirmButtonClasses = () => {
-    switch (variant) {
-      case 'danger':
-        return 'bg-bad text-surface hover:opacity-90';
-      case 'warning':
-        return 'bg-warn text-surface hover:opacity-90';
-      default:
-        return 'bg-accent text-accent-ink hover:opacity-90';
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40"
-        onClick={onCancel}
+        onClick={busy ? undefined : onCancel}
         aria-hidden="true"
       />
 
@@ -84,26 +79,25 @@ export function ConfirmDialog({
         >
           {title}
         </h2>
-        <p
+        <div
           id="confirm-dialog-description"
           className="mb-6 text-sm text-ink-2"
         >
           {message}
-        </p>
+        </div>
 
         <div className="flex justify-end gap-3">
-          <button
-            onClick={onCancel}
-            className="rounded-md border border-line bg-surface px-4 py-2 text-sm font-medium text-ink hover:bg-sunk transition-colors"
-          >
+          <Button onClick={onCancel} disabled={busy}>
             {cancelLabel}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={variant === 'danger' ? 'danger' : 'primary'}
+            className={variant === 'danger' ? 'font-semibold' : ''}
+            loading={busy}
             onClick={onConfirm}
-            className={`rounded-md px-4 py-2 text-sm font-semibold transition-opacity ${getConfirmButtonClasses()}`}
           >
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

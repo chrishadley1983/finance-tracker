@@ -6,7 +6,7 @@ import { formatDateGB } from '@/lib/format';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Notice } from '@/components/ui/Notice';
-import { formatAmount } from '@/components/transactions/TransactionTable';
+import { formatAmount } from '@/lib/format';
 
 interface DuplicateResult {
   importRow: number;
