@@ -24,18 +24,6 @@ export function linkState(a: StatusAccount): LinkState {
   return a.needsReconsent ? 'reconnect' : 'connected';
 }
 
-export const LINK_LABEL: Record<LinkState, string> = {
-  connected: 'Connected',
-  reconnect: 'Needs reconnecting',
-  unlinked: 'Not linked',
-};
-
-export const LINK_TONE: Record<LinkState, 'in' | 'warn' | 'neutral'> = {
-  connected: 'in',
-  reconnect: 'warn',
-  unlinked: 'neutral',
-};
-
 /** "Just now", "12 minutes ago", "3 hours ago", "Yesterday", "4 days ago", or a date. */
 export function syncedAgo(iso: string | null, now: Date = new Date()): string {
   if (!iso) return 'Never synced';

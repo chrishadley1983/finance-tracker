@@ -1,17 +1,25 @@
+import Link from 'next/link';
+
 export const metadata = {
-  title: 'Terms of Service — Finance Tracker',
-  description: 'Terms of use for Finance Tracker.',
+  title: 'Terms · Hadley Finance Tracker',
+  description: 'Terms of use for Hadley Finance Tracker.',
 };
 
 export default function TermsPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12 text-ink">
-      <h1 className="text-2xl font-bold mb-6">Terms of Service</h1>
+    <main className="mx-auto max-w-[65ch] px-4 py-10 text-ink sm:py-14">
+      <Link
+        href="/"
+        className="mb-8 inline-block text-[13px] text-ink-3 underline-offset-2 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-accent"
+      >
+        ← Back to Hadley Finance
+      </Link>
+      <h1 className="mb-2 text-2xl font-semibold tracking-tight">Terms</h1>
       <p className="text-sm text-ink-3 mb-8">Last updated: October 2026</p>
 
       <section className="space-y-4 text-sm leading-6">
         <p>
-          Finance Tracker is a private, personal application provided for the sole use of its owner
+          Hadley Finance Tracker is a private, personal application provided for the sole use of its owner
           and household. It is supplied &quot;as is&quot;, without warranty of any kind.
         </p>
 

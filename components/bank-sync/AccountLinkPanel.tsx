@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Panel } from '@/components/ui/Panel';
 import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
 import { Select } from '@/components/ui/Field';
 import { Notice } from '@/components/ui/Notice';
 
@@ -127,7 +126,7 @@ export function AccountLinkPanel({
 
               {row?.linked ? (
                 <div className="flex items-center gap-2 sm:justify-end">
-                  <Chip tone="in">Linked</Chip>
+                  <span className="text-[13px] text-ink-3">Linked</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">

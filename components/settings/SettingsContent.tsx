@@ -236,10 +236,16 @@ function BankSummary({ data, error, loading, reload }: ReturnType<typeof useJson
         <span className="fig text-ink">{sum.linked}</span> of {data.accounts.length} accounts linked.{' '}
         {sum.lastSyncAt ? `Last synced ${syncedWhen(sum.lastSyncAt)}.` : 'Not synced yet.'}
       </p>
-      <div className="flex flex-wrap gap-1.5">
-        <Chip tone="in">{sum.linked - sum.reconnect} connected</Chip>
+      {/* Normal states are plain text; only a problem gets a chip. */}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[13px] text-ink-3">
+        <span>{`${sum.linked - sum.reconnect} connected`}</span>
+        {sum.unlinked > 0 && (
+          <>
+            <span aria-hidden>·</span>
+            <span>{`${sum.unlinked} not linked`}</span>
+          </>
+        )}
         {sum.reconnect > 0 && <Chip tone="warn">{sum.reconnect} {sum.reconnect === 1 ? 'needs' : 'need'} reconnecting</Chip>}
-        {sum.unlinked > 0 && <Chip>{sum.unlinked} not linked</Chip>}
       </div>
       {sum.reconnect > 0 && (
         <Notice tone="warn" action={<Link href="/settings/bank-sync" className="font-medium underline">Reconnect</Link>}>

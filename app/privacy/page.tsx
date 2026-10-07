@@ -1,24 +1,32 @@
+import Link from 'next/link';
+
 export const metadata = {
-  title: 'Privacy Notice — Finance Tracker',
-  description: 'How Finance Tracker handles your data.',
+  title: 'Privacy · Hadley Finance Tracker',
+  description: 'How Hadley Finance Tracker handles your data.',
 };
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12 text-ink">
-      <h1 className="text-2xl font-bold mb-6">Privacy Notice</h1>
+    <main className="mx-auto max-w-[65ch] px-4 py-10 text-ink sm:py-14">
+      <Link
+        href="/"
+        className="mb-8 inline-block text-[13px] text-ink-3 underline-offset-2 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-accent"
+      >
+        ← Back to Hadley Finance
+      </Link>
+      <h1 className="mb-2 text-2xl font-semibold tracking-tight">Privacy</h1>
       <p className="text-sm text-ink-3 mb-8">Last updated: October 2026</p>
 
       <section className="space-y-4 text-sm leading-6">
         <p>
-          Finance Tracker is a private, personal finance application used by a single household to
+          Hadley Finance Tracker is a private, personal finance application used by a single household to
           track its own bank transactions, budgets and net worth. It is not offered as a public
           service and does not sell, share or advertise with your data.
         </p>
 
         <h2 className="text-lg font-semibold pt-4">Bank data (Open Banking)</h2>
         <p>
-          With your explicit consent, Finance Tracker connects to your bank through TrueLayer, an
+          With your explicit consent, Hadley Finance Tracker connects to your bank through TrueLayer, an
           Account Information Service Provider authorised by the Financial Conduct Authority, using
           the UK Open Banking standard. We request read-only access to account information, balances
           and transactions. We never receive or store your online banking credentials — you
