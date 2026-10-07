@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { formatGBP, MONTH_NAMES } from '@/lib/format';
 
 interface Account {
   id: string;
@@ -34,11 +35,6 @@ export function entriesToSave(entries: SnapshotEntry[]): SnapshotEntry[] {
 interface MonthlySnapshotFormProps {
   onSaveComplete?: () => void;
 }
-
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-];
 
 export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps) {
   const now = new Date();
@@ -251,15 +247,6 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
   const hasPreviousData = entries.some(e => e.previousBalance !== undefined);
   const prev = getPreviousMonth();
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       pension: 'Pension',
@@ -371,9 +358,9 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
                   <button
                     onClick={() => handleCopyFromPrevious(entry.accountId)}
                     className="text-xs text-slate-400 hover:text-blue-600 transition-colors"
-                    title={`Copy from ${MONTH_NAMES[prev.month - 1]}: ${formatCurrency(entry.previousBalance)}`}
+                    title={`Copy from ${MONTH_NAMES[prev.month - 1]}: ${formatGBP(entry.previousBalance)}`}
                   >
-                    {formatCurrency(entry.previousBalance)}
+                    {formatGBP(entry.previousBalance)}
                   </button>
                 )}
 
@@ -424,7 +411,7 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-sm text-slate-500">Total Net Worth</span>
-                <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalBalance)}</p>
+                <p className="text-2xl font-bold text-slate-900">{formatGBP(totalBalance)}</p>
               </div>
               <button
                 onClick={handleSave}

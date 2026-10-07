@@ -8,6 +8,7 @@ import {
   type YearlyDrawdown,
 } from '@/lib/fire/ern/uk-drawdown';
 import type { WrapperBalances } from '@/lib/fire/ern/uk-drawdown';
+import { formatGBP } from '@/lib/format';
 
 interface DrawdownExplainerProps {
   wrapperBalances: { isa: number; sipp: number; gia: number; cash: number };
@@ -25,15 +26,6 @@ interface DrawdownExplainerProps {
   partialEarningsAnnual?: number;
   /** Years of partial earnings (default 0) */
   partialEarningsYears?: number;
-}
-
-function fmt(n: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(n);
 }
 
 function pct(n: number): string {
@@ -230,7 +222,7 @@ export function DrawdownExplainer({
           <div>
             <span className="font-medium text-gray-900 dark:text-white">Drawdown Strategy</span>
             <span className="text-sm text-gray-500 dark:text-gray-400 ml-3">
-              {fmt(projection.totalTaxPaid)} lifetime tax ({pct(avgTaxRate)} effective)
+              {formatGBP(projection.totalTaxPaid)} lifetime tax ({pct(avgTaxRate)} effective)
               {projection.depletionAge && ` | depletes at age ${projection.depletionAge}`}
               {' | '}{pct(realReturn)} real return
             </span>
@@ -255,7 +247,7 @@ export function DrawdownExplainer({
               tax. The strategy adapts when state pension starts at age {statePensionStartAge}.
               Returns are projected at {pct(realReturn)} real (CAPE-implied).
               {partialEarningsAnnual > 0 && partialEarningsYears > 0 && (
-                <> Partial earnings of {fmt(partialEarningsAnnual)}/yr offset withdrawals for the first {partialEarningsYears} years of retirement.</>
+                <> Partial earnings of {formatGBP(partialEarningsAnnual)}/yr offset withdrawals for the first {partialEarningsYears} years of retirement.</>
               )}
             </p>
 
@@ -284,7 +276,7 @@ export function DrawdownExplainer({
                     SIPP Access, Pre-Pension (age {Math.max(retirementAge, 57)}&ndash;{statePensionStartAge})
                   </h5>
                   <ol className="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-400">
-                    <li><strong>SIPP</strong> up to Personal Allowance ({fmt(12570)}/yr) &mdash; taxed at 0% via PA</li>
+                    <li><strong>SIPP</strong> up to Personal Allowance ({formatGBP(12570)}/yr) &mdash; taxed at 0% via PA</li>
                     <li><strong>ISA</strong> for the remainder &mdash; entirely tax-free</li>
                     <li><strong>GIA</strong> if ISA + SIPP insufficient &mdash; CGT on gains only</li>
                     <li><strong>Cash</strong> as last resort</li>
@@ -307,7 +299,7 @@ export function DrawdownExplainer({
                   <li><strong>Cash</strong> as last resort</li>
                 </ol>
                 <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-500">
-                  State pension ({fmt(statePensionAnnual)}/yr) fills most of PA, so SIPP draws are taxed
+                  State pension ({formatGBP(statePensionAnnual)}/yr) fills most of PA, so SIPP draws are taxed
                 </p>
               </div>
             </div>
@@ -321,7 +313,7 @@ export function DrawdownExplainer({
             {projection.accumulationYears > 0 && (
               <p className="text-xs text-gray-500 mb-2">
                 After {projection.accumulationYears} years of accumulation
-                {annualSavings > 0 && <> saving {fmt(annualSavings)}/yr</>}
+                {annualSavings > 0 && <> saving {formatGBP(annualSavings)}/yr</>}
                 {' '}at {pct(realReturn)} real return. Savings distributed proportionally to current wrapper mix.
               </p>
             )}
@@ -336,11 +328,11 @@ export function DrawdownExplainer({
                   <div className="text-xs font-medium">{label}</div>
                   {projection.accumulationYears > 0 ? (
                     <>
-                      <div className="text-xs line-through opacity-60">{fmt(now)}</div>
-                      <div className="text-lg font-bold">{fmt(ret)}</div>
+                      <div className="text-xs line-through opacity-60">{formatGBP(now)}</div>
+                      <div className="text-lg font-bold">{formatGBP(ret)}</div>
                     </>
                   ) : (
-                    <div className="text-lg font-bold">{fmt(ret)}</div>
+                    <div className="text-lg font-bold">{formatGBP(ret)}</div>
                   )}
                   <div className="text-xs">{retirementTotal > 0 ? pct(ret / retirementTotal) : '0%'}</div>
                 </div>
@@ -348,7 +340,7 @@ export function DrawdownExplainer({
             </div>
             {projection.accumulationYears > 0 && (
               <p className="text-xs text-gray-500 mt-2">
-                Portfolio at retirement: {fmt(retirementTotal)} (from {fmt(totalPortfolio)} today)
+                Portfolio at retirement: {formatGBP(retirementTotal)} (from {formatGBP(totalPortfolio)} today)
               </p>
             )}
           </section>
@@ -388,24 +380,24 @@ export function DrawdownExplainer({
                           {y.age}
                           {isPartialEarnings && <span className="text-purple-500 ml-1" title="Partial earnings active">*</span>}
                         </td>
-                        <td className="py-1.5 px-2 text-right">{y.fromIsa > 0 ? fmt(y.fromIsa) : '—'}</td>
-                        <td className="py-1.5 px-2 text-right">{y.fromSipp > 0 ? fmt(y.fromSipp) : '—'}</td>
-                        <td className="py-1.5 px-2 text-right">{y.fromGia > 0 ? fmt(y.fromGia) : '—'}</td>
-                        <td className="py-1.5 px-2 text-right">{y.statePensionIncome > 0 ? fmt(y.statePensionIncome) : '—'}</td>
+                        <td className="py-1.5 px-2 text-right">{y.fromIsa > 0 ? formatGBP(y.fromIsa) : '—'}</td>
+                        <td className="py-1.5 px-2 text-right">{y.fromSipp > 0 ? formatGBP(y.fromSipp) : '—'}</td>
+                        <td className="py-1.5 px-2 text-right">{y.fromGia > 0 ? formatGBP(y.fromGia) : '—'}</td>
+                        <td className="py-1.5 px-2 text-right">{y.statePensionIncome > 0 ? formatGBP(y.statePensionIncome) : '—'}</td>
                         <td className="py-1.5 px-2 text-right text-red-600 dark:text-red-400">
-                          {y.totalTax > 0 ? fmt(y.totalTax) : '—'}
+                          {y.totalTax > 0 ? formatGBP(y.totalTax) : '—'}
                         </td>
                         <td className="py-1.5 px-2 text-right">
                           {y.effectiveTaxRate > 0 ? pct(y.effectiveTaxRate) : '0%'}
                         </td>
                         <td className="py-1.5 px-2 text-right text-emerald-600 dark:text-emerald-400">
-                          {fmt(y.remainingBalances.isa)}
+                          {formatGBP(y.remainingBalances.isa)}
                         </td>
                         <td className="py-1.5 px-2 text-right text-blue-600 dark:text-blue-400">
-                          {fmt(y.remainingBalances.sipp)}
+                          {formatGBP(y.remainingBalances.sipp)}
                         </td>
                         <td className="py-1.5 px-2 text-right text-amber-600 dark:text-amber-400">
-                          {fmt(y.remainingBalances.gia)}
+                          {formatGBP(y.remainingBalances.gia)}
                         </td>
                       </tr>
                     );
@@ -413,7 +405,7 @@ export function DrawdownExplainer({
                 </tbody>
               </table>
               {partialEarningsAnnual > 0 && partialEarningsYears > 0 && (
-                <p className="text-xs text-purple-500 mt-1">* Partial earnings ({fmt(partialEarningsAnnual)}/yr) reducing withdrawal need</p>
+                <p className="text-xs text-purple-500 mt-1">* Partial earnings ({formatGBP(partialEarningsAnnual)}/yr) reducing withdrawal need</p>
               )}
             </div>
           </section>
@@ -454,11 +446,11 @@ export function DrawdownExplainer({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <div className="text-xs text-gray-500">Total Drawn</div>
-                <div className="text-lg font-bold">{fmt(projection.totalDrawn)}</div>
+                <div className="text-lg font-bold">{formatGBP(projection.totalDrawn)}</div>
               </div>
               <div>
                 <div className="text-xs text-gray-500">Total Tax Paid</div>
-                <div className="text-lg font-bold text-red-600 dark:text-red-400">{fmt(projection.totalTaxPaid)}</div>
+                <div className="text-lg font-bold text-red-600 dark:text-red-400">{formatGBP(projection.totalTaxPaid)}</div>
               </div>
               <div>
                 <div className="text-xs text-gray-500">Avg Effective Tax Rate</div>
@@ -467,7 +459,7 @@ export function DrawdownExplainer({
               <div>
                 <div className="text-xs text-gray-500">Final Portfolio</div>
                 <div className="text-lg font-bold">
-                  {fmt(projection.finalBalances.isa + projection.finalBalances.sipp + projection.finalBalances.gia + projection.finalBalances.cash)}
+                  {formatGBP(projection.finalBalances.isa + projection.finalBalances.sipp + projection.finalBalances.gia + projection.finalBalances.cash)}
                 </div>
               </div>
             </div>
@@ -479,17 +471,17 @@ export function DrawdownExplainer({
               Tax Assumptions
             </h4>
             <ul className="list-disc list-inside space-y-1 text-xs text-gray-500">
-              <li>2025-26 UK tax bands: PA {fmt(12570)}, basic 20% to {fmt(50270)}, higher 40% to {fmt(125140)}, additional 45%</li>
-              <li>CGT allowance {fmt(3000)}/yr; rates 10%/20% (basic/higher rate taxpayers)</li>
-              <li>SIPP Tax-Free Lump Sum: 25% of crystallised amount, up to {fmt(268275)} lifetime</li>
+              <li>2025-26 UK tax bands: PA {formatGBP(12570)}, basic 20% to {formatGBP(50270)}, higher 40% to {formatGBP(125140)}, additional 45%</li>
+              <li>CGT allowance {formatGBP(3000)}/yr; rates 10%/20% (basic/higher rate taxpayers)</li>
+              <li>SIPP Tax-Free Lump Sum: 25% of crystallised amount, up to {formatGBP(268275)} lifetime</li>
               <li>GIA gain fraction starts at 50% and increases 1pp/yr (reflecting compounding gains)</li>
               <li>Fiscal drag not modelled (thresholds assumed frozen in real terms)</li>
               <li>Real return: {pct(realReturn)} (CAPE-implied). Cash earns 0% real.</li>
               {projection.accumulationYears > 0 && (
-                <li>Savings during accumulation ({fmt(annualSavings)}/yr) distributed proportionally to current wrapper mix</li>
+                <li>Savings during accumulation ({formatGBP(annualSavings)}/yr) distributed proportionally to current wrapper mix</li>
               )}
               {partialEarningsAnnual > 0 && (
-                <li>Partial earnings ({fmt(partialEarningsAnnual)}/yr for {partialEarningsYears} years) reduce withdrawal need, not modelled as taxable income</li>
+                <li>Partial earnings ({formatGBP(partialEarningsAnnual)}/yr for {partialEarningsYears} years) reduce withdrawal need, not modelled as taxable income</li>
               )}
             </ul>
           </section>

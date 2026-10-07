@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { AppLayout } from '@/components/layout';
+import { formatGBP, MONTH_NAMES } from '@/lib/format';
 
 interface ReportSummary {
   year: number;
@@ -16,20 +17,6 @@ interface ReportSummary {
     budget_total?: number;
   };
   generated_at: string;
-}
-
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-function fmtCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 export default function ReportsPage() {
@@ -281,27 +268,27 @@ export default function ReportsPage() {
                     {rd.net_worth != null && (
                       <div className="flex justify-between">
                         <span className="text-slate-500">Net Worth</span>
-                        <span className="font-medium text-slate-800">{fmtCurrency(rd.net_worth)}</span>
+                        <span className="font-medium text-slate-800">{formatGBP(rd.net_worth)}</span>
                       </div>
                     )}
                     {nwChange !== 0 && (
                       <div className="flex justify-between">
                         <span className="text-slate-500">Change</span>
                         <span className={`font-medium ${nwChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                          {nwChange >= 0 ? '+' : ''}{fmtCurrency(nwChange)}
+                          {nwChange >= 0 ? '+' : ''}{formatGBP(nwChange)}
                         </span>
                       </div>
                     )}
                     {rd.income != null && (
                       <div className="flex justify-between">
                         <span className="text-slate-500">Income</span>
-                        <span className="font-medium text-slate-800">{fmtCurrency(rd.income)}</span>
+                        <span className="font-medium text-slate-800">{formatGBP(rd.income)}</span>
                       </div>
                     )}
                     {rd.expenses != null && (
                       <div className="flex justify-between">
                         <span className="text-slate-500">Spending</span>
-                        <span className="font-medium text-slate-800">{fmtCurrency(rd.expenses)}</span>
+                        <span className="font-medium text-slate-800">{formatGBP(rd.expenses)}</span>
                       </div>
                     )}
                     {rd.savings_rate != null && (
@@ -316,7 +303,7 @@ export default function ReportsPage() {
                       <div className="flex justify-between">
                         <span className="text-slate-500">vs Budget</span>
                         <span className={`font-medium ${rd.expenses <= rd.budget_total ? 'text-emerald-600' : 'text-red-600'}`}>
-                          {rd.expenses <= rd.budget_total ? 'Under' : 'Over'} by {fmtCurrency(Math.abs(rd.expenses - rd.budget_total))}
+                          {rd.expenses <= rd.budget_total ? 'Under' : 'Over'} by {formatGBP(Math.abs(rd.expenses - rd.budget_total))}
                         </span>
                       </div>
                     )}

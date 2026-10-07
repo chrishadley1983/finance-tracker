@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import type { ParsedTransaction } from '@/lib/types/import';
+import { formatGBP } from '@/lib/format';
 
 // =============================================================================
 // TYPES
@@ -118,7 +119,7 @@ export function TransactionSplitter({
     const validationErrors: string[] = [];
 
     if (!isBalanced) {
-      validationErrors.push(`Split amounts (${formatCurrency(splitsTotal)}) must equal original (${formatCurrency(transaction.amount)})`);
+      validationErrors.push(`Split amounts (${formatGBP(splitsTotal, { pence: true })}) must equal original (${formatGBP(transaction.amount, { pence: true })})`);
     }
 
     const emptySplits = splits.filter((s) => !s.description.trim());
@@ -199,7 +200,7 @@ export function TransactionSplitter({
               </p>
             </div>
             <p className={`text-lg font-semibold ${transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatCurrency(transaction.amount)}
+              {formatGBP(transaction.amount, { pence: true })}
             </p>
           </div>
         </div>
@@ -310,12 +311,12 @@ export function TransactionSplitter({
             <div className="flex items-center gap-4">
               <div>
                 <span className="text-xs text-slate-500">Original</span>
-                <p className="font-medium">{formatCurrency(transaction.amount)}</p>
+                <p className="font-medium">{formatGBP(transaction.amount, { pence: true })}</p>
               </div>
               <div className="text-slate-400">=</div>
               <div>
                 <span className="text-xs text-slate-500">Splits Total</span>
-                <p className="font-medium">{formatCurrency(splitsTotal)}</p>
+                <p className="font-medium">{formatGBP(splitsTotal, { pence: true })}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -332,7 +333,7 @@ export function TransactionSplitter({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <span className="text-amber-700 font-medium">
-                    Difference: {formatCurrency(difference)}
+                    Difference: {formatGBP(difference, { pence: true })}
                   </span>
                 </>
               )}
@@ -376,9 +377,3 @@ export function TransactionSplitter({
 // HELPERS
 // =============================================================================
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-  }).format(amount);
-}

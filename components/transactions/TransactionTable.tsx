@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { TransactionWithRelations } from '@/lib/hooks/useTransactions';
+import { formatDateGBPadded, formatGBP } from '@/lib/format';
 
 interface Category {
   id: string;
@@ -29,22 +30,6 @@ interface TransactionTableProps {
   onInlineUpdate?: (id: string, field: 'description' | 'category_id', value: string | null) => Promise<void>;
   showRunningBalance?: boolean;
   hideAccountColumn?: boolean;
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function formatAmount(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-  }).format(amount);
 }
 
 function SortIcon({ column, sortColumn, sortDirection }: { column: string; sortColumn: string; sortDirection: 'asc' | 'desc' }) {
@@ -563,7 +548,7 @@ export function TransactionTable({
                       </td>
                     )}
                     <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
-                      {formatDate(transaction.date)}
+                      {formatDateGBPadded(transaction.date)}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900">
                       {hasInlineEdit ? (
@@ -602,7 +587,7 @@ export function TransactionTable({
                     <td className={`px-4 py-3 text-sm font-medium text-right whitespace-nowrap ${
                       transaction.amount >= 0 ? 'text-emerald-600' : 'text-red-600'
                     }`}>
-                      {formatAmount(transaction.amount)}
+                      {formatGBP(transaction.amount, { pence: true })}
                     </td>
                     {showRunningBalance && (
                       <td className={`px-4 py-3 text-sm font-medium text-right whitespace-nowrap ${
@@ -614,7 +599,7 @@ export function TransactionTable({
                       }`}>
                         {transaction.running_balance === null
                           ? '-'
-                          : formatAmount(transaction.running_balance ?? 0)}
+                          : formatGBP(transaction.running_balance ?? 0, { pence: true })}
                       </td>
                     )}
                     {/* Actions */}

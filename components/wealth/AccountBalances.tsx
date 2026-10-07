@@ -3,6 +3,7 @@
 import { Wallet, PiggyBank, BarChart3, Building2 } from 'lucide-react';
 import type { NetWorthSummary } from '@/lib/types/fire';
 import { ACCOUNT_TYPE_LABELS } from '@/lib/types/fire';
+import { formatGBP } from '@/lib/format';
 
 interface AccountBalancesProps {
   data: NetWorthSummary | null;
@@ -26,15 +27,6 @@ const TYPE_COLORS: Record<string, string> = {
   current: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   property: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 export function AccountBalances({ data, isLoading = false }: AccountBalancesProps) {
   if (isLoading) {
@@ -135,7 +127,7 @@ export function AccountBalances({ data, isLoading = false }: AccountBalancesProp
                           : 'text-red-600 dark:text-red-400'
                       }`}
                     >
-                      {formatCurrency(account.balance)}
+                      {formatGBP(account.balance)}
                     </span>
                   </div>
                 ))}
