@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, Suspense } from 'react';
+import { useState, useCallback, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AppLayout } from '@/components/layout';
 import {
@@ -13,31 +13,29 @@ import {
   TransactionWithRunningBalance,
 } from '@/components/transactions';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useToast } from '@/components/ui/Toast';
+import { useCategories, categoryGroupName } from '@/lib/hooks/useCategories';
 import { SyncButton } from '@/components/bank-sync';
 import { useTransactions, FilterState, TransactionWithRelations } from '@/lib/hooks/useTransactions';
 
-interface Category {
-  id: string;
-  name: string;
-  group_name: string;
-}
-
 export default function TransactionsPage() {
+  // AppLayout sits above the content so the content can use useToast().
   return (
-    <Suspense fallback={
-      <AppLayout title="Transactions">
+    <AppLayout title="Transactions">
+      <Suspense fallback={
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
         </div>
-      </AppLayout>
-    }>
-      <TransactionsPageContent />
-    </Suspense>
+      }>
+        <TransactionsPageContent />
+      </Suspense>
+    </AppLayout>
   );
 }
 
 function TransactionsPageContent() {
   const searchParams = useSearchParams();
+  const { toast } = useToast();
 
   // Initialize filters from URL params
   const getInitialFilters = (): FilterState => {
@@ -66,8 +64,17 @@ function TransactionsPageContent() {
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Categories for toolbar
-  const [categories, setCategories] = useState<Category[]>([]);
+  // Categories for toolbar and inline picker (shared, cached fetch)
+  const { data: categoryData } = useCategories();
+  const categories = useMemo(
+    () =>
+      (categoryData ?? []).map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        group_name: categoryGroupName(cat),
+      })),
+    [categoryData]
+  );
 
   // Modal states
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -159,29 +166,6 @@ function TransactionsPageContent() {
   const isLoading = isSingleAccountFilter ? accountIsLoading : regularIsLoading;
   const error = isSingleAccountFilter ? accountError : regularError;
   const refetch = isSingleAccountFilter ? fetchAccountTransactions : regularRefetch;
-
-  // Fetch categories on mount
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const response = await fetch('/api/categories');
-        if (response.ok) {
-          const data = await response.json();
-          // Transform API response to expected format
-          // API returns category_groups as nested object from join
-          const transformed = data.map((cat: { id: string; name: string; group_name?: string; category_groups?: { name: string } | null }) => ({
-            id: cat.id,
-            name: cat.name,
-            group_name: cat.category_groups?.name || cat.group_name || 'Ungrouped',
-          }));
-          setCategories(transformed);
-        }
-      } catch (err) {
-        console.error('Failed to fetch categories:', err);
-      }
-    }
-    fetchCategories();
-  }, []);
 
   // Clear selection when page/filters change
   useEffect(() => {
@@ -344,11 +328,14 @@ function TransactionsPageContent() {
       refetch();
       setSelectedIds(new Set());
     } catch (err) {
-      console.error('Bulk update error:', err);
+      toast({
+        tone: 'error',
+        message: err instanceof Error ? err.message : 'Failed to update transactions',
+      });
     } finally {
       setIsOperating(false);
     }
-  }, [selectedIds, refetch]);
+  }, [selectedIds, refetch, toast]);
 
   const handleBulkDelete = useCallback(() => {
     if (selectedIds.size === 0) return;
@@ -376,12 +363,15 @@ function TransactionsPageContent() {
       refetch();
       setSelectedIds(new Set());
     } catch (err) {
-      console.error('Bulk delete error:', err);
+      toast({
+        tone: 'error',
+        message: err instanceof Error ? err.message : 'Failed to delete transactions',
+      });
     } finally {
       setIsOperating(false);
       setBulkDeleteDialogOpen(false);
     }
-  }, [selectedIds, refetch]);
+  }, [selectedIds, refetch, toast]);
 
   // Inline update handler for description and category
   const handleInlineUpdate = useCallback(async (id: string, field: 'description' | 'category_id', value: string | null) => {
@@ -442,7 +432,7 @@ function TransactionsPageContent() {
   }, [refetch]);
 
   return (
-    <AppLayout title="Transactions">
+    <>
       <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-2">
@@ -557,6 +547,6 @@ function TransactionsPageContent() {
         onConfirm={handleConfirmBulkDelete}
         onCancel={() => setBulkDeleteDialogOpen(false)}
       />
-    </AppLayout>
+    </>
   );
 }
