@@ -25,7 +25,7 @@ export async function GET() {
 
     if (inputsError || !inputs) {
       return NextResponse.json({
-        error: 'FIRE settings not configured. Please configure your settings on the Investments page.',
+        error: 'FIRE settings not configured. Set them on the FIRE page (Settings tab).',
         coastFire: null,
       });
     }

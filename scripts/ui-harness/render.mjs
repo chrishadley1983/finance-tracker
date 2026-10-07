@@ -10,7 +10,8 @@
  *        --fixtures scripts/ui-harness/fixtures/budgets.json --out /tmp/shots/budgets
  *
  * Fixtures: { "/api/budgets/comparison": {...json...}, "/api/foo": {...} }.
- * Keys match by pathname (exact, then longest prefix). Unmatched /api calls
+ * Keys match by pathname (exact, then longest prefix). A key containing "?"
+ * matches path plus query exactly and wins over a path-only key. Unmatched /api calls
  * return {} and are listed in the report so you can add fixtures for them.
  * Shots: desktop light + dark (1320x860), phone light + dark (390x844, full page).
  * Prints console errors, horizontal overflow and unmatched API calls.
@@ -116,7 +117,11 @@ for (const [name, w, h, theme, full] of shots) {
     const u = new URL(r.request().url());
     if (u.pathname === '/bundle.js') return r.fulfill({ body: bundle, contentType: 'text/javascript' });
     if (u.pathname.startsWith('/api/')) {
-      const key = keys.find((k) => u.pathname === k) ?? keys.find((k) => u.pathname.startsWith(k));
+      const withQuery = u.pathname + u.search;
+      const key =
+        keys.find((k) => k.includes('?') && withQuery === k) ??
+        keys.find((k) => u.pathname === k) ??
+        keys.find((k) => !k.includes('?') && u.pathname.startsWith(k));
       if (!key) unmatched.add(`${r.request().method()} ${u.pathname}`);
       return r.fulfill({ json: key ? all[key] : {} });
     }
