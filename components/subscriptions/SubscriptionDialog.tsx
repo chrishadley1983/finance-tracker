@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { FREQUENCIES, SCOPES, STATUSES, type AssessedSubscription } from '@/lib/subscriptions/analysis';
+import { Modal } from '@/components/dialogs/Modal';
+import { Button } from '@/components/ui/Button';
+import { Field, Input, Select, Textarea } from '@/components/ui/Field';
+import { Notice } from '@/components/ui/Notice';
 
 export interface SubscriptionDraft {
   name: string;
@@ -83,9 +87,15 @@ interface SubscriptionDialogProps {
   onSaved: () => void;
 }
 
-const inputClass =
-  'w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
-const labelClass = 'block text-sm font-medium text-slate-700 mb-1';
+const FREQ_LABEL: Record<SubscriptionDraft['frequency'], string> = {
+  weekly: 'Week',
+  fortnightly: 'Fortnight',
+  monthly: 'Month',
+  quarterly: 'Quarter',
+  termly: 'Term',
+  annual: 'Year',
+};
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function SubscriptionDialog({ open, editingId, initial, categories, onClose, onSaved }: SubscriptionDialogProps) {
   const [draft, setDraft] = useState<SubscriptionDraft>(initial);
@@ -98,15 +108,6 @@ export function SubscriptionDialog({ open, editingId, initial, categories, onClo
       setError(null);
     }
   }, [open, initial]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
-
-  if (!open) return null;
 
   const set = <K extends keyof SubscriptionDraft>(key: K, value: SubscriptionDraft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
@@ -135,126 +136,82 @@ export function SubscriptionDialog({ open, editingId, initial, categories, onClo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="subscription-dialog-title"
-        className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-          <h2 id="subscription-dialog-title" className="text-lg font-semibold text-slate-900">
-            {editingId ? 'Edit subscription' : 'Add subscription'}
-          </h2>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded" aria-label="Close">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={editingId ? 'Edit subscription' : 'Add subscription'}
+      onSubmit={submit}
+      widthClassName="max-w-lg"
+      footer={
+        <>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit" variant="primary" loading={saving}>
+            {editingId ? 'Save changes' : 'Add subscription'}
+          </Button>
+        </>
+      }
+    >
+      <div className="grid gap-4">
+        {error && <Notice tone="error">{error}</Notice>}
+        <Field label="Name" htmlFor="sub-name">
+          <Input id="sub-name" value={draft.name} maxLength={120} required onChange={(e) => set('name', e.target.value)} />
+        </Field>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Amount (£)" htmlFor="sub-amount">
+            <Input id="sub-amount" type="number" step="0.01" min="0.01" className="fig" value={draft.amount} required
+              onChange={(e) => set('amount', e.target.value)} />
+          </Field>
+          <Field label="Every" htmlFor="sub-frequency">
+            <Select id="sub-frequency" value={draft.frequency}
+              onChange={(e) => set('frequency', e.target.value as SubscriptionDraft['frequency'])}>
+              {FREQUENCIES.map((f) => <option key={f} value={f}>{FREQ_LABEL[f]}</option>)}
+            </Select>
+          </Field>
+          <Field label="Scope" htmlFor="sub-scope">
+            <Select id="sub-scope" value={draft.scope}
+              onChange={(e) => set('scope', e.target.value as SubscriptionDraft['scope'])}>
+              {SCOPES.map((s) => <option key={s} value={s}>{cap(s)}</option>)}
+            </Select>
+          </Field>
+          <Field label="Status" htmlFor="sub-status">
+            <Select id="sub-status" value={draft.status}
+              onChange={(e) => set('status', e.target.value as SubscriptionDraft['status'])}>
+              {STATUSES.map((s) => <option key={s} value={s}>{cap(s)}</option>)}
+            </Select>
+          </Field>
+          <Field label="Category" htmlFor="sub-category">
+            <Input id="sub-category" value={draft.category} list="sub-categories" maxLength={60}
+              onChange={(e) => set('category', e.target.value)} />
+            <datalist id="sub-categories">
+              {categories.map((c) => <option key={c} value={c} />)}
+            </datalist>
+          </Field>
+          <Field label="Provider" htmlFor="sub-provider">
+            <Input id="sub-provider" value={draft.provider} maxLength={120} onChange={(e) => set('provider', e.target.value)} />
+          </Field>
         </div>
-
-        <form onSubmit={submit} className="p-6 space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">{error}</div>
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label htmlFor="sub-name" className={labelClass}>
-                Name <span className="text-red-500">*</span>
-              </label>
-              <input id="sub-name" className={inputClass} value={draft.name} maxLength={120} required
-                onChange={(e) => set('name', e.target.value)} />
-            </div>
-
-            <div>
-              <label htmlFor="sub-amount" className={labelClass}>
-                Amount (£) <span className="text-red-500">*</span>
-              </label>
-              <input id="sub-amount" type="number" step="0.01" min="0.01" className={inputClass} value={draft.amount}
-                required onChange={(e) => set('amount', e.target.value)} />
-            </div>
-            <div>
-              <label htmlFor="sub-frequency" className={labelClass}>Every</label>
-              <select id="sub-frequency" className={inputClass} value={draft.frequency}
-                onChange={(e) => set('frequency', e.target.value as SubscriptionDraft['frequency'])}>
-                {FREQUENCIES.map((f) => <option key={f} value={f}>{f}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="sub-scope" className={labelClass}>Scope</label>
-              <select id="sub-scope" className={inputClass} value={draft.scope}
-                onChange={(e) => set('scope', e.target.value as SubscriptionDraft['scope'])}>
-                {SCOPES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="sub-status" className={labelClass}>Status</label>
-              <select id="sub-status" className={inputClass} value={draft.status}
-                onChange={(e) => set('status', e.target.value as SubscriptionDraft['status'])}>
-                {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="sub-category" className={labelClass}>Category</label>
-              <input id="sub-category" className={inputClass} value={draft.category} list="sub-categories" maxLength={60}
-                onChange={(e) => set('category', e.target.value)} />
-              <datalist id="sub-categories">
-                {categories.map((c) => <option key={c} value={c} />)}
-              </datalist>
-            </div>
-            <div>
-              <label htmlFor="sub-provider" className={labelClass}>Provider</label>
-              <input id="sub-provider" className={inputClass} value={draft.provider} maxLength={120}
-                onChange={(e) => set('provider', e.target.value)} />
-            </div>
-
-            <div className="col-span-2">
-              <label htmlFor="sub-pattern" className={labelClass}>Text on the bank statement</label>
-              <input id="sub-pattern" className={inputClass} value={draft.bank_description_pattern} maxLength={120}
-                placeholder="e.g. NETFLIX.COM" onChange={(e) => set('bank_description_pattern', e.target.value)} />
-              <p className="mt-1 text-xs text-slate-500">Used to find its charges and spot missed payments or price changes.</p>
-            </div>
-
-            <div>
-              <label htmlFor="sub-renewal" className={labelClass}>Next renewal</label>
-              <input id="sub-renewal" type="date" className={inputClass} value={draft.next_renewal_date}
-                onChange={(e) => set('next_renewal_date', e.target.value)} />
-            </div>
-            <div>
-              <label htmlFor="sub-notice" className={labelClass}>Notice to cancel (days)</label>
-              <input id="sub-notice" type="number" min="0" max="365" className={inputClass}
-                value={draft.cancellation_notice_days} onChange={(e) => set('cancellation_notice_days', e.target.value)} />
-            </div>
-
-            <div className="col-span-2">
-              <label htmlFor="sub-payment" className={labelClass}>Paid with</label>
-              <input id="sub-payment" className={inputClass} value={draft.payment_method} maxLength={60}
-                onChange={(e) => set('payment_method', e.target.value)} />
-            </div>
-
-            <div className="col-span-2">
-              <label htmlFor="sub-notes" className={labelClass}>Notes</label>
-              <textarea id="sub-notes" rows={2} className={inputClass} value={draft.notes} maxLength={1000}
-                onChange={(e) => set('notes', e.target.value)} />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50">
-              Cancel
-            </button>
-            <button type="submit" disabled={saving}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
-              {saving ? 'Saving…' : editingId ? 'Save changes' : 'Add subscription'}
-            </button>
-          </div>
-        </form>
+        <Field label="Text on the bank statement" htmlFor="sub-pattern"
+          hint="Used to find its charges and spot missed payments or price changes.">
+          <Input id="sub-pattern" className="fig" value={draft.bank_description_pattern} maxLength={120}
+            placeholder="e.g. NETFLIX.COM" onChange={(e) => set('bank_description_pattern', e.target.value)} />
+        </Field>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Next renewal" htmlFor="sub-renewal">
+            <Input id="sub-renewal" type="date" value={draft.next_renewal_date}
+              onChange={(e) => set('next_renewal_date', e.target.value)} />
+          </Field>
+          <Field label="Notice to cancel (days)" htmlFor="sub-notice">
+            <Input id="sub-notice" type="number" min="0" max="365" value={draft.cancellation_notice_days}
+              onChange={(e) => set('cancellation_notice_days', e.target.value)} />
+          </Field>
+        </div>
+        <Field label="Paid with" htmlFor="sub-payment">
+          <Input id="sub-payment" value={draft.payment_method} maxLength={60} onChange={(e) => set('payment_method', e.target.value)} />
+        </Field>
+        <Field label="Notes" htmlFor="sub-notes">
+          <Textarea id="sub-notes" rows={2} value={draft.notes} maxLength={1000} onChange={(e) => set('notes', e.target.value)} />
+        </Field>
       </div>
-    </div>
+    </Modal>
   );
 }

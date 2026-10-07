@@ -1,6 +1,8 @@
 'use client';
 
-import { CATEGORY_COLOURS, CategoryColour } from '@/lib/types/category';
+import { useId } from 'react';
+import { Check } from 'lucide-react';
+import { CATEGORY_COLOURS } from '@/lib/types/category';
 
 interface ColourPickerProps {
   value: string | null;
@@ -8,43 +10,48 @@ interface ColourPickerProps {
   label?: string;
 }
 
-export function ColourPicker({ value, onChange, label = 'Colour' }: ColourPickerProps) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-        {label}
-      </label>
-      <div className="flex flex-wrap gap-2">
-        {/* No colour option */}
-        <button
-          type="button"
-          onClick={() => onChange(null)}
-          className={`w-8 h-8 rounded-full border-2 transition-all ${
-            value === null
-              ? 'border-slate-900 dark:border-white ring-2 ring-slate-400'
-              : 'border-slate-300 dark:border-slate-600 hover:border-slate-400'
-          } bg-slate-100 dark:bg-slate-700 flex items-center justify-center`}
-          title="No colour"
-        >
-          <span className="text-slate-400 text-xs">—</span>
-        </button>
+const NAMES: Record<string, string> = {
+  '#3B82F6': 'Blue',
+  '#10B981': 'Emerald',
+  '#F59E0B': 'Amber',
+  '#EF4444': 'Red',
+  '#8B5CF6': 'Violet',
+  '#EC4899': 'Pink',
+  '#06B6D4': 'Cyan',
+  '#F97316': 'Orange',
+  '#84CC16': 'Lime',
+  '#6366F1': 'Indigo',
+  '#14B8A6': 'Teal',
+  '#A855F7': 'Purple',
+};
 
-        {/* Colour options */}
+/** Swatch radio group; arrow keys work like any radio group. */
+export function ColourPicker({ value, onChange, label = 'Colour' }: ColourPickerProps) {
+  const name = useId();
+  const swatch =
+    'relative grid h-7 w-7 cursor-pointer place-items-center rounded-full border border-line has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent';
+  return (
+    <fieldset className="grid gap-1.5">
+      <legend className="mb-1.5 text-[13px] font-medium text-ink-2">{label}</legend>
+      <div className="flex flex-wrap gap-2">
+        <label className={`${swatch} bg-sunk`} title="No colour">
+          <input type="radio" name={name} className="sr-only" checked={value === null} onChange={() => onChange(null)} aria-label="No colour" />
+          {value === null ? <Check className="h-3.5 w-3.5 text-ink" aria-hidden /> : <span className="text-xs text-ink-3">–</span>}
+        </label>
         {CATEGORY_COLOURS.map((colour) => (
-          <button
-            key={colour}
-            type="button"
-            onClick={() => onChange(colour)}
-            className={`w-8 h-8 rounded-full border-2 transition-all ${
-              value === colour
-                ? 'border-slate-900 dark:border-white ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-800'
-                : 'border-transparent hover:border-slate-300 dark:hover:border-slate-500'
-            }`}
-            style={{ backgroundColor: colour }}
-            title={colour}
-          />
+          <label key={colour} className={swatch} style={{ backgroundColor: colour }} title={NAMES[colour] ?? colour}>
+            <input
+              type="radio"
+              name={name}
+              className="sr-only"
+              checked={value === colour}
+              onChange={() => onChange(colour)}
+              aria-label={NAMES[colour] ?? colour}
+            />
+            {value === colour && <Check className="h-3.5 w-3.5 text-white" aria-hidden />}
+          </label>
         ))}
       </div>
-    </div>
+    </fieldset>
   );
 }

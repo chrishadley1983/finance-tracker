@@ -1,197 +1,163 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { CategoryWithStats } from '@/lib/types/category';
-import { RuleCard, CategoryMapping } from './RuleCard';
-import { RuleDialog } from './RuleDialog';
+import { useMemo } from 'react';
+import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { EmptyState, Notice, SkeletonRows } from '@/components/ui/Notice';
+import { RowMenu } from '@/components/dialogs/RowMenu';
 
-interface RulesPanelProps {
-  categories: CategoryWithStats[];
-  selectedCategoryId: string | null;
+export interface CategoryMapping {
+  id: string;
+  pattern: string;
+  match_type: string;
+  category_id: string;
+  confidence: number;
+  is_system: boolean;
+  notes: string | null;
+  created_at: string;
+  category?: { id: string; name: string; group_name?: string | null };
 }
 
-export function RulesPanel({ categories, selectedCategoryId }: RulesPanelProps) {
-  const [rules, setRules] = useState<CategoryMapping[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [editingRule, setEditingRule] = useState<CategoryMapping | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+export const MATCH_TYPE_LABEL: Record<string, string> = {
+  exact: 'Exact',
+  contains: 'Contains',
+  regex: 'Pattern (regex)',
+};
 
-  const fetchRules = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+/** Rules for one category (or all of them), narrowed by a search over the pattern and notes. */
+export function filterRules(rules: CategoryMapping[], categoryId: string | null, query: string): CategoryMapping[] {
+  const q = query.trim().toLowerCase();
+  return rules.filter(
+    (r) =>
+      (categoryId === null || r.category_id === categoryId) &&
+      (!q || r.pattern.toLowerCase().includes(q) || (r.notes ?? '').toLowerCase().includes(q))
+  );
+}
 
-    try {
-      const url = selectedCategoryId
-        ? `/api/categories/rules?categoryId=${selectedCategoryId}`
-        : '/api/categories/rules';
+interface RulesPanelProps {
+  rules: CategoryMapping[];
+  isLoading: boolean;
+  error: string | null;
+  onRetry: () => void;
+  /** Selected category id, or null for all rules. */
+  selectedCategoryId: string | null;
+  selectedCategoryName: string | null;
+  search: string;
+  onSearch: (q: string) => void;
+  onAdd: () => void;
+  onEdit: (rule: CategoryMapping) => void;
+  onDelete: (rule: CategoryMapping) => void;
+  onApply: (rule: CategoryMapping) => void;
+  onShowAll: () => void;
+}
 
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('Failed to fetch rules');
-      }
-
-      const data = await response.json();
-      // API returns { rules: [...] }, extract the array
-      setRules(Array.isArray(data) ? data : (data.rules || []));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedCategoryId]);
-
-  useEffect(() => {
-    fetchRules();
-  }, [fetchRules]);
-
-  const handleAddRule = () => {
-    setEditingRule(null);
-    setIsDialogOpen(true);
-  };
-
-  const handleEditRule = (rule: CategoryMapping) => {
-    setEditingRule(rule);
-    setIsDialogOpen(true);
-  };
-
-  const handleDeleteRule = async (rule: CategoryMapping) => {
-    if (!confirm('Are you sure you want to delete this rule?')) return;
-
-    try {
-      const response = await fetch(`/api/categories/rules/${rule.id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete rule');
-      }
-
-      await fetchRules();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete rule');
-    }
-  };
-
-  const handleSaveRule = async (data: {
-    pattern: string;
-    match_type: string;
-    category_id: string;
-    notes: string;
-  }) => {
-    const url = editingRule
-      ? `/api/categories/rules/${editingRule.id}`
-      : '/api/categories/rules';
-    const method = editingRule ? 'PUT' : 'POST';
-
-    // Convert to API expected format (camelCase)
-    const apiData = {
-      pattern: data.pattern,
-      matchType: data.match_type,
-      categoryId: data.category_id,
-      notes: data.notes,
-    };
-
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(apiData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to save rule');
-    }
-
-    await fetchRules();
-  };
-
-  const handleTestRule = async (pattern: string, matchType: string): Promise<number> => {
-    // Use the main rules endpoint with action: 'test'
-    const response = await fetch('/api/categories/rules', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'test',
-        pattern,
-        matchType,
-        categoryId: '00000000-0000-0000-0000-000000000000', // Dummy ID for test
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to test rule');
-    }
-
-    const data = await response.json();
-    return data.totalMatched || 0;
-  };
+export function RulesPanel({
+  rules,
+  isLoading,
+  error,
+  onRetry,
+  selectedCategoryId,
+  selectedCategoryName,
+  search,
+  onSearch,
+  onAdd,
+  onEdit,
+  onDelete,
+  onApply,
+  onShowAll,
+}: RulesPanelProps) {
+  const shown = useMemo(() => filterRules(rules, selectedCategoryId, search), [rules, selectedCategoryId, search]);
+  const inCategory = useMemo(() => filterRules(rules, selectedCategoryId, ''), [rules, selectedCategoryId]);
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-        <div>
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-            Auto-Categorisation Rules
-          </h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {rules.length} rule{rules.length !== 1 ? 's' : ''} configured
-          </p>
+    <div className="grid gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <h2 className="min-w-0 text-[15px] font-semibold text-ink">
+          {selectedCategoryId ? (
+            <>
+              Rules for {selectedCategoryName ?? 'this category'}{' '}
+              <button type="button" onClick={onShowAll} className="ml-1 text-[12.5px] font-normal text-accent underline underline-offset-2">
+                Show all rules
+              </button>
+            </>
+          ) : (
+            'All rules'
+          )}
+          <span className="fig ml-2 text-[12.5px] font-normal text-ink-3">
+            {search.trim() ? `${shown.length} of ${inCategory.length}` : inCategory.length}
+          </span>
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-2 rounded-md border border-line bg-surface px-2.5 py-1 text-[13px] text-ink-3">
+            <Search className="h-3.5 w-3.5" aria-hidden />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => onSearch(e.target.value)}
+              placeholder="Search patterns"
+              aria-label="Search rule patterns"
+              className="w-36 bg-transparent text-ink placeholder:text-ink-3 focus:outline-none"
+            />
+          </label>
+          <Button size="sm" onClick={onAdd}>
+            Add rule
+          </Button>
         </div>
-        <button
-          onClick={handleAddRule}
-          className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md
-                   hover:bg-blue-700 transition-colors"
-        >
-          + Add Rule
-        </button>
       </div>
 
-      {/* Rules list */}
-      <div className="flex-1 overflow-y-auto p-4">
-        {error && (
-          <div className="p-3 mb-4 text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">
-            {error}
-          </div>
-        )}
+      {error && (
+        <Notice tone="error" action={<Button size="sm" onClick={onRetry}>Try again</Button>}>
+          Couldn&apos;t load rules: {error}
+        </Notice>
+      )}
 
+      <div className="rounded-[3px] border border-line bg-surface">
         {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="animate-pulse h-16 bg-slate-100 dark:bg-slate-700 rounded-lg" />
-            ))}
+          <div className="p-3">
+            <SkeletonRows rows={6} />
           </div>
-        ) : rules.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-slate-500 dark:text-slate-400">No rules configured</p>
-            <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
-              Add rules to automatically categorise transactions
-            </p>
-          </div>
+        ) : shown.length === 0 ? (
+          search.trim() ? (
+            <EmptyState title="No rules match that search">Rules match on the pattern and the notes.</EmptyState>
+          ) : (
+            <EmptyState title={selectedCategoryId ? `No rules for ${selectedCategoryName ?? 'this category'} yet` : 'No rules yet'} action={<Button onClick={onAdd}>Add rule</Button>}>
+              A rule files matching transactions automatically when they come in.
+            </EmptyState>
+          )
         ) : (
-          <div className="space-y-3">
-            {rules.map(rule => (
-              <RuleCard
-                key={rule.id}
-                rule={rule}
-                onEdit={handleEditRule}
-                onDelete={handleDeleteRule}
-              />
+          <ul aria-label="Rules">
+            {shown.map((r) => (
+              <li key={r.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-b border-line-2 px-3 py-2.5 text-[13px] last:border-b-0">
+                <span className="min-w-0">
+                  <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                    <code className="fig max-w-full truncate rounded border border-line-2 bg-sunk px-1.5 py-px text-[12.5px] text-ink">{r.pattern}</code>
+                    {r.is_system && <Chip>Policy</Chip>}
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-ink-3">
+                    {MATCH_TYPE_LABEL[r.match_type] ?? r.match_type}
+                    {selectedCategoryId === null && <> → {r.category?.name ?? 'Unknown category'}</>}
+                    {r.notes ? ` · ${r.notes}` : ''}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <Button size="sm" variant="ghost" onClick={() => onApply(r)} aria-label={`Apply ${r.pattern} to existing transactions`}>
+                    <span className="sm:hidden">Apply</span>
+                    <span className="hidden sm:inline">Apply to existing</span>
+                  </Button>
+                  <RowMenu
+                    label={`Actions for rule ${r.pattern}`}
+                    items={[
+                      { label: 'Edit rule', onSelect: () => onEdit(r) },
+                      { label: 'Delete rule', onSelect: () => onDelete(r), danger: true, hidden: r.is_system },
+                    ]}
+                  />
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
-
-      {/* Rule dialog */}
-      <RuleDialog
-        rule={editingRule}
-        categories={categories}
-        isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        onSave={handleSaveRule}
-        onTest={handleTestRule}
-      />
     </div>
   );
 }

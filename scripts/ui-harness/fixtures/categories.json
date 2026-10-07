@@ -1,0 +1,857 @@
+{
+ "/api/categories": [
+  {
+   "id": "0ca70000-0000-0000-0000-000000000000",
+   "name": "Mortgage",
+   "group_name": "Home",
+   "group_id": "09a00000-0000-0000-0000-000000000000",
+   "is_income": false,
+   "display_order": 0,
+   "exclude_from_totals": false,
+   "colour": "#6366F1",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000000",
+    "name": "Home",
+    "colour": "#6366F1"
+   },
+   "transaction_count": 36,
+   "total_amount": 54000.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000001",
+   "name": "Council tax",
+   "group_name": "Home",
+   "group_id": "09a00000-0000-0000-0000-000000000000",
+   "is_income": false,
+   "display_order": 1,
+   "exclude_from_totals": false,
+   "colour": "#6366F1",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000000",
+    "name": "Home",
+    "colour": "#6366F1"
+   },
+   "transaction_count": 26,
+   "total_amount": 383.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000002",
+   "name": "Energy",
+   "group_name": "Home",
+   "group_id": "09a00000-0000-0000-0000-000000000000",
+   "is_income": false,
+   "display_order": 2,
+   "exclude_from_totals": false,
+   "colour": "#6366F1",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000000",
+    "name": "Home",
+    "colour": "#6366F1"
+   },
+   "transaction_count": 36,
+   "total_amount": 6840.12
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000003",
+   "name": "Broadband & TV",
+   "group_name": "Home",
+   "group_id": "09a00000-0000-0000-0000-000000000000",
+   "is_income": false,
+   "display_order": 3,
+   "exclude_from_totals": false,
+   "colour": "#6366F1",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000000",
+    "name": "Home",
+    "colour": "#6366F1"
+   },
+   "transaction_count": 40,
+   "total_amount": 466.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000004",
+   "name": "Home maintenance",
+   "group_name": "Home",
+   "group_id": "09a00000-0000-0000-0000-000000000000",
+   "is_income": false,
+   "display_order": 4,
+   "exclude_from_totals": false,
+   "colour": "#6366F1",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000000",
+    "name": "Home",
+    "colour": "#6366F1"
+   },
+   "transaction_count": 47,
+   "total_amount": 507.5
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000005",
+   "name": "Groceries",
+   "group_name": "Food",
+   "group_id": "09a00000-0000-0000-0000-000000000001",
+   "is_income": false,
+   "display_order": 0,
+   "exclude_from_totals": false,
+   "colour": "#10B981",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000001",
+    "name": "Food",
+    "colour": "#10B981"
+   },
+   "transaction_count": 412,
+   "total_amount": 18342.11
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000006",
+   "name": "Eating out",
+   "group_name": "Food",
+   "group_id": "09a00000-0000-0000-0000-000000000001",
+   "is_income": false,
+   "display_order": 1,
+   "exclude_from_totals": false,
+   "colour": "#10B981",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000001",
+    "name": "Food",
+    "colour": "#10B981"
+   },
+   "transaction_count": 188,
+   "total_amount": 6120.4
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000007",
+   "name": "Takeaways",
+   "group_name": "Food",
+   "group_id": "09a00000-0000-0000-0000-000000000001",
+   "is_income": false,
+   "display_order": 2,
+   "exclude_from_totals": false,
+   "colour": "#10B981",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000001",
+    "name": "Food",
+    "colour": "#10B981"
+   },
+   "transaction_count": 68,
+   "total_amount": 632.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000008",
+   "name": "Fuel",
+   "group_name": "Transport",
+   "group_id": "09a00000-0000-0000-0000-000000000002",
+   "is_income": false,
+   "display_order": 0,
+   "exclude_from_totals": false,
+   "colour": "#F59E0B",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000002",
+    "name": "Transport",
+    "colour": "#F59E0B"
+   },
+   "transaction_count": 97,
+   "total_amount": 4410.66
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000009",
+   "name": "Train & Tube",
+   "group_name": "Transport",
+   "group_id": "09a00000-0000-0000-0000-000000000002",
+   "is_income": false,
+   "display_order": 1,
+   "exclude_from_totals": false,
+   "colour": "#F59E0B",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000002",
+    "name": "Transport",
+    "colour": "#F59E0B"
+   },
+   "transaction_count": 231,
+   "total_amount": 2870.25
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-00000000000a",
+   "name": "Car insurance",
+   "group_name": "Transport",
+   "group_id": "09a00000-0000-0000-0000-000000000002",
+   "is_income": false,
+   "display_order": 2,
+   "exclude_from_totals": false,
+   "colour": "#F59E0B",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000002",
+    "name": "Transport",
+    "colour": "#F59E0B"
+   },
+   "transaction_count": 29,
+   "total_amount": 756.5
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-00000000000b",
+   "name": "Parking",
+   "group_name": "Transport",
+   "group_id": "09a00000-0000-0000-0000-000000000002",
+   "is_income": false,
+   "display_order": 3,
+   "exclude_from_totals": false,
+   "colour": "#F59E0B",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000002",
+    "name": "Transport",
+    "colour": "#F59E0B"
+   },
+   "transaction_count": 36,
+   "total_amount": 798.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-00000000000c",
+   "name": "Childcare",
+   "group_name": "Family",
+   "group_id": "09a00000-0000-0000-0000-000000000003",
+   "is_income": false,
+   "display_order": 0,
+   "exclude_from_totals": false,
+   "colour": "#EC4899",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000003",
+    "name": "Family",
+    "colour": "#EC4899"
+   },
+   "transaction_count": 48,
+   "total_amount": 21600.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-00000000000d",
+   "name": "Kids activities",
+   "group_name": "Family",
+   "group_id": "09a00000-0000-0000-0000-000000000003",
+   "is_income": false,
+   "display_order": 1,
+   "exclude_from_totals": false,
+   "colour": "#EC4899",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000003",
+    "name": "Family",
+    "colour": "#EC4899"
+   },
+   "transaction_count": 50,
+   "total_amount": 881.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-00000000000e",
+   "name": "Clothing",
+   "group_name": "Family",
+   "group_id": "09a00000-0000-0000-0000-000000000003",
+   "is_income": false,
+   "display_order": 2,
+   "exclude_from_totals": false,
+   "colour": "#EC4899",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000003",
+    "name": "Family",
+    "colour": "#EC4899"
+   },
+   "transaction_count": 57,
+   "total_amount": 922.5
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-00000000000f",
+   "name": "Subscriptions",
+   "group_name": "Lifestyle",
+   "group_id": "09a00000-0000-0000-0000-000000000004",
+   "is_income": false,
+   "display_order": 0,
+   "exclude_from_totals": false,
+   "colour": "#8B5CF6",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000004",
+    "name": "Lifestyle",
+    "colour": "#8B5CF6"
+   },
+   "transaction_count": 402,
+   "total_amount": 9220.1
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000010",
+   "name": "Fitness",
+   "group_name": "Lifestyle",
+   "group_id": "09a00000-0000-0000-0000-000000000004",
+   "is_income": false,
+   "display_order": 1,
+   "exclude_from_totals": false,
+   "colour": "#8B5CF6",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000004",
+    "name": "Lifestyle",
+    "colour": "#8B5CF6"
+   },
+   "transaction_count": 71,
+   "total_amount": 1005.5
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000011",
+   "name": "Holidays",
+   "group_name": "Lifestyle",
+   "group_id": "09a00000-0000-0000-0000-000000000004",
+   "is_income": false,
+   "display_order": 2,
+   "exclude_from_totals": false,
+   "colour": "#8B5CF6",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000004",
+    "name": "Lifestyle",
+    "colour": "#8B5CF6"
+   },
+   "transaction_count": 18,
+   "total_amount": 1047.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000012",
+   "name": "Gifts",
+   "group_name": "Lifestyle",
+   "group_id": "09a00000-0000-0000-0000-000000000004",
+   "is_income": false,
+   "display_order": 3,
+   "exclude_from_totals": false,
+   "colour": "#8B5CF6",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000004",
+    "name": "Lifestyle",
+    "colour": "#8B5CF6"
+   },
+   "transaction_count": 25,
+   "total_amount": 1088.5
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000013",
+   "name": "Salary",
+   "group_name": "Income",
+   "group_id": "09a00000-0000-0000-0000-000000000005",
+   "is_income": true,
+   "display_order": 0,
+   "exclude_from_totals": false,
+   "colour": "#14B8A6",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000005",
+    "name": "Income",
+    "colour": "#14B8A6"
+   },
+   "transaction_count": 36,
+   "total_amount": 162000.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000014",
+   "name": "Business income",
+   "group_name": "Income",
+   "group_id": "09a00000-0000-0000-0000-000000000005",
+   "is_income": true,
+   "display_order": 1,
+   "exclude_from_totals": false,
+   "colour": "#14B8A6",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000005",
+    "name": "Income",
+    "colour": "#14B8A6"
+   },
+   "transaction_count": 39,
+   "total_amount": 1171.5
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000015",
+   "name": "Interest",
+   "group_name": "Income",
+   "group_id": "09a00000-0000-0000-0000-000000000005",
+   "is_income": true,
+   "display_order": 2,
+   "exclude_from_totals": false,
+   "colour": "#14B8A6",
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000005",
+    "name": "Income",
+    "colour": "#14B8A6"
+   },
+   "transaction_count": 46,
+   "total_amount": 1213.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000016",
+   "name": "Transfer between accounts",
+   "group_name": "Transfers",
+   "group_id": "09a00000-0000-0000-0000-000000000006",
+   "is_income": false,
+   "display_order": 0,
+   "exclude_from_totals": true,
+   "colour": null,
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000006",
+    "name": "Transfers",
+    "colour": null
+   },
+   "transaction_count": 311,
+   "total_amount": 98000.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000017",
+   "name": "Credit card payment",
+   "group_name": "Transfers",
+   "group_id": "09a00000-0000-0000-0000-000000000006",
+   "is_income": false,
+   "display_order": 1,
+   "exclude_from_totals": true,
+   "colour": null,
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": {
+    "id": "09a00000-0000-0000-0000-000000000006",
+    "name": "Transfers",
+    "colour": null
+   },
+   "transaction_count": 36,
+   "total_amount": 41000.0
+  },
+  {
+   "id": "0ca70000-0000-0000-0000-000000000063",
+   "name": "Pocket money",
+   "group_name": "Ungrouped",
+   "group_id": null,
+   "is_income": false,
+   "display_order": 0,
+   "exclude_from_totals": false,
+   "colour": null,
+   "created_at": "2024-01-01T00:00:00Z",
+   "category_groups": null,
+   "transaction_count": 0,
+   "total_amount": 0
+  }
+ ],
+ "/api/category-groups": [
+  {
+   "id": "09a00000-0000-0000-0000-000000000000",
+   "name": "Home",
+   "display_order": 0,
+   "colour": "#6366F1",
+   "created_at": "2024-01-01T00:00:00Z",
+   "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+   "id": "09a00000-0000-0000-0000-000000000001",
+   "name": "Food",
+   "display_order": 1,
+   "colour": "#10B981",
+   "created_at": "2024-01-01T00:00:00Z",
+   "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+   "id": "09a00000-0000-0000-0000-000000000002",
+   "name": "Transport",
+   "display_order": 2,
+   "colour": "#F59E0B",
+   "created_at": "2024-01-01T00:00:00Z",
+   "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+   "id": "09a00000-0000-0000-0000-000000000003",
+   "name": "Family",
+   "display_order": 3,
+   "colour": "#EC4899",
+   "created_at": "2024-01-01T00:00:00Z",
+   "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+   "id": "09a00000-0000-0000-0000-000000000004",
+   "name": "Lifestyle",
+   "display_order": 4,
+   "colour": "#8B5CF6",
+   "created_at": "2024-01-01T00:00:00Z",
+   "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+   "id": "09a00000-0000-0000-0000-000000000005",
+   "name": "Income",
+   "display_order": 5,
+   "colour": "#14B8A6",
+   "created_at": "2024-01-01T00:00:00Z",
+   "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+   "id": "09a00000-0000-0000-0000-000000000006",
+   "name": "Transfers",
+   "display_order": 6,
+   "colour": null,
+   "created_at": "2024-01-01T00:00:00Z",
+   "updated_at": "2024-01-01T00:00:00Z"
+  }
+ ],
+ "/api/categories/rules": {
+  "rules": [
+   {
+    "id": "07e10000-0000-0000-0000-000000000000",
+    "pattern": "TESCO STORES",
+    "category_id": "0ca70000-0000-0000-0000-000000000005",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-01-10T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000005",
+     "name": "Groceries",
+     "group_name": "Food"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000001",
+    "pattern": "SAINSBURYS",
+    "category_id": "0ca70000-0000-0000-0000-000000000005",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-02-11T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000005",
+     "name": "Groceries",
+     "group_name": "Food"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000002",
+    "pattern": "ALDI",
+    "category_id": "0ca70000-0000-0000-0000-000000000005",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-03-12T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000005",
+     "name": "Groceries",
+     "group_name": "Food"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000003",
+    "pattern": "OCADO",
+    "category_id": "0ca70000-0000-0000-0000-000000000005",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": "Weekly shop",
+    "created_at": "2026-04-13T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000005",
+     "name": "Groceries",
+     "group_name": "Food"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000004",
+    "pattern": "WAITROSE",
+    "category_id": "0ca70000-0000-0000-0000-000000000005",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-05-14T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000005",
+     "name": "Groceries",
+     "group_name": "Food"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000005",
+    "pattern": "DELIVEROO",
+    "category_id": "0ca70000-0000-0000-0000-000000000007",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-06-15T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000007",
+     "name": "Takeaways",
+     "group_name": "Food"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000006",
+    "pattern": "JUST EAT",
+    "category_id": "0ca70000-0000-0000-0000-000000000007",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-07-16T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000007",
+     "name": "Takeaways",
+     "group_name": "Food"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000007",
+    "pattern": "PRET A MANGER",
+    "category_id": "0ca70000-0000-0000-0000-000000000006",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-08-17T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000006",
+     "name": "Eating out",
+     "group_name": "Food"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000008",
+    "pattern": "NANDOS",
+    "category_id": "0ca70000-0000-0000-0000-000000000006",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-09-18T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000006",
+     "name": "Eating out",
+     "group_name": "Food"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000009",
+    "pattern": "SHELL",
+    "category_id": "0ca70000-0000-0000-0000-000000000008",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-01-10T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000008",
+     "name": "Fuel",
+     "group_name": "Transport"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-00000000000a",
+    "pattern": "TFL TRAVEL CH",
+    "category_id": "0ca70000-0000-0000-0000-000000000009",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-02-11T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000009",
+     "name": "Train & Tube",
+     "group_name": "Transport"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-00000000000b",
+    "pattern": "SOUTHEASTERN",
+    "category_id": "0ca70000-0000-0000-0000-000000000009",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-03-12T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000009",
+     "name": "Train & Tube",
+     "group_name": "Transport"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-00000000000c",
+    "pattern": "OCTOPUS ENERGY",
+    "category_id": "0ca70000-0000-0000-0000-000000000002",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-04-13T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000002",
+     "name": "Energy",
+     "group_name": "Home"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-00000000000d",
+    "pattern": "SKY DIGITAL",
+    "category_id": "0ca70000-0000-0000-0000-000000000003",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-05-14T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000003",
+     "name": "Broadband & TV",
+     "group_name": "Home"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-00000000000e",
+    "pattern": "TONBRIDGE & MALLING BC",
+    "category_id": "0ca70000-0000-0000-0000-000000000001",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-06-15T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000001",
+     "name": "Council tax",
+     "group_name": "Home"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-00000000000f",
+    "pattern": "NATIONWIDE MORTGAGE",
+    "category_id": "0ca70000-0000-0000-0000-000000000000",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-07-16T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000000",
+     "name": "Mortgage",
+     "group_name": "Home"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000010",
+    "pattern": "NETFLIX.COM",
+    "category_id": "0ca70000-0000-0000-0000-00000000000f",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-08-17T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-00000000000f",
+     "name": "Subscriptions",
+     "group_name": "Lifestyle"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000011",
+    "pattern": "SPOTIFY",
+    "category_id": "0ca70000-0000-0000-0000-00000000000f",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-09-18T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-00000000000f",
+     "name": "Subscriptions",
+     "group_name": "Lifestyle"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000012",
+    "pattern": "PUREGYM",
+    "category_id": "0ca70000-0000-0000-0000-000000000010",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-01-10T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000010",
+     "name": "Fitness",
+     "group_name": "Lifestyle"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000013",
+    "pattern": "ACCENTURE UK LTD",
+    "category_id": "0ca70000-0000-0000-0000-000000000013",
+    "match_type": "contains",
+    "confidence": 1,
+    "is_system": true,
+    "notes": "Monthly salary",
+    "created_at": "2026-02-11T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000013",
+     "name": "Salary",
+     "group_name": "Income"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000014",
+    "pattern": "^HSBC CARD PYMT",
+    "category_id": "0ca70000-0000-0000-0000-000000000017",
+    "match_type": "regex",
+    "confidence": 1,
+    "is_system": true,
+    "notes": "Policy: card repayments are transfers",
+    "created_at": "2026-03-12T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-000000000017",
+     "name": "Credit card payment",
+     "group_name": "Transfers"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000015",
+    "pattern": "BRIGHT HORIZONS",
+    "category_id": "0ca70000-0000-0000-0000-00000000000c",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": null,
+    "created_at": "2026-04-13T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-00000000000c",
+     "name": "Childcare",
+     "group_name": "Family"
+    }
+   },
+   {
+    "id": "07e10000-0000-0000-0000-000000000016",
+    "pattern": "STOCKS GREEN PRIMA",
+    "category_id": "0ca70000-0000-0000-0000-00000000000d",
+    "match_type": "contains",
+    "confidence": 0.95,
+    "is_system": false,
+    "notes": "School clubs",
+    "created_at": "2026-05-14T09:00:00Z",
+    "category": {
+     "id": "0ca70000-0000-0000-0000-00000000000d",
+     "name": "Kids activities",
+     "group_name": "Family"
+    }
+   }
+  ]
+ }
+}
