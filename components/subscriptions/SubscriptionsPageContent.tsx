@@ -395,15 +395,13 @@ export function SubscriptionsPageContent() {
     <div className="grid gap-7">
       <PageIntro
         actions={
-          <>
-            {data && <span className="text-[12.5px] text-ink-3">Checked against bank data to {shortDate(data.as_of, refYear)}</span>}
-            <Button variant="primary" onClick={() => openAdd()}>
-              Add subscription
-            </Button>
-          </>
+          <Button variant="primary" onClick={() => openAdd()}>
+            Add subscription
+          </Button>
         }
       >
         {data ? subscriptionsLede(data) : loading ? <p>Checking subscriptions against the bank data…</p> : null}
+        {data && <p className="mt-1 text-[12.5px] text-ink-3">Checked against bank data to {shortDate(data.as_of, refYear)}.</p>}
       </PageIntro>
 
       {error && (

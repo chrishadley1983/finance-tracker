@@ -45,7 +45,7 @@ describe('ImportWizard', () => {
       render(<ImportWizard />);
 
       expect(screen.getByText('Upload a bank statement')).toBeInTheDocument();
-      expect(screen.getByText(/drag & drop your csv or pdf file/i)).toBeInTheDocument();
+      expect(screen.getByText(/drop a csv or pdf here/i)).toBeInTheDocument();
     });
   });
 
