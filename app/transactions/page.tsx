@@ -15,7 +15,7 @@ import {
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
 import { useCategories, categoryGroupName } from '@/lib/hooks/useCategories';
-import { SyncButton } from '@/components/enable-banking';
+import { SyncButton } from '@/components/bank-sync';
 import { useTransactions, FilterState, TransactionWithRelations } from '@/lib/hooks/useTransactions';
 
 export default function TransactionsPage() {
