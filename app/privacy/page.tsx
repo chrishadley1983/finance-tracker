@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-12 text-gray-800">
       <h1 className="text-2xl font-bold mb-6">Privacy Notice</h1>
-      <p className="text-sm text-gray-500 mb-8">Last updated: July 2026</p>
+      <p className="text-sm text-gray-500 mb-8">Last updated: October 2026</p>
 
       <section className="space-y-4 text-sm leading-6">
         <p>
@@ -18,21 +18,28 @@ export default function PrivacyPage() {
 
         <h2 className="text-lg font-semibold pt-4">Bank data (Open Banking)</h2>
         <p>
-          With your explicit consent, Finance Tracker connects to your bank through Enable Banking Oy,
-          a regulated Account Information Service Provider, using the UK Open Banking standard. We
-          request read-only access to account information and transactions. We never receive or store
-          your online banking credentials — you authenticate directly with your bank.
+          With your explicit consent, Finance Tracker connects to your bank through TrueLayer, an
+          Account Information Service Provider authorised by the Financial Conduct Authority, using
+          the UK Open Banking standard. We request read-only access to account information, balances
+          and transactions. We never receive or store your online banking credentials — you
+          authenticate directly with your bank.
         </p>
         <p>
-          Consent is time-limited (up to 90 days) and can be withdrawn at any time by unlinking the
-          account in the app or contacting your bank. Only accounts you explicitly link can be accessed.
+          Consent is time-limited (it must be reconfirmed at least every 90 days) and can be withdrawn
+          at any time by disconnecting the bank in the app, through TrueLayer, or by contacting your
+          bank. Only accounts you explicitly link are synchronised.
         </p>
 
         <h2 className="text-lg font-semibold pt-4">What we store</h2>
         <p>
-          Transaction details (date, amount, description, category), account balances and the
-          Enable Banking session identifier and its expiry. We do not store access tokens or bank
-          credentials. Data is held in a private database accessible only to the account owner.
+          Transaction details (date, amount, description, category) and account balances. To keep
+          the connection working between syncs we also store the TrueLayer access token, the refresh
+          token and their expiry for each connected bank. These tokens grant read-only access. Access
+          tokens expire after about an hour; the refresh token can only be used together with this
+          application&apos;s private TrueLayer credentials, and both stop working when consent expires
+          or is withdrawn. We never store bank credentials. Data is held in a
+          private database that is accessible only to the account owner and to the application&apos;s
+          server.
         </p>
 
         <h2 className="text-lg font-semibold pt-4">Contact</h2>
