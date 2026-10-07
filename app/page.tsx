@@ -13,7 +13,6 @@ import {
   TimeframePeriod,
 } from '@/components/dashboard';
 import { useDashboardData } from '@/lib/hooks/useDashboardData';
-import { PetWidget } from '@/components/pets/PetWidget';
 import { SyncButton } from '@/components/bank-sync';
 
 export default function DashboardPage() {
@@ -103,7 +102,6 @@ export default function DashboardPage() {
               dateFrom={summary?.startDate}
               dateTo={summary?.endDate}
             />
-            <PetWidget />
           </div>
         </div>
       </div>
