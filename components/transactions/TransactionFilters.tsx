@@ -1,24 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { FilterState } from '@/lib/hooks/useTransactions';
+import { useAccounts } from '@/lib/hooks/useAccounts';
+import { useCategories, categoryGroupName, type CategoryWithGroup } from '@/lib/hooks/useCategories';
 
-interface Account {
-  id: string;
-  name: string;
-  type: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  group_name: string;
-  group_id: string | null;
-  category_groups?: {
-    id: string;
-    name: string;
-  } | null;
-}
+// Account types that can have transactions
+const TRANSACTION_ACCOUNT_TYPES = ['current', 'savings', 'credit'];
 
 interface TransactionFiltersProps {
   filters: FilterState;
@@ -26,53 +14,14 @@ interface TransactionFiltersProps {
 }
 
 export function TransactionFilters({ filters, onChange }: TransactionFiltersProps) {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const { data: accountData, isLoading: isLoadingAccounts } = useAccounts();
+  const { data: categories, isLoading: isLoadingCategories } = useCategories();
 
-  // Account types that can have transactions
-  const TRANSACTION_ACCOUNT_TYPES = ['current', 'savings', 'credit'];
-
-  // Fetch accounts
-  useEffect(() => {
-    async function fetchAccounts() {
-      try {
-        const response = await fetch('/api/accounts');
-        if (response.ok) {
-          const data = await response.json();
-          // Only show accounts that can have transactions
-          const transactionAccounts = (data.accounts || []).filter(
-            (account: Account) => TRANSACTION_ACCOUNT_TYPES.includes(account.type)
-          );
-          setAccounts(transactionAccounts);
-        }
-      } catch (error) {
-        console.error('Failed to fetch accounts:', error);
-      } finally {
-        setIsLoadingAccounts(false);
-      }
-    }
-    fetchAccounts();
-  }, []);
-
-  // Fetch categories
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const response = await fetch('/api/categories');
-        if (response.ok) {
-          const data = await response.json();
-          setCategories(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch categories:', error);
-      } finally {
-        setIsLoadingCategories(false);
-      }
-    }
-    fetchCategories();
-  }, []);
+  // Only show accounts that can have transactions
+  const accounts = useMemo(
+    () => (accountData ?? []).filter((account) => TRANSACTION_ACCOUNT_TYPES.includes(account.type)),
+    [accountData]
+  );
 
   const handleAccountChange = (value: string) => {
     onChange({ ...filters, accountId: value || undefined });
@@ -105,14 +54,14 @@ export function TransactionFilters({ filters, onChange }: TransactionFiltersProp
   const hasFilters = filters.accountId || filters.categoryId || filters.dateFrom || filters.dateTo || filters.search || (filters.validated && filters.validated !== 'all');
 
   // Group categories by group name (prefer category_groups relationship over legacy group_name)
-  const categoriesByGroup = categories.reduce((acc, category) => {
-    const groupName = category.category_groups?.name || category.group_name || 'Uncategorised';
+  const categoriesByGroup = (categories ?? []).reduce((acc, category) => {
+    const groupName = categoryGroupName(category);
     if (!acc[groupName]) {
       acc[groupName] = [];
     }
     acc[groupName].push(category);
     return acc;
-  }, {} as Record<string, Category[]>);
+  }, {} as Record<string, CategoryWithGroup[]>);
 
   return (
     <div className="flex flex-wrap items-center gap-4">

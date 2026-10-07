@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { TransactionWithRelations } from '@/lib/hooks/useTransactions';
+import { useAccounts } from '@/lib/hooks/useAccounts';
+import { useCategories, categoryGroupName } from '@/lib/hooks/useCategories';
 
-interface Account {
-  id: string;
-  name: string;
-}
+const NO_ACCOUNTS: never[] = [];
 
 interface Category {
   id: string;
@@ -43,8 +42,18 @@ export function TransactionEditModal({
     account_id: '',
     category_id: null,
   });
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { data: accountData } = useAccounts();
+  const accounts = accountData ?? NO_ACCOUNTS;
+  const { data: categoryData } = useCategories();
+  const categories = useMemo<Category[]>(
+    () =>
+      (categoryData ?? []).map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        group_name: categoryGroupName(cat),
+      })),
+    [categoryData]
+  );
   const [categorySearch, setCategorySearch] = useState('');
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,34 +64,6 @@ export function TransactionEditModal({
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
   const isEditing = transaction !== null;
-
-  // Load accounts and categories
-  useEffect(() => {
-    if (!isOpen) return;
-
-    async function loadData() {
-      try {
-        const [accountsRes, categoriesRes] = await Promise.all([
-          fetch('/api/accounts'),
-          fetch('/api/categories'),
-        ]);
-
-        if (accountsRes.ok) {
-          const data = await accountsRes.json();
-          setAccounts(data.accounts || []);
-        }
-
-        if (categoriesRes.ok) {
-          const data = await categoriesRes.json();
-          setCategories(data);
-        }
-      } catch (err) {
-        console.error('Failed to load data:', err);
-      }
-    }
-
-    loadData();
-  }, [isOpen]);
 
   // Initialize form when transaction changes
   useEffect(() => {
