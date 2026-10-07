@@ -42,31 +42,31 @@ export function TransactionPagination({
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 bg-white border border-slate-200 rounded-lg">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-surface px-3 py-2.5">
       {/* Showing X-Y of Z */}
-      <div className="text-sm text-slate-600">
+      <div className="text-sm text-ink-2">
         {total > 0 ? (
           <>
-            Showing <span className="font-medium text-slate-900">{startItem}</span> to{' '}
-            <span className="font-medium text-slate-900">{endItem}</span> of{' '}
-            <span className="font-medium text-slate-900">{total.toLocaleString()}</span> transactions
+            Showing <span className="fig font-medium text-ink">{startItem}</span> to{' '}
+            <span className="fig font-medium text-ink">{endItem}</span> of{' '}
+            <span className="fig font-medium text-ink">{total.toLocaleString()}</span> transactions
           </>
         ) : (
           'No transactions'
         )}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         {/* Page size dropdown */}
         <div className="flex items-center gap-2">
-          <label htmlFor="pageSize" className="text-sm text-slate-600">
+          <label htmlFor="pageSize" className="text-sm text-ink-2">
             Show
           </label>
           <select
             id="pageSize"
             value={pageSize}
             onChange={handlePageSizeChange}
-            className="h-9 px-2 border border-slate-300 rounded-md bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="h-8 rounded-md border border-line bg-surface px-2 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             {PAGE_SIZE_OPTIONS.map((size) => (
               <option key={size} value={size}>
@@ -74,7 +74,7 @@ export function TransactionPagination({
               </option>
             ))}
           </select>
-          <span className="text-sm text-slate-600">per page</span>
+          <span className="text-sm text-ink-2">per page</span>
         </div>
 
         {/* Navigation buttons */}
@@ -82,7 +82,7 @@ export function TransactionPagination({
           <button
             onClick={handlePrevious}
             disabled={!canGoPrevious}
-            className="inline-flex items-center justify-center h-9 px-3 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors"
+            className="inline-flex h-8 items-center justify-center rounded-md border border-line bg-surface px-2.5 text-sm font-medium text-ink-2 hover:bg-sunk disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-surface"
             aria-label="Previous page"
           >
             <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,15 +92,15 @@ export function TransactionPagination({
           </button>
 
           {/* Page indicator */}
-          <span className="text-sm text-slate-600 px-2">
-            Page <span className="font-medium text-slate-900">{page}</span> of{' '}
-            <span className="font-medium text-slate-900">{totalPages || 1}</span>
+          <span className="px-1 text-sm text-ink-2">
+            Page <span className="fig font-medium text-ink">{page}</span> of{' '}
+            <span className="fig font-medium text-ink">{totalPages || 1}</span>
           </span>
 
           <button
             onClick={handleNext}
             disabled={!canGoNext}
-            className="inline-flex items-center justify-center h-9 px-3 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors"
+            className="inline-flex h-8 items-center justify-center rounded-md border border-line bg-surface px-2.5 text-sm font-medium text-ink-2 hover:bg-sunk disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-surface"
             aria-label="Next page"
           >
             Next

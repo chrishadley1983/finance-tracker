@@ -1,15 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { TransactionWithRelations } from '@/lib/hooks/useTransactions';
-import { formatDateGBPadded, formatGBP } from '@/lib/format';
-
-interface Category {
-  id: string;
-  name: string;
-  group_name: string;
-}
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowDown, ArrowUp, ArrowUpDown, CheckCircle2, Circle, Pencil, Trash2, Inbox } from 'lucide-react';
+import type { TransactionWithRelations } from '@/lib/hooks/useTransactions';
+import { CategorySelect } from '@/components/ui/CategorySelect';
+import { formatDateGB, formatDayHeading, formatGBP } from '@/lib/format';
+import { isTypingTarget } from '@/lib/keyboard';
 
 export interface TransactionWithRunningBalance extends TransactionWithRelations {
   running_balance?: number | null;
@@ -23,360 +19,147 @@ interface TransactionTableProps {
   sortDirection: 'asc' | 'desc';
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
-  onEdit?: (transaction: TransactionWithRelations) => void;
+  /** Open the detail panel for a row (row click, or Enter on the focused row). */
+  onOpen?: (transaction: TransactionWithRelations) => void;
   onDelete?: (transaction: TransactionWithRelations) => void;
   onValidate?: (transaction: TransactionWithRelations) => void;
-  categories?: Category[];
   onInlineUpdate?: (id: string, field: 'description' | 'category_id', value: string | null) => Promise<void>;
   showRunningBalance?: boolean;
   hideAccountColumn?: boolean;
+  /** J/K/X/Enter/Esc row keys. Off while a panel or dialog owns the keyboard. */
+  keyboardEnabled?: boolean;
 }
 
-function SortIcon({ column, sortColumn, sortDirection }: { column: string; sortColumn: string; sortDirection: 'asc' | 'desc' }) {
-  if (sortColumn !== column) {
-    return (
-      <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-      </svg>
-    );
-  }
+/** Money cell text: spending is a plain amount (shown in ink), income gets a leading "+". */
+export function formatAmount(amount: number): string {
+  return amount > 0 ? formatGBP(amount, { pence: true, signed: true }) : formatGBP(Math.abs(amount), { pence: true });
+}
 
-  if (sortDirection === 'asc') {
-    return (
-      <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-      </svg>
-    );
-  }
+/** A day's net: signed both ways so a mixed day reads unambiguously. */
+export function formatNet(amount: number): string {
+  return formatGBP(amount, { pence: true, signed: true });
+}
 
+function dialogOpen(): boolean {
+  return Boolean(document.querySelector('[role="dialog"][aria-modal="true"], [role="alertdialog"]'));
+}
+
+// Grid templates (static strings so Tailwind can see them).
+const MOBILE_COLS = 'grid-cols-[1.75rem_minmax(0,1fr)_auto]';
+function desktopCols(showAccount: boolean, showBalance: boolean): string {
+  if (showAccount && showBalance) return 'md:grid-cols-[2rem_minmax(0,1fr)_9rem_11rem_8rem_8rem_4.5rem]';
+  if (showAccount) return 'md:grid-cols-[2rem_minmax(0,1fr)_9rem_11rem_8rem_4.5rem]';
+  if (showBalance) return 'md:grid-cols-[2rem_minmax(0,1fr)_11rem_8rem_8rem_4.5rem]';
+  return 'md:grid-cols-[2rem_minmax(0,1fr)_11rem_8rem_4.5rem]';
+}
+
+function SortButton({
+  column,
+  label,
+  sortColumn,
+  sortDirection,
+  onSort,
+  align = 'left',
+}: {
+  column: string;
+  label: string;
+  sortColumn: string;
+  sortDirection: 'asc' | 'desc';
+  onSort: (column: string) => void;
+  align?: 'left' | 'right';
+}) {
+  const active = sortColumn === column;
+  const Icon = !active ? ArrowUpDown : sortDirection === 'asc' ? ArrowUp : ArrowDown;
   return (
-    <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-    </svg>
+    <button
+      type="button"
+      onClick={() => onSort(column)}
+      aria-label={`Sort by ${label}`}
+      className={`inline-flex cursor-pointer items-center gap-1 rounded-md text-xs font-medium uppercase tracking-wide hover:text-ink ${
+        active ? 'text-ink' : 'text-ink-3'
+      } ${align === 'right' ? 'justify-end' : ''}`}
+    >
+      <span>{label}</span>
+      <Icon className="h-3 w-3" aria-hidden="true" />
+    </button>
   );
 }
 
-function SkeletonRow() {
-  return (
-    <tr className="animate-pulse">
-      <td className="px-4 py-3 w-10">
-        <div className="h-4 w-4 bg-slate-200 rounded"></div>
-      </td>
-      <td className="px-4 py-3">
-        <div className="h-4 bg-slate-200 rounded w-24"></div>
-      </td>
-      <td className="px-4 py-3">
-        <div className="h-4 bg-slate-200 rounded w-48"></div>
-      </td>
-      <td className="px-4 py-3">
-        <div className="h-4 bg-slate-200 rounded w-32"></div>
-      </td>
-      <td className="px-4 py-3">
-        <div className="h-4 bg-slate-200 rounded w-28"></div>
-      </td>
-      <td className="px-4 py-3 text-right">
-        <div className="h-4 bg-slate-200 rounded w-20 ml-auto"></div>
-      </td>
-      <td className="px-4 py-3 w-24">
-        <div className="h-4 bg-slate-200 rounded w-16"></div>
-      </td>
-    </tr>
-  );
-}
-
-// Inline editable description component
+// Inline editable description
 function EditableDescription({
   value,
-  transactionId,
   onSave,
+  onCancel,
 }: {
   value: string;
-  transactionId: string;
-  onSave: (id: string, value: string) => Promise<void>;
+  onSave: (value: string) => Promise<void>;
+  onCancel: () => void;
 }) {
-  const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [isSaving, setIsSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
 
-  useEffect(() => {
-    setEditValue(value);
-  }, [value]);
-
-  const handleSave = async () => {
-    if (editValue.trim() === value) {
-      setIsEditing(false);
+  const save = async () => {
+    const next = editValue.trim();
+    if (!next || next === value) {
+      onCancel();
       return;
     }
-
-    if (!editValue.trim()) {
-      setEditValue(value);
-      setIsEditing(false);
-      return;
-    }
-
     setIsSaving(true);
     try {
-      await onSave(transactionId, editValue.trim());
-      setIsEditing(false);
+      await onSave(next);
     } catch {
       setEditValue(value);
+      onCancel();
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSave();
-    } else if (e.key === 'Escape') {
-      setEditValue(value);
-      setIsEditing(false);
-    }
-  };
-
-  if (isEditing) {
-    return (
-      <input
-        ref={inputRef}
-        type="text"
-        value={editValue}
-        onChange={(e) => setEditValue(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={handleKeyDown}
-        disabled={isSaving}
-        className="w-full px-2 py-1 text-sm border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-      />
-    );
-  }
-
   return (
-    <div
-      onClick={() => setIsEditing(true)}
-      className="max-w-md truncate cursor-pointer hover:bg-slate-100 px-2 py-1 -mx-2 -my-1 rounded transition-colors"
-      title={`${value} (click to edit)`}
-    >
-      {value}
+    <input
+      ref={inputRef}
+      type="text"
+      aria-label="Description"
+      value={editValue}
+      onChange={(e) => setEditValue(e.target.value)}
+      onBlur={save}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          save();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          onCancel();
+        }
+      }}
+      disabled={isSaving}
+      className="w-full rounded-md border border-line bg-surface px-2 py-1 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    />
+  );
+}
+
+function SkeletonRow({ cols }: { cols: string }) {
+  return (
+    <div className={`grid ${MOBILE_COLS} ${cols} animate-pulse items-center gap-x-3 border-b border-line-2 px-3 py-3`}>
+      <div className="h-4 w-4 rounded-sm bg-sunk" />
+      <div className="h-4 w-48 max-w-full rounded-sm bg-sunk" />
+      <div className="h-4 w-16 justify-self-end rounded-sm bg-sunk md:w-24 md:justify-self-start" />
     </div>
   );
 }
 
-// Inline editable category component with search
-function EditableCategory({
-  category,
-  transactionId,
-  categories,
-  onSave,
-}: {
-  category: { name: string; group_name: string } | null;
-  transactionId: string;
-  categories: Category[];
-  onSave: (id: string, categoryId: string | null) => Promise<void>;
-}) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const inputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      setSearchTerm('');
-      setHighlightedIndex(0);
-
-      // Calculate dropdown position based on input position
-      const rect = inputRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
-      });
-    }
-  }, [isEditing]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    if (!isEditing) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(target) &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(target)
-      ) {
-        setIsEditing(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isEditing]);
-
-  // Filter categories based on search term
-  const filteredCategories = categories.filter(cat =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cat.group_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Group filtered categories by group_name
-  const groupedCategories = filteredCategories.reduce((acc, cat) => {
-    if (!acc[cat.group_name]) {
-      acc[cat.group_name] = [];
-    }
-    acc[cat.group_name].push(cat);
-    return acc;
-  }, {} as Record<string, Category[]>);
-
-  // Flatten for keyboard navigation
-  const flattenedOptions: (Category | null)[] = [
-    null, // Uncategorized option
-    ...filteredCategories,
-  ];
-
-  const handleSelect = async (categoryId: string | null) => {
-    const currentCategoryId = categories.find(c => c.name === category?.name)?.id || null;
-
-    if (categoryId === currentCategoryId) {
-      setIsEditing(false);
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      await onSave(transactionId, categoryId);
-      setIsEditing(false);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setHighlightedIndex(prev => Math.min(prev + 1, flattenedOptions.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlightedIndex(prev => Math.max(prev - 1, 0));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      const selected = flattenedOptions[highlightedIndex];
-      handleSelect(selected?.id || null);
-    } else if (e.key === 'Escape') {
-      setIsEditing(false);
-    } else if (e.key === 'Tab') {
-      setIsEditing(false);
-    }
-  };
-
-  // Reset highlighted index when search changes
-  useEffect(() => {
-    setHighlightedIndex(0);
-  }, [searchTerm]);
-
-  if (isEditing) {
-    const dropdown = (
-      <div
-        ref={dropdownRef}
-        style={{
-          position: 'fixed',
-          top: dropdownPosition.top - window.scrollY,
-          left: dropdownPosition.left,
-          zIndex: 9999,
-        }}
-        className="w-64 max-h-60 overflow-auto bg-white border border-slate-200 rounded-md shadow-lg"
-      >
-        {/* Uncategorized option */}
-        <div
-          onClick={() => handleSelect(null)}
-          className={`px-3 py-2 text-sm cursor-pointer ${
-            highlightedIndex === 0 ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50'
-          }`}
-        >
-          <span className="text-slate-400 italic">Uncategorized</span>
-        </div>
-
-        {Object.entries(groupedCategories).map(([groupName, cats]) => (
-          <div key={groupName}>
-            <div className="px-3 py-1 text-xs font-semibold text-slate-500 bg-slate-50 sticky top-0">
-              {groupName}
-            </div>
-            {cats.map((cat) => {
-              const optionIndex = flattenedOptions.findIndex(o => o?.id === cat.id);
-              const isHighlighted = optionIndex === highlightedIndex;
-              const isCurrentCategory = category?.name === cat.name;
-
-              return (
-                <div
-                  key={cat.id}
-                  onClick={() => handleSelect(cat.id)}
-                  className={`px-3 py-2 text-sm cursor-pointer flex items-center justify-between ${
-                    isHighlighted ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50'
-                  }`}
-                >
-                  <span>{cat.name}</span>
-                  {isCurrentCategory && (
-                    <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-
-        {filteredCategories.length === 0 && searchTerm && (
-          <div className="px-3 py-2 text-sm text-slate-400 italic">
-            No categories match "{searchTerm}"
-          </div>
-        )}
-      </div>
-    );
-
-    return (
-      <div ref={containerRef}>
-        <input
-          ref={inputRef}
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={isSaving}
-          placeholder="Search categories..."
-          className="w-48 px-2 py-1 text-sm border border-emerald-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-        />
-        {typeof document !== 'undefined' && createPortal(dropdown, document.body)}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      onClick={() => setIsEditing(true)}
-      className="cursor-pointer hover:bg-slate-100 px-2 py-1 -mx-2 -my-1 rounded transition-colors inline-block"
-      title="Click to change category"
-    >
-      {category ? (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-          {category.name}
-        </span>
-      ) : (
-        <span className="text-slate-400">Uncategorized</span>
-      )}
-    </div>
-  );
+interface Group {
+  key: string;
+  date: string | null;
+  net: number;
+  rows: { t: TransactionWithRunningBalance; index: number }[];
 }
 
 export function TransactionTable({
@@ -387,271 +170,381 @@ export function TransactionTable({
   sortDirection,
   selectedIds = new Set(),
   onSelectionChange,
-  onEdit,
+  onOpen,
   onDelete,
   onValidate,
-  categories = [],
   onInlineUpdate,
   showRunningBalance = false,
   hideAccountColumn = false,
+  keyboardEnabled = true,
 }: TransactionTableProps) {
   const hasSelection = onSelectionChange !== undefined;
-  const hasActions = onEdit || onDelete || onValidate;
-  const hasInlineEdit = onInlineUpdate !== undefined && categories.length > 0;
+  const showAccount = !hideAccountColumn;
+  const cols = desktopCols(showAccount, showRunningBalance);
+  const grouped = sortColumn === 'date';
 
-  const handleDescriptionSave = async (id: string, value: string) => {
-    if (onInlineUpdate) {
-      await onInlineUpdate(id, 'description', value);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const anchorRef = useRef<number | null>(null);
+  const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Forget the focus/anchor when the rows change (new page, filters, sort).
+  useEffect(() => {
+    anchorRef.current = null;
+    setFocusedIndex((i) => (i >= transactions.length ? -1 : i));
+  }, [transactions]);
+
+  const groups = useMemo<Group[]>(() => {
+    if (!grouped) {
+      return [{ key: 'all', date: null, net: 0, rows: transactions.map((t, index) => ({ t, index })) }];
     }
-  };
+    const out: Group[] = [];
+    transactions.forEach((t, index) => {
+      const last = out[out.length - 1];
+      if (last && last.date === t.date) {
+        last.rows.push({ t, index });
+        last.net += Number(t.amount);
+      } else {
+        out.push({ key: `${t.date}-${index}`, date: t.date, net: Number(t.amount), rows: [{ t, index }] });
+      }
+    });
+    return out;
+  }, [transactions, grouped]);
 
-  const handleCategorySave = async (id: string, categoryId: string | null) => {
-    if (onInlineUpdate) {
-      await onInlineUpdate(id, 'category_id', categoryId);
-    }
-  };
-
-  const baseColumns = [
-    { key: 'date', label: 'Date', sortable: true },
-    { key: 'description', label: 'Description', sortable: true },
-    ...(hideAccountColumn ? [] : [{ key: 'account', label: 'Account', sortable: true }]),
-    { key: 'category', label: 'Category', sortable: true },
-    { key: 'amount', label: 'Amount', sortable: true, align: 'right' as const },
-    ...(showRunningBalance ? [{ key: 'balance', label: 'Balance', sortable: false, align: 'right' as const }] : []),
-  ];
-  const columns = baseColumns;
-
-  const handleHeaderClick = (column: string, sortable: boolean) => {
-    if (sortable) {
-      onSort(column);
-    }
-  };
-
-  const handleSelectAll = () => {
+  const toggleAt = (index: number, shiftKey: boolean) => {
     if (!onSelectionChange) return;
-
-    if (selectedIds.size === transactions.length) {
-      onSelectionChange(new Set());
+    const id = transactions[index]?.id;
+    if (!id) return;
+    const next = new Set(selectedIds);
+    const anchor = anchorRef.current;
+    if (shiftKey && anchor !== null && anchor < transactions.length) {
+      const select = !selectedIds.has(id);
+      const [a, b] = anchor < index ? [anchor, index] : [index, anchor];
+      for (let i = a; i <= b; i++) {
+        if (select) next.add(transactions[i].id);
+        else next.delete(transactions[i].id);
+      }
+    } else if (next.has(id)) {
+      next.delete(id);
     } else {
-      onSelectionChange(new Set(transactions.map((t) => t.id)));
+      next.add(id);
     }
+    anchorRef.current = index;
+    onSelectionChange(next);
   };
 
-  const handleSelectOne = (id: string) => {
+  const pageSelectedCount = transactions.filter((t) => selectedIds.has(t.id)).length;
+  const allSelected = transactions.length > 0 && pageSelectedCount === transactions.length;
+  const someSelected = pageSelectedCount > 0 && !allSelected;
+
+  const handleSelectPage = () => {
     if (!onSelectionChange) return;
-
-    const newSelected = new Set(selectedIds);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    onSelectionChange(newSelected);
+    const next = new Set(selectedIds);
+    if (allSelected) transactions.forEach((t) => next.delete(t.id));
+    else transactions.forEach((t) => next.add(t.id));
+    onSelectionChange(next);
   };
 
-  const allSelected = transactions.length > 0 && selectedIds.size === transactions.length;
-  const someSelected = selectedIds.size > 0 && selectedIds.size < transactions.length;
+  const focusRow = (index: number) => {
+    setFocusedIndex(index);
+    const el = rowRefs.current[index];
+    el?.focus();
+    el?.scrollIntoView?.({ block: 'nearest' });
+  };
+
+  // Keyboard: J/K move, X toggles, Enter opens, Esc clears the selection.
+  const stateRef = useRef({ focusedIndex, transactions, selectedIds, onOpen, onSelectionChange, editingId });
+  stateRef.current = { focusedIndex, transactions, selectedIds, onOpen, onSelectionChange, editingId };
+  const toggleRef = useRef(toggleAt);
+  toggleRef.current = toggleAt;
+
+  useEffect(() => {
+    if (!keyboardEnabled) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target) || dialogOpen()) return;
+      const s = stateRef.current;
+      if (s.editingId) return;
+      const n = s.transactions.length;
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+
+      if (key === 'j' || key === 'k') {
+        if (n === 0) return;
+        e.preventDefault();
+        const from = s.focusedIndex;
+        const next = from < 0 ? 0 : Math.min(n - 1, Math.max(0, from + (key === 'j' ? 1 : -1)));
+        focusRow(next);
+      } else if (key === 'x') {
+        if (s.focusedIndex < 0 || s.focusedIndex >= n) return;
+        e.preventDefault();
+        toggleRef.current(s.focusedIndex, e.shiftKey);
+      } else if (key === 'Enter') {
+        const target = e.target as HTMLElement | null;
+        const onRowOrPage = !target || target === document.body || target.getAttribute?.('role') === 'row';
+        if (!onRowOrPage || s.focusedIndex < 0 || s.focusedIndex >= n || !s.onOpen) return;
+        e.preventDefault();
+        s.onOpen(s.transactions[s.focusedIndex]);
+      } else if (key === 'Escape') {
+        if (s.selectedIds.size > 0 && s.onSelectionChange) {
+          e.preventDefault();
+          s.onSelectionChange(new Set());
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [keyboardEnabled]);
 
   if (!isLoading && transactions.length === 0) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="flex flex-col items-center justify-center py-16 px-4">
-          <svg className="w-16 h-16 text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          <p className="text-lg font-medium text-slate-900">No transactions found</p>
-          <p className="text-sm text-slate-500 mt-1">Try adjusting your filters or search terms</p>
+      <div className="rounded-md border border-line bg-surface">
+        <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+          <Inbox className="mb-3 h-10 w-10 text-ink-3" aria-hidden="true" />
+          <p className="text-base font-medium text-ink">No transactions found</p>
+          <p className="mt-1 text-sm text-ink-3">Try adjusting your filters or search terms</p>
         </div>
       </div>
     );
   }
 
+  const handleRowClick = (e: React.MouseEvent, t: TransactionWithRelations, index: number) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button, input, a, select, textarea, [role="listbox"], [data-row-stop]')) return;
+    setFocusedIndex(index);
+    onOpen?.(t);
+  };
+
   return (
-    <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full divide-y divide-slate-200">
-          <thead className="bg-slate-50">
-            <tr>
-              {/* Checkbox column */}
-              {hasSelection && (
-                <th className="px-4 py-3 w-10">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    ref={(input) => {
-                      if (input) {
-                        input.indeterminate = someSelected;
-                      }
-                    }}
-                    onChange={handleSelectAll}
-                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
-                  />
-                </th>
-              )}
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  onClick={() => handleHeaderClick(column.key, column.sortable)}
-                  className={`px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider ${
-                    column.sortable ? 'cursor-pointer hover:bg-slate-100 select-none' : ''
-                  } ${column.align === 'right' ? 'text-right' : ''}`}
+    <div role="table" aria-label="Transactions" aria-rowcount={transactions.length} className="rounded-md border border-line bg-surface">
+      {/* Column headers */}
+      <div role="rowgroup">
+        <div
+          role="row"
+          className={`grid ${MOBILE_COLS} ${cols} items-center gap-x-3 rounded-t-md border-b border-line bg-sunk px-3 py-2`}
+        >
+          <div role="columnheader" className="flex items-center">
+            {hasSelection && (
+              <input
+                type="checkbox"
+                aria-label="Select all on this page"
+                checked={allSelected}
+                ref={(input) => {
+                  if (input) input.indeterminate = someSelected;
+                }}
+                onChange={handleSelectPage}
+                className="h-4 w-4 accent-accent"
+              />
+            )}
+          </div>
+          <div role="columnheader" className="flex items-center gap-3">
+            <SortButton column="date" label="Date" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
+            <SortButton column="description" label="Description" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
+          </div>
+          {showAccount && (
+            <div role="columnheader" className="hidden md:block">
+              <SortButton column="account" label="Account" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
+            </div>
+          )}
+          <div role="columnheader" className="hidden md:block">
+            <SortButton column="category" label="Category" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
+          </div>
+          <div role="columnheader" className="flex justify-end">
+            <SortButton column="amount" label="Amount" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} align="right" />
+          </div>
+          {showRunningBalance && (
+            <div role="columnheader" className="hidden text-right text-xs font-medium uppercase tracking-wide text-ink-3 md:block">
+              Balance
+            </div>
+          )}
+          <div role="columnheader" className="hidden md:block">
+            <span className="sr-only">Actions</span>
+          </div>
+        </div>
+      </div>
+
+      <div role="rowgroup">
+        {isLoading && transactions.length === 0 ? (
+          Array.from({ length: 6 }, (_, i) => <SkeletonRow key={i} cols={cols} />)
+        ) : (
+          groups.map((group) => (
+            <Fragment key={group.key}>
+              {group.date && (
+                <div
+                  role="row"
+                  data-day-heading
+                  className="flex items-center justify-between gap-3 border-b border-line-2 bg-ground px-3 py-1.5 text-xs"
                 >
-                  <div className={`flex items-center gap-1 ${column.align === 'right' ? 'justify-end' : ''}`}>
-                    <span>{column.label}</span>
-                    {column.sortable && (
-                      <SortIcon column={column.key} sortColumn={sortColumn} sortDirection={sortDirection} />
-                    )}
-                  </div>
-                </th>
-              ))}
-              {/* Actions column */}
-              {hasActions && (
-                <th className="px-4 py-3 w-28 text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Actions
-                </th>
+                  <span role="rowheader" className="font-medium text-ink-2">
+                    {formatDayHeading(group.date)}
+                  </span>
+                  <span role="cell" className={`fig ${group.net > 0 ? 'text-in' : 'text-ink-3'}`}>
+                    <span className="sr-only">Net for the day </span>
+                    {formatNet(Math.round(group.net * 100) / 100)}
+                  </span>
+                </div>
               )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {isLoading ? (
-              <>
-                <SkeletonRow />
-                <SkeletonRow />
-                <SkeletonRow />
-                <SkeletonRow />
-                <SkeletonRow />
-              </>
-            ) : (
-              transactions.map((transaction) => {
-                const isSelected = selectedIds.has(transaction.id);
-                const isValidated = transaction.is_validated;
-                // Row styling: selected takes priority, then validated, then default
-                const rowClassName = isSelected
-                  ? 'bg-emerald-50 hover:bg-emerald-100'
-                  : isValidated
-                  ? 'bg-green-100 hover:bg-green-200'
-                  : 'hover:bg-slate-50';
+              {group.rows.map(({ t, index }) => {
+                const isSelected = selectedIds.has(t.id);
+                const isIncome = t.amount > 0;
+                const isEditing = editingId === t.id;
                 return (
-                  <tr
-                    key={transaction.id}
-                    className={`transition-colors ${rowClassName}`}
+                  <div
+                    key={t.id}
+                    ref={(el) => {
+                      rowRefs.current[index] = el;
+                    }}
+                    role="row"
+                    aria-selected={hasSelection ? isSelected : undefined}
+                    data-row-index={index}
+                    tabIndex={focusedIndex === index || (focusedIndex < 0 && index === 0) ? 0 : -1}
+                    onFocus={(e) => {
+                      if (e.target === e.currentTarget) setFocusedIndex(index);
+                    }}
+                    onClick={(e) => handleRowClick(e, t, index)}
+                    className={`group grid ${MOBILE_COLS} ${cols} cursor-pointer items-center gap-x-3 border-b border-line-2 px-3 py-2.5 text-sm last:border-b-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
+                      isSelected ? 'bg-sel' : 'hover:bg-sunk'
+                    } ${isLoading ? 'opacity-60' : ''}`}
                   >
                     {/* Checkbox */}
-                    {hasSelection && (
-                      <td className="px-4 py-3">
+                    <div role="cell" className="flex items-center">
+                      {hasSelection && (
                         <input
                           type="checkbox"
+                          aria-label={`Select ${t.description}`}
                           checked={isSelected}
-                          onChange={() => handleSelectOne(transaction.id)}
-                          className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                          readOnly
+                          onClick={(e) => toggleAt(index, e.shiftKey)}
+                          className="h-4 w-4 accent-accent"
                         />
-                      </td>
-                    )}
-                    <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
-                      {formatDateGBPadded(transaction.date)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-900">
-                      {hasInlineEdit ? (
+                      )}
+                    </div>
+
+                    {/* Description (+ category/account subline on small screens) */}
+                    <div role="cell" className="min-w-0">
+                      {isEditing && onInlineUpdate ? (
                         <EditableDescription
-                          value={transaction.description}
-                          transactionId={transaction.id}
-                          onSave={handleDescriptionSave}
+                          value={t.description}
+                          onSave={async (v) => {
+                            await onInlineUpdate(t.id, 'description', v);
+                            setEditingId(null);
+                          }}
+                          onCancel={() => setEditingId(null)}
                         />
                       ) : (
-                        <div className="max-w-md truncate" title={transaction.description}>
-                          {transaction.description}
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <span
+                            className="truncate text-ink"
+                            title={t.description}
+                            onDoubleClick={onInlineUpdate ? () => setEditingId(t.id) : undefined}
+                          >
+                            {t.description}
+                          </span>
+                          {t.needs_review && (
+                            <span className="shrink-0 rounded-sm bg-warn-soft px-1.5 py-px text-xs text-warn">Review</span>
+                          )}
+                          {onInlineUpdate && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingId(t.id)}
+                              aria-label={`Edit description of ${t.description}`}
+                              className="hidden shrink-0 rounded-md p-0.5 text-ink-3 opacity-0 hover:text-ink focus:opacity-100 group-hover:opacity-100 md:inline-flex"
+                            >
+                              <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                          )}
                         </div>
                       )}
-                    </td>
-                    {!hideAccountColumn && (
-                      <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
-                        {transaction.account?.name || '-'}
-                      </td>
+                      <div className="mt-0.5 truncate text-xs text-ink-3 md:hidden">
+                        {t.category?.name ?? 'Uncategorised'}
+                        {showAccount && t.account?.name ? ` · ${t.account.name}` : ''}
+                        {!grouped ? ` · ${formatDateGB(t.date)}` : ''}
+                      </div>
+                      {!grouped && (
+                        <div className="mt-0.5 hidden text-xs text-ink-3 md:block">{formatDateGB(t.date)}</div>
+                      )}
+                    </div>
+
+                    {showAccount && (
+                      <div role="cell" className="hidden truncate text-ink-2 md:block">
+                        {t.account?.name || '-'}
+                      </div>
                     )}
-                    <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
-                      {hasInlineEdit ? (
-                        <EditableCategory
-                          category={transaction.category}
-                          transactionId={transaction.id}
-                          categories={categories}
-                          onSave={handleCategorySave}
+
+                    {/* Category (inline edit) */}
+                    <div role="cell" className="hidden min-w-0 md:block" data-row-stop>
+                      {onInlineUpdate ? (
+                        <CategorySelect
+                          variant="inline"
+                          value={t.category_id}
+                          allowClear
+                          placeholder="Uncategorised"
+                          ariaLabel={`Category for ${t.description}`}
+                          onChange={(categoryId) => {
+                            if (categoryId === t.category_id) return;
+                            onInlineUpdate(t.id, 'category_id', categoryId).catch(() => {});
+                          }}
                         />
-                      ) : transaction.category ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                          {transaction.category.name}
+                      ) : (
+                        <span className={t.category ? 'text-ink-2' : 'text-ink-3'}>
+                          {t.category?.name ?? 'Uncategorised'}
                         </span>
-                      ) : (
-                        <span className="text-slate-400">Uncategorized</span>
                       )}
-                    </td>
-                    <td className={`px-4 py-3 text-sm font-medium text-right whitespace-nowrap ${
-                      transaction.amount >= 0 ? 'text-emerald-600' : 'text-red-600'
-                    }`}>
-                      {formatGBP(transaction.amount, { pence: true })}
-                    </td>
+                    </div>
+
+                    {/* Amount */}
+                    <div role="cell" className={`fig whitespace-nowrap text-right ${isIncome ? 'text-in' : 'text-ink'}`}>
+                      {formatAmount(t.amount)}
+                    </div>
+
                     {showRunningBalance && (
-                      <td className={`px-4 py-3 text-sm font-medium text-right whitespace-nowrap ${
-                        transaction.running_balance === null
-                          ? 'text-slate-400'
-                          : (transaction.running_balance ?? 0) >= 0
-                            ? 'text-slate-900'
-                            : 'text-red-600'
-                      }`}>
-                        {transaction.running_balance === null
+                      <div
+                        role="cell"
+                        className={`fig hidden whitespace-nowrap text-right md:block ${
+                          t.running_balance === null || t.running_balance === undefined ? 'text-ink-3' : 'text-ink-2'
+                        }`}
+                      >
+                        {t.running_balance === null || t.running_balance === undefined
                           ? '-'
-                          : formatGBP(transaction.running_balance ?? 0, { pence: true })}
-                      </td>
+                          : formatGBP(t.running_balance, { pence: true })}
+                      </div>
                     )}
+
                     {/* Actions */}
-                    {hasActions && (
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="flex items-center gap-1">
-                          {onValidate && (
-                            <button
-                              onClick={() => onValidate(transaction)}
-                              className={`p-1.5 rounded transition-colors ${
-                                isValidated
-                                  ? 'text-green-600 hover:text-green-700 hover:bg-green-100'
-                                  : 'text-slate-400 hover:text-green-600 hover:bg-green-50'
-                              }`}
-                              title={isValidated ? 'Mark as unvalidated' : 'Mark as validated'}
-                            >
-                              <svg className="w-4 h-4" fill={isValidated ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </button>
+                    <div role="cell" className="hidden items-center justify-end gap-0.5 md:flex">
+                      {onValidate && (
+                        <button
+                          type="button"
+                          onClick={() => onValidate(t)}
+                          aria-pressed={t.is_validated}
+                          aria-label={t.is_validated ? 'Mark as unvalidated' : 'Mark as validated'}
+                          title={t.is_validated ? 'Validated (click to undo)' : 'Mark as validated'}
+                          className={`rounded-md p-1 hover:bg-sunk ${t.is_validated ? 'text-in' : 'text-ink-3 hover:text-ink'}`}
+                        >
+                          {t.is_validated ? (
+                            <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                          ) : (
+                            <Circle className="h-4 w-4" aria-hidden="true" />
                           )}
-                          {onEdit && (
-                            <button
-                              onClick={() => onEdit(transaction)}
-                              className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                              title="Edit transaction"
-                            >
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                          )}
-                          {onDelete && (
-                            <button
-                              onClick={() => onDelete(transaction)}
-                              className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                              title="Delete transaction"
-                            >
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    )}
-                  </tr>
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button
+                          type="button"
+                          onClick={() => onDelete(t)}
+                          aria-label="Delete transaction"
+                          title="Delete transaction"
+                          className="rounded-md p-1 text-ink-3 opacity-0 hover:bg-sunk hover:text-ink focus:opacity-100 group-hover:opacity-100"
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 );
-              })
-            )}
-          </tbody>
-        </table>
+              })}
+            </Fragment>
+          ))
+        )}
       </div>
     </div>
   );
