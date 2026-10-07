@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { AppLayout } from '@/components/layout';
 
 interface ReportSummary {
@@ -66,9 +67,16 @@ export default function ReportsPage() {
     fetchReports();
   }, [fetchReports]);
 
-  const handleGenerate = useCallback(async () => {
+  const [confirmOverwrite, setConfirmOverwrite] = useState(false);
+
+  const handleGenerate = useCallback(async (overwriteConfirmed = false) => {
     if (!genMonth) return;
     const [y, m] = genMonth.split('-').map(Number);
+    // Stored reports are point-in-time records; don't replace one silently.
+    if (!overwriteConfirmed && reports.some((r) => r.year === y && r.month === m)) {
+      setConfirmOverwrite(true);
+      return;
+    }
     setIsGenerating(true);
     setGenMessage(null);
     setError(null);
@@ -89,7 +97,7 @@ export default function ReportsPage() {
     } finally {
       setIsGenerating(false);
     }
-  }, [genMonth, fetchReports]);
+  }, [genMonth, fetchReports, reports]);
 
   const viewReport = useCallback(async (year: number, month: number) => {
     setViewingReport({ year, month });
@@ -193,7 +201,7 @@ export default function ReportsPage() {
               />
             </label>
             <button
-              onClick={handleGenerate}
+              onClick={() => handleGenerate()}
               disabled={isGenerating || !genMonth}
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
             >
@@ -325,6 +333,18 @@ export default function ReportsPage() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        isOpen={confirmOverwrite}
+        title="Replace the saved report?"
+        message={`A report for ${genMonth ? `${MONTH_NAMES[Number(genMonth.split('-')[1]) - 1]} ${genMonth.split('-')[0]}` : 'this month'} is already saved. Generating again replaces it with today's figures.`}
+        confirmLabel="Replace report"
+        variant="warning"
+        onConfirm={() => {
+          setConfirmOverwrite(false);
+          handleGenerate(true);
+        }}
+        onCancel={() => setConfirmOverwrite(false)}
+      />
     </AppLayout>
   );
 }

@@ -124,7 +124,7 @@ export default function FirePage() {
               FIRE Calculator Settings
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              These settings are used across both the Historical Simulation and Maths Planning tabs.
+              These settings are used across both the ERN Analysis and Maths Planning tabs.
               Your date of birth is used to calculate your exact age for projections.
             </p>
             <FireInputsForm
