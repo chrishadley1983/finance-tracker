@@ -112,9 +112,9 @@ export function RulesPanel({
         </Notice>
       )}
 
-      <div className="rounded-[3px] border border-line bg-surface">
+      <div className="border-t-[1.5px] border-ink">
         {isLoading ? (
-          <div className="p-3">
+          <div className="py-3">
             <SkeletonRows rows={6} />
           </div>
         ) : shown.length === 0 ? (
@@ -128,7 +128,7 @@ export function RulesPanel({
         ) : (
           <ul aria-label="Rules">
             {shown.map((r) => (
-              <li key={r.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-b border-line-2 px-3 py-2.5 text-[13px] last:border-b-0">
+              <li key={r.id} className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-b border-line-2 py-2.5 text-[13px] last:border-b-0">
                 <span className="min-w-0">
                   <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                     <code className="fig max-w-full truncate rounded border border-line-2 bg-sunk px-1.5 py-px text-[12.5px] text-ink">{r.pattern}</code>
@@ -141,7 +141,12 @@ export function RulesPanel({
                   </span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <Button size="sm" variant="ghost" onClick={() => onApply(r)} aria-label={`Apply ${r.pattern} to existing transactions`}>
+                  {/* Shown on row hover or focus where there is a mouse; always shown on touch screens. */}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="[@media(hover:hover)_and_(pointer:fine)]:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+                    onClick={() => onApply(r)} aria-label={`Apply ${r.pattern} to existing transactions`}>
                     <span className="sm:hidden">Apply</span>
                     <span className="hidden sm:inline">Apply to existing</span>
                   </Button>

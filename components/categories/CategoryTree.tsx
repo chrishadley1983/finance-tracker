@@ -9,7 +9,6 @@ import { RowMenu } from '@/components/dialogs/RowMenu';
 export interface CategoryTreeGroup {
   id: string | null;
   name: string;
-  colour: string | null;
   group: CategoryGroup | null;
   categories: CategoryWithStats[];
 }
@@ -38,12 +37,8 @@ const TYPES: { id: CategoryTypeFilter; label: string }[] = [
   { id: 'income', label: 'Income' },
 ];
 
-function Dot({ colour }: { colour: string | null }) {
-  return <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-line" style={{ backgroundColor: colour ?? 'var(--line)' }} aria-hidden />;
-}
-
 const rowBase =
-  'flex w-full min-w-0 items-center gap-2.5 px-3 py-2 text-left text-[13px] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent';
+  'flex w-full min-w-0 items-center gap-2.5 px-2 py-2 text-left text-[13px] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent';
 
 /** Left pane: groups and their categories. Selecting a category filters the rules pane. */
 export function CategoryTree({
@@ -94,19 +89,19 @@ export function CategoryTree({
         </div>
       </div>
 
-      <div className="rounded-[3px] border border-line bg-surface">
+      <div className="border-t-[1.5px] border-ink">
         <button
           type="button"
           aria-pressed={selectedId === null}
           onClick={() => onSelect(null)}
-          className={`${rowBase} border-b border-line ${selectedId === null ? 'bg-sel font-medium text-ink' : 'text-ink-2 hover:bg-sunk'}`}
+          className={`${rowBase} border-b border-line-2 ${selectedId === null ? 'bg-sel font-medium text-ink' : 'text-ink-2 hover:bg-sunk'}`}
         >
           <span className="flex-1">All rules</span>
           <span className="fig text-xs text-ink-3">{totalRules}</span>
         </button>
 
         {isLoading ? (
-          <div className="p-3">
+          <div className="py-3">
             <SkeletonRows rows={8} />
           </div>
         ) : groups.length === 0 ? (
@@ -114,8 +109,7 @@ export function CategoryTree({
         ) : (
           groups.map((g) => (
             <div key={g.id ?? 'ungrouped'} role="group" aria-label={g.name}>
-              <div className="flex items-center gap-2 border-b border-line-2 bg-sunk px-3 py-1.5 text-[12.5px] text-ink-2">
-                <Dot colour={g.colour} />
+              <div className="flex items-center gap-2 border-b border-line px-2 pb-1 pt-4 text-[12.5px] text-ink-2">
                 <span className="min-w-0 flex-1 truncate font-semibold text-ink">{g.name}</span>
                 <span className="fig text-xs text-ink-3">{g.categories.length}</span>
                 {g.group && (
@@ -129,16 +123,15 @@ export function CategoryTree({
                 )}
               </div>
               {g.categories.length === 0 ? (
-                <p className="border-b border-line-2 px-3 py-2 text-xs text-ink-3">No categories in this group yet.</p>
+                <p className="border-b border-line-2 px-2 py-2 text-xs text-ink-3">No categories in this group yet.</p>
               ) : (
                 <ul>
                   {g.categories.map((c) => {
                     const on = c.id === selectedId;
                     const rules = ruleCounts.get(c.id) ?? 0;
                     return (
-                      <li key={c.id} className={`flex items-center border-b border-line-2 pr-2 ${on ? 'bg-sel' : 'hover:bg-sunk'}`}>
-                        <button type="button" aria-pressed={on} onClick={() => onSelect(c.id)} className={`${rowBase} flex-1 pl-7`}>
-                          <Dot colour={c.colour} />
+                      <li key={c.id} className={`flex items-center border-b border-line-2 pr-1 ${on ? 'bg-sel' : 'hover:bg-sunk'}`}>
+                        <button type="button" aria-pressed={on} onClick={() => onSelect(c.id)} className={`${rowBase} flex-1`}>
                           <span className="min-w-0 flex-1">
                             <span className={`block truncate ${on ? 'font-medium text-ink' : 'text-ink'}`}>{c.name}</span>
                             <span className="block truncate text-xs text-ink-3">

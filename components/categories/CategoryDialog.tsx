@@ -6,7 +6,6 @@ import { CheckboxField, Modal } from '@/components/dialogs/Modal';
 import { Button } from '@/components/ui/Button';
 import { Field, Input, Select } from '@/components/ui/Field';
 import { Notice } from '@/components/ui/Notice';
-import { ColourPicker } from './ColourPicker';
 
 interface CategoryDialogProps {
   category: CategoryWithStats | null;
@@ -109,7 +108,6 @@ export function CategoryDialog({ category, groups, isOpen, defaultGroupId = null
             Leave out of spending and income totals (e.g. transfers)
           </CheckboxField>
         </div>
-        <ColourPicker value={formData.colour} onChange={(colour) => set('colour', colour)} />
       </div>
     </Modal>
   );

@@ -4,21 +4,6 @@ import { useEscape } from './useEscape';
 import { useState, useEffect } from 'react';
 import type { PlanningSectionWithNotes, CreatePlanningSection, UpdatePlanningSection } from '@/lib/validations/planning';
 
-const PRESET_COLOURS = [
-  '#6366f1', // Indigo
-  '#8b5cf6', // Violet
-  '#ec4899', // Pink
-  '#ef4444', // Red
-  '#f97316', // Orange
-  '#eab308', // Yellow
-  '#22c55e', // Green
-  '#14b8a6', // Teal
-  '#06b6d4', // Cyan
-  '#3b82f6', // Blue
-  '#64748b', // Slate
-  '#78716c', // Stone
-];
-
 const PRESET_ICONS = ['📋', '💰', '📈', '🏠', '💼', '🎯', '📊', '💡', '⚡', '🔥', '✨', '📝'];
 
 interface AddSectionDialogProps {
@@ -39,7 +24,6 @@ export function AddSectionDialog({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [yearLabel, setYearLabel] = useState('');
-  const [colour, setColour] = useState('#6366f1');
   const [icon, setIcon] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -50,13 +34,11 @@ export function AddSectionDialog({
       setName(section.name);
       setDescription(section.description || '');
       setYearLabel(section.year_label || '');
-      setColour(section.colour || '#6366f1');
       setIcon(section.icon || '');
     } else {
       setName('');
       setDescription('');
       setYearLabel('');
-      setColour('#6366f1');
       setIcon('');
     }
     setError(null);
@@ -76,7 +58,8 @@ export function AddSectionDialog({
         name: name.trim(),
         description: description.trim() || null,
         year_label: yearLabel.trim() || null,
-        colour: colour || null,
+        // Section colour is no longer shown; keep whatever is stored.
+        colour: section?.colour ?? null,
         icon: icon || null,
       });
       onOpenChange(false);
@@ -165,28 +148,6 @@ export function AddSectionDialog({
             />
           </div>
 
-          {/* Colour */}
-          <div>
-            <label className="block text-sm font-medium text-ink-2 mb-2">
-              Colour
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {PRESET_COLOURS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColour(c)}
-                  className={`w-8 h-8 rounded-full border-2 transition-all ${
-                    colour === c
-                      ? 'border-line scale-110'
-                      : 'border-transparent hover:border-line '
-                  }`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-          </div>
-
           {/* Icon */}
           <div>
             <label className="block text-sm font-medium text-ink-2 mb-2">
@@ -226,10 +187,7 @@ export function AddSectionDialog({
             <label className="block text-sm font-medium text-ink-2 mb-2">
               Preview
             </label>
-            <div
-              className="p-3 bg-sunk rounded-md border-l-4"
-              style={{ borderLeftColor: colour }}
-            >
+            <div className="p-3 bg-sunk rounded-md">
               <div className="flex items-center gap-2">
                 {icon && <span className="text-lg">{icon}</span>}
                 <span className="font-semibold text-ink">

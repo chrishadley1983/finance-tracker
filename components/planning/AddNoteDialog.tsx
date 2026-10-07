@@ -145,10 +145,7 @@ export function AddNoteDialog({
           {currentSection && sectionId && !isEditing && (
             <div className="flex items-center gap-2 text-sm text-ink-3">
               <span>Adding to:</span>
-              <span
-                className="px-2 py-1 rounded font-medium"
-                style={{ backgroundColor: `${currentSection.colour || '#6366f1'}20`, color: currentSection.colour || '#6366f1' }}
-              >
+              <span className="font-medium text-ink">
                 {currentSection.icon && `${currentSection.icon} `}
                 {currentSection.name}
               </span>

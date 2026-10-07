@@ -1,6 +1,5 @@
 export { CategoriesPageContent } from './CategoriesPageContent';
 export { CategoryTree } from './CategoryTree';
-export { ColourPicker } from './ColourPicker';
 export { CategoryDialog } from './CategoryDialog';
 export { GroupDialog } from './GroupDialog';
 export { DeleteCategoryDialog } from './DeleteCategoryDialog';
