@@ -14,7 +14,7 @@ import {
 } from '@/components/dashboard';
 import { useDashboardData } from '@/lib/hooks/useDashboardData';
 import { PetWidget } from '@/components/pets/PetWidget';
-import { SyncButton } from '@/components/enable-banking';
+import { SyncButton } from '@/components/bank-sync';
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<TimeframePeriod>('last_month');

@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AppLayout } from '@/components/layout';
-import { SyncButton, AccountLinkPanel } from '@/components/enable-banking';
+import { SyncButton, AccountLinkPanel } from '@/components/bank-sync';
 
 interface StatusAccount {
   id: string;

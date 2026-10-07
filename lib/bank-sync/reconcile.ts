@@ -1,5 +1,10 @@
 /**
- * Reconcile Enable Banking transactions against the existing ledger.
+ * Reconcile bank-feed transactions (TrueLayer) against the existing ledger.
+ *
+ * Provider-agnostic: each provider maps its own payload to
+ * MappedBankTransaction (see lib/truelayer/reconcile-map.ts). Originally
+ * written for Enable Banking, whose naming (entry_reference, BOOK/PDNG)
+ * the shape still uses.
  *
  * Design goals (in priority order):
  *   1. NEVER modify existing rows. We only ever INSERT genuinely-missing
@@ -23,9 +28,7 @@
  * We import BOOKED transactions only; pending (PDNG) entries are volatile and
  * would churn the ledger.
  */
-import type { EnableBankingTransaction } from './types';
-
-export interface MappedEbTransaction {
+export interface MappedBankTransaction {
   date: string; // YYYY-MM-DD
   amount: number; // signed: negative = money out
   description: string;
@@ -49,49 +52,15 @@ export interface ReconcileOptions {
 }
 
 export interface ReconcilePlan {
-  toInsert: MappedEbTransaction[];
-  refMatched: MappedEbTransaction[];
-  countMatched: MappedEbTransaction[];
+  toInsert: MappedBankTransaction[];
+  refMatched: MappedBankTransaction[];
+  countMatched: MappedBankTransaction[];
   pendingSkipped: number;
   summary: {
     incoming: number;
     booked: number;
     toInsert: number;
     alreadyPresent: number;
-  };
-}
-
-/** Best-available posting date for an EB transaction. */
-export function ebTransactionDate(tx: EnableBankingTransaction): string | undefined {
-  return tx.booking_date ?? tx.value_date ?? tx.transaction_date;
-}
-
-/** Human-readable description from the various EB fields, matching CSV feel. */
-export function ebTransactionDescription(tx: EnableBankingTransaction): string {
-  const remittance = tx.remittance_information?.filter(Boolean).join(' ').trim();
-  return (
-    (remittance && remittance.length > 0 ? remittance : undefined) ??
-    tx.remittance_information_structured?.trim() ??
-    tx.creditor?.name?.trim() ??
-    tx.debtor?.name?.trim() ??
-    tx.bank_transaction_code?.description?.trim() ??
-    'Unknown transaction'
-  );
-}
-
-/** Map an EB transaction to our signed-amount ledger shape. Returns null if unusable. */
-export function mapEbTransaction(tx: EnableBankingTransaction): MappedEbTransaction | null {
-  const date = ebTransactionDate(tx);
-  const raw = Number(tx.transaction_amount?.amount);
-  if (!date || !Number.isFinite(raw)) return null;
-  const magnitude = Math.abs(raw);
-  const amount = tx.credit_debit_indicator === 'DBIT' ? -magnitude : magnitude;
-  return {
-    date,
-    amount,
-    description: ebTransactionDescription(tx),
-    entryReference: tx.entry_reference || undefined,
-    status: tx.status,
   };
 }
 
@@ -104,7 +73,7 @@ function daysBetween(a: string, b: string): number {
  * Compute which incoming EB transactions need inserting. Pure function — no I/O.
  */
 export function planReconcile(
-  incoming: MappedEbTransaction[],
+  incoming: MappedBankTransaction[],
   existing: ExistingDbRow[],
   opts: ReconcileOptions = {},
 ): ReconcilePlan {
@@ -121,8 +90,8 @@ export function planReconcile(
   for (const r of existing) {
     if (r.ref) existingByRef.set(r.ref, r);
   }
-  const refMatched: MappedEbTransaction[] = [];
-  const afterRef: MappedEbTransaction[] = [];
+  const refMatched: MappedBankTransaction[] = [];
+  const afterRef: MappedBankTransaction[] = [];
   for (const t of booked) {
     const match = t.entryReference ? existingByRef.get(t.entryReference) : undefined;
     if (match && !consumed.has(match.id)) {
@@ -146,8 +115,8 @@ export function planReconcile(
     bucket.push(r);
   }
 
-  const toInsert: MappedEbTransaction[] = [];
-  const countMatched: MappedEbTransaction[] = [];
+  const toInsert: MappedBankTransaction[] = [];
+  const countMatched: MappedBankTransaction[] = [];
   for (const t of afterRef) {
     const candidates = byAmount.get(t.amount.toFixed(2)) ?? [];
     let bestIdx = -1;
