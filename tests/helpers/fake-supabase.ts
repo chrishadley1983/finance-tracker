@@ -167,6 +167,15 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
         else if (o === 'eq') filters.push((r) => r[c] !== v);
         return b;
       },
+      ilike(c: string, pattern: string) {
+        const source = pattern
+          .split('')
+          .map((ch) => (ch === '%' ? '.*' : ch === '_' ? '.' : ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+          .join('');
+        const re = new RegExp(`^${source}$`, 'is');
+        filters.push((r) => typeof r[c] === 'string' && re.test(r[c] as string));
+        return b;
+      },
       gte(c: string, v: unknown) { filters.push((r) => r[c] !== null && r[c] !== undefined && cmp(r[c], v) >= 0); return b; },
       gt(c: string, v: unknown) { filters.push((r) => r[c] !== null && r[c] !== undefined && cmp(r[c], v) > 0); return b; },
       lte(c: string, v: unknown) { filters.push((r) => r[c] !== null && r[c] !== undefined && cmp(r[c], v) <= 0); return b; },

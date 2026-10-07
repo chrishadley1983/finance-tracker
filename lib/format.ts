@@ -87,3 +87,17 @@ export function formatDateGBPadded(date: string | number | Date): string {
     year: 'numeric',
   });
 }
+
+const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+
+/**
+ * Day heading for grouped lists, e.g. "Tue 7 October" (the year is added
+ * when it is not the current year: "Mon 30 December 2024").
+ * Takes an ISO date (YYYY-MM-DD) and treats it as a calendar day.
+ */
+export function formatDayHeading(isoDate: string, now: Date = new Date()): string {
+  const [y, m, d] = isoDate.slice(0, 10).split('-').map(Number);
+  const weekday = WEEKDAY_SHORT[new Date(y, m - 1, d).getDay()];
+  const base = `${weekday} ${d} ${MONTH_NAMES[m - 1]}`;
+  return y === now.getFullYear() ? base : `${base} ${y}`;
+}

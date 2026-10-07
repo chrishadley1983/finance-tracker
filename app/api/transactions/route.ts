@@ -1,27 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { createTransactionSchema, transactionQuerySchema } from '@/lib/validations/transactions';
+import { createTransactionSchema } from '@/lib/validations/transactions';
+import { applyTransactionFilters, parseTransactionQuery, sumTransactionAmounts } from '@/lib/transactions/query';
 import { ZodError } from 'zod';
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const query = transactionQuerySchema.parse({
-      account_id: searchParams.get('account_id') || undefined,
-      category_id: searchParams.get('category_id') || undefined,
-      start_date: searchParams.get('start_date') || undefined,
-      end_date: searchParams.get('end_date') || undefined,
-      search: searchParams.get('search') || undefined,
-      limit: searchParams.get('limit') || undefined,
-      offset: searchParams.get('offset') || undefined,
-      sort_column: searchParams.get('sort_column') || undefined,
-      sort_direction: searchParams.get('sort_direction') || undefined,
-    });
-
-    // Build base query for count
-    let countBuilder = supabaseAdmin
-      .from('transactions')
-      .select('*', { count: 'exact', head: true });
+    const query = parseTransactionQuery(request.nextUrl.searchParams);
 
     // Map frontend column names to database columns
     const sortColumnMap: Record<string, string> = {
@@ -37,53 +22,24 @@ export async function GET(request: NextRequest) {
       : 'date';
     const sortAscending = query.sort_direction === 'asc';
 
-    // Build query for data
-    let queryBuilder = supabaseAdmin
-      .from('transactions')
-      .select('*, account:accounts(name), category:categories(name, group_name)')
+    // Count across the filtered set
+    const countBuilder = applyTransactionFilters(
+      supabaseAdmin.from('transactions').select('*', { count: 'exact', head: true }),
+      query
+    );
+
+    // One page of data
+    const queryBuilder = applyTransactionFilters(
+      supabaseAdmin
+        .from('transactions')
+        .select('*, account:accounts(name), category:categories(name, group_name)'),
+      query
+    )
       .order(sortColumn, { ascending: sortAscending })
-      .order('id', { ascending: true }); // tie-break so same-date rows page stably
+      .order('id', { ascending: true }) // tie-break so same-date rows page stably
+      .range(query.offset, query.offset + query.limit - 1);
 
-    // Apply filters to both queries
-    if (query.account_id) {
-      countBuilder = countBuilder.eq('account_id', query.account_id);
-      queryBuilder = queryBuilder.eq('account_id', query.account_id);
-    }
-    if (query.category_id) {
-      countBuilder = countBuilder.eq('category_id', query.category_id);
-      queryBuilder = queryBuilder.eq('category_id', query.category_id);
-    }
-    if (query.start_date) {
-      countBuilder = countBuilder.gte('date', query.start_date);
-      queryBuilder = queryBuilder.gte('date', query.start_date);
-    }
-    if (query.end_date) {
-      countBuilder = countBuilder.lte('date', query.end_date);
-      queryBuilder = queryBuilder.lte('date', query.end_date);
-    }
-    if (query.search) {
-      countBuilder = countBuilder.ilike('description', `%${query.search}%`);
-      queryBuilder = queryBuilder.ilike('description', `%${query.search}%`);
-    }
-
-    // Filter by validation status
-    const validatedParam = searchParams.get('validated');
-    if (validatedParam === 'validated') {
-      countBuilder = countBuilder.eq('is_validated', true);
-      queryBuilder = queryBuilder.eq('is_validated', true);
-    } else if (validatedParam === 'unvalidated') {
-      countBuilder = countBuilder.eq('is_validated', false);
-      queryBuilder = queryBuilder.eq('is_validated', false);
-    }
-
-    // Apply pagination only to data query
-    queryBuilder = queryBuilder.range(query.offset, query.offset + query.limit - 1);
-
-    // Execute both queries
-    const [countResult, dataResult] = await Promise.all([
-      countBuilder,
-      queryBuilder,
-    ]);
+    const [countResult, dataResult] = await Promise.all([countBuilder, queryBuilder]);
 
     if (countResult.error) {
       return NextResponse.json({ error: countResult.error.message }, { status: 500 });
@@ -92,9 +48,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: dataResult.error.message }, { status: 500 });
     }
 
+    const total = countResult.count ?? 0;
+
+    // Money out / in across every matching row (not just this page).
+    const totals = query.totals === '0' ? undefined : await sumTransactionAmounts(query, total);
+
     return NextResponse.json({
       data: dataResult.data,
-      total: countResult.count ?? 0,
+      total,
+      ...(totals ? { totals } : {}),
     });
   } catch (error) {
     if (error instanceof ZodError) {
