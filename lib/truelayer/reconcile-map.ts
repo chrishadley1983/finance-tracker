@@ -1,4 +1,4 @@
-import type { MappedEbTransaction } from '@/lib/enable-banking/reconcile';
+import type { MappedBankTransaction } from '@/lib/bank-sync/reconcile';
 import type { TrueLayerTransaction } from './types';
 
 /**
@@ -7,7 +7,7 @@ import type { TrueLayerTransaction } from './types';
  * positive) using the magnitude, so we're robust to TrueLayer's own sign
  * convention. Only booked transactions come from /transactions.
  */
-export function mapTrueLayerTransaction(tx: TrueLayerTransaction): MappedEbTransaction | null {
+export function mapTrueLayerTransaction(tx: TrueLayerTransaction): MappedBankTransaction | null {
   const date = tx.timestamp ? tx.timestamp.slice(0, 10) : undefined;
   const raw = Number(tx.amount);
   if (!date || !Number.isFinite(raw)) return null;
