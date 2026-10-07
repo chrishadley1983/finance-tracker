@@ -1,8 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Settings, ChevronDown, ChevronUp, Play, Lock, Unlock } from 'lucide-react';
+import { useState, useEffect, useCallback, useId, type ReactNode } from 'react';
+import { Lock, Unlock } from 'lucide-react';
 import { formatGBP } from '@/lib/format';
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { controlClass } from '@/components/ui/Field';
+import { Disclosure } from '../Disclosure';
+import { readableGBP, readablePct } from '../readable';
 
 export interface WrapperBalancesUI {
   isa: number;
@@ -41,7 +46,7 @@ interface ErnConfigPanelProps {
   liveWrapperBalances?: WrapperBalancesUI | null;
 }
 
-// ---- localStorage persistence ----
+// ---- localStorage persistence (best effort: storage can be blocked) ----
 
 const LOCKS_KEY = 'ern-config-locks';
 const VALUES_KEY = 'ern-config-locked-values';
@@ -62,7 +67,11 @@ function loadLocks(): LocksMap {
 }
 
 function saveLocks(locks: LocksMap) {
-  localStorage.setItem(LOCKS_KEY, JSON.stringify(locks));
+  try {
+    localStorage.setItem(LOCKS_KEY, JSON.stringify(locks));
+  } catch {
+    // ignore: locks just won't survive a reload
+  }
 }
 
 function loadLockedValues(): Partial<ErnConfig> {
@@ -79,31 +88,148 @@ function saveLockedValues(locks: LocksMap, draft: ErnConfig) {
       values[field] = (draft as unknown as Record<string, unknown>)[field];
     }
   }
-  localStorage.setItem(VALUES_KEY, JSON.stringify(values));
+  try {
+    localStorage.setItem(VALUES_KEY, JSON.stringify(values));
+  } catch {
+    // ignore
+  }
 }
 
-// ---- Lock button component ----
+/** Values the user has locked, to apply over any other source on the first run. */
+export function loadLockedOverrides(): Partial<ErnConfig> {
+  const locks = loadLocks();
+  const values = loadLockedValues() as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const [field, locked] of Object.entries(locks)) {
+    if (locked && values[field] !== undefined) out[field] = values[field];
+  }
+  return out as Partial<ErnConfig>;
+}
 
-function LockButton({
-  locked,
-  onToggle,
-}: {
-  locked: boolean;
-  onToggle: () => void;
-}) {
+// ---- Small building blocks ----
+
+function LockButton({ locked, onToggle, label }: { locked: boolean; onToggle: () => void; label: string }) {
   return (
     <button
       type="button"
       onClick={onToggle}
-      title={locked ? 'Locked — value persists across sessions. Click to unlock.' : 'Click to lock this value across sessions.'}
-      className={`p-0.5 rounded transition-colors ${
-        locked
-          ? 'text-amber-500 hover:text-amber-600'
-          : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'
-      }`}
+      aria-pressed={locked}
+      aria-label={locked ? `Unlock ${label}` : `Lock ${label}`}
+      title={locked ? 'Locked: this value is kept between visits. Select to unlock.' : 'Lock this value so it is kept between visits.'}
+      className={`rounded-sm p-0.5 focus-visible:outline-2 focus-visible:outline-accent ${locked ? 'text-warn' : 'text-ink-3 opacity-60 hover:opacity-100'}`}
     >
-      {locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+      {locked ? <Lock className="h-3.5 w-3.5" aria-hidden /> : <Unlock className="h-3.5 w-3.5" aria-hidden />}
     </button>
+  );
+}
+
+function LockField({
+  label,
+  locked,
+  onToggleLock,
+  hint,
+  aside,
+  children,
+}: {
+  label: string;
+  locked?: boolean;
+  onToggleLock?: () => void;
+  hint?: ReactNode;
+  aside?: ReactNode;
+  children: (id: string) => ReactNode;
+}) {
+  const id = useId();
+  return (
+    <div className="grid content-start gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-1.5">
+          <label htmlFor={id} className="text-[13px] font-medium text-ink-2">
+            {label}
+          </label>
+          {onToggleLock && <LockButton locked={!!locked} onToggle={onToggleLock} label={label} />}
+        </span>
+        {aside}
+      </div>
+      {children(id)}
+      {locked ? <p className="text-xs text-warn">Locked between visits</p> : hint ? <p className="text-xs text-ink-3">{hint}</p> : null}
+    </div>
+  );
+}
+
+function NumberInput({ id, value, onChange, disabled, locked, min, max, step, prefix }: {
+  id: string;
+  value: number;
+  onChange: (v: number) => void;
+  disabled?: boolean;
+  locked?: boolean;
+  min?: number;
+  max?: number;
+  step?: number;
+  prefix?: string;
+}) {
+  return (
+    <div className="relative">
+      {prefix && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-ink-3">{prefix}</span>}
+      <input
+        id={id}
+        type="number"
+        inputMode="decimal"
+        value={Number.isFinite(value) ? value : ''}
+        min={min}
+        max={max}
+        step={step}
+        disabled={disabled}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className={`${controlClass} fig ${prefix ? 'pl-7' : ''} ${locked ? 'border-warn/60' : ''}`}
+      />
+    </div>
+  );
+}
+
+function Range({ id, value, min, max, step = 1, onChange, ends }: {
+  id: string;
+  value: number;
+  min: number;
+  max: number;
+  step?: number;
+  onChange: (v: number) => void;
+  ends: [string, string];
+}) {
+  return (
+    <div>
+      <input id={id} type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-[var(--accent)]" />
+      <div className="flex justify-between text-[11.5px] text-ink-3">
+        <span>{ends[0]}</span>
+        <span>{ends[1]}</span>
+      </div>
+    </div>
+  );
+}
+
+function Toggle({ checked, onChange, label, hint }: { checked: boolean; onChange: (v: boolean) => void; label: string; hint: string }) {
+  return (
+    <label className="flex cursor-pointer items-start gap-2.5">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--accent)]" />
+      <span>
+        <span className="block text-sm text-ink">{label}</span>
+        <span className="block text-xs text-ink-3">{hint}</span>
+      </span>
+    </label>
+  );
+}
+
+function Group({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
+  return (
+    <fieldset className="grid gap-3 border-t border-line-2 pt-3">
+      <legend className="sr-only">{title}</legend>
+      <div>
+        <h3 className="text-[13px] font-semibold text-ink" aria-hidden>
+          {title}
+        </h3>
+        {note && <p className="text-xs text-ink-3">{note}</p>}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{children}</div>
+    </fieldset>
   );
 }
 
@@ -198,433 +324,188 @@ export function ErnConfigPanel({
     onConfigChange(draft);
   };
 
-  const wrPct = draft.portfolio > 0
-    ? ((draft.annualSpend / draft.portfolio) * 100).toFixed(2)
-    : '0';
-
+  const wrPct = draft.portfolio > 0 ? (draft.annualSpend / draft.portfolio) * 100 : 0;
   const hasLivePortfolio = livePortfolio != null && livePortfolio > 0;
   const hasLiveWrappers = liveWrapperBalances != null;
-
   const wrapperTotal = draft.wrapperBalances
     ? draft.wrapperBalances.isa + draft.wrapperBalances.sipp + draft.wrapperBalances.gia + draft.wrapperBalances.cash
     : 0;
-
   const lockedCount = Object.values(locks).filter(Boolean).length;
+  const retireAge = draft.retirementAge ?? draft.currentAge;
+  const set = <K extends keyof ErnConfig>(key: K, value: ErnConfig[K]) => setDraft((d) => ({ ...d, [key]: value }));
+  const lockProps = (field: LockableField) => ({ locked: !!locks[field], onToggleLock: () => toggleLock(field) });
+  const portfolioIsLive = useLivePortfolio && hasLivePortfolio && !locks.portfolio;
+  const wrappersAreLive = !locks.wrapperBalances && useLiveWrappers && hasLiveWrappers;
 
-  // Helper to render a field label with lock button
-  const FieldLabel = ({ field, children }: { field: LockableField; children: React.ReactNode }) => (
-    <div className="flex items-center gap-1.5 mb-1">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {children}
-      </label>
-      <LockButton locked={!!locks[field]} onToggle={() => toggleLock(field)} />
-    </div>
+  const summary = (
+    <>
+      <span className="fig">{readableGBP(draft.portfolio)}</span> pot, <span className="fig">{readableGBP(draft.annualSpend)}</span> a year (
+      <span className="fig">{readablePct(wrPct)}</span> of today&apos;s pot), {Math.round(draft.equityAllocation * 100)}% shares, {draft.horizonYears}-year horizon
+      {retireAge > draft.currentAge && <>, retiring at {retireAge}</>}
+      {lockedCount > 0 && (
+        <>
+          {' '}
+          <Chip tone="warn">
+            {lockedCount} locked
+          </Chip>
+        </>
+      )}
+    </>
   );
 
+  const WRAPPERS: Record<keyof WrapperBalancesUI, { name: string; hint: string }> = {
+    isa: { name: 'ISA', hint: 'Tax-free withdrawals' },
+    sipp: { name: 'SIPP / pension', hint: '25% tax-free, rest taxed' },
+    gia: { name: 'GIA', hint: 'CGT on gains only' },
+    cash: { name: 'Cash', hint: 'Buffer; no growth' },
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6">
-      {/* Collapsed summary */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 text-left"
+    <Disclosure title="What-if settings" summary={summary} open={isExpanded} onOpenChange={setIsExpanded}>
+      <form
+        className="grid gap-5 pt-1"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit();
+        }}
       >
-        <div className="flex items-center gap-3">
-          <Settings className="h-5 w-5 text-gray-400" />
-          <div>
-            <span className="font-medium text-gray-900 dark:text-white">ERN Configuration</span>
-            <span className="text-sm text-gray-500 dark:text-gray-400 ml-3">
-              {formatGBP(draft.portfolio)} portfolio | {formatGBP(draft.annualSpend)}/yr ({wrPct}% WR) | {draft.equityAllocation * 100}/{(1 - draft.equityAllocation) * 100} equity/bond | {draft.horizonYears}yr horizon
-              {draft.retirementAge && draft.retirementAge > draft.currentAge && (
-                <> | retire at {draft.retirementAge}</>
-              )}
-              {lockedCount > 0 && (
-                <span className="inline-flex items-center gap-0.5 ml-2 text-amber-500">
-                  <Lock className="h-3 w-3" /> {lockedCount}
-                </span>
-              )}
+        <p className="max-w-[80ch] text-[12.5px] text-ink-3">
+          Age, spending, retirement age and savings start from your FIRE settings; changes here only affect this analysis. Simulation
+          settings are remembered on this device; lock any value to keep it between visits.
+        </p>
+
+        <Group title="Your money" note={wrappersAreLive ? 'Pot sizes come from your account balances (property excluded).' : undefined}>
+          <LockField
+            label="Pot today"
+            {...lockProps('portfolio')}
+            hint={portfolioIsLive ? 'From your accounts' : undefined}
+            aside={
+              hasLivePortfolio && !locks.portfolio ? (
+                <label className="flex cursor-pointer items-center gap-1.5 text-xs text-ink-3">
+                  <input type="checkbox" checked={useLivePortfolio} onChange={(e) => setUseLivePortfolio(e.target.checked)} className="h-3.5 w-3.5 accent-[var(--accent)]" />
+                  Use accounts
+                </label>
+              ) : undefined
+            }
+          >
+            {(id) => <NumberInput id={id} prefix="£" value={draft.portfolio} onChange={(v) => set('portfolio', v)} disabled={portfolioIsLive} locked={locks.portfolio} min={0} step={1000} />}
+          </LockField>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:col-span-2 lg:col-span-3 lg:self-end">
+            <span className="flex items-center gap-1.5 text-[13px] text-ink-2">
+              Split by tax wrapper, which sets the drawdown order
+              <LockButton locked={!!locks.wrapperBalances} onToggle={() => toggleLock('wrapperBalances')} label="the wrapper split" />
             </span>
-          </div>
-        </div>
-        {isExpanded ? (
-          <ChevronUp className="h-5 w-5 text-gray-400" />
-        ) : (
-          <ChevronDown className="h-5 w-5 text-gray-400" />
-        )}
-      </button>
-
-      {/* Expanded form */}
-      {isExpanded && (
-        <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-700 pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Portfolio */}
-            <div>
-              <div className="flex items-center justify-between">
-                <FieldLabel field="portfolio">Portfolio Value</FieldLabel>
-                {hasLivePortfolio && !locks.portfolio && (
-                  <label className="flex items-center gap-1.5 cursor-pointer mb-1">
-                    <input
-                      type="checkbox"
-                      checked={useLivePortfolio}
-                      onChange={(e) => setUseLivePortfolio(e.target.checked)}
-                      className="rounded accent-emerald-500 h-3.5 w-3.5"
-                    />
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Use live</span>
-                  </label>
-                )}
-              </div>
-              <input
-                type="number"
-                value={draft.portfolio}
-                onChange={(e) => setDraft({ ...draft, portfolio: Number(e.target.value) })}
-                disabled={useLivePortfolio && hasLivePortfolio && !locks.portfolio}
-                className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                  locks.portfolio
-                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
-                    : useLivePortfolio && hasLivePortfolio
-                    ? 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                }`}
-              />
-              {locks.portfolio && (
-                <p className="text-xs text-amber-500 mt-1">Locked across sessions</p>
-              )}
-              {!locks.portfolio && useLivePortfolio && hasLivePortfolio && (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
-                  From your accounts (excl. property)
-                </p>
-              )}
-            </div>
-
-            {/* Annual Spend */}
-            <div>
-              <FieldLabel field="annualSpend">Annual Spend</FieldLabel>
-              <input
-                type="number"
-                value={draft.annualSpend}
-                onChange={(e) => setDraft({ ...draft, annualSpend: Number(e.target.value) })}
-                className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                  locks.annualSpend
-                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
-                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                }`}
-              />
-              {locks.annualSpend && <p className="text-xs text-amber-500 mt-1">Locked across sessions</p>}
-            </div>
-
-            {/* Equity Allocation */}
-            <div>
-              <FieldLabel field="equityAllocation">
-                Equity: {(draft.equityAllocation * 100).toFixed(0)}%
-              </FieldLabel>
-              <input
-                type="range"
-                min="40"
-                max="100"
-                value={draft.equityAllocation * 100}
-                onChange={(e) => setDraft({ ...draft, equityAllocation: Number(e.target.value) / 100 })}
-                className="w-full accent-emerald-500"
-              />
-              <div className="flex justify-between text-xs text-gray-500">
-                <span>40%</span>
-                <span>100%</span>
-              </div>
-            </div>
-
-            {/* Horizon */}
-            <div>
-              <FieldLabel field="horizonYears">
-                Horizon: {draft.horizonYears} years
-              </FieldLabel>
-              <input
-                type="range"
-                min="20"
-                max="60"
-                value={draft.horizonYears}
-                onChange={(e) => setDraft({ ...draft, horizonYears: Number(e.target.value) })}
-                className="w-full accent-emerald-500"
-              />
-              <div className="flex justify-between text-xs text-gray-500">
-                <span>20yr</span>
-                <span>60yr</span>
-              </div>
-            </div>
-
-            {/* Capital Preservation */}
-            <div>
-              <FieldLabel field="preserveFraction">
-                Preserve: {(draft.preserveFraction * 100).toFixed(0)}%
-              </FieldLabel>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={draft.preserveFraction * 100}
-                onChange={(e) => setDraft({ ...draft, preserveFraction: Number(e.target.value) / 100 })}
-                className="w-full accent-emerald-500"
-              />
-              <div className="flex justify-between text-xs text-gray-500">
-                <span>Deplete</span>
-                <span>Full preserve</span>
-              </div>
-            </div>
-
-            {/* Current Age */}
-            <div>
-              <FieldLabel field="currentAge">Current Age</FieldLabel>
-              <input
-                type="number"
-                value={draft.currentAge}
-                onChange={(e) => setDraft({ ...draft, currentAge: Number(e.target.value) })}
-                className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                  locks.currentAge
-                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
-                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                }`}
-              />
-            </div>
-
-            {/* State Pension */}
-            <div>
-              <FieldLabel field="statePensionAnnual">State Pension (annual)</FieldLabel>
-              <input
-                type="number"
-                value={draft.statePensionAnnual}
-                onChange={(e) => setDraft({ ...draft, statePensionAnnual: Number(e.target.value) })}
-                className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                  locks.statePensionAnnual
-                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
-                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                }`}
-              />
-            </div>
-
-            {/* Pension Start Age */}
-            <div>
-              <FieldLabel field="statePensionStartAge">Pension Start Age</FieldLabel>
-              <input
-                type="number"
-                value={draft.statePensionStartAge}
-                onChange={(e) => setDraft({ ...draft, statePensionStartAge: Number(e.target.value) })}
-                className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                  locks.statePensionStartAge
-                    ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
-                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                }`}
-              />
-            </div>
-
-            {/* Pre-Retirement Section */}
-            <div className="col-span-full">
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 border-t border-gray-100 dark:border-gray-700 pt-3">
-                Pre-Retirement
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                  <FieldLabel field="retirementAge">Retirement Age</FieldLabel>
-                  <input
-                    type="number"
-                    min={draft.currentAge}
-                    max={100}
-                    value={draft.retirementAge ?? draft.currentAge}
-                    onChange={(e) => setDraft({ ...draft, retirementAge: Number(e.target.value) })}
-                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                      locks.retirementAge
-                        ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
-                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                    }`}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {(draft.retirementAge ?? draft.currentAge) > draft.currentAge
-                      ? `${(draft.retirementAge ?? draft.currentAge) - draft.currentAge} years to retirement`
-                      : 'Immediate retirement'}
-                  </p>
-                </div>
-                <div>
-                  <FieldLabel field="annualSavings">Annual Savings</FieldLabel>
-                  <input
-                    type="number"
-                    min={0}
-                    value={draft.annualSavings ?? 0}
-                    onChange={(e) => setDraft({ ...draft, annualSavings: Number(e.target.value) })}
-                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                      locks.annualSavings
-                        ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
-                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                    }`}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Contributions during accumulation</p>
-                </div>
-                <div>
-                  <FieldLabel field="partialEarningsAnnual">Partial Earnings (annual)</FieldLabel>
-                  <input
-                    type="number"
-                    min={0}
-                    value={draft.partialEarningsAnnual ?? 0}
-                    onChange={(e) => setDraft({ ...draft, partialEarningsAnnual: Number(e.target.value) })}
-                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                      locks.partialEarningsAnnual
-                        ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
-                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                    }`}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Post-retirement income (e.g. consulting)</p>
-                </div>
-                <div>
-                  <FieldLabel field="partialEarningsYears">Partial Earnings Years</FieldLabel>
-                  <input
-                    type="number"
-                    min={0}
-                    max={30}
-                    value={draft.partialEarningsYears ?? 0}
-                    onChange={(e) => setDraft({ ...draft, partialEarningsYears: Number(e.target.value) })}
-                    className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                      locks.partialEarningsYears
-                        ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
-                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                    }`}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Duration of partial earnings</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Portfolio Wrapper Mix */}
-            <div className="col-span-full">
-              <div className="flex items-center justify-between mb-3 border-t border-gray-100 dark:border-gray-700 pt-3">
-                <div className="flex items-center gap-1.5">
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Portfolio Wrapper Mix
-                  </h4>
-                  <LockButton locked={!!locks.wrapperBalances} onToggle={() => toggleLock('wrapperBalances')} />
-                </div>
-                {hasLiveWrappers && !locks.wrapperBalances && (
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={useLiveWrappers}
-                      onChange={(e) => setUseLiveWrappers(e.target.checked)}
-                      className="rounded accent-emerald-500 h-3.5 w-3.5"
-                    />
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Use live balances</span>
-                  </label>
-                )}
-              </div>
-              {locks.wrapperBalances && (
-                <p className="text-xs text-amber-500 mb-3">Locked across sessions. Unlock to use live balances.</p>
-              )}
-              {!locks.wrapperBalances && useLiveWrappers && hasLiveWrappers && (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-3">
-                  Populated from your account balances. Uncheck to override manually.
-                </p>
-              )}
-              {!locks.wrapperBalances && !hasLiveWrappers && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                  How your portfolio is split across tax wrappers. This determines the tax-optimal drawdown order.
-                </p>
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {(['isa', 'sipp', 'gia', 'cash'] as const).map((wrapper) => {
-                  const labels: Record<string, { name: string; hint: string }> = {
-                    isa: { name: 'ISA', hint: 'Tax-free withdrawals' },
-                    sipp: { name: 'SIPP / Pension', hint: '25% TFLS + taxed income' },
-                    gia: { name: 'GIA', hint: 'CGT on gains only' },
-                    cash: { name: 'Cash', hint: 'Liquidity buffer' },
-                  };
-                  const { name, hint } = labels[wrapper];
-                  const isDisabled = locks.wrapperBalances
-                    ? false  // locked values are editable (they'll be re-saved)
-                    : useLiveWrappers && hasLiveWrappers;
-
-                  return (
-                    <div key={wrapper}>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {name}
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={draft.wrapperBalances?.[wrapper] ?? 0}
-                        onChange={(e) => setDraft({
-                          ...draft,
-                          wrapperBalances: {
-                            isa: draft.wrapperBalances?.isa ?? 0,
-                            sipp: draft.wrapperBalances?.sipp ?? 0,
-                            gia: draft.wrapperBalances?.gia ?? 0,
-                            cash: draft.wrapperBalances?.cash ?? 0,
-                            [wrapper]: Number(e.target.value),
-                          },
-                        })}
-                        disabled={isDisabled}
-                        className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                          locks.wrapperBalances
-                            ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white'
-                            : isDisabled
-                            ? 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                        }`}
-                      />
-                      <p className="text-xs text-gray-500 mt-1">{hint}</p>
-                    </div>
-                  );
-                })}
-              </div>
-              {draft.wrapperBalances && (
-                <div className="mt-2 text-xs text-gray-500">
-                  Wrapper total: {formatGBP(wrapperTotal)}
-                  {Math.abs(wrapperTotal - draft.portfolio) > 100 && (
-                    <span className="text-amber-500 ml-2">
-                      (differs from portfolio by {formatGBP(Math.abs(wrapperTotal - draft.portfolio))})
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Toggles */}
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={draft.glidepathEnabled}
-                  onChange={(e) => setDraft({ ...draft, glidepathEnabled: e.target.checked })}
-                  className="rounded accent-emerald-500"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Glidepath (60%→100%)</span>
+            {hasLiveWrappers && !locks.wrapperBalances && (
+              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-ink-3">
+                <input type="checkbox" checked={useLiveWrappers} onChange={(e) => setUseLiveWrappers(e.target.checked)} className="h-3.5 w-3.5 accent-[var(--accent)]" />
+                Use accounts
               </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={draft.gogoEnabled}
-                  onChange={(e) => setDraft({ ...draft, gogoEnabled: e.target.checked })}
-                  className="rounded accent-emerald-500"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Spending decline (75+)</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={draft.guardrailEnabled}
-                  onChange={(e) => setDraft({ ...draft, guardrailEnabled: e.target.checked })}
-                  className="rounded accent-emerald-500"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Guardrail (15% cut)</span>
-              </label>
-            </div>
+            )}
           </div>
 
-          {/* Run button */}
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={handleSubmit}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          {(Object.keys(WRAPPERS) as (keyof WrapperBalancesUI)[]).map((w) => (
+            <LockField
+              key={w}
+              label={WRAPPERS[w].name}
+              hint={WRAPPERS[w].hint}
             >
-              <Play className="h-4 w-4" />
-              {isLoading ? 'Running...' : 'Run Analysis'}
-            </button>
+              {(id) => (
+                <NumberInput
+                  id={id}
+                  prefix="£"
+                  min={0}
+                  step={1000}
+                  value={draft.wrapperBalances?.[w] ?? 0}
+                  locked={locks.wrapperBalances}
+                  disabled={wrappersAreLive}
+                  onChange={(v) =>
+                    setDraft((d) => ({
+                      ...d,
+                      wrapperBalances: {
+                        isa: d.wrapperBalances?.isa ?? 0,
+                        sipp: d.wrapperBalances?.sipp ?? 0,
+                        gia: d.wrapperBalances?.gia ?? 0,
+                        cash: d.wrapperBalances?.cash ?? 0,
+                        [w]: v,
+                      },
+                    }))
+                  }
+                />
+              )}
+            </LockField>
+          ))}
+          {draft.wrapperBalances && Math.abs(wrapperTotal - draft.portfolio) > 100 && (
+            <p className="text-xs text-warn sm:col-span-2 lg:col-span-4">
+              The pots add up to {formatGBP(wrapperTotal)}, {formatGBP(Math.abs(wrapperTotal - draft.portfolio))}{' '}
+              {wrapperTotal > draft.portfolio ? 'more' : 'less'} than the pot today.
+            </p>
+          )}
+        </Group>
+
+        <Group title="Timeline">
+          <LockField label="Age now" {...lockProps('currentAge')}>
+            {(id) => <NumberInput id={id} value={draft.currentAge} onChange={(v) => set('currentAge', v)} locked={locks.currentAge} min={18} max={100} />}
+          </LockField>
+          <LockField
+            label="Retirement age"
+            {...lockProps('retirementAge')}
+            hint={retireAge > draft.currentAge ? `${retireAge - draft.currentAge} years from now` : 'Retiring now'}
+          >
+            {(id) => <NumberInput id={id} value={retireAge} onChange={(v) => set('retirementAge', v)} locked={locks.retirementAge} min={draft.currentAge} max={100} />}
+          </LockField>
+          <LockField label={`Plan to last ${draft.horizonYears} years`} {...lockProps('horizonYears')}>
+            {(id) => <Range id={id} min={20} max={60} value={draft.horizonYears} onChange={(v) => set('horizonYears', v)} ends={['20', '60 years']} />}
+          </LockField>
+          <div />
+          <LockField label="State pension a year" {...lockProps('statePensionAnnual')} hint="Household total, today's money">
+            {(id) => <NumberInput id={id} prefix="£" value={draft.statePensionAnnual} onChange={(v) => set('statePensionAnnual', v)} locked={locks.statePensionAnnual} min={0} step={100} />}
+          </LockField>
+          <LockField label="State pension from age" {...lockProps('statePensionStartAge')}>
+            {(id) => <NumberInput id={id} value={draft.statePensionStartAge} onChange={(v) => set('statePensionStartAge', v)} locked={locks.statePensionStartAge} min={55} max={80} />}
+          </LockField>
+        </Group>
+
+        <Group title="Spending and income">
+          <LockField label="Spending a year" {...lockProps('annualSpend')}>
+            {(id) => <NumberInput id={id} prefix="£" value={draft.annualSpend} onChange={(v) => set('annualSpend', v)} locked={locks.annualSpend} min={0} step={1000} />}
+          </LockField>
+          <LockField label="Saving a year until retiring" {...lockProps('annualSavings')}>
+            {(id) => <NumberInput id={id} prefix="£" value={draft.annualSavings ?? 0} onChange={(v) => set('annualSavings', v)} locked={locks.annualSavings} min={0} step={1000} />}
+          </LockField>
+          <LockField label="Part-time earnings a year" {...lockProps('partialEarningsAnnual')} hint="After retiring, e.g. consulting">
+            {(id) => <NumberInput id={id} prefix="£" value={draft.partialEarningsAnnual ?? 0} onChange={(v) => set('partialEarningsAnnual', v)} locked={locks.partialEarningsAnnual} min={0} step={1000} />}
+          </LockField>
+          <LockField label="For how many years" {...lockProps('partialEarningsYears')}>
+            {(id) => <NumberInput id={id} value={draft.partialEarningsYears ?? 0} onChange={(v) => set('partialEarningsYears', v)} locked={locks.partialEarningsYears} min={0} max={30} />}
+          </LockField>
+          <div className="grid gap-3 sm:col-span-2 lg:col-span-4 lg:grid-cols-2">
+            <Toggle checked={draft.gogoEnabled} onChange={(v) => set('gogoEnabled', v)} label="Spend less later in life" hint="90% of spending from 75, 80% from 80" />
+            <Toggle checked={draft.guardrailEnabled} onChange={(v) => set('guardrailEnabled', v)} label="Cut spending in a bad market" hint="15% less while the pot is under 80% of its peak" />
           </div>
+        </Group>
+
+        <Group title="Investments">
+          <LockField label={`Shares ${Math.round(draft.equityAllocation * 100)}%, bonds ${100 - Math.round(draft.equityAllocation * 100)}%`} {...lockProps('equityAllocation')}>
+            {(id) => <Range id={id} min={40} max={100} value={Math.round(draft.equityAllocation * 100)} onChange={(v) => set('equityAllocation', v / 100)} ends={['40%', '100% shares']} />}
+          </LockField>
+          <LockField label={`Leave ${Math.round(draft.preserveFraction * 100)}% of the pot at the end`} {...lockProps('preserveFraction')}>
+            {(id) => <Range id={id} min={0} max={100} value={Math.round(draft.preserveFraction * 100)} onChange={(v) => set('preserveFraction', v / 100)} ends={['Spend it all', 'Keep it all']} />}
+          </LockField>
+          <div className="sm:col-span-2">
+            <Toggle checked={draft.glidepathEnabled} onChange={(v) => set('glidepathEnabled', v)} label="Glidepath" hint="Start at 60% shares and rise to 100% over the first years" />
+          </div>
+        </Group>
+
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line-2 pt-3">
+          <Button variant="ghost" onClick={() => setIsExpanded(false)}>
+            Close
+          </Button>
+          <Button type="submit" variant="primary" loading={isLoading}>
+            {isLoading ? 'Running…' : 'Run analysis'}
+          </Button>
         </div>
-      )}
-    </div>
+      </form>
+    </Disclosure>
   );
 }

@@ -1,10 +1,10 @@
 'use client';
 
-import {
-  formatCurrency,
-  formatYears,
-} from '@/lib/fire/maths-calculator';
+import { useId, type ReactNode } from 'react';
+import { formatCurrency } from '@/lib/fire/maths-calculator';
 import type { MathsPlanningScenarioResult } from '@/lib/types/fire';
+import { Panel } from '@/components/ui/Panel';
+import { MoneyInput } from './MoneyInput';
 
 interface ScenarioComparisonCardProps {
   normal: MathsPlanningScenarioResult;
@@ -17,6 +17,44 @@ interface ScenarioComparisonCardProps {
   onMonthlySavingsChange: (value: number) => void;
 }
 
+/** "6 years 4 months", "8 months", or "never" for an unreachable target. */
+export function readableDuration(years: number): string {
+  if (!Number.isFinite(years) || years < 0) return 'never at this rate';
+  const totalMonths = Math.round(years * 12);
+  if (totalMonths === 0) return 'now';
+  const y = Math.floor(totalMonths / 12);
+  const m = totalMonths % 12;
+  const parts = [y > 0 && `${y} year${y === 1 ? '' : 's'}`, m > 0 && `${m} month${m === 1 ? '' : 's'}`].filter(Boolean);
+  return parts.join(' ');
+}
+
+/** "3y 9m" for tight table cells. */
+export function shortDuration(years: number): string {
+  if (!Number.isFinite(years) || years < 0) return 'never';
+  const total = Math.round(years * 12);
+  if (total === 0) return 'now';
+  const y = Math.floor(total / 12);
+  const m = total % 12;
+  return [y > 0 && `${y}y`, m > 0 && `${m}m`].filter(Boolean).join(' ');
+}
+
+function Row({ label, hint, normal, fat }: { label: string; hint?: string; normal: ReactNode; fat: ReactNode }) {
+  return (
+    <tr>
+      <th scope="row" className="py-2.5 pr-2 text-left font-normal text-ink-2">
+        {label}
+        {hint && <span className="block text-xs text-ink-3">{hint}</span>}
+      </th>
+      <td className="fig py-2.5 pl-3 text-right text-ink">{normal}</td>
+      <td className="fig py-2.5 pl-3 text-right text-ink">{fat}</td>
+    </tr>
+  );
+}
+
+function age(n: number) {
+  return Number.isFinite(n) ? <span title={n.toFixed(1)}>{Math.floor(n)}</span> : '–';
+}
+
 export function ScenarioComparisonCard({
   normal,
   fat,
@@ -27,160 +65,67 @@ export function ScenarioComparisonCard({
   onFatFireSpendChange,
   onMonthlySavingsChange,
 }: ScenarioComparisonCardProps) {
+  const savingsId = useId();
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        FIRE Scenarios: Normal vs FAT
-      </h3>
-
+    <Panel title="Two targets: comfortable and generous">
+      <p className="mb-3 max-w-[75ch] text-[13px] text-ink-2">
+        How long each spending level takes to reach, saving{' '}
+        <span className="fig">{formatCurrency(monthlySavings)}</span> a month. Change the amounts to compare.
+      </p>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full border-collapse text-[13px] sm:text-sm">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700">
-              <th className="text-left py-2 pr-4 text-gray-500 dark:text-gray-400 font-medium">
-                Metric
+            <tr className="border-b border-line">
+              <th scope="col" className="pb-2 text-left text-[11.5px] font-medium text-ink-3">
+                Spending a year
               </th>
-              <th className="text-right py-2 px-4">
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-gray-900 dark:text-white font-semibold">Normal</span>
-                  <div className="relative">
-                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs">£</span>
-                    <input
-                      type="number"
-                      value={normalFireSpend}
-                      onChange={(e) => onNormalFireSpendChange(parseFloat(e.target.value) || 0)}
-                      className="w-24 pl-5 pr-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded
-                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right
-                                 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                      step="1000"
-                    />
-                  </div>
-                </div>
+              <th scope="col" className="pb-2 pl-3 text-right">
+                <span className="mb-1 block text-[12.5px] font-semibold text-ink">Comfortable</span>
+                <span className="inline-block">
+                  <MoneyInput size="sm" step={1000} value={normalFireSpend} onChange={onNormalFireSpendChange} label="Comfortable spending a year" />
+                </span>
               </th>
-              <th className="text-right py-2 pl-4">
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-gray-900 dark:text-white font-semibold">FAT</span>
-                  <div className="relative">
-                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs">£</span>
-                    <input
-                      type="number"
-                      value={fatFireSpend}
-                      onChange={(e) => onFatFireSpendChange(parseFloat(e.target.value) || 0)}
-                      className="w-24 pl-5 pr-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded
-                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right
-                                 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                      step="1000"
-                    />
-                  </div>
-                </div>
+              <th scope="col" className="pb-2 pl-3 text-right">
+                <span className="mb-1 block text-[12.5px] font-semibold text-ink">Generous</span>
+                <span className="inline-block">
+                  <MoneyInput size="sm" step={1000} value={fatFireSpend} onChange={onFatFireSpendChange} label="Generous spending a year" />
+                </span>
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+          <tbody className="divide-y divide-line-2">
+            <Row label="Pot needed" normal={formatCurrency(normal.targetAmount)} fat={formatCurrency(fat.targetAmount)} />
+            <Row label="Still to go" normal={formatCurrency(Math.max(0, normal.remaining))} fat={formatCurrency(Math.max(0, fat.remaining))} />
+            <Row label="Growth on today's savings" hint="a year, at the expected return" normal={formatCurrency(normal.investmentIncome)} fat={formatCurrency(fat.investmentIncome)} />
+            <Row
+              label="Time to get there"
+              normal={<span title={readableDuration(normal.yearsToSave)}>{shortDuration(normal.yearsToSave)}</span>}
+              fat={<span title={readableDuration(fat.yearsToSave)}>{shortDuration(fat.yearsToSave)}</span>}
+            />
             <tr>
-              <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">
-                Target Amount
-              </td>
-              <td className="py-3 px-4 text-right font-medium text-gray-900 dark:text-white">
-                {formatCurrency(normal.targetAmount)}
-              </td>
-              <td className="py-3 pl-4 text-right font-medium text-gray-900 dark:text-white">
-                {formatCurrency(fat.targetAmount)}
-              </td>
-            </tr>
-            <tr>
-              <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">
-                Remaining to Fire
-              </td>
-              <td className="py-3 px-4 text-right font-medium text-orange-600 dark:text-orange-400">
-                {formatCurrency(normal.remaining)}
-              </td>
-              <td className="py-3 pl-4 text-right font-medium text-orange-600 dark:text-orange-400">
-                {formatCurrency(fat.remaining)}
-              </td>
-            </tr>
-            <tr>
-              <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">
-                Investment Income (Annual)
-              </td>
-              <td className="py-3 px-4 text-right font-medium text-gray-900 dark:text-white">
-                {formatCurrency(normal.investmentIncome)}
-              </td>
-              <td className="py-3 pl-4 text-right font-medium text-gray-900 dark:text-white">
-                {formatCurrency(fat.investmentIncome)}
-              </td>
-            </tr>
-            <tr>
-              <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">
-                Compounding Period
-              </td>
-              <td className="py-3 px-4 text-right font-medium text-gray-900 dark:text-white">
-                {formatYears(normal.compoundingPeriod)}
-              </td>
-              <td className="py-3 pl-4 text-right font-medium text-gray-900 dark:text-white">
-                {formatYears(fat.compoundingPeriod)}
-              </td>
-            </tr>
-            <tr>
-              <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">
-                Months to Save
-              </td>
-              <td className="py-3 px-4 text-right font-medium text-gray-900 dark:text-white">
-                {normal.monthsToSave.toFixed(1)}
-              </td>
-              <td className="py-3 pl-4 text-right font-medium text-gray-900 dark:text-white">
-                {fat.monthsToSave.toFixed(1)}
-              </td>
-            </tr>
-            <tr>
-              <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">
-                Years to Save
-              </td>
-              <td className="py-3 px-4 text-right font-medium text-gray-900 dark:text-white">
-                {formatYears(normal.yearsToSave)}
-              </td>
-              <td className="py-3 pl-4 text-right font-medium text-gray-900 dark:text-white">
-                {formatYears(fat.yearsToSave)}
-              </td>
-            </tr>
-            <tr>
-              <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">
-                Target Age
-              </td>
-              <td className="py-3 px-4 text-right font-semibold text-green-600 dark:text-green-400">
-                {normal.targetAge.toFixed(1)}
-              </td>
-              <td className="py-3 pl-4 text-right font-semibold text-green-600 dark:text-green-400">
-                {fat.targetAge.toFixed(1)}
-              </td>
+              <th scope="row" className="py-2.5 pr-4 text-left font-medium text-ink">
+                Age when reached
+              </th>
+              <td className="fig py-2.5 pl-3 text-right text-base font-semibold text-ink">{age(normal.targetAge)}</td>
+              <td className="fig py-2.5 pl-3 text-right text-base font-semibold text-ink">{age(fat.targetAge)}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      {/* Monthly Savings Input */}
-      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Monthly Savings
-        </label>
-        <div className="relative max-w-xs">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-            £
-          </span>
-          <input
-            type="number"
-            value={monthlySavings}
-            onChange={(e) => onMonthlySavingsChange(parseFloat(e.target.value) || 0)}
-            className="w-full pl-7 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            step="100"
-          />
+      <div className="mt-4 flex flex-wrap items-end gap-x-4 gap-y-1 border-t border-line-2 pt-4">
+        <div className="grid gap-1.5">
+          <label htmlFor={savingsId} className="text-[13px] font-medium text-ink-2">
+            Saving a month
+          </label>
+          <div className="w-40">
+            <MoneyInput id={savingsId} value={monthlySavings} onChange={onMonthlySavingsChange} step={100} />
+          </div>
         </div>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-          Annual: {formatCurrency(monthlySavings * 12)}
+        <p className="pb-2 text-xs text-ink-3">
+          <span className="fig">{formatCurrency(monthlySavings * 12)}</span> a year
         </p>
       </div>
-    </div>
+    </Panel>
   );
 }

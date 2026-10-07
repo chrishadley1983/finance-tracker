@@ -1,7 +1,11 @@
 'use client';
 
-import { formatCurrency, formatPercent } from '@/lib/fire/maths-calculator';
+import { useId } from 'react';
+import { formatCurrency } from '@/lib/fire/maths-calculator';
 import type { MathsPlanningCoastResult } from '@/lib/types/fire';
+import { Panel } from '@/components/ui/Panel';
+import { controlClass } from '@/components/ui/Field';
+import { MoneyInput } from './MoneyInput';
 
 interface CoastAnalysisCardProps {
   coastNow: MathsPlanningCoastResult;
@@ -14,115 +18,32 @@ interface CoastAnalysisCardProps {
   onCoastMonthlySavingsChange: (value: number) => void;
 }
 
-function CoastCard({
-  title,
-  result,
-  highlighted,
-  coastCurrentSpend,
-  coastMonthlySavings,
-  onCoastCurrentSpendChange,
-  onCoastMonthlySavingsChange,
-  showEditableInputs,
-}: {
-  title: string;
-  result: MathsPlanningCoastResult;
-  highlighted?: boolean;
-  coastCurrentSpend?: number;
-  coastMonthlySavings?: number;
-  onCoastCurrentSpendChange?: (value: number) => void;
-  onCoastMonthlySavingsChange?: (value: number) => void;
-  showEditableInputs?: boolean;
-}) {
+function CoastColumn({ title, explain, result }: { title: string; explain: string; result: MathsPlanningCoastResult }) {
   return (
-    <div className={`rounded-lg p-4 ${
-      highlighted
-        ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
-        : 'bg-gray-50 dark:bg-gray-700/50'
-    }`}>
-      <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-        {title}
-      </h4>
-
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-gray-500 dark:text-gray-400">Retire Age</span>
-          <span className="font-medium text-gray-900 dark:text-white">
-            {result.retireAge}
-          </span>
+    <div className="min-w-0">
+      <h3 className="text-[13px] font-semibold text-ink">{title}</h3>
+      <p className="mt-0.5 text-xs text-ink-3">{explain}</p>
+      <dl className="mt-2 divide-y divide-line-2 text-sm">
+        <div className="flex items-baseline justify-between gap-3 py-1.5">
+          <dt className="text-ink-2">Saving a month</dt>
+          <dd className="fig text-ink">{formatCurrency(result.savingPerMonth)}</dd>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-gray-500 dark:text-gray-400">Current Spend</span>
-          {showEditableInputs && onCoastCurrentSpendChange ? (
-            <div className="relative">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs">£</span>
-              <input
-                type="number"
-                value={coastCurrentSpend}
-                onChange={(e) => onCoastCurrentSpendChange(parseFloat(e.target.value) || 0)}
-                className="w-24 pl-5 pr-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right
-                           focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                step="1000"
-              />
-            </div>
-          ) : (
-            <span className="font-medium text-gray-900 dark:text-white">
-              {formatCurrency(result.currentSpend)}
-            </span>
-          )}
+        <div className="flex items-baseline justify-between gap-3 py-1.5">
+          <dt className="text-ink-2">Pre-tax earnings needed</dt>
+          <dd className="fig text-ink">{formatCurrency(result.postTaxEarningsRequired)}</dd>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-gray-500 dark:text-gray-400">Saving/month</span>
-          {showEditableInputs && onCoastMonthlySavingsChange ? (
-            <div className="relative">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs">£</span>
-              <input
-                type="number"
-                value={coastMonthlySavings}
-                onChange={(e) => onCoastMonthlySavingsChange(parseFloat(e.target.value) || 0)}
-                className="w-24 pl-5 pr-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right
-                           focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                step="100"
-              />
-            </div>
-          ) : (
-            <span className="font-medium text-gray-900 dark:text-white">
-              {formatCurrency(result.savingPerMonth)}
-            </span>
-          )}
+        <div className="flex items-baseline justify-between gap-3 py-1.5">
+          <dt className="text-ink-2">Pot at {result.retireAge}</dt>
+          <dd className="fig text-ink">{formatCurrency(result.portfolioAtCoastAge)}</dd>
         </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500 dark:text-gray-400">Earnings req.</span>
-          <span className="font-medium text-gray-900 dark:text-white">
-            {formatCurrency(result.postTaxEarningsRequired)}
-          </span>
+        <div className="flex items-baseline justify-between gap-3 py-2">
+          <dt className="font-medium text-ink">
+            Spending it supports
+            <span className="block text-xs font-normal text-ink-3">a year from {result.retireAge}, at {result.swr}%</span>
+          </dt>
+          <dd className="fig text-lg font-semibold text-ink">{formatCurrency(result.fireSpendAtCoastAge)}</dd>
         </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500 dark:text-gray-400">Portfolio at {result.retireAge}</span>
-          <span className="font-medium text-gray-900 dark:text-white">
-            {formatCurrency(result.portfolioAtCoastAge)}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500 dark:text-gray-400">SWR</span>
-          <span className="font-medium text-gray-900 dark:text-white">
-            {formatPercent(result.swr)}
-          </span>
-        </div>
-
-        {/* Highlighted result */}
-        <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-600">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700 dark:text-gray-300 font-medium">
-              FIRE Spend @ {result.retireAge}
-            </span>
-            <span className="text-xl font-bold text-green-600 dark:text-green-400">
-              {formatCurrency(result.fireSpendAtCoastAge)}
-            </span>
-          </div>
-        </div>
-      </div>
+      </dl>
     </div>
   );
 }
@@ -137,57 +58,50 @@ export function CoastAnalysisCard({
   onCoastCurrentSpendChange,
   onCoastMonthlySavingsChange,
 }: CoastAnalysisCardProps) {
+  const ageId = useId();
+  const spendId = useId();
+  const saveId = useId();
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Coast FI Analysis
-        </h3>
-
-        {/* Coast Target Age Input */}
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Retire Age:
+    <Panel title="Coasting: saving less from now on">
+      <p className="mb-3 max-w-[75ch] text-[13px] text-ink-2">
+        What your pot could support at {coastTargetAge} if you eased off saving, either straight away or once you hit your target.
+      </p>
+      <div className="mb-4 grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-1.5">
+          <label htmlFor={ageId} className="text-[13px] font-medium text-ink-2">
+            Retire at
           </label>
           <input
+            id={ageId}
             type="number"
+            min={40}
+            max={70}
             value={coastTargetAge}
             onChange={(e) => onCoastTargetAgeChange(parseInt(e.target.value) || 50)}
-            className="w-20 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            min="40"
-            max="70"
+            className={`${controlClass} fig`}
           />
         </div>
+        <div className="grid gap-1.5">
+          <label htmlFor={spendId} className="text-[13px] font-medium text-ink-2">
+            Spending a year while coasting
+          </label>
+          <MoneyInput id={spendId} value={coastCurrentSpend} onChange={onCoastCurrentSpendChange} step={1000} />
+        </div>
+        <div className="grid gap-1.5">
+          <label htmlFor={saveId} className="text-[13px] font-medium text-ink-2">
+            Saving a month while coasting
+          </label>
+          <MoneyInput id={saveId} value={coastMonthlySavings} onChange={onCoastMonthlySavingsChange} step={100} />
+        </div>
       </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <CoastCard
-          title="Coast Now"
-          result={coastNow}
-          coastCurrentSpend={coastCurrentSpend}
-          coastMonthlySavings={coastMonthlySavings}
-          onCoastCurrentSpendChange={onCoastCurrentSpendChange}
-          onCoastMonthlySavingsChange={onCoastMonthlySavingsChange}
-          showEditableInputs={true}
-        />
-        <CoastCard
-          title="Coast After Target FIRE"
+      <div className="grid gap-6 border-t border-line-2 pt-3 md:grid-cols-2">
+        <CoastColumn title="Coast from now" explain="Save the coasting amount from today." result={coastNow} />
+        <CoastColumn
+          title="Coast after your target"
+          explain="Keep saving as now until you reach your target, then save the coasting amount."
           result={coastAfterMinFire}
-          highlighted
-          coastCurrentSpend={coastCurrentSpend}
-          coastMonthlySavings={coastMonthlySavings}
-          onCoastCurrentSpendChange={onCoastCurrentSpendChange}
-          onCoastMonthlySavingsChange={onCoastMonthlySavingsChange}
-          showEditableInputs={true}
         />
       </div>
-
-      <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
-        &quot;Coast Now&quot; projects from today with the specified savings rate.
-        &quot;Coast After Target FIRE&quot; saves at main rate until Target FIRE date, then at the coast savings rate.
-      </p>
-    </div>
+    </Panel>
   );
 }
