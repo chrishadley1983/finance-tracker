@@ -1,35 +1,29 @@
 'use client';
 
+import { Search } from 'lucide-react';
+
 interface HeaderProps {
   title: string;
-  onMenuClick: () => void;
+  onSearch: () => void;
 }
 
-export function Header({ title, onMenuClick }: HeaderProps) {
+/** Page title bar. Search is always one click (or ⌘K) away. */
+export function Header({ title, onSearch }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
-      <div className="flex items-center justify-between px-4 py-4 lg:px-6">
-        {/* Mobile menu button */}
-        <button
-          onClick={onMenuClick}
-          className="p-2 -ml-2 text-slate-600 hover:text-slate-900 lg:hidden"
-          aria-label="Open menu"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-
-        {/* Page title */}
-        <h1 className="text-xl font-semibold text-slate-900 lg:text-2xl">
-          {title}
-        </h1>
-
-        {/* Right side - placeholder for future actions */}
-        <div className="flex items-center gap-2">
-          {/* Future: notifications, user menu, etc. */}
-        </div>
-      </div>
+    <header
+      className="sticky z-30 flex items-center justify-between gap-3 border-b border-line bg-ground/95 px-4 py-3 backdrop-blur lg:px-7"
+      style={{ top: 'env(safe-area-inset-top, 0px)' }}
+    >
+      <h1 className="text-xl font-semibold tracking-tight text-ink lg:text-[22px]">{title}</h1>
+      <button
+        type="button"
+        onClick={onSearch}
+        aria-label="Search or jump"
+        className="flex items-center gap-2 rounded-md border border-line bg-surface px-2.5 py-1.5 text-[13px] text-ink-3 hover:text-ink-2 min-[1100px]:hidden"
+      >
+        <Search className="h-4 w-4" aria-hidden />
+        <span className="hidden sm:inline">Search</span>
+      </button>
     </header>
   );
 }
