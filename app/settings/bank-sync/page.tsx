@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AppLayout } from '@/components/layout';
 import { SyncButton, AccountLinkPanel } from '@/components/bank-sync';
-import { LINK_LABEL, LINK_TONE, linkState, summarise, syncedWhen, type StatusAccount, type StatusResponse } from '@/components/bank-sync/status';
+import { linkState, summarise, syncedWhen, type StatusAccount, type StatusResponse } from '@/components/bank-sync/status';
 import { PageIntro } from '@/components/ui/PageIntro';
 import { Panel } from '@/components/ui/Panel';
 import { Button } from '@/components/ui/Button';
@@ -358,15 +358,18 @@ function BankSyncPageContent() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       <span className="truncate text-sm font-medium text-ink">{account.name}</span>
-                      <Chip tone={LINK_TONE[state]}>{LINK_LABEL[state]}</Chip>
+                      {/* Only problems get a chip; a working link is plain text below. */}
+                      {state === 'reconnect' && <Chip tone="warn">Needs reconnecting</Chip>}
                     </div>
                     <p className="mt-0.5 text-xs text-ink-3">
                       {account.linked ? (
                         <>
-                          {account.provider || 'Linked'} · {account.lastSyncAt ? `Synced ${syncedWhen(account.lastSyncAt)}` : 'Never synced'}
+                          {account.provider || 'Linked'} · {account.lastSyncAt ? `synced ${syncedWhen(account.lastSyncAt)}` : 'never synced'}
                         </>
                       ) : (
-                        <span className="capitalize">{account.type}</span>
+                        <>
+                          Not linked · <span className="capitalize">{account.type}</span>
+                        </>
                       )}
                     </p>
                   </div>

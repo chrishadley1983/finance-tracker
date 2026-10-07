@@ -302,6 +302,7 @@ export function PlanningNotes() {
   const active = sections.filter((s) => !s.is_archived);
   const archivedCount = sections.length - active.length;
   const totalNotes = active.reduce((sum, s) => sum + s.notes.length, 0);
+  const isEmpty = !error && !isLoading && sections.length === 0;
   const pinnedNotes = active.reduce((sum, s) => sum + s.notes.filter((n) => n.is_pinned).length, 0);
 
   const intro =
@@ -323,14 +324,17 @@ export function PlanningNotes() {
     );
 
   return (
-    <div className="grid max-w-4xl gap-6">
+    <div className="grid max-w-3xl gap-6">
       <PageIntro
         actions={
           <>
             <Button onClick={() => setIsImportOpen(true)}>Import text</Button>
-            <Button variant="primary" onClick={() => setIsAddSectionOpen(true)}>
-              New section
-            </Button>
+            {/* With no sections the empty state carries the one primary action. */}
+            {!isEmpty && (
+              <Button variant="primary" onClick={() => setIsAddSectionOpen(true)}>
+                New section
+              </Button>
+            )}
           </>
         }
       >

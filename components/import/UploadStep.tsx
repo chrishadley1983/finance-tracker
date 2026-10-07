@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadCloud } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Notice } from '@/components/ui/Notice';
 
@@ -93,7 +93,7 @@ export function UploadStep({ onComplete }: UploadStepProps) {
     [onComplete]
   );
 
-  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, isDragReject, open } = useDropzone({
     onDrop,
     accept: {
       'text/csv': ['.csv'],
@@ -103,6 +103,9 @@ export function UploadStep({ onComplete }: UploadStepProps) {
     },
     maxFiles: 1,
     disabled: isUploading,
+    // The "Choose a file" button opens the picker; the area itself only takes drops.
+    noClick: true,
+    noKeyboard: true,
   });
 
   return (
@@ -111,12 +114,8 @@ export function UploadStep({ onComplete }: UploadStepProps) {
 
       <div
         {...getRootProps()}
-        className={`grid min-h-[200px] cursor-pointer place-items-center rounded-md border-[1.5px] border-dashed px-6 py-10 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-          isDragReject
-            ? 'border-bad bg-bad-soft'
-            : isDragActive
-              ? 'border-accent bg-accent-soft'
-              : 'border-ink-3/50 bg-surface hover:border-ink-3 hover:bg-sunk'
+        className={`grid min-h-[96px] place-items-center rounded-[3px] border border-dashed px-4 py-6 text-center transition-colors ${
+          isDragReject ? 'border-bad bg-bad-soft' : isDragActive ? 'border-accent bg-accent-soft' : 'border-line'
         } ${isUploading ? 'cursor-wait opacity-70' : ''}`}
       >
         <input {...getInputProps()} aria-label="Statement file" />
@@ -131,18 +130,17 @@ export function UploadStep({ onComplete }: UploadStepProps) {
             </p>
           </div>
         ) : (
-          <div className="grid justify-items-center gap-2">
-            <UploadCloud className="h-8 w-8 text-ink-3" aria-hidden="true" />
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
             {isDragReject ? (
-              <p className="text-[15px] font-medium text-bad">Only CSV and PDF files can be imported</p>
+              <p className="text-bad">Only CSV and PDF files can be imported</p>
             ) : isDragActive ? (
-              <p className="text-[15px] font-medium text-accent">Drop the file to upload it</p>
+              <p className="text-accent">Drop the file to upload it</p>
             ) : (
               <>
-                <p className="text-[15px] font-medium text-ink">Drag & drop your CSV or PDF file here</p>
-                <p className="text-sm text-ink-3">
-                  or <span className="text-accent underline underline-offset-2">choose a file</span>
-                </p>
+                <p className="text-ink-2">Drop a CSV or PDF here, or</p>
+                <Button size="sm" onClick={open}>
+                  Choose a file
+                </Button>
               </>
             )}
           </div>

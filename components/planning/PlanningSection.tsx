@@ -108,9 +108,6 @@ export function PlanningSection({
           />
           <span className="min-w-0">
             <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              {section.colour && (
-                <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: section.colour }} aria-hidden="true" />
-              )}
               <h2 className="text-[14px] font-semibold text-ink">
                 {section.icon && <span className="mr-1" aria-hidden="true">{section.icon}</span>}
                 {section.name}

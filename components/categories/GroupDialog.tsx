@@ -6,7 +6,6 @@ import { Modal } from '@/components/dialogs/Modal';
 import { Button } from '@/components/ui/Button';
 import { Field, Input } from '@/components/ui/Field';
 import { Notice } from '@/components/ui/Notice';
-import { ColourPicker } from './ColourPicker';
 
 interface GroupDialogProps {
   group: CategoryGroup | null;
@@ -73,7 +72,6 @@ export function GroupDialog({ group, isOpen, onClose, onSave }: GroupDialogProps
             />
           </Field>
         </div>
-        <ColourPicker value={formData.colour} onChange={(colour) => setFormData((p) => ({ ...p, colour }))} />
       </div>
     </Modal>
   );

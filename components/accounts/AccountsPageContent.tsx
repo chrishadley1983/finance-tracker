@@ -32,7 +32,10 @@ export interface SyncStatus {
 const STALE_DAYS = 30;
 
 function balanceNote(a: AccountWithStats, sync?: SyncStatus): string | null {
-  if (sync?.linked && sync.lastSyncAt) return `synced ${relativeTime(sync.lastSyncAt)}`;
+  // A working bank link is plain text, not a chip: only problems get a chip.
+  if (sync?.linked && sync.syncEnabled !== false && !sync.needsReconsent) {
+    return sync.lastSyncAt ? `Bank sync · synced ${relativeTime(sync.lastSyncAt)}` : 'Bank sync · not synced yet';
+  }
   if (a.balanceSource === 'snapshot' || a.balanceSource === 'valuation') {
     return a.snapshotDate ? `as of ${formatDateGB(a.snapshotDate)}` : null;
   }
@@ -50,11 +53,7 @@ function StatusChips({ a, sync }: { a: AccountWithStats; sync?: SyncStatus }) {
   return (
     <span className="flex flex-wrap justify-end gap-1 md:justify-start">
       {a.is_archived && <Chip>Archived</Chip>}
-      {sync?.needsReconsent ? (
-        <Chip tone="bad">Reconnect bank</Chip>
-      ) : sync?.linked && sync.syncEnabled !== false ? (
-        <Chip tone="accent">Bank sync</Chip>
-      ) : null}
+      {sync?.needsReconsent && <Chip tone="bad">Reconnect bank</Chip>}
       {!a.is_archived && a.balanceSource !== 'none' && !sync?.linked && isStale(a) && <Chip tone="warn">Out of date</Chip>}
       {a.balanceSource === 'none' && <Chip>No balance yet</Chip>}
       {a.include_in_net_worth === false && <Chip>Not in net worth</Chip>}
@@ -250,22 +249,9 @@ export function AccountsPageContent() {
     <div className="grid gap-6">
       <PageIntro
         actions={
-          <>
-            {archivedCount > 0 && (
-              <label className="flex items-center gap-2 text-[13px] text-ink-2">
-                <input
-                  type="checkbox"
-                  checked={showArchived}
-                  onChange={(e) => setArchived(e.target.checked)}
-                  className="h-4 w-4 accent-[var(--accent)]"
-                />
-                Show archived <span className="fig text-ink-3">{archivedCount}</span>
-              </label>
-            )}
-            <Button variant="primary" onClick={() => setIsAddOpen(true)}>
-              Add account
-            </Button>
-          </>
+          <Button variant="primary" onClick={() => setIsAddOpen(true)}>
+            Add account
+          </Button>
         }
       >
         {!loaded ? (
@@ -306,6 +292,19 @@ export function AccountsPageContent() {
         {announce}
       </p>
 
+      {/* A filter on the list, so it sits with the list rather than with the page actions. */}
+      {loaded && archivedCount > 0 && (
+        <label className="-mb-2 flex items-center gap-2 justify-self-end text-[13px] text-ink-2">
+          <input
+            type="checkbox"
+            checked={showArchived}
+            onChange={(e) => setArchived(e.target.checked)}
+            className="h-4 w-4 accent-[var(--accent)]"
+          />
+          Show archived <span className="fig text-ink-3">{archivedCount}</span>
+        </label>
+      )}
+
       {!loaded ? (
         <SkeletonRows rows={8} />
       ) : visible.length === 0 && !error ? (
@@ -323,7 +322,7 @@ export function AccountsPageContent() {
             }
             action={<span className="fig text-[13px] text-ink">{formatGBP(g.total)}</span>}
           >
-            <ul className="rounded-[3px] border border-line bg-surface" aria-label={g.label}>
+            <ul aria-label={g.label}>
               {g.accounts.map((a, i) => {
                 const s = sync.get(a.id);
                 const note = balanceNote(a, s);
@@ -331,7 +330,7 @@ export function AccountsPageContent() {
                   <li
                     key={a.id}
                     onClick={() => openRow(a)}
-                    className={`grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-b border-line-2 px-3 py-2.5 text-[13px] last:border-b-0 hover:bg-sunk md:grid-cols-[56px_minmax(0,1fr)_minmax(0,220px)_170px_32px] ${
+                    className={`grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-t border-line-2 py-2.5 text-[13px] first:border-t-0 hover:bg-sunk md:grid-cols-[56px_minmax(0,1fr)_minmax(0,220px)_170px_32px] ${
                       a.is_archived ? 'opacity-60' : ''
                     }`}
                   >

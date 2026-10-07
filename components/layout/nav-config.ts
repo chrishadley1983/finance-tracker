@@ -68,7 +68,7 @@ export const NAV_SECTIONS: NavSection[] = [
         label: 'Subscriptions',
         go: 's',
         live: (s) => ({
-          value: `${formatGBP(s.subscriptions.monthly)}/m`,
+          value: `${formatGBP(s.subscriptions.monthly)}/mo`,
           note: s.subscriptions.next
             ? `${s.subscriptions.next.name} renews ${relDay(s.subscriptions.next.date, s.asOf)}`
             : undefined,

@@ -44,10 +44,10 @@ export function buildTree(
   const filtering = Boolean(q) || type !== 'all';
   const tree: CategoryTreeGroup[] = [...groups]
     .sort((a, b) => a.display_order - b.display_order || a.name.localeCompare(b.name))
-    .map((g) => ({ id: g.id, name: g.name, colour: g.colour, group: g, categories: keep.filter((c) => c.group_id === g.id) }))
+    .map((g) => ({ id: g.id, name: g.name, group: g, categories: keep.filter((c) => c.group_id === g.id) }))
     .filter((g) => g.categories.length > 0 || !filtering);
   const ungrouped = keep.filter((c) => !c.group_id || !groups.some((g) => g.id === c.group_id));
-  if (ungrouped.length > 0) tree.push({ id: null, name: 'Ungrouped', colour: null, group: null, categories: ungrouped });
+  if (ungrouped.length > 0) tree.push({ id: null, name: 'Ungrouped', group: null, categories: ungrouped });
   return tree;
 }
 

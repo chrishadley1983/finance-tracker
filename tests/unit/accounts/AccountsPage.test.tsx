@@ -62,7 +62,8 @@ describe('Accounts page', () => {
     expect(screen.getByText(/in current accounts/)).toBeInTheDocument();
     expect(screen.getByText(/in pensions/)).toBeInTheDocument();
     expect(screen.queryByText('Old account')).not.toBeInTheDocument();
-    expect(screen.getByText('Bank sync')).toBeInTheDocument();
+    // A working bank link is plain text next to the balance, not a chip.
+    expect(screen.getByText(/^Bank sync · /)).toBeInTheDocument();
   });
 
   it('moves an account down within its type and saves the order', async () => {

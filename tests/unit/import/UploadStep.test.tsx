@@ -22,7 +22,8 @@ describe('UploadStep', () => {
       render(<UploadStep onComplete={mockOnComplete} />);
 
       expect(screen.getByText('Upload a bank statement')).toBeInTheDocument();
-      expect(screen.getByText(/drag & drop your csv or pdf file/i)).toBeInTheDocument();
+      expect(screen.getByText(/drop a csv or pdf here/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Choose a file' })).toBeInTheDocument();
     });
 
     it('renders supported formats list', () => {

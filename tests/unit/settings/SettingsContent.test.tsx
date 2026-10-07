@@ -84,7 +84,7 @@ describe('SettingsContent', () => {
     expect(screen.getByRole('button', { name: /download transactions csv/i })).toBeDisabled();
   });
 
-  it('summarises bank connections with status chips and a reconnect prompt', async () => {
+  it('summarises bank connections, with a chip only for the reconnect problem', async () => {
     serve();
     render(<SettingsContent />);
     expect(await screen.findByText('1 connected')).toBeInTheDocument();

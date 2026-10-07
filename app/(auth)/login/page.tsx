@@ -2,7 +2,10 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/Button';
+import { Field, Input } from '@/components/ui/Field';
 
 function LoginForm() {
   const router = useRouter();
@@ -12,7 +15,7 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(
-    searchParams.get('error') === 'not_allowed' ? 'This account does not have access to Finance Tracker.' : null
+    searchParams.get('error') === 'not_allowed' ? 'This account does not have access to Hadley Finance.' : null
   );
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,83 +39,71 @@ function LoginForm() {
       router.push(redirectTo);
       router.refresh();
     } catch {
-      setError('An unexpected error occurred');
+      setError('Something went wrong signing in. Check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="rounded-md border border-line bg-surface">
-      <div className="p-6">
-        <h2 className="text-lg font-semibold text-ink">Sign in</h2>
-        <p className="mt-1 text-sm text-ink-3">
-          Use the email and password for this app.
+    <form onSubmit={handleSubmit} className="grid gap-4" aria-label="Sign in">
+      {error && (
+        <p role="alert" className="rounded-[3px] bg-bad-soft px-3 py-2 text-sm text-bad">
+          {error}
         </p>
-      </div>
-      <div className="px-6 pb-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="rounded-md border border-bad bg-bad-soft p-3 text-sm text-bad">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-ink-2">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-              className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-ink-2">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={isLoading}
-              className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-accent-ink hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 transition-opacity"
-          >
-            {isLoading ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
-      </div>
-    </div>
+      )}
+      <Field label="Email" htmlFor="email">
+        <Input
+          id="email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          disabled={isLoading}
+        />
+      </Field>
+      <Field label="Password" htmlFor="password">
+        <Input
+          id="password"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          disabled={isLoading}
+        />
+      </Field>
+      <Button type="submit" variant="primary" loading={isLoading} className="mt-1 w-full">
+        {isLoading ? 'Signing in…' : 'Sign in'}
+      </Button>
+    </form>
   );
 }
 
+/** A centred column, no card: the app name, one line, and the form. */
 export default function LoginPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="rounded-md border border-line bg-surface p-6">
-          <h2 className="text-lg font-semibold text-ink">Sign in</h2>
-          <p className="mt-1 text-sm text-ink-3">Loading…</p>
+    <main className="flex min-h-screen items-center justify-center bg-ground px-4 py-10">
+      <div className="grid w-full max-w-[360px] gap-6">
+        <div className="grid gap-1">
+          <h1 className="text-[22px] font-semibold tracking-tight text-ink">Hadley Finance</h1>
+          <p className="text-sm text-ink-3">Sign in with the email and password for this app.</p>
         </div>
-      }
-    >
-      <LoginForm />
-    </Suspense>
+        <Suspense fallback={<p className="text-sm text-ink-3">Loading…</p>}>
+          <LoginForm />
+        </Suspense>
+        <p className="text-xs text-ink-3">
+          <Link href="/privacy" className="underline-offset-2 hover:text-ink-2 hover:underline">
+            Privacy
+          </Link>
+          {' · '}
+          <Link href="/terms" className="underline-offset-2 hover:text-ink-2 hover:underline">
+            Terms
+          </Link>
+        </p>
+      </div>
+    </main>
   );
 }
