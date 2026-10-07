@@ -13,7 +13,7 @@ import {
   TransactionWithRunningBalance,
 } from '@/components/transactions';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { SyncButton } from '@/components/enable-banking';
+import { SyncButton } from '@/components/bank-sync';
 import { useTransactions, FilterState, TransactionWithRelations } from '@/lib/hooks/useTransactions';
 
 interface Category {
