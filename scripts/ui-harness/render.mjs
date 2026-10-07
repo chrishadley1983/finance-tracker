@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global process, console, URL, document */
 /**
  * UI harness: render a real app page (with the real shell and production CSS)
  * in Chromium against fixture API data, and save screenshots. No login or
