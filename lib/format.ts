@@ -80,13 +80,13 @@ export const MONTH_SHORT = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ] as const;
 
-/** en-GB date as "d MMM yyyy", e.g. "5 Mar 2025". */
+/**
+ * en-GB date as "d MMM yyyy", e.g. "5 Mar 2025". Built by hand because newer
+ * ICU data prints September as "Sept" for en-GB.
+ */
 export function formatDateGB(date: string | number | Date): string {
-  return new Date(date).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+  const d = new Date(date);
+  return `${d.getDate()} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 /**
@@ -100,11 +100,8 @@ export function formatDayMonth(isoDate: string): string {
 
 /** en-GB date as "dd MMM yyyy", e.g. "05 Mar 2025". */
 export function formatDateGBPadded(date: string | number | Date): string {
-  return new Date(date).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+  const d = new Date(date);
+  return `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;

@@ -107,7 +107,7 @@ const shots = [
   ['phone-dark', 390, 844, 'dark', true],
 ];
 for (const [name, w, h, theme, full] of shots) {
-  const ctx = await browser.newContext({ viewport: { width: w, height: h } });
+  const ctx = await browser.newContext({ viewport: { width: w, height: h }, locale: 'en-GB', timezoneId: 'Europe/London' });
   const p = await ctx.newPage();
   const errors = [];
   const unmatched = new Set();
