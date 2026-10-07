@@ -86,7 +86,7 @@ function Shell({ children, title }: AppLayoutProps) {
 
       {/* Docked column: wide screens, unless hidden with [ */}
       {!columnHidden && (
-        <div className="fixed inset-y-0 left-[68px] z-30 hidden w-[232px] min-[1100px]:block">
+        <div className="fixed inset-y-0 left-[68px] z-30 hidden w-[232px] dock:block">
           <NavColumn section={section} {...columnProps} />
         </div>
       )}
@@ -108,8 +108,8 @@ function Shell({ children, title }: AppLayoutProps) {
         </div>
       )}
 
-      <div className={`pb-24 md:pb-0 md:pl-[68px] ${columnHidden ? '' : 'min-[1100px]:pl-[300px]'}`}>
-        <Header title={title} onSearch={openSearch} />
+      <div className={`pb-24 md:pb-0 md:pl-[68px] ${columnHidden ? '' : 'dock:pl-[300px]'}`}>
+        <Header title={title} onSearch={openSearch} columnDocked={!columnHidden} />
         <main className="p-4 lg:px-7 lg:py-6">{children}</main>
       </div>
 

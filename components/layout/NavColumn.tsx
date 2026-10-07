@@ -32,7 +32,12 @@ function syncLabel(iso: string | null): string {
 }
 
 function Item({ item, summary, current, onNavigate }: { item: NavItem; summary: NavSummary | null; current: boolean; onNavigate?: () => void }) {
-  const live = summary && item.live ? item.live(summary) : null;
+  let live: ReturnType<NonNullable<NavItem['live']>> = null;
+  try {
+    live = summary && item.live ? item.live(summary) : null;
+  } catch {
+    // A malformed summary must never take the navigation down.
+  }
   return (
     <Link
       href={item.href}

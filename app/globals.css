@@ -61,6 +61,11 @@
 /* `dark:` utilities follow the app's theme setting, not the OS directly. */
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
+@theme {
+  /* Wide enough to dock the navigation column next to the page. */
+  --breakpoint-dock: 68.75rem;
+}
+
 @theme inline {
   --font-sans: var(--font-ui), system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: var(--font-fig), ui-monospace, 'SFMono-Regular', Menlo, monospace;

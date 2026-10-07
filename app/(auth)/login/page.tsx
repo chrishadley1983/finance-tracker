@@ -43,23 +43,23 @@ function LoginForm() {
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="rounded-md border border-line bg-surface">
       <div className="p-6">
-        <h2 className="text-xl font-semibold text-slate-900">Sign in</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Enter your credentials to access your dashboard
+        <h2 className="text-lg font-semibold text-ink">Sign in</h2>
+        <p className="mt-1 text-sm text-ink-3">
+          Use the email and password for this app.
         </p>
       </div>
       <div className="px-6 pb-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+            <div className="rounded-md border border-bad bg-bad-soft p-3 text-sm text-bad">
               {error}
             </div>
           )}
 
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="email" className="block text-sm font-medium text-ink-2">
               Email
             </label>
             <input
@@ -70,12 +70,12 @@ function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isLoading}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:opacity-50"
+              className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50"
             />
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="password" className="block text-sm font-medium text-ink-2">
               Password
             </label>
             <input
@@ -85,16 +85,16 @@ function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLoading}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:opacity-50"
+              className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
+            className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-accent-ink hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 transition-opacity"
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
       </div>
@@ -106,9 +106,9 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-slate-900">Sign in</h2>
-          <p className="mt-1 text-sm text-slate-500">Loading...</p>
+        <div className="rounded-md border border-line bg-surface p-6">
+          <h2 className="text-lg font-semibold text-ink">Sign in</h2>
+          <p className="mt-1 text-sm text-ink-3">Loading…</p>
         </div>
       }
     >
