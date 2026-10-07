@@ -4,8 +4,8 @@
  *
  * Run with: npx tsx scripts/gen-jan-feb-reports.ts
  */
-import { aggregateMonthlyReport, saveMonthlyReport } from '../lib/reports/aggregate';
-import { generateMonthlyReportHtml } from '../lib/reports/monthly-html';
+import { aggregateMonthlyReport, saveMonthlyReport } from '../../lib/reports/aggregate';
+import { generateMonthlyReportHtml } from '../../lib/reports/monthly-html';
 
 async function main() {
   // --- January 2026 ---

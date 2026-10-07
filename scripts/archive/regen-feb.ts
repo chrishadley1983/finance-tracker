@@ -1,5 +1,5 @@
-import { aggregateMonthlyReport, saveMonthlyReport } from '../lib/reports/aggregate';
-import { generateMonthlyReportHtml } from '../lib/reports/monthly-html';
+import { aggregateMonthlyReport, saveMonthlyReport } from '../../lib/reports/aggregate';
+import { generateMonthlyReportHtml } from '../../lib/reports/monthly-html';
 
 async function main() {
   const data = await aggregateMonthlyReport(2026, 2);
