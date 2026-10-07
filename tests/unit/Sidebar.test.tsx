@@ -72,7 +72,7 @@ describe('Sidebar', () => {
       render(<Sidebar isOpen={true} onClose={mockOnClose} />);
 
       const links = screen.getAllByRole('link');
-      expect(links.length).toBe(15);
+      expect(links.length).toBe(14);
 
       const hrefs = links.map(link => link.getAttribute('href'));
       expect(hrefs).toContain('/');
@@ -88,7 +88,8 @@ describe('Sidebar', () => {
       expect(hrefs).toContain('/fire');
       expect(hrefs).toContain('/reports');
       expect(hrefs).toContain('/planning');
-      expect(hrefs).toContain('/pets');
+      // Pets stays reachable at /pets (used on the Pi) but is no longer in the menu
+      expect(hrefs).not.toContain('/pets');
       expect(hrefs).toContain('/settings');
     });
   });
