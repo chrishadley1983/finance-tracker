@@ -2,7 +2,8 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { periodLabel, stepPeriod, switchView, currentMonthPeriod, type BudgetPeriod } from '@/lib/budgets/period';
+import { MonthSwitcher } from '@/components/ui/MonthSwitcher';
+import { monthKey, periodLabel, stepPeriod, switchView, currentMonthPeriod, type BudgetPeriod } from '@/lib/budgets/period';
 
 interface PeriodNavProps {
   period: BudgetPeriod;
@@ -19,16 +20,30 @@ export function PeriodNav({ period, onChange, now = new Date() }: PeriodNavProps
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-      <div className="flex items-center gap-1">
-        <Button variant="ghost" size="sm" aria-label={`Previous ${unit}`} onClick={() => onChange(stepPeriod(period, -1))} className="!px-1.5">
-          <ChevronLeft className="h-4 w-4" aria-hidden />
-        </Button>
-        <h2 className="min-w-[8.5rem] text-center text-[17px] font-semibold text-ink" aria-live="polite">
-          {periodLabel(period)}
-        </h2>
-        <Button variant="ghost" size="sm" aria-label={`Next ${unit}`} onClick={() => onChange(stepPeriod(period, 1))} className="!px-1.5">
-          <ChevronRight className="h-4 w-4" aria-hidden />
-        </Button>
+      <div className="-ml-2 flex items-center gap-1">
+        {period.view === 'month' ? (
+          <MonthSwitcher
+            value={monthKey(period.year, period.month)}
+            min="2000-01"
+            max="2100-12"
+            onChange={(key) => {
+              const [year, month] = key.split('-').map(Number);
+              onChange({ view: 'month', year, month });
+            }}
+          />
+        ) : (
+          <>
+            <Button variant="ghost" size="sm" aria-label={`Previous ${unit}`} onClick={() => onChange(stepPeriod(period, -1))} className="!px-1.5">
+              <ChevronLeft className="h-4 w-4" aria-hidden />
+            </Button>
+            <h2 className="min-w-[8.5rem] text-center text-lg font-semibold tracking-tight text-ink" aria-live="polite">
+              {periodLabel(period)}
+            </h2>
+            <Button variant="ghost" size="sm" aria-label={`Next ${unit}`} onClick={() => onChange(stepPeriod(period, 1))} className="!px-1.5">
+              <ChevronRight className="h-4 w-4" aria-hidden />
+            </Button>
+          </>
+        )}
         {!isToday && (
           <button
             type="button"

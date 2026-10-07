@@ -56,6 +56,8 @@ caption saying what the chart shows.
 | Sections | `Panel` (`open` default, `boxed`) |
 | Tabs (kept in the URL) | `useUrlTab` + `Tabs` |
 | Form fields | `Field`, `Input`, `Select`, `Textarea`, `controlClass` |
+| Money and number fields | `MoneyInput` (£ prefix, `416,085.32` at rest, raw value while editing, never rounds; `align="right"` in tables, `size="sm"` in cells), `NumberInput` (ages, percentages; `suffix="%"`). Both mono (`.fig`) |
+| Choosing a month | `MonthSwitcher` (‹ October 2026 ›; the label opens a month grid with year arrows; `min` / `max` limits). Keep the month in the URL as `?month=YYYY-MM`. Never a native month input or a `<select>` of months |
 | Status labels | `Chip` (`neutral` / `accent` / `warn` / `bad` / `in`) |
 | Messages, empty, loading | `Notice`, `EmptyState`, `SkeletonRows` |
 | Budget progress | `PaceBar` (budget marker at 80%, pace tick, overspend shows past it) |

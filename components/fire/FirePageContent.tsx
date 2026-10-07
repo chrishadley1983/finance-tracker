@@ -23,7 +23,7 @@ export const FIRE_TABS: readonly TabDef<FireTab>[] = [
 function TabPanel({ id, active, visited, children }: { id: FireTab; active: boolean; visited: boolean; children: ReactNode }) {
   if (!visited) return null;
   return (
-    <div role="tabpanel" id={`fire-panel-${id}`} aria-label={FIRE_TABS.find((t) => t.id === id)?.label} hidden={!active}>
+    <div className="min-w-0" role="tabpanel" id={`fire-panel-${id}`} aria-label={FIRE_TABS.find((t) => t.id === id)?.label} hidden={!active}>
       {children}
     </div>
   );
@@ -82,7 +82,7 @@ export function FirePageContent() {
     .reduce((s, t) => s + t.total, 0);
 
   return (
-    <div className="grid gap-6 pb-6">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 pb-6">
       <Tabs tabs={FIRE_TABS} active={tab} onChange={setTab} label="FIRE views" />
 
       {loadError && (

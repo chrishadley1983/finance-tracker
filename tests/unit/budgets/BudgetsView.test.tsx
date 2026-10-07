@@ -101,14 +101,14 @@ describe('BudgetsView', () => {
   it('fetches the month from the URL', async () => {
     search = new URLSearchParams('month=2025-03');
     renderView();
-    await screen.findByText(/March 2025/, { selector: 'h2' });
+    await screen.findByRole('button', { name: /^March 2025\. Choose a month/ });
     expect(calls.some((c) => c.url === '/api/budgets/comparison?year=2025&month=3')).toBe(true);
   });
 
   it('puts the period in the URL when moving months and switching to the year', async () => {
     renderView();
     await screen.findByText(/24 days to go/);
-    fireEvent.click(screen.getByRole('button', { name: 'Next month' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Next month/ }));
     expect(push).toHaveBeenLastCalledWith('/budgets?month=2026-11', { scroll: false });
     fireEvent.click(screen.getByRole('button', { name: 'Year' }));
     expect(push).toHaveBeenLastCalledWith('/budgets?year=2026&view=year', { scroll: false });

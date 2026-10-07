@@ -42,14 +42,14 @@ Rules:
 - Each takeaway should be self-contained and useful on its own.
 
 Output exactly 4-6 takeaways as a JSON array. Each takeaway has:
-- "tag": one of "strong" (positive/green), "watch" (caution/amber), or "idea" (actionable suggestion/blue)
-- "title": short headline (max 60 chars)
-- "body": 1-2 sentence explanation with specific numbers
+- "tag": one of "strong" (a strength), "watch" (a caution), or "idea" (an actionable suggestion)
+- "title": short headline in sentence case (max 60 chars)
+- "body": 1-2 plain sentences with specific numbers. Start straight in with the point: no label or prefix such as "Example:", "Note:" or "Tip:".
 
 Tag guidance:
 - "strong": WR below ERN dynamic rate, MC survival ≥95%, FIRE target met, good savings rate
 - "watch": MC survival <90%, WR above fail-safe SWR, high CAPE regime (>30), portfolio below target
-- "idea": concrete suggestions to improve outcomes (e.g. "work 2 more years", "reduce spend by £X")
+- "idea": concrete suggestions to improve outcomes, such as working two more years or reducing spending by a stated amount
 
 Respond with ONLY the JSON array, no markdown wrapping.`;
 

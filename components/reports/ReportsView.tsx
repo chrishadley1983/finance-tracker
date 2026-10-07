@@ -74,7 +74,15 @@ export function ReportsView({ now: nowProp }: { now?: Date } = {}) {
   }, [now]);
   const thisMonth = key(now.getFullYear(), now.getMonth() + 1);
   const requested = params?.get('month');
-  const [genMonth, setGenMonth] = useState(requested && MONTH_PARAM.test(requested) ? requested : lastComplete);
+  const [genMonth, setGenMonthState] = useState(requested && MONTH_PARAM.test(requested) && requested <= thisMonth ? requested : lastComplete);
+  // The chosen month lives in the URL (?month=YYYY-MM) so it survives a refresh.
+  const setGenMonth = useCallback(
+    (month: string) => {
+      setGenMonthState(month);
+      router.replace(`/reports?month=${month}`, { scroll: false });
+    },
+    [router]
+  );
 
   const [reports, setReports] = useState<ReportSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);

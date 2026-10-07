@@ -5,6 +5,7 @@ import type { FireInputs } from '@/lib/types/fire';
 import { formatGBP } from '@/lib/format';
 import { Button } from '@/components/ui/Button';
 import { Field, Input } from '@/components/ui/Field';
+import { MoneyInput, NumberInput, formatMoneyInput } from '@/components/ui/MoneyInput';
 import { Notice, SkeletonRows } from '@/components/ui/Notice';
 import { useToast } from '@/components/ui/Toast';
 
@@ -98,10 +99,6 @@ export function FireInputsForm({ inputs, portfolioValue, onSave, isLoading = fal
 
   const dirty = JSON.stringify(formData) !== JSON.stringify(saved);
   const set = <K extends keyof FormData>(k: K, v: FormData[K]) => setFormData((f) => ({ ...f, [k]: v }));
-  const num = (v: string, fallback = 0) => {
-    const n = parseFloat(v);
-    return Number.isFinite(n) ? n : fallback;
-  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -148,64 +145,56 @@ export function FireInputsForm({ inputs, portfolioValue, onSave, isLoading = fal
           <Input id={id('dob')} type="date" value={formData.dateOfBirth || ''} onChange={(e) => set('dateOfBirth', e.target.value)} />
         </Field>
         <Field label="Age" htmlFor={id('age')} hint={formData.dateOfBirth ? 'Your date of birth takes priority' : undefined}>
-          <Input id={id('age')} type="number" min={18} max={100} className="fig" value={formData.currentAge} onChange={(e) => set('currentAge', parseInt(e.target.value) || 0)} />
+          <NumberInput id={id('age')} min={18} max={100} step={1} value={formData.currentAge || null} onChange={(v) => set('currentAge', v === null ? 0 : Math.trunc(v))} />
         </Field>
         <Field label="Target retirement age" htmlFor={id('retire')}>
-          <Input
+          <NumberInput
             id={id('retire')}
-            type="number"
             min={30}
             max={100}
-            className="fig"
+            step={1}
             placeholder="Optional"
-            value={formData.targetRetirementAge || ''}
-            onChange={(e) => set('targetRetirementAge', parseInt(e.target.value) || 0)}
+            value={formData.targetRetirementAge || null}
+            onChange={(v) => set('targetRetirementAge', v === null ? 0 : Math.trunc(v))}
           />
         </Field>
       </Section>
 
       <Section title="Money in and out">
         <Field label="Spending a year in retirement" htmlFor={id('spend')} hint="Used by the analysis and Coast FIRE">
-          <Input id={id('spend')} type="number" min={0} step={1000} className="fig" value={formData.annualSpend || ''} onChange={(e) => set('annualSpend', num(e.target.value, 0))} />
+          <MoneyInput id={id('spend')} value={formData.annualSpend || null} onChange={(v) => set('annualSpend', v ?? 0)} />
         </Field>
         <Field label="Saving a month" htmlFor={id('save')} hint={`${formatGBP(formData.annualSavings || 0)} a year`}>
-          <Input
+          <MoneyInput
             id={id('save')}
-            type="number"
-            min={0}
-            step={100}
-            className="fig"
-            placeholder="1500"
-            value={Math.round((formData.annualSavings || 0) / 12) || ''}
-            onChange={(e) => set('annualSavings', num(e.target.value) * 12)}
+            placeholder="1,500"
+            value={formData.annualSavings ? Math.round((formData.annualSavings / 12) * 100) / 100 : null}
+            onChange={(v) => set('annualSavings', (v ?? 0) * 12)}
           />
         </Field>
         <Field label="Income a year" htmlFor={id('income')} hint="Optional">
-          <Input id={id('income')} type="number" min={0} className="fig" placeholder="Optional" value={formData.annualIncome || ''} onChange={(e) => set('annualIncome', num(e.target.value))} />
+          <MoneyInput id={id('income')} placeholder="Optional" value={formData.annualIncome || null} onChange={(v) => set('annualIncome', v ?? 0)} />
         </Field>
         <Field
           label="Portfolio value"
           htmlFor={id('portfolio')}
           hint="Leave blank to use your account balances"
         >
-          <Input
+          <MoneyInput
             id={id('portfolio')}
-            type="number"
-            min={0}
-            className="fig"
-            placeholder={portfolioValue ? `From accounts: ${formatGBP(portfolioValue)}` : 'From your accounts'}
-            value={formData.currentPortfolioValue || ''}
-            onChange={(e) => set('currentPortfolioValue', num(e.target.value))}
+            placeholder={portfolioValue ? `${formatMoneyInput(Math.round(portfolioValue))} from accounts` : 'From your accounts'}
+            value={formData.currentPortfolioValue || null}
+            onChange={(v) => set('currentPortfolioValue', v ?? 0)}
           />
         </Field>
       </Section>
 
       <Section title="Assumptions">
-        <Field label="Growth a year, after inflation (%)" htmlFor={id('return')} hint="Usually 4 to 7">
-          <Input id={id('return')} type="number" min={0} max={15} step={0.5} className="fig" value={formData.expectedReturn} onChange={(e) => set('expectedReturn', num(e.target.value, 7))} />
+        <Field label="Growth a year, after inflation" htmlFor={id('return')} hint="Usually 4% to 7%">
+          <NumberInput id={id('return')} suffix="%" min={0} max={15} step={0.5} value={formData.expectedReturn} onChange={(v) => set('expectedReturn', v ?? 7)} />
         </Field>
-        <Field label="Withdrawal rate (%)" htmlFor={id('swr')} hint="Share of the pot spent each year; 4 is the classic rule">
-          <Input id={id('swr')} type="number" min={1} max={10} step={0.25} className="fig" value={formData.withdrawalRate} onChange={(e) => set('withdrawalRate', num(e.target.value, 4))} />
+        <Field label="Withdrawal rate" htmlFor={id('swr')} hint="Share of the pot spent each year; 4% is the classic rule">
+          <NumberInput id={id('swr')} suffix="%" min={1} max={10} step={0.25} value={formData.withdrawalRate} onChange={(v) => set('withdrawalRate', v ?? 4)} />
         </Field>
         <div className="grid content-start gap-3 sm:col-span-2 lg:col-span-1">
           <Check checked={formData.includeStatePension} onChange={(v) => set('includeStatePension', v)} label="Include my state pension" />
@@ -221,10 +210,10 @@ export function FireInputsForm({ inputs, portfolioValue, onSave, isLoading = fal
 
       <Section title="Targets for the maths tab" note="Two spending levels to compare: comfortable and generous.">
         <Field label="Comfortable spending a year" htmlFor={id('normal')}>
-          <Input id={id('normal')} type="number" min={0} step={1000} className="fig" value={formData.normalFireSpend || ''} onChange={(e) => set('normalFireSpend', num(e.target.value, 55000))} />
+          <MoneyInput id={id('normal')} value={formData.normalFireSpend || null} onChange={(v) => set('normalFireSpend', v ?? 55000)} />
         </Field>
         <Field label="Generous (FAT) spending a year" htmlFor={id('fat')}>
-          <Input id={id('fat')} type="number" min={0} step={1000} className="fig" value={formData.fatFireSpend || ''} onChange={(e) => set('fatFireSpend', num(e.target.value, 65000))} />
+          <MoneyInput id={id('fat')} value={formData.fatFireSpend || null} onChange={(v) => set('fatFireSpend', v ?? 65000)} />
         </Field>
       </Section>
 

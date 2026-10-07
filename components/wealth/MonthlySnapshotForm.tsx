@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, EyeOff } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { EyeOff } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
-import { Select, controlClass } from '@/components/ui/Field';
+import { MoneyInput } from '@/components/ui/MoneyInput';
+import { MonthSwitcher } from '@/components/ui/MonthSwitcher';
 import { EmptyState, Notice, SkeletonRows } from '@/components/ui/Notice';
 import { useToast } from '@/components/ui/Toast';
 import { formatGBP } from '@/lib/format';
@@ -161,15 +162,8 @@ export function MonthlySnapshotForm({ onSaveComplete, month: monthProp, onMonthC
     fetchData();
   }, [fetchData, refreshKey]);
 
-  const handleBalanceChange = (accountId: string, value: string) => {
-    const numValue = value === '' ? null : parseFloat(value);
-    setEntries((prev) =>
-      prev.map((entry) =>
-        entry.accountId === accountId
-          ? { ...entry, balance: numValue !== null && isNaN(numValue) ? entry.balance : numValue, carried: false }
-          : entry
-      )
-    );
+  const handleBalanceChange = (accountId: string, value: number | null) => {
+    setEntries((prev) => prev.map((entry) => (entry.accountId === accountId ? { ...entry, balance: value, carried: false } : entry)));
   };
 
   const handleCopyFromPrevious = (accountId: string) => {
@@ -266,13 +260,6 @@ export function MonthlySnapshotForm({ onSaveComplete, month: monthProp, onMonthC
   const hasPreviousData = entries.some((e) => e.previousBalance !== undefined);
   const prevLabel = monthLabel(prevMonth).split(' ')[0];
 
-  // The last five years of months, newest first, for the picker.
-  const monthOptions = useMemo(() => {
-    const list = Array.from({ length: 60 }, (_, i) => addMonths(currentMonth, -i));
-    if (!list.includes(month)) list.push(month);
-    return list;
-  }, [currentMonth, month]);
-
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
@@ -292,21 +279,7 @@ export function MonthlySnapshotForm({ onSaveComplete, month: monthProp, onMonthC
             </>
           )}
         </div>
-        <div className="flex items-center gap-1.5">
-          <Button size="sm" variant="ghost" aria-label="Previous month" onClick={() => setMonth(addMonths(month, -1))}>
-            <ChevronLeft className="h-4 w-4" aria-hidden />
-          </Button>
-          <Select aria-label="Month" value={month} onChange={(e) => setMonth(e.target.value)} className="h-8 w-auto py-1">
-            {monthOptions.map((m) => (
-              <option key={m} value={m}>
-                {monthLabel(m)}
-              </option>
-            ))}
-          </Select>
-          <Button size="sm" variant="ghost" aria-label="Next month" disabled={month >= currentMonth} onClick={() => setMonth(addMonths(month, 1))}>
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </Button>
-        </div>
+        <MonthSwitcher value={month} max={currentMonth} min="2000-01" align="end" size="md" onChange={setMonth} maxReason="month-end balances come after the month" />
       </div>
 
       {error && (
@@ -373,20 +346,17 @@ export function MonthlySnapshotForm({ onSaveComplete, month: monthProp, onMonthC
                       )}
                     </div>
                     <div className="flex items-center justify-end gap-2 sm:contents">
-                      <div className="relative w-36 sm:w-auto">
-                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[13px] text-ink-3">£</span>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          step="0.01"
-                          value={entry.balance ?? ''}
-                          onChange={(e) => handleBalanceChange(entry.accountId, e.target.value)}
-                          placeholder="—"
-                          aria-label={`${entry.accountName} balance`}
-                          title={entry.carried ? `Carried over from ${prevLabel}` : undefined}
-                          className={`${controlClass} fig h-8 py-1 pl-6 text-right ${entry.carried ? 'border-dashed text-ink-3' : ''}`}
-                        />
-                      </div>
+                      <MoneyInput
+                        value={entry.balance}
+                        onChange={(v) => handleBalanceChange(entry.accountId, v)}
+                        size="sm"
+                        align="right"
+                        placeholder="–"
+                        label={`${entry.accountName} balance`}
+                        title={entry.carried ? `Carried over from ${prevLabel}` : undefined}
+                        className="w-40 sm:w-auto"
+                        inputClassName={entry.carried ? 'border-dashed text-ink-3' : ''}
+                      />
                       <button
                         type="button"
                         onClick={() => setConfirmExclude(entry)}

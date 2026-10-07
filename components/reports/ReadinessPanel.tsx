@@ -1,10 +1,9 @@
 'use client';
 
-import { useId } from 'react';
 import Link from 'next/link';
 import { Check, CircleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Field, Input } from '@/components/ui/Field';
+import { MonthSwitcher } from '@/components/ui/MonthSwitcher';
 import { Notice, SkeletonRows } from '@/components/ui/Notice';
 import { MONTH_NAMES } from '@/lib/format';
 import { readinessChecklist, readinessHeadline } from '@/lib/reports/readiness-items';
@@ -29,22 +28,12 @@ interface ReadinessPanelProps {
 
 /** Pick a month, see whether its data is all in, and generate its report. */
 export function ReadinessPanel({ month, maxMonth, onMonthChange, readiness, onRetry, onGenerate, generating }: ReadinessPanelProps) {
-  const id = useId();
   const [y, m] = month.split('-').map(Number);
   const monthName = m ? MONTH_NAMES[m - 1] : '';
 
   return (
     <div className="grid gap-4">
-      <Field label="Month" htmlFor={`${id}-month`}>
-        <Input
-          id={`${id}-month`}
-          type="month"
-          value={month}
-          max={maxMonth}
-          onChange={(e) => e.target.value && onMonthChange(e.target.value)}
-          className="fig"
-        />
-      </Field>
+      <MonthSwitcher value={month} max={maxMonth} min="2000-01" size="md" ariaLabel="Report month" className="-ml-2" onChange={onMonthChange} />
 
       {readiness.status === 'loading' && (
         <div aria-label={`Checking ${monthName} ${y}`}>

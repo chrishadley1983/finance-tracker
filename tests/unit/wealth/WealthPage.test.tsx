@@ -81,13 +81,13 @@ describe('Net worth page', () => {
     expect(screen.getByRole('tab', { name: 'Monthly balances' })).toHaveAttribute('aria-selected', 'true');
     await waitFor(() => expect(calls.some((c) => c.url.includes('start_date=2026-09-01'))).toBe(true));
     expect(calls.some((c) => c.url.includes('start_date=2026-08-01'))).toBe(true);
-    expect((screen.getByLabelText('Month') as HTMLSelectElement).value).toBe('2026-09');
+    expect(screen.getByRole('button', { name: /^September 2026\. Choose a month/ })).toBeInTheDocument();
   });
 
   it('puts a month change in the URL', async () => {
     search = new URLSearchParams('tab=balances&month=2026-09');
     renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Previous month' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Previous month/ }));
     expect(replace).toHaveBeenCalledWith('/wealth?tab=balances&month=2026-08', { scroll: false });
   });
 

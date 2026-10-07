@@ -124,21 +124,20 @@ describe('Overview page', () => {
 describe('MonthNav', () => {
   afterEach(cleanup);
 
-  it('names the months either side and blocks future months', () => {
+  it('shows the month and year and blocks future months', () => {
     const onChange = vi.fn();
     render(<MonthNav month={{ year: 2026, month: 10 }} onChange={onChange} now={NOW} />);
-    expect(screen.getByText('October')).toBeInTheDocument();
-    expect(screen.getByText('September')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /October 2026\. Choose a month/ })).toBeInTheDocument();
     const next = screen.getByRole('button', { name: /Next month/ });
     expect(next).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: /Previous month/ }));
     expect(onChange).toHaveBeenCalledWith({ year: 2026, month: 9 });
   });
 
-  it('adds the year outside the current year', () => {
+  it('allows stepping into a past year', () => {
     render(<MonthNav month={{ year: 2025, month: 12 }} onChange={() => {}} now={NOW} />);
-    expect(screen.getByText('December 2025')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Next month, January' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: /December 2025\. Choose a month/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next month, January 2026' })).not.toBeDisabled();
   });
 });
 

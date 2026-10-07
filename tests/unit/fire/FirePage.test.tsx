@@ -95,7 +95,7 @@ describe('FIRE page', () => {
     search = new URLSearchParams('tab=settings');
     renderPage();
     const spend = await screen.findByLabelText('Spending a year in retirement');
-    await waitFor(() => expect(spend).toHaveValue(50000));
+    await waitFor(() => expect(spend).toHaveValue('50,000'));
     fireEvent.change(spend, { target: { value: '45000' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
     await waitFor(() => expect(calls.some((c) => c.init?.method === 'PUT')).toBe(true));

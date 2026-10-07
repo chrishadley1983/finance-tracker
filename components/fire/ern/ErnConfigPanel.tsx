@@ -6,6 +6,7 @@ import { formatGBP } from '@/lib/format';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { controlClass } from '@/components/ui/Field';
+import { MoneyInput } from '@/components/ui/MoneyInput';
 import { Disclosure } from '../Disclosure';
 import { readableGBP, readablePct } from '../readable';
 
@@ -167,6 +168,17 @@ function NumberInput({ id, value, onChange, disabled, locked, min, max, step, pr
   step?: number;
   prefix?: string;
 }) {
+  if (prefix === '£') {
+    return (
+      <MoneyInput
+        id={id}
+        value={Number.isFinite(value) ? value : null}
+        onChange={(v) => onChange(v ?? 0)}
+        disabled={disabled}
+        inputClassName={locked ? 'border-warn/60' : ''}
+      />
+    );
+  }
   return (
     <div className="relative">
       {prefix && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-ink-3">{prefix}</span>}
