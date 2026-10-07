@@ -29,6 +29,14 @@
   --rail-on: #ffffff;
   --bar: #17201c;
   --bar-ink: #ffffff;
+  /* Categorical chart series: muted, distinguishable, same order in both themes. */
+  --cat-1: #1d5847;
+  --cat-2: #7a6a3a;
+  --cat-3: #3f6c8f;
+  --cat-4: #9a5a46;
+  --cat-5: #6b5b8a;
+  --cat-6: #5f7f5a;
+  --cat-7: #8a7f73;
   color-scheme: light;
 }
 
@@ -55,6 +63,13 @@
   --rail-on: #26282b;
   --bar: #0e0f10;
   --bar-ink: #ecedea;
+  --cat-1: #7fb59a;
+  --cat-2: #c9b276;
+  --cat-3: #82aecf;
+  --cat-4: #d39883;
+  --cat-5: #a99bc8;
+  --cat-6: #9fbf96;
+  --cat-7: #b3aa9f;
   color-scheme: dark;
 }
 

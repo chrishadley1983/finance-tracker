@@ -51,11 +51,11 @@ export function ConfirmDialog({
   const getConfirmButtonClasses = () => {
     switch (variant) {
       case 'danger':
-        return 'bg-red-600 hover:bg-red-700 text-white';
+        return 'bg-bad text-surface hover:opacity-90';
       case 'warning':
-        return 'bg-amber-600 hover:bg-amber-700 text-white';
+        return 'bg-warn text-surface hover:opacity-90';
       default:
-        return 'bg-blue-600 hover:bg-blue-700 text-white';
+        return 'bg-accent text-accent-ink hover:opacity-90';
     }
   };
 
@@ -63,7 +63,7 @@ export function ConfirmDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/40"
         onClick={onCancel}
         aria-hidden="true"
       />
@@ -76,17 +76,17 @@ export function ConfirmDialog({
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-description"
         tabIndex={-1}
-        className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 focus:outline-none"
+        className="relative mx-4 w-full max-w-md rounded-md border border-line bg-surface p-6 shadow-xl focus:outline-none"
       >
         <h2
           id="confirm-dialog-title"
-          className="text-lg font-semibold text-slate-900 mb-2"
+          className="mb-2 text-lg font-semibold text-ink"
         >
           {title}
         </h2>
         <p
           id="confirm-dialog-description"
-          className="text-sm text-slate-600 mb-6"
+          className="mb-6 text-sm text-ink-2"
         >
           {message}
         </p>
@@ -94,13 +94,13 @@ export function ConfirmDialog({
         <div className="flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+            className="rounded-md border border-line bg-surface px-4 py-2 text-sm font-medium text-ink hover:bg-sunk transition-colors"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${getConfirmButtonClasses()}`}
+            className={`rounded-md px-4 py-2 text-sm font-semibold transition-opacity ${getConfirmButtonClasses()}`}
           >
             {confirmLabel}
           </button>
