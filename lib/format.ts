@@ -79,6 +79,15 @@ export function formatDateGB(date: string | number | Date): string {
   });
 }
 
+/**
+ * Short calendar day from an ISO date (YYYY-MM-DD), e.g. "16 Oct". Parsed as a
+ * calendar day, so it never shifts with the time zone.
+ */
+export function formatDayMonth(isoDate: string): string {
+  const [, m, d] = isoDate.slice(0, 10).split('-').map(Number);
+  return `${d} ${MONTH_SHORT[m - 1]}`;
+}
+
 /** en-GB date as "dd MMM yyyy", e.g. "05 Mar 2025". */
 export function formatDateGBPadded(date: string | number | Date): string {
   return new Date(date).toLocaleDateString('en-GB', {

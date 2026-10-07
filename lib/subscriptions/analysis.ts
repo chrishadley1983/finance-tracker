@@ -6,6 +6,8 @@
  * with one addition: a cancelled or paused subscription that is still being charged.
  */
 
+import { formatDayMonth } from '@/lib/format';
+
 export const FREQUENCIES = ['weekly', 'fortnightly', 'monthly', 'quarterly', 'termly', 'annual'] as const;
 export type Frequency = (typeof FREQUENCIES)[number];
 
@@ -195,7 +197,7 @@ export function assessSubscription(sub: SubscriptionRow, charges: Charge[], toda
       if (until >= 0 && until <= CANCEL_WINDOW_DAYS) {
         signals.push({
           type: 'cancel_window',
-          message: `Cancel by ${deadline} to stop the ${sub.next_renewal_date} renewal`,
+          message: `Cancel by ${formatDayMonth(deadline)} to stop the ${formatDayMonth(sub.next_renewal_date)} renewal`,
         });
       }
     }

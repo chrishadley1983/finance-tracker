@@ -132,7 +132,7 @@ describe('assessSubscription', () => {
       TODAY,
     );
     expect(r.signals.map((s) => s.type)).toEqual(['cancel_window']);
-    expect(r.signals[0].message).toContain('2026-10-16');
+    expect(r.signals[0].message).toBe('Cancel by 16 Oct to stop the 30 Oct renewal');
     expect(r.next_due).toBe('2026-10-30');
     expect(r.next_due_source).toBe('renewal_date');
   });
