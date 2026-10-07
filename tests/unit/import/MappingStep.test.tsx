@@ -49,9 +49,9 @@ describe('MappingStep', () => {
     it('renders column mapping form', async () => {
       render(<MappingStep {...defaultProps} />);
 
-      expect(screen.getByText('Map Columns')).toBeInTheDocument();
-      expect(screen.getByText('Required Fields')).toBeInTheDocument();
-      expect(screen.getByText('Optional Fields')).toBeInTheDocument();
+      expect(screen.getByText('Match columns')).toBeInTheDocument();
+      expect(screen.getByText('Required')).toBeInTheDocument();
+      expect(screen.getByText('Optional')).toBeInTheDocument();
     });
 
     it('renders header options in dropdowns', async () => {
@@ -92,7 +92,8 @@ describe('MappingStep', () => {
       );
 
       expect(screen.getByText(/detected format: hsbc current/i)).toBeInTheDocument();
-      expect(screen.getByText(/95% confidence/i)).toBeInTheDocument();
+      // High confidence is not printed; only a partial match shows its percentage.
+      expect(screen.queryByText(/95% confidence/i)).not.toBeInTheDocument();
     });
 
     it('pre-fills suggested mapping', async () => {

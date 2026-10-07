@@ -5,7 +5,7 @@ import { applyThemePreference, readThemePreference, type ThemePreference } from 
 
 const OPTIONS: { value: ThemePreference; label: string; hint: string }[] = [
   { value: 'light', label: 'Light', hint: 'Default' },
-  { value: 'dark', label: 'Dark', hint: 'Pages are being restyled; some older screens may look mixed' },
+  { value: 'dark', label: 'Dark', hint: 'Easier on the eyes at night' },
   { value: 'system', label: 'Match system', hint: 'Follows your device setting' },
 ];
 
@@ -22,20 +22,17 @@ export function ThemeSelector() {
   };
 
   return (
-    <fieldset className="grid gap-2">
+    <fieldset className="grid gap-3">
       <legend className="sr-only">Theme</legend>
       {OPTIONS.map((o) => (
-        <label
-          key={o.value}
-          className="flex items-start gap-3 rounded-md border border-line px-3 py-2 cursor-pointer hover:bg-sunk has-[:checked]:border-accent has-[:checked]:bg-accent-soft"
-        >
+        <label key={o.value} className="flex cursor-pointer items-start gap-3">
           <input
             type="radio"
             name="theme"
             value={o.value}
             checked={pref === o.value}
             onChange={() => choose(o.value)}
-            className="mt-1 accent-[var(--accent)]"
+            className="mt-1 h-4 w-4 shrink-0 accent-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           />
           <span className="grid">
             <span className="text-sm font-medium text-ink">{o.label}</span>

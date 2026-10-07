@@ -1,0 +1,1403 @@
+{
+  "/api/budgets/sync": {
+    "success": true,
+    "created": 0
+  },
+  "/api/budgets/comparison": {
+    "year": 2026,
+    "month": 10,
+    "groups": [
+      {
+        "groupName": "Income",
+        "isIncome": true,
+        "categories": [
+          {
+            "categoryId": "e81bf6b4-9333-588a-9809-90bfd7049f99",
+            "categoryName": "Salary",
+            "groupName": "Income",
+            "isIncome": true,
+            "budgetAmount": 5200,
+            "actualAmount": 5200.0,
+            "variance": 0.0
+          },
+          {
+            "categoryId": "959820d6-fd2e-5b07-9350-1a3bacc9d995",
+            "categoryName": "Child benefit",
+            "groupName": "Income",
+            "isIncome": true,
+            "budgetAmount": 110,
+            "actualAmount": 110.0,
+            "variance": 0.0
+          },
+          {
+            "categoryId": "259f3968-c172-5ba2-8bd1-340ed9e01905",
+            "categoryName": "Savings interest",
+            "groupName": "Income",
+            "isIncome": true,
+            "budgetAmount": 20,
+            "actualAmount": 14.2,
+            "variance": -5.8
+          }
+        ],
+        "totals": {
+          "budget": 5330,
+          "actual": 5324.2,
+          "variance": -5.8
+        }
+      },
+      {
+        "groupName": "Food",
+        "isIncome": false,
+        "categories": [
+          {
+            "categoryId": "859ad081-1e95-5092-926d-02e06aa01260",
+            "categoryName": "Groceries",
+            "groupName": "Food",
+            "isIncome": false,
+            "budgetAmount": 600,
+            "actualAmount": 412.37,
+            "variance": -187.63
+          },
+          {
+            "categoryId": "093f81fc-9bb6-541e-b803-977bd85748f3",
+            "categoryName": "Eating out",
+            "groupName": "Food",
+            "isIncome": false,
+            "budgetAmount": 250,
+            "actualAmount": 286.4,
+            "variance": 36.4
+          },
+          {
+            "categoryId": "c011f7cc-bc09-5cc3-af8e-81bef1489936",
+            "categoryName": "Coffee & snacks",
+            "groupName": "Food",
+            "isIncome": false,
+            "budgetAmount": 40,
+            "actualAmount": 18.6,
+            "variance": -21.4
+          }
+        ],
+        "totals": {
+          "budget": 890,
+          "actual": 717.37,
+          "variance": -172.63
+        }
+      },
+      {
+        "groupName": "Home",
+        "isIncome": false,
+        "categories": [
+          {
+            "categoryId": "659137e8-c8ad-5597-b0ca-12395fff61e8",
+            "categoryName": "Mortgage",
+            "groupName": "Home",
+            "isIncome": false,
+            "budgetAmount": 1450,
+            "actualAmount": 1450.0,
+            "variance": 0.0
+          },
+          {
+            "categoryId": "f32cab75-76fa-5c9e-9fe2-73af1736ec26",
+            "categoryName": "Council tax",
+            "groupName": "Home",
+            "isIncome": false,
+            "budgetAmount": 210,
+            "actualAmount": 210.0,
+            "variance": 0.0
+          },
+          {
+            "categoryId": "52ac44c1-9ac3-5ed3-81c5-d296377efe03",
+            "categoryName": "Energy",
+            "groupName": "Home",
+            "isIncome": false,
+            "budgetAmount": 180,
+            "actualAmount": 96.12,
+            "variance": -83.88
+          },
+          {
+            "categoryId": "d38382bb-f4a0-522e-9428-3a7e412be3b0",
+            "categoryName": "Broadband",
+            "groupName": "Home",
+            "isIncome": false,
+            "budgetAmount": 45,
+            "actualAmount": 45.0,
+            "variance": 0.0
+          },
+          {
+            "categoryId": "2c49e85e-7c8f-51b2-a116-a1836b21aa68",
+            "categoryName": "Home insurance",
+            "groupName": "Home",
+            "isIncome": false,
+            "budgetAmount": 0,
+            "actualAmount": 0.0,
+            "variance": 0.0
+          }
+        ],
+        "totals": {
+          "budget": 1885,
+          "actual": 1801.12,
+          "variance": -83.88
+        }
+      },
+      {
+        "groupName": "Kids",
+        "isIncome": false,
+        "categories": [
+          {
+            "categoryId": "e4221411-19b8-537e-8049-74af51a1ca33",
+            "categoryName": "Clubs & activities",
+            "groupName": "Kids",
+            "isIncome": false,
+            "budgetAmount": 120,
+            "actualAmount": 148.0,
+            "variance": 28.0
+          },
+          {
+            "categoryId": "81fb6788-1dfb-5a66-9358-bb2771454754",
+            "categoryName": "School",
+            "groupName": "Kids",
+            "isIncome": false,
+            "budgetAmount": 80,
+            "actualAmount": 42.5,
+            "variance": -37.5
+          },
+          {
+            "categoryId": "9d0933c8-88ae-5479-8904-b0a97a399017",
+            "categoryName": "Childcare",
+            "groupName": "Kids",
+            "isIncome": false,
+            "budgetAmount": 0,
+            "actualAmount": 0.0,
+            "variance": 0.0
+          }
+        ],
+        "totals": {
+          "budget": 200,
+          "actual": 190.5,
+          "variance": -9.5
+        }
+      },
+      {
+        "groupName": "Transport",
+        "isIncome": false,
+        "categories": [
+          {
+            "categoryId": "b6871610-0089-5987-bb42-c94ea01958d8",
+            "categoryName": "Fuel",
+            "groupName": "Transport",
+            "isIncome": false,
+            "budgetAmount": 150,
+            "actualAmount": 64.3,
+            "variance": -85.7
+          },
+          {
+            "categoryId": "59601658-22c6-52a3-8373-22972e074e94",
+            "categoryName": "Parking",
+            "groupName": "Transport",
+            "isIncome": false,
+            "budgetAmount": 30,
+            "actualAmount": 11.8,
+            "variance": -18.2
+          },
+          {
+            "categoryId": "8a67dfea-9269-5d7b-8320-704fb23cc592",
+            "categoryName": "Car insurance",
+            "groupName": "Transport",
+            "isIncome": false,
+            "budgetAmount": 0,
+            "actualAmount": 0.0,
+            "variance": 0.0
+          }
+        ],
+        "totals": {
+          "budget": 180,
+          "actual": 76.1,
+          "variance": -103.9
+        }
+      },
+      {
+        "groupName": "Lifestyle",
+        "isIncome": false,
+        "categories": [
+          {
+            "categoryId": "3972d480-9d5e-5b3e-8316-eafbd2eb952b",
+            "categoryName": "Subscriptions",
+            "groupName": "Lifestyle",
+            "isIncome": false,
+            "budgetAmount": 60,
+            "actualAmount": 38.97,
+            "variance": -21.03
+          },
+          {
+            "categoryId": "392a91ef-f505-539d-8b08-dd980af9113e",
+            "categoryName": "Gifts",
+            "groupName": "Lifestyle",
+            "isIncome": false,
+            "budgetAmount": 50,
+            "actualAmount": 0.0,
+            "variance": -50.0
+          },
+          {
+            "categoryId": "8b7c4299-a92f-55f2-8737-4e7189ae13cc",
+            "categoryName": "Holidays",
+            "groupName": "Lifestyle",
+            "isIncome": false,
+            "budgetAmount": 300,
+            "actualAmount": 0.0,
+            "variance": -300.0
+          }
+        ],
+        "totals": {
+          "budget": 410,
+          "actual": 38.97,
+          "variance": -371.03
+        }
+      }
+    ]
+  },
+  "/api/budgets/savings-rate": {
+    "year": 2026,
+    "month": 10,
+    "savingsRate": {
+      "totalIncomeBudget": 5330,
+      "totalIncomeActual": 5324.2,
+      "totalExpenseBudget": 3565,
+      "totalExpenseActual": 2824.06,
+      "savingsBudget": 1765,
+      "savingsActual": 2500.14,
+      "savingsRateBudget": 33.1,
+      "savingsRateActual": 47.0
+    }
+  },
+  "/api/budgets/bulk": {
+    "year": 2026,
+    "budgets": [
+      {
+        "categoryId": "e81bf6b4-9333-588a-9809-90bfd7049f99",
+        "categoryName": "Salary",
+        "groupName": "Income",
+        "isIncome": true,
+        "months": {
+          "1": {
+            "id": "4ad5557d-bf80-553a-99b6-bafa07541fdb",
+            "amount": 433.33
+          },
+          "2": {
+            "id": "a6287921-e021-5ba7-9dfa-802f57ee3f32",
+            "amount": 433.33
+          },
+          "3": {
+            "id": "878b0b18-9a3c-56cb-9d98-941e090d40bb",
+            "amount": 433.33
+          },
+          "4": {
+            "id": "3a93c008-fe51-557e-8698-157e6baf57ae",
+            "amount": 433.33
+          },
+          "5": {
+            "id": "9e6ae7cc-a837-5270-8a11-aad14086af27",
+            "amount": 433.33
+          },
+          "6": {
+            "id": "4245c05a-09f9-5230-959a-a8dd52970980",
+            "amount": 433.33
+          },
+          "7": {
+            "id": "ea5d5e9b-eeaa-558b-bad9-a35bc89fe42b",
+            "amount": 433.33
+          },
+          "8": {
+            "id": "da28b1aa-ac09-5a78-9a91-10e236088e5d",
+            "amount": 433.33
+          },
+          "9": {
+            "id": "2accfc2b-d425-5025-8f48-9490a5e97d7e",
+            "amount": 433.33
+          },
+          "10": {
+            "id": "0526e15c-f649-5ce5-bf3e-b22b46bb9816",
+            "amount": 433.33
+          },
+          "11": {
+            "id": "c867b15b-c3f8-5b15-9fb4-61d64011b485",
+            "amount": 433.33
+          },
+          "12": {
+            "id": "5272cef0-e53d-5745-ac01-02c34b9384e2",
+            "amount": 433.33
+          }
+        }
+      },
+      {
+        "categoryId": "959820d6-fd2e-5b07-9350-1a3bacc9d995",
+        "categoryName": "Child benefit",
+        "groupName": "Income",
+        "isIncome": true,
+        "months": {
+          "1": {
+            "id": "0bdc9b73-e02d-558a-af16-37ad68033269",
+            "amount": 9.17
+          },
+          "2": {
+            "id": "6af95300-b0ce-57c3-9221-06459e01eebd",
+            "amount": 9.17
+          },
+          "3": {
+            "id": "17fb8fbd-c6da-5d75-972a-e25885a8dafa",
+            "amount": 9.17
+          },
+          "4": {
+            "id": "a328082c-818e-5b11-b896-17420b9740ab",
+            "amount": 9.17
+          },
+          "5": {
+            "id": "c2bb99f0-6b50-53a6-bc78-0c9cfbb8ce95",
+            "amount": 9.17
+          },
+          "6": {
+            "id": "959e61d8-78cb-50fc-928b-ccfa2cf7332c",
+            "amount": 9.17
+          },
+          "7": {
+            "id": "107eb830-9533-50ba-943a-b8b336a948c7",
+            "amount": 9.17
+          },
+          "8": {
+            "id": "a7252c4a-c230-526f-a91c-266a93af148b",
+            "amount": 9.17
+          },
+          "9": {
+            "id": "e5a4b013-ea82-555f-9e29-3b15c1666424",
+            "amount": 9.17
+          },
+          "10": {
+            "id": "bcc28ecd-4055-5d90-95e6-b2c0a5d16e3a",
+            "amount": 9.17
+          },
+          "11": {
+            "id": "572871d1-7c31-59c6-bd8e-cbd728b9e1fb",
+            "amount": 9.17
+          },
+          "12": {
+            "id": "ee0fbb32-740b-59dc-a407-cec4cfe8e627",
+            "amount": 9.17
+          }
+        }
+      },
+      {
+        "categoryId": "259f3968-c172-5ba2-8bd1-340ed9e01905",
+        "categoryName": "Savings interest",
+        "groupName": "Income",
+        "isIncome": true,
+        "months": {
+          "1": {
+            "id": "af996eaa-86a2-53dc-8f4e-873c720ef975",
+            "amount": 1.67
+          },
+          "2": {
+            "id": "c285e5c8-d357-58b4-a9d9-1607e3e46467",
+            "amount": 1.67
+          },
+          "3": {
+            "id": "9fd8a882-3bd8-5edf-b8fc-05f7a19c8a97",
+            "amount": 1.67
+          },
+          "4": {
+            "id": "6298c76a-7ea9-53cb-9a92-213ac48c6722",
+            "amount": 1.67
+          },
+          "5": {
+            "id": "3e0f93a2-9767-5e1d-b0f6-89652a482927",
+            "amount": 1.67
+          },
+          "6": {
+            "id": "74b26fe4-7959-5e61-8953-5ab0d5a88391",
+            "amount": 1.67
+          },
+          "7": {
+            "id": "6cf3919c-8527-56b7-a22d-459d8f2b23a4",
+            "amount": 1.67
+          },
+          "8": {
+            "id": "5d379174-550c-5ef5-8b3e-0c464ae785b2",
+            "amount": 1.67
+          },
+          "9": {
+            "id": "41590946-5b9b-50b5-900f-187015b86ed2",
+            "amount": 1.67
+          },
+          "10": {
+            "id": "349bdf3a-3b83-5413-8195-f280b8fe2dde",
+            "amount": 1.67
+          },
+          "11": {
+            "id": "ac30126c-81f9-5f3c-9ac7-1777d080230a",
+            "amount": 1.67
+          },
+          "12": {
+            "id": "a79ff5b3-5fc0-557f-a01f-f3866b323640",
+            "amount": 1.67
+          }
+        }
+      },
+      {
+        "categoryId": "859ad081-1e95-5092-926d-02e06aa01260",
+        "categoryName": "Groceries",
+        "groupName": "Food",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "4ca0a953-c3ca-5d08-a54b-4f296e1beb54",
+            "amount": 50.0
+          },
+          "2": {
+            "id": "a96ca3b8-9dde-5d29-97bb-4cc6c10a6e04",
+            "amount": 50.0
+          },
+          "3": {
+            "id": "a9287c14-5e34-5596-9009-db8173b72806",
+            "amount": 50.0
+          },
+          "4": {
+            "id": "d684e640-81ac-59c6-a743-6180c6156188",
+            "amount": 50.0
+          },
+          "5": {
+            "id": "3a611282-a9c8-54b7-8ccc-9703442c445a",
+            "amount": 50.0
+          },
+          "6": {
+            "id": "2567e8b3-2cb0-52f5-8c05-5a6771187622",
+            "amount": 50.0
+          },
+          "7": {
+            "id": "4802f45d-18dd-5578-b39b-cfbbc07feaf1",
+            "amount": 50.0
+          },
+          "8": {
+            "id": "71af0f78-c371-5472-a774-3b7a5a608a10",
+            "amount": 50.0
+          },
+          "9": {
+            "id": "1c1bc442-998a-5268-a019-1da1a03eaf23",
+            "amount": 50.0
+          },
+          "10": {
+            "id": "7862de0b-8009-5d62-bf27-db1b35654e72",
+            "amount": 50.0
+          },
+          "11": {
+            "id": "96056154-41bf-54ae-902f-c5bf0567ba0e",
+            "amount": 50.0
+          },
+          "12": {
+            "id": "2659b0f6-8353-5e53-884c-cfa966b19c60",
+            "amount": 50.0
+          }
+        }
+      },
+      {
+        "categoryId": "093f81fc-9bb6-541e-b803-977bd85748f3",
+        "categoryName": "Eating out",
+        "groupName": "Food",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "699184d5-f7e6-50d9-9f39-11a603cac40e",
+            "amount": 20.83
+          },
+          "2": {
+            "id": "2db55c51-bc49-5927-80e0-763331433d08",
+            "amount": 20.83
+          },
+          "3": {
+            "id": "301b3623-6285-54fb-b577-d45745c9c33e",
+            "amount": 20.83
+          },
+          "4": {
+            "id": "0dbb1b52-ebee-52f1-8d52-0ad0b49d2819",
+            "amount": 20.83
+          },
+          "5": {
+            "id": "0c537291-6e1d-53c1-b1fe-058a7c850994",
+            "amount": 20.83
+          },
+          "6": {
+            "id": "ff959fcb-82d9-5701-80d5-7bf914a12a30",
+            "amount": 20.83
+          },
+          "7": {
+            "id": "16e4d361-2b7c-5c8a-b9a5-810a9880d0c5",
+            "amount": 20.83
+          },
+          "8": {
+            "id": "25ce39e8-a1d8-548e-bf20-65065fa8a7d4",
+            "amount": 20.83
+          },
+          "9": {
+            "id": "5ed6d740-d66d-54b9-890b-3b3a78b63944",
+            "amount": 20.83
+          },
+          "10": {
+            "id": "b29fca24-ef6c-5783-922c-e1cc253f5c4d",
+            "amount": 20.83
+          },
+          "11": {
+            "id": "022b0df9-4367-5903-b70c-f5469841f0c9",
+            "amount": 20.83
+          },
+          "12": {
+            "id": "06994a66-aa24-5c01-bd97-63e5f70bb7b0",
+            "amount": 20.83
+          }
+        }
+      },
+      {
+        "categoryId": "c011f7cc-bc09-5cc3-af8e-81bef1489936",
+        "categoryName": "Coffee & snacks",
+        "groupName": "Food",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "50583cf1-860d-5ea9-86ee-93a6bf92c157",
+            "amount": 3.33
+          },
+          "2": {
+            "id": "e28f5c6b-cdb0-51f9-8d9c-67b2a53e3f58",
+            "amount": 3.33
+          },
+          "3": {
+            "id": "0f8cd0be-df95-52b7-b098-667aecb6d7fd",
+            "amount": 3.33
+          },
+          "4": {
+            "id": "837932d9-f165-5441-9ea0-a0f6c4f7ac47",
+            "amount": 3.33
+          },
+          "5": {
+            "id": "bcac21f4-c744-5c0f-b92d-1211edc7e5bf",
+            "amount": 3.33
+          },
+          "6": {
+            "id": "1b26d66d-4843-546c-bbc5-0e2d1d1bafa6",
+            "amount": 3.33
+          },
+          "7": {
+            "id": "d5ded2a4-723a-51c0-ae4e-8e490f3ebf77",
+            "amount": 3.33
+          },
+          "8": {
+            "id": "93df7727-cc44-5063-a1cd-3edcda70bcd6",
+            "amount": 3.33
+          },
+          "9": {
+            "id": "4943d5fe-85fa-5456-9514-31621a759394",
+            "amount": 3.33
+          },
+          "10": {
+            "id": "b604c603-310c-54f9-b66e-adc76e0dbb5a",
+            "amount": 3.33
+          },
+          "11": {
+            "id": "f1aa831e-df83-51c2-8bd6-93d54027b08f",
+            "amount": 3.33
+          },
+          "12": {
+            "id": "a0b83ae9-d4fc-5ca7-a2cc-b9f359a6f33c",
+            "amount": 3.33
+          }
+        }
+      },
+      {
+        "categoryId": "659137e8-c8ad-5597-b0ca-12395fff61e8",
+        "categoryName": "Mortgage",
+        "groupName": "Home",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "1e74dacd-23f2-5fd5-b519-a97e3d9cbde2",
+            "amount": 120.83
+          },
+          "2": {
+            "id": "1798b4e0-894b-5369-94aa-4b6ad3c4c6bd",
+            "amount": 120.83
+          },
+          "3": {
+            "id": "e05e3b90-7451-5628-a4b0-66ab131da8e7",
+            "amount": 120.83
+          },
+          "4": {
+            "id": "3ea9987a-8e3a-5d17-93d9-58e88e0c8e93",
+            "amount": 120.83
+          },
+          "5": {
+            "id": "b52a4364-d449-5180-a52a-b015f9c9a1cc",
+            "amount": 120.83
+          },
+          "6": {
+            "id": "4b04a2a9-8a31-5a4a-a092-9ece0f1218f5",
+            "amount": 120.83
+          },
+          "7": {
+            "id": "3ace7e54-04a3-595b-834c-f0e3f800c61c",
+            "amount": 120.83
+          },
+          "8": {
+            "id": "7ca3d828-f881-5709-a990-888f2aada79b",
+            "amount": 120.83
+          },
+          "9": {
+            "id": "f96302c7-228f-54f9-9a4d-13c28565cfc4",
+            "amount": 120.83
+          },
+          "10": {
+            "id": "37013cbc-98f1-59ed-a821-9c9e9bd826a3",
+            "amount": 120.83
+          },
+          "11": {
+            "id": "33335683-8cbf-5e0a-94d2-e056d68638bb",
+            "amount": 120.83
+          },
+          "12": {
+            "id": "c1eee881-e8b5-5a99-ae49-55ddbc29fcb2",
+            "amount": 120.83
+          }
+        }
+      },
+      {
+        "categoryId": "f32cab75-76fa-5c9e-9fe2-73af1736ec26",
+        "categoryName": "Council tax",
+        "groupName": "Home",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "a972ffba-6beb-5e14-8bd5-413455268977",
+            "amount": 17.5
+          },
+          "2": {
+            "id": "a2f302a9-e2a8-5fa3-a82e-b328d4f88fb3",
+            "amount": 17.5
+          },
+          "3": {
+            "id": "164293d3-514f-5526-84d8-4bfbc68c04ed",
+            "amount": 17.5
+          },
+          "4": {
+            "id": "2d2fac84-0775-5748-bdb7-3a4309f87e65",
+            "amount": 17.5
+          },
+          "5": {
+            "id": "aad7d321-5179-5841-b168-7ca05d0151ae",
+            "amount": 17.5
+          },
+          "6": {
+            "id": "cb16b7be-e315-5b3d-9d01-c1b7b16c1c5a",
+            "amount": 17.5
+          },
+          "7": {
+            "id": "b1254cd0-7fd3-5a99-bff2-08984b65e936",
+            "amount": 17.5
+          },
+          "8": {
+            "id": "66788034-c41d-5d26-bb7b-c7fb9bc49583",
+            "amount": 17.5
+          },
+          "9": {
+            "id": "9c1b6a94-43f1-5ea0-aca9-797402d5d880",
+            "amount": 17.5
+          },
+          "10": {
+            "id": "e8953565-3b60-56a3-ae84-b2070432da29",
+            "amount": 17.5
+          },
+          "11": {
+            "id": "3a2f3608-028d-50d4-a648-0f6bbe8b097f",
+            "amount": 17.5
+          },
+          "12": {
+            "id": "a2b056af-35fc-529e-ad7b-4aaf067f96c5",
+            "amount": 17.5
+          }
+        }
+      },
+      {
+        "categoryId": "52ac44c1-9ac3-5ed3-81c5-d296377efe03",
+        "categoryName": "Energy",
+        "groupName": "Home",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "9aaf3227-4f28-555d-8e78-f811925669e0",
+            "amount": 15.0
+          },
+          "2": {
+            "id": "87604992-a22d-5a73-a697-066cc3319c5d",
+            "amount": 15.0
+          },
+          "3": {
+            "id": "7cd9f6ce-d553-5fa1-bfbc-fa2f4c7c94de",
+            "amount": 15.0
+          },
+          "4": {
+            "id": "7dc3e7fc-c14d-5afd-9423-cd56c42bcc8c",
+            "amount": 15.0
+          },
+          "5": {
+            "id": "602b72ae-0ebe-5f38-beb6-dec34224b861",
+            "amount": 15.0
+          },
+          "6": {
+            "id": "1a1a110f-e824-5ddc-be86-77a80ca7824b",
+            "amount": 15.0
+          },
+          "7": {
+            "id": "2aa98324-0f92-58cb-9142-e4057a7c2d17",
+            "amount": 15.0
+          },
+          "8": {
+            "id": "dc8a4a48-d5c3-56ff-9253-307af9789c40",
+            "amount": 15.0
+          },
+          "9": {
+            "id": "083781e5-41b6-5f24-8011-cf51bf134c17",
+            "amount": 15.0
+          },
+          "10": {
+            "id": "d8f80e34-3696-5c1f-8a2f-8906632b54b5",
+            "amount": 15.0
+          },
+          "11": {
+            "id": "81a7c08e-55c9-5890-95bd-a22017b5599e",
+            "amount": 15.0
+          },
+          "12": {
+            "id": "16d52377-b328-5246-bc12-6439295de48b",
+            "amount": 15.0
+          }
+        }
+      },
+      {
+        "categoryId": "d38382bb-f4a0-522e-9428-3a7e412be3b0",
+        "categoryName": "Broadband",
+        "groupName": "Home",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "5da3f26a-8d28-5363-8a3d-2980d3b0d5a4",
+            "amount": 3.75
+          },
+          "2": {
+            "id": "e2eeaa76-9042-5d1d-ae0c-6f8ae0c1030c",
+            "amount": 3.75
+          },
+          "3": {
+            "id": "7ac520e9-b5d7-5cf2-8e27-dbd684337801",
+            "amount": 3.75
+          },
+          "4": {
+            "id": "0aefb485-2b5c-5809-9f07-71f7eac79fa1",
+            "amount": 3.75
+          },
+          "5": {
+            "id": "70447f6d-d844-5632-ad2a-80176e614432",
+            "amount": 3.75
+          },
+          "6": {
+            "id": "1795f8db-1e1d-5643-83b6-7e7b0e4cdc40",
+            "amount": 3.75
+          },
+          "7": {
+            "id": "9cbc3f7c-982b-5bd1-a2e0-b9769899592b",
+            "amount": 3.75
+          },
+          "8": {
+            "id": "9ca1f5e5-f9ab-57e6-a210-b7dd98e82ae0",
+            "amount": 3.75
+          },
+          "9": {
+            "id": "ea3f1434-73c6-5ce1-a9b0-3248f56d855f",
+            "amount": 3.75
+          },
+          "10": {
+            "id": "5bfdec47-cc52-5bb4-b987-5da00f9dadaa",
+            "amount": 3.75
+          },
+          "11": {
+            "id": "16c409e3-63e7-5147-886f-7774f6ab757d",
+            "amount": 3.75
+          },
+          "12": {
+            "id": "f91f8bf4-a77b-5bea-90cb-d9c8e07c407b",
+            "amount": 3.75
+          }
+        }
+      },
+      {
+        "categoryId": "2c49e85e-7c8f-51b2-a116-a1836b21aa68",
+        "categoryName": "Home insurance",
+        "groupName": "Home",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "e6791d8d-f483-5b17-aa17-efc08a298dba",
+            "amount": 0
+          },
+          "2": {
+            "id": "2f759299-45f8-54c1-b202-03972781f8ca",
+            "amount": 0
+          },
+          "3": {
+            "id": "93743f8f-07d4-5a77-a3d2-598358605196",
+            "amount": 0
+          },
+          "4": {
+            "id": "020d04ab-70ab-5d05-bdeb-e93d7e93f06f",
+            "amount": 0
+          },
+          "5": {
+            "id": "e432a562-18ed-58c7-84cb-89cf94eba0a0",
+            "amount": 0
+          },
+          "6": {
+            "id": "3ce6735b-b03a-5d45-97b8-6e6883faa368",
+            "amount": 0
+          },
+          "7": {
+            "id": "339b3fb3-dfc8-5db1-8f44-b37b31952c52",
+            "amount": 0
+          },
+          "8": {
+            "id": "cd2384e1-472c-5a54-8cf8-3f2977f93071",
+            "amount": 0
+          },
+          "9": {
+            "id": "40c1e3df-6b3a-5419-bd5b-eaf00cd30225",
+            "amount": 0
+          },
+          "10": {
+            "id": "8734b20a-8773-5e5c-83ab-0d1afc49b603",
+            "amount": 0
+          },
+          "11": {
+            "id": "c85e46fe-7be3-587e-a16b-ad1532f5f171",
+            "amount": 0
+          },
+          "12": {
+            "id": "4db52103-8016-56be-8005-5f0a794b9688",
+            "amount": 0
+          }
+        }
+      },
+      {
+        "categoryId": "e4221411-19b8-537e-8049-74af51a1ca33",
+        "categoryName": "Clubs & activities",
+        "groupName": "Kids",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "6a39bf7b-7522-57fa-b35e-4ef434af7fbf",
+            "amount": 10.0
+          },
+          "2": {
+            "id": "05c1a27f-9d9f-57de-a8be-e9634bc41d7a",
+            "amount": 10.0
+          },
+          "3": {
+            "id": "d1023f14-820c-5f53-834d-12fe13340192",
+            "amount": 10.0
+          },
+          "4": {
+            "id": "21df275b-7c3f-5bde-a41a-4f0c5c190440",
+            "amount": 10.0
+          },
+          "5": {
+            "id": "c4ef3304-d79c-5784-b54b-ce9d587fb129",
+            "amount": 10.0
+          },
+          "6": {
+            "id": "ea572e2a-ca5e-5545-b6c4-13706b840145",
+            "amount": 10.0
+          },
+          "7": {
+            "id": "69939a71-9028-5e66-847d-7084a80a5074",
+            "amount": 10.0
+          },
+          "8": {
+            "id": "e7ceb181-d47f-5dfe-9dd1-55a850d85687",
+            "amount": 10.0
+          },
+          "9": {
+            "id": "664c985b-9598-56be-a43c-f829a3a3758b",
+            "amount": 10.0
+          },
+          "10": {
+            "id": "01be4f4d-fe92-5584-96fe-7e1a7e397dc3",
+            "amount": 10.0
+          },
+          "11": {
+            "id": "4e1edacc-0d38-540a-89a0-25c6e07da962",
+            "amount": 10.0
+          },
+          "12": {
+            "id": "9266e71a-1485-593b-993e-7eb5d8ce5acc",
+            "amount": 10.0
+          }
+        }
+      },
+      {
+        "categoryId": "81fb6788-1dfb-5a66-9358-bb2771454754",
+        "categoryName": "School",
+        "groupName": "Kids",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "89a26338-38f6-50ed-908d-1ffe7f3b3acb",
+            "amount": 6.67
+          },
+          "2": {
+            "id": "d4ed81e5-a584-5eed-89c5-aabb1a41305f",
+            "amount": 6.67
+          },
+          "3": {
+            "id": "0f310535-8137-5765-9911-f0179f47246c",
+            "amount": 6.67
+          },
+          "4": {
+            "id": "eb81225c-7823-5d16-bcb3-c6e4f11d0778",
+            "amount": 6.67
+          },
+          "5": {
+            "id": "8d099f25-f2f8-5a98-94bf-38be5d88284f",
+            "amount": 6.67
+          },
+          "6": {
+            "id": "81521afe-f073-545e-a7be-7a986b784efb",
+            "amount": 6.67
+          },
+          "7": {
+            "id": "cac95247-11a1-50f3-9a86-ec7c1f6d95ce",
+            "amount": 6.67
+          },
+          "8": {
+            "id": "ff1f94b2-36e9-5a04-8934-7b46d1d280ba",
+            "amount": 6.67
+          },
+          "9": {
+            "id": "bfa8cc5c-d21f-5b04-99c3-cd030121b9b0",
+            "amount": 6.67
+          },
+          "10": {
+            "id": "0308e2ff-4358-5bbc-9bcd-0759748eddb1",
+            "amount": 6.67
+          },
+          "11": {
+            "id": "622cac8b-3bd7-5ebd-8a3e-b1dd68c6f851",
+            "amount": 6.67
+          },
+          "12": {
+            "id": "c43bc429-5ce8-5fea-b06e-2bad13ed1ee8",
+            "amount": 6.67
+          }
+        }
+      },
+      {
+        "categoryId": "9d0933c8-88ae-5479-8904-b0a97a399017",
+        "categoryName": "Childcare",
+        "groupName": "Kids",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "c2b91f9d-1160-53e2-939a-7485f83cb6d0",
+            "amount": 0
+          },
+          "2": {
+            "id": "331162bf-f093-5d53-b77f-ebd75a1feb03",
+            "amount": 0
+          },
+          "3": {
+            "id": "cc4e6556-b930-5f04-b978-7dbc6b0036ad",
+            "amount": 0
+          },
+          "4": {
+            "id": "545cac63-24ef-5400-8abf-4f5fd02080d6",
+            "amount": 0
+          },
+          "5": {
+            "id": "294e153c-6dc6-56dd-92d8-bc8ca0ce7a9c",
+            "amount": 0
+          },
+          "6": {
+            "id": "892fb527-1508-5f36-8502-69bcb1837dc7",
+            "amount": 0
+          },
+          "7": {
+            "id": "d1b65e06-5b8c-559a-a54c-944dddfbf241",
+            "amount": 0
+          },
+          "8": {
+            "id": "040dace2-05cc-54d4-adf7-38cdba596ff0",
+            "amount": 0
+          },
+          "9": {
+            "id": "05a6a131-fc6d-5820-acf8-b3b14b42537e",
+            "amount": 0
+          },
+          "10": {
+            "id": "7cd981a2-9f5b-5601-9f3d-96819e847110",
+            "amount": 0
+          },
+          "11": {
+            "id": "4de9cbf8-18b5-5369-ac2e-de3b4277e80f",
+            "amount": 0
+          },
+          "12": {
+            "id": "4757e098-0e8c-5998-9fec-3cde1db3208c",
+            "amount": 0
+          }
+        }
+      },
+      {
+        "categoryId": "b6871610-0089-5987-bb42-c94ea01958d8",
+        "categoryName": "Fuel",
+        "groupName": "Transport",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "babdb720-4eca-5e93-9653-80edb7205207",
+            "amount": 12.5
+          },
+          "2": {
+            "id": "64b3bbf1-3d13-547b-accd-625ea38d0a5c",
+            "amount": 12.5
+          },
+          "3": {
+            "id": "27797e7a-9564-539e-858b-fdc56d6f278b",
+            "amount": 12.5
+          },
+          "4": {
+            "id": "5a78b2e4-27d9-5c2d-83ed-4b4bbd61dbd5",
+            "amount": 12.5
+          },
+          "5": {
+            "id": "9f33d125-0824-5f1d-8ca7-aa5e1467267a",
+            "amount": 12.5
+          },
+          "6": {
+            "id": "11762770-fcb8-57d9-8836-4f067c1904c6",
+            "amount": 12.5
+          },
+          "7": {
+            "id": "178e18f6-d8e8-55f0-8e0e-f3bbf346329e",
+            "amount": 12.5
+          },
+          "8": {
+            "id": "d8280298-faed-5958-8835-6786396f00ed",
+            "amount": 12.5
+          },
+          "9": {
+            "id": "e8901cff-41a1-5caf-b67d-e81e88095a80",
+            "amount": 12.5
+          },
+          "10": {
+            "id": "6ba407e5-1a90-5dd6-ad61-93a3760147b0",
+            "amount": 12.5
+          },
+          "11": {
+            "id": "bfd2751b-b01f-5752-aaa3-9099063e51fa",
+            "amount": 12.5
+          },
+          "12": {
+            "id": "5706d16a-8716-5642-b946-b8c422400302",
+            "amount": 12.5
+          }
+        }
+      },
+      {
+        "categoryId": "59601658-22c6-52a3-8373-22972e074e94",
+        "categoryName": "Parking",
+        "groupName": "Transport",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "56c4badf-5b34-5aff-a440-e1fa54744c4d",
+            "amount": 2.5
+          },
+          "2": {
+            "id": "b3bf7515-5a80-5fd7-a41d-7fc5f84a1b73",
+            "amount": 2.5
+          },
+          "3": {
+            "id": "8e365ef8-146a-5419-b034-d847d31fdf3c",
+            "amount": 2.5
+          },
+          "4": {
+            "id": "a5b664be-3316-51f7-8fcf-7f2487605aa5",
+            "amount": 2.5
+          },
+          "5": {
+            "id": "817f2045-cf4c-5837-a1d2-f9ec53a8b5bb",
+            "amount": 2.5
+          },
+          "6": {
+            "id": "22760317-94e4-5ea5-bd66-61bed6d988b6",
+            "amount": 2.5
+          },
+          "7": {
+            "id": "398fa876-27eb-5d35-b281-c56488da2e41",
+            "amount": 2.5
+          },
+          "8": {
+            "id": "42262278-3894-5b8f-bdf0-05942aa1ebaa",
+            "amount": 2.5
+          },
+          "9": {
+            "id": "b47f82bc-56e1-5ca8-a397-98425aa9332a",
+            "amount": 2.5
+          },
+          "10": {
+            "id": "1de6e525-cb3c-548d-b682-962b672106f0",
+            "amount": 2.5
+          },
+          "11": {
+            "id": "79420242-085b-5c0e-8bb9-fca75b88e504",
+            "amount": 2.5
+          },
+          "12": {
+            "id": "ae17f33f-1a38-5f38-930d-1e9bd1cb8206",
+            "amount": 2.5
+          }
+        }
+      },
+      {
+        "categoryId": "8a67dfea-9269-5d7b-8320-704fb23cc592",
+        "categoryName": "Car insurance",
+        "groupName": "Transport",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "73acdfc5-fb4d-5f3a-8f31-3a52232fb16e",
+            "amount": 0
+          },
+          "2": {
+            "id": "ada3a371-6d03-5f55-b5c1-57ab1958ed28",
+            "amount": 0
+          },
+          "3": {
+            "id": "31944d6e-7858-52d8-8558-c0da650cc523",
+            "amount": 0
+          },
+          "4": {
+            "id": "c45b944c-9ff6-5505-b57e-edfd96bb9f54",
+            "amount": 0
+          },
+          "5": {
+            "id": "34c27bb2-641f-5f23-98ec-e5ebdd31d932",
+            "amount": 0
+          },
+          "6": {
+            "id": "ba26733b-6fcc-5d42-8a9e-9e5d2977be5d",
+            "amount": 0
+          },
+          "7": {
+            "id": "0e5c6297-7424-5ebd-8bbb-824dce470839",
+            "amount": 0
+          },
+          "8": {
+            "id": "cfea1766-2860-5682-9b05-c6b0e9ccafcf",
+            "amount": 0
+          },
+          "9": {
+            "id": "3cd8ead5-60dc-52e2-a420-5814f7280d5f",
+            "amount": 0
+          },
+          "10": {
+            "id": "941796e8-3ee5-577e-9799-eedcebf5fcda",
+            "amount": 0
+          },
+          "11": {
+            "id": "37049e29-de02-5955-bd32-ceae5d4b7924",
+            "amount": 0
+          },
+          "12": {
+            "id": "f9e585ff-5e07-5659-8b03-b664730ea2b3",
+            "amount": 0
+          }
+        }
+      },
+      {
+        "categoryId": "3972d480-9d5e-5b3e-8316-eafbd2eb952b",
+        "categoryName": "Subscriptions",
+        "groupName": "Lifestyle",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "af2a84f5-3fed-547f-a9f5-c46ddf6bff51",
+            "amount": 5.0
+          },
+          "2": {
+            "id": "ce53c53c-fa24-5da0-babb-bf0297894d2c",
+            "amount": 5.0
+          },
+          "3": {
+            "id": "4a853e7f-0181-5540-ab8c-4f88bfbb160f",
+            "amount": 5.0
+          },
+          "4": {
+            "id": "0c4e5a14-8dbc-580a-b0df-993d4f5f7950",
+            "amount": 5.0
+          },
+          "5": {
+            "id": "45e2c126-6de6-5a99-a456-b49fb3b5f547",
+            "amount": 5.0
+          },
+          "6": {
+            "id": "44ddb219-f0ad-5b50-97ae-09959d4cdef8",
+            "amount": 5.0
+          },
+          "7": {
+            "id": "5a7447a2-0886-58f2-8cc8-15e239dd6f25",
+            "amount": 5.0
+          },
+          "8": {
+            "id": "088ac0db-47e6-5fdb-a50f-153baa67f686",
+            "amount": 5.0
+          },
+          "9": {
+            "id": "5517f865-d824-55a5-aa49-917542757020",
+            "amount": 5.0
+          },
+          "10": {
+            "id": "0b587f8e-4786-5be9-b4db-08cb5db22dd7",
+            "amount": 5.0
+          },
+          "11": {
+            "id": "2fd032aa-3a3e-513d-8d79-3f69a2b1399e",
+            "amount": 5.0
+          },
+          "12": {
+            "id": "9602ef9e-db71-519c-99f5-669f0ba81116",
+            "amount": 5.0
+          }
+        }
+      },
+      {
+        "categoryId": "392a91ef-f505-539d-8b08-dd980af9113e",
+        "categoryName": "Gifts",
+        "groupName": "Lifestyle",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "08e0b985-0787-578e-8298-cc561ea9edb0",
+            "amount": 4.17
+          },
+          "2": {
+            "id": "d0c97ba2-acf1-567e-96ad-0349251436c1",
+            "amount": 4.17
+          },
+          "3": {
+            "id": "df8a10fb-7d1d-5b12-b8d9-3f0eb0ac158c",
+            "amount": 4.17
+          },
+          "4": {
+            "id": "df42d3b9-1b35-5651-ad4b-2897162b34a0",
+            "amount": 4.17
+          },
+          "5": {
+            "id": "d9a00c08-859f-5d4b-889c-2e4460ffa7bf",
+            "amount": 4.17
+          },
+          "6": {
+            "id": "16dc9ce2-379b-5918-b5d3-3300fddca260",
+            "amount": 4.17
+          },
+          "7": {
+            "id": "f5eb3cbd-b97d-5d8a-9e21-156c4b754b1c",
+            "amount": 4.17
+          },
+          "8": {
+            "id": "263368d1-d65d-5298-9219-dc8a3b81e975",
+            "amount": 4.17
+          },
+          "9": {
+            "id": "2320c5cc-bd28-5e75-86d5-067574c8b2e0",
+            "amount": 4.17
+          },
+          "10": {
+            "id": "2c4998de-0b6d-5875-a764-3f047ca5ea44",
+            "amount": 4.17
+          },
+          "11": {
+            "id": "718236b3-2f22-5469-8a46-bbe1a3b08d27",
+            "amount": 4.17
+          },
+          "12": {
+            "id": "cc3ea3d1-1127-5bd0-962a-99fb4b5c708e",
+            "amount": 4.17
+          }
+        }
+      },
+      {
+        "categoryId": "8b7c4299-a92f-55f2-8737-4e7189ae13cc",
+        "categoryName": "Holidays",
+        "groupName": "Lifestyle",
+        "isIncome": false,
+        "months": {
+          "1": {
+            "id": "adb72cae-58f1-5db2-a634-7c02ff5f2123",
+            "amount": 25.0
+          },
+          "2": {
+            "id": "d6193d5c-ba7b-527d-81b7-d4cf79fa7636",
+            "amount": 25.0
+          },
+          "3": {
+            "id": "55636b69-148c-5a6d-9839-ed7c6ebc8188",
+            "amount": 25.0
+          },
+          "4": {
+            "id": "6f80cb5d-c1a3-5fe9-96a4-0b76afd5022b",
+            "amount": 25.0
+          },
+          "5": {
+            "id": "30e088ba-917b-524b-8c73-9c24c1e2032e",
+            "amount": 25.0
+          },
+          "6": {
+            "id": "bce84567-e159-542d-8af0-5f8e9de40a08",
+            "amount": 25.0
+          },
+          "7": {
+            "id": "042dae93-3160-5857-add3-a3078049654b",
+            "amount": 25.0
+          },
+          "8": {
+            "id": "1e52eef8-5d49-5094-9d2d-5da6294ba971",
+            "amount": 25.0
+          },
+          "9": {
+            "id": "299f193f-92a9-5813-9001-7d2d70cfcc97",
+            "amount": 25.0
+          },
+          "10": {
+            "id": "43397b8e-d20b-5a3a-9601-e95606463a4b",
+            "amount": 25.0
+          },
+          "11": {
+            "id": "15fe2f64-5708-59f0-9403-2d9dc8351f39",
+            "amount": 25.0
+          },
+          "12": {
+            "id": "75950538-742a-5209-9b00-2754b8190860",
+            "amount": 25.0
+          }
+        }
+      }
+    ]
+  },
+  "/api/budgets/copy-month": {
+    "success": true,
+    "copied": 14,
+    "replaced": 0,
+    "previous": []
+  }
+}

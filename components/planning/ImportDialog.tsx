@@ -1,5 +1,6 @@
 'use client';
 
+import { useEscape } from './useEscape';
 import { useState, useMemo } from 'react';
 import type { PlanningSectionWithNotes } from '@/lib/validations/planning';
 
@@ -107,23 +108,25 @@ export function ImportDialog({
     setError(null);
   };
 
+  useEscape(open, handleClose);
+
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
+      <div className="absolute inset-0 bg-black/40" aria-hidden="true" onClick={handleClose} />
 
       {/* Dialog */}
-      <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+      <div role="dialog" aria-modal="true" aria-labelledby="import-dialog-title" className="relative border border-line bg-surface rounded-md shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Import Planning Notes
+        <div className="flex items-center justify-between p-4 border-b border-line">
+          <h2 id="import-dialog-title" className="text-base font-semibold text-ink">
+            Import notes from text
           </h2>
           <button
             onClick={handleClose}
-            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            aria-label="Close" className="p-1 text-ink-3 hover:text-ink-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -134,14 +137,14 @@ export function ImportDialog({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400">
+            <div className="mb-4 p-3 bg-bad-soft border border-bad/40 rounded-md text-sm text-bad">
               {error}
             </div>
           )}
 
           {step === 'input' ? (
             <div className="space-y-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-ink-2">
                 Paste your planning notes below. Use section headers on their own line,
                 and bullet points (-, *, or •) for individual notes.
               </p>
@@ -159,20 +162,20 @@ Role
 - Maximise ISA input if we have enough money
 - Pension input for Abby based on keeping below 50k tax band`}
                 rows={15}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                className="w-full px-3 py-2 border border-line rounded-md bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-accent font-mono text-sm"
                 autoFocus
               />
 
               {rawText.trim() && (
-                <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                <div className="p-3 bg-sunk rounded-md">
+                  <div className="text-sm text-ink-2">
                     Detected: <span className="font-medium">{parsedSections.length} sections</span>
                     {' with '}
                     <span className="font-medium">{totalNotes} notes</span>
                     {newSections > 0 && (
                       <>
                         {' ('}
-                        <span className="text-green-600 dark:text-green-400">
+                        <span className="text-in">
                           {newSections} new
                         </span>
                         {')'}
@@ -184,7 +187,7 @@ Role
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-ink-2">
                 Review the sections and notes that will be imported:
               </p>
 
@@ -192,17 +195,17 @@ Role
                 {parsedSections.map((section, i) => (
                   <div
                     key={i}
-                    className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden"
+                    className="border border-line rounded-md overflow-hidden"
                   >
-                    <div className="px-3 py-2 bg-slate-50 dark:bg-slate-700/50 flex items-center justify-between">
-                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                    <div className="px-3 py-2 bg-sunk flex items-center justify-between">
+                      <span className="font-medium text-ink">
                         {section.name}
                       </span>
                       <span
                         className={`px-2 py-0.5 text-xs rounded ${
                           section.isNew
-                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                            ? 'bg-accent-soft text-in '
+                            : 'bg-accent-soft text-accent '
                         }`}
                       >
                         {section.isNew ? 'New section' : 'Add to existing'}
@@ -211,8 +214,8 @@ Role
                     <div className="px-3 py-2 space-y-1">
                       {section.notes.map((note, j) => (
                         <div key={j} className="flex items-start gap-2 text-sm">
-                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0" />
-                          <span className="text-slate-700 dark:text-slate-300">{note}</span>
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-ink-3 flex-shrink-0" />
+                          <span className="text-ink-2">{note}</span>
                         </div>
                       ))}
                     </div>
@@ -224,13 +227,13 @@ Role
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between items-center p-4 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex justify-between items-center p-4 border-t border-line">
           {step === 'preview' && (
             <button
               onClick={() => setStep('input')}
-              className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+              className="px-4 py-2 text-sm font-medium text-ink-2 hover:text-ink"
             >
-              ← Back to edit
+              Back to edit
             </button>
           )}
           {step === 'input' && <div />}
@@ -239,7 +242,7 @@ Role
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-ink-2 bg-sunk rounded-md hover:bg-line-2 transition-colors"
             >
               Cancel
             </button>
@@ -248,7 +251,7 @@ Role
               <button
                 onClick={() => setStep('preview')}
                 disabled={parsedSections.length === 0}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm font-medium text-accent-ink bg-accent rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Preview Import
               </button>
@@ -256,7 +259,7 @@ Role
               <button
                 onClick={handleImport}
                 disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm font-medium text-accent-ink bg-accent rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? 'Importing...' : `Import ${totalNotes} Notes`}
               </button>

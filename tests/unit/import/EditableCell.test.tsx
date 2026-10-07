@@ -42,9 +42,9 @@ describe('EditableCell', () => {
 
     it('shows modified indicator when isModified is true', () => {
       const { container } = render(<EditableCell {...createProps({ isModified: true })} />);
-      // Check for amber background and indicator dot
-      expect(container.querySelector('.bg-amber-50')).toBeInTheDocument();
-      expect(container.querySelector('.bg-amber-500')).toBeInTheDocument();
+      // Warn-tinted background and indicator dot
+      expect(container.querySelector('.bg-warn-soft')).toBeInTheDocument();
+      expect(container.querySelector('.bg-warn')).toBeInTheDocument();
     });
 
     it('applies strikethrough when isSkipped is true', () => {
@@ -120,9 +120,14 @@ describe('EditableCell', () => {
   });
 
   describe('Number Input', () => {
-    it('formats number as currency in display mode', () => {
+    it('formats number as currency in display mode (money in gets a +)', () => {
       render(<EditableCell {...createProps({ value: 123.45, type: 'number' })} />);
-      expect(screen.getByText('£123.45')).toBeInTheDocument();
+      expect(screen.getByText('+£123.45')).toBeInTheDocument();
+    });
+
+    it('shows spending without a minus sign', () => {
+      render(<EditableCell {...createProps({ value: -42.1, type: 'number' })} />);
+      expect(screen.getByText('£42.10')).toBeInTheDocument();
     });
 
     it('renders number input when editing', () => {
@@ -236,7 +241,7 @@ describe('EditableCell', () => {
   describe('Error State', () => {
     it('shows error styling when hasError is true', () => {
       const { container } = render(<EditableCell {...createProps({ hasError: true, errorMessage: 'Invalid value' })} />);
-      expect(container.querySelector('.bg-red-50')).toBeInTheDocument();
+      expect(container.querySelector('.bg-bad-soft')).toBeInTheDocument();
     });
 
     it('shows error message in title', () => {

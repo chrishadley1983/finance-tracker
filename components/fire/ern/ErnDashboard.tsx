@@ -1,20 +1,25 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ErnSummaryCards } from './ErnSummaryCards';
-import { ErnConfigPanel, type ErnConfig } from './ErnConfigPanel';
+import { ErnConfigPanel, loadLockedOverrides, type ErnConfig } from './ErnConfigPanel';
 import { CapeScatterChart } from './CapeScatterChart';
 import { MonteCarloFanChart } from './MonteCarloFanChart';
 import { CapeWithdrawalChart } from './CapeWithdrawalChart';
 import { ConditionalFailureTable } from './ConditionalFailureTable';
 import { DrawdownExplainer } from './DrawdownExplainer';
-import { ErnTakeaways } from './ErnTakeaways';
+import { ErnTakeaways, type TakeawaysState } from './ErnTakeaways';
 import { ErnExplainer } from './ErnExplainer';
+import { loadSimPrefs, saveSimPrefs } from './sim-prefs';
+import { Button } from '@/components/ui/Button';
+import { EmptyState, Notice } from '@/components/ui/Notice';
+import { PageIntro } from '@/components/ui/PageIntro';
+import { ernLedeParts, historicalSurvival } from '../readable';
 import type { FireTakeaway } from '@/lib/fire/ern/types';
-import type { FireInputs } from '@/lib/types/fire';
+import type { FireInputs, NetWorthSummary } from '@/lib/types/fire';
 
 // Types matching the API response
-interface ErnApiResponse {
+export interface ErnApiResponse {
   historical: {
     failSafeSwr: number;
     medianSwr: number;
@@ -54,7 +59,7 @@ interface ErnApiResponse {
   };
 }
 
-interface McApiResponse {
+export interface McApiResponse {
   survivalRate: number;
   percentiles: {
     p5: number[];
@@ -67,7 +72,7 @@ interface McApiResponse {
   retirementYear?: number;
 }
 
-const DEFAULT_CONFIG: ErnConfig = {
+export const DEFAULT_CONFIG: ErnConfig = {
   portfolio: 1_538_050,
   annualSpend: 50_000,
   equityAllocation: 0.8,
@@ -87,7 +92,7 @@ const DEFAULT_CONFIG: ErnConfig = {
 };
 
 /** Map net worth byType entries to wrapper balances */
-function mapNetWorthToWrappers(byType: Array<{ type: string; total: number }>): { isa: number; sipp: number; gia: number; cash: number } {
+export function mapNetWorthToWrappers(byType: Array<{ type: string; total: number }>): { isa: number; sipp: number; gia: number; cash: number } {
   let isa = 0, sipp = 0, gia = 0, cash = 0;
   for (const entry of byType) {
     switch (entry.type) {
@@ -102,7 +107,7 @@ function mapNetWorthToWrappers(byType: Array<{ type: string; total: number }>): 
   return { isa, sipp, gia, cash };
 }
 
-function mergeFireInputsIntoConfig(inputs: FireInputs, base: ErnConfig): ErnConfig {
+export function mergeFireInputsIntoConfig(inputs: FireInputs, base: ErnConfig): ErnConfig {
   return {
     ...base,
     currentAge: inputs.currentAge,
@@ -115,86 +120,37 @@ function mergeFireInputsIntoConfig(inputs: FireInputs, base: ErnConfig): ErnConf
   };
 }
 
-interface ErnDashboardProps {
-  fireInputs?: FireInputs | null;
+/** The FIRE inputs that change the simulation; a change in any of them reruns it. */
+function inputsKey(i: FireInputs | null | undefined): string {
+  if (!i) return '';
+  return [i.currentAge, i.annualSpend, i.currentPortfolioValue, i.targetRetirementAge, i.annualSavings].join('|');
 }
 
-export function ErnDashboard({ fireInputs }: ErnDashboardProps) {
-  const initialConfig = fireInputs
-    ? mergeFireInputsIntoConfig(fireInputs, DEFAULT_CONFIG)
-    : DEFAULT_CONFIG;
-  const [config, setConfig] = useState<ErnConfig>(initialConfig);
+interface ErnDashboardProps {
+  fireInputs?: FireInputs | null;
+  /** Net worth summary, for the live portfolio and wrapper mix. */
+  netWorth?: NetWorthSummary | null;
+  /** True once the page has loaded inputs and net worth (or given up), so the first run uses them. */
+  ready?: boolean;
+}
+
+export function ErnDashboard({ fireInputs, netWorth, ready = true }: ErnDashboardProps) {
+  const [config, setConfig] = useState<ErnConfig>(DEFAULT_CONFIG);
   const [ernData, setErnData] = useState<ErnApiResponse | null>(null);
   const [mcData, setMcData] = useState<McApiResponse | null>(null);
-  const [takeaways, setTakeaways] = useState<FireTakeaway[] | null>(null);
-  const [takeawaysLoading, setTakeawaysLoading] = useState(false);
+  const [takeaways, setTakeaways] = useState<TakeawaysState>({ status: 'idle' });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastInputsId, setLastInputsId] = useState<string | undefined>(fireInputs?.id);
+  const started = useRef(false);
+  const lastInputsKey = useRef('');
+  const lastRun = useRef<{ ern: ErnApiResponse; mc?: McApiResponse; cfg: ErnConfig } | null>(null);
 
-  // Live data from net worth API (separate from config so panel can toggle)
+  // Live data from net worth (separate from config so the panel can toggle it)
   const [livePortfolio, setLivePortfolio] = useState<number | null>(null);
   const [liveWrappers, setLiveWrappers] = useState<ErnConfig['wrapperBalances'] | null>(null);
 
-  const runAnalysis = useCallback(async (cfg: ErnConfig) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Run historical + CAPE analysis
-      const ernResponse = await fetch('/api/fire/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          config: cfg,
-          includeCohorts: true,
-        }),
-      });
-
-      if (!ernResponse.ok) {
-        const errData = await ernResponse.json();
-        throw new Error(errData.error || 'Failed to run ERN analysis');
-      }
-
-      const ernResult: ErnApiResponse = await ernResponse.json();
-      setErnData(ernResult);
-
-      // Run Monte Carlo (separate call to allow independent loading)
-      let mcResult: McApiResponse | undefined;
-      try {
-        const mcResponse = await fetch('/api/fire/monte-carlo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ config: cfg }),
-        });
-
-        if (mcResponse.ok) {
-          mcResult = await mcResponse.json();
-          setMcData(mcResult!);
-        }
-      } catch {
-        // MC is optional — don't block the dashboard
-        console.warn('Monte Carlo endpoint not available');
-      }
-
-      setConfig(cfg);
-
-      // Fetch AI takeaways asynchronously after simulations complete
-      fetchTakeaways(ernResult, mcResult, cfg);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const fetchTakeaways = async (
-    ern: ErnApiResponse,
-    mc: McApiResponse | undefined,
-    cfg: ErnConfig,
-  ) => {
-    setTakeawaysLoading(true);
-    setTakeaways(null);
+  const fetchTakeaways = useCallback(async (ern: ErnApiResponse, mc: McApiResponse | undefined, cfg: ErnConfig) => {
+    setTakeaways({ status: 'loading' });
     try {
       const response = await fetch('/api/fire/takeaways', {
         method: 'POST',
@@ -210,78 +166,160 @@ export function ErnDashboard({ fireInputs }: ErnDashboardProps) {
           accumulation: ern.accumulation ?? null,
         }),
       });
-      if (response.ok) {
-        const data = await response.json();
-        setTakeaways(data.takeaways);
+      const data = (await response.json().catch(() => ({}))) as { takeaways?: FireTakeaway[]; error?: string };
+      if (response.status === 503) {
+        setTakeaways({ status: 'unavailable', message: data.error || 'AI takeaways are not available right now.' });
+      } else if (!response.ok || !Array.isArray(data.takeaways)) {
+        setTakeaways({ status: 'error', message: data.error || 'The takeaways couldn’t be generated.' });
+      } else {
+        setTakeaways({ status: 'ready', items: data.takeaways });
       }
     } catch {
-      // Takeaways are optional — fail silently
-    } finally {
-      setTakeawaysLoading(false);
+      setTakeaways({ status: 'error', message: 'Couldn’t reach the server for takeaways.' });
     }
-  };
-
-  // Fetch net worth on mount, then run initial analysis with live data
-  useEffect(() => {
-    async function init() {
-      let cfgToRun = config;
-
-      try {
-        const res = await fetch('/api/wealth/net-worth');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.byType?.length > 0) {
-            const wrappers = mapNetWorthToWrappers(data.byType);
-            // Liquid portfolio = sum of wrappers (excludes property)
-            const liquidTotal = wrappers.isa + wrappers.sipp + wrappers.gia + wrappers.cash;
-            setLivePortfolio(liquidTotal);
-            setLiveWrappers(wrappers);
-
-            // Apply live data to initial config
-            cfgToRun = { ...cfgToRun, portfolio: liquidTotal, wrapperBalances: wrappers };
-            setConfig(cfgToRun);
-          }
-        }
-      } catch {
-        // Non-critical — use defaults
-      }
-
-      runAnalysis(cfgToRun);
-    }
-    init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Re-run when fireInputs change (e.g. after saving settings)
-  useEffect(() => {
-    if (fireInputs && fireInputs.id !== lastInputsId) {
-      const updated = mergeFireInputsIntoConfig(fireInputs, config);
-      setLastInputsId(fireInputs.id);
-      runAnalysis(updated);
-    } else if (fireInputs && fireInputs.updatedAt) {
-      // Same ID but inputs may have been updated
-      const updated = mergeFireInputsIntoConfig(fireInputs, config);
-      // Only re-run if values actually changed
-      if (
-        updated.currentAge !== config.currentAge ||
-        updated.annualSpend !== config.annualSpend ||
-        updated.portfolio !== config.portfolio ||
-        updated.retirementAge !== config.retirementAge ||
-        updated.annualSavings !== config.annualSavings
-      ) {
-        runAnalysis(updated);
+  const runAnalysis = useCallback(
+    async (cfg: ErnConfig) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const ernResponse = await fetch('/api/fire/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: cfg, includeCohorts: true }),
+        });
+
+        if (!ernResponse.ok) {
+          const errData = await ernResponse.json().catch(() => ({}));
+          throw new Error(errData.error || 'The simulation failed to run.');
+        }
+
+        const ernResult: ErnApiResponse = await ernResponse.json();
+        setErnData(ernResult);
+
+        // Monte Carlo is a separate call so it can fail without blocking the rest.
+        let mcResult: McApiResponse | undefined;
+        try {
+          const mcResponse = await fetch('/api/fire/monte-carlo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ config: cfg }),
+          });
+          if (mcResponse.ok) {
+            mcResult = await mcResponse.json();
+            setMcData(mcResult!);
+          } else {
+            setMcData(null);
+          }
+        } catch {
+          setMcData(null);
+        }
+
+        setConfig(cfg);
+        lastRun.current = { ern: ernResult, mc: mcResult, cfg };
+        fetchTakeaways(ernResult, mcResult, cfg);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong.');
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [fetchTakeaways]
+  );
+
+  // First run: once the page has the FIRE inputs and net worth.
+  useEffect(() => {
+    if (!ready || started.current) return;
+    started.current = true;
+    let cfg: ErnConfig = { ...DEFAULT_CONFIG };
+    if (fireInputs) cfg = mergeFireInputsIntoConfig(fireInputs, cfg);
+    cfg = { ...cfg, ...loadSimPrefs() };
+    if (netWorth?.byType?.length) {
+      const wrappers = mapNetWorthToWrappers(netWorth.byType);
+      const liquidTotal = wrappers.isa + wrappers.sipp + wrappers.gia + wrappers.cash;
+      setLivePortfolio(liquidTotal);
+      setLiveWrappers(wrappers);
+      cfg = { ...cfg, portfolio: liquidTotal, wrapperBalances: wrappers };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Values the user locked in the what-if settings win over everything else.
+    cfg = { ...cfg, ...loadLockedOverrides() };
+    lastInputsKey.current = inputsKey(fireInputs);
+    setConfig(cfg);
+    runAnalysis(cfg);
+  }, [ready, fireInputs, netWorth, runAnalysis]);
+
+  // Rerun when the FIRE settings change (saved on the Settings tab).
+  useEffect(() => {
+    if (!started.current || !fireInputs) return;
+    const key = inputsKey(fireInputs);
+    if (key === lastInputsKey.current) return;
+    lastInputsKey.current = key;
+    runAnalysis(mergeFireInputsIntoConfig(fireInputs, config));
   }, [fireInputs]);
 
   const handleConfigChange = (newConfig: ErnConfig) => {
+    saveSimPrefs(newConfig);
     runAnalysis(newConfig);
   };
 
+  const retryTakeaways = () => {
+    const r = lastRun.current;
+    if (r) fetchTakeaways(r.ern, r.mc, r.cfg);
+  };
+
+  const lede = ernData
+    ? ernLedeParts({
+        annualSpend: config.annualSpend,
+        portfolio: config.portfolio,
+        personalWr: ernData.personalWr,
+        ernDynamicWr: ernData.ernDynamicWr,
+        horizonYears: ernData.accumulation?.drawdownYears ?? config.horizonYears,
+        historicalSurvivalPct: historicalSurvival(ernData.historical.cohorts, ernData.personalWr),
+        mcSurvivalRate: mcData?.survivalRate ?? null,
+        mcPaths: config.mcPaths,
+        retirementAge: config.retirementAge,
+        currentAge: config.currentAge,
+        projectedPortfolio: ernData.accumulation?.projectedPortfolio,
+      })
+    : null;
+
   return (
-    <div>
-      {/* Config Panel */}
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-8">
+      <PageIntro>
+        {lede ? (
+          <p aria-live="polite">
+            {lede.retiresLater ? (
+              <>
+                Retiring at <strong>{config.retirementAge}</strong> with a projected <strong className="fig">{lede.pot}</strong>, spending{' '}
+                <strong className="fig">{lede.spend}</strong> a year is a <strong className="fig">{lede.wr}</strong> withdrawal rate
+              </>
+            ) : (
+              <>
+                At <strong className="fig">{lede.spend}</strong> a year from <strong className="fig">{lede.pot}</strong> you&apos;re at a{' '}
+                <strong className="fig">{lede.wr}</strong> withdrawal rate
+              </>
+            )}
+            {lede.historical !== null ? (
+              <>
+                ; historically that survived <strong className="fig">{lede.historical}</strong> of {lede.years}-year retirements
+              </>
+            ) : null}
+            {lede.mc !== null ? (
+              <>
+                {' '}and <strong className="fig">{lede.mc}</strong> of {config.mcPaths.toLocaleString('en-GB')} simulated futures
+              </>
+            ) : null}
+            . That&apos;s {lede.verdict} today&apos;s market-adjusted rate of <span className="fig">{lede.ernWr}</span>.
+          </p>
+        ) : isLoading ? (
+          <p>Running the historical and Monte Carlo simulations…</p>
+        ) : (
+          <p>Run the analysis to see how your plan would have fared in every retirement since 1871.</p>
+        )}
+      </PageIntro>
+
       <ErnConfigPanel
         config={config}
         onConfigChange={handleConfigChange}
@@ -290,47 +328,38 @@ export function ErnDashboard({ fireInputs }: ErnDashboardProps) {
         liveWrapperBalances={liveWrappers}
       />
 
-      {/* Error */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-          <p className="text-red-700 dark:text-red-300">{error}</p>
-        </div>
+        <Notice tone="error" action={<Button size="sm" onClick={() => runAnalysis(config)}>Try again</Button>}>
+          The analysis didn&apos;t run. {error}
+        </Notice>
       )}
 
-      {/* Summary Cards */}
-      <ErnSummaryCards
-        failSafeSwr={ernData?.historical.failSafeSwr ?? 0}
-        medianSwr={ernData?.historical.medianSwr ?? 0}
-        ernDynamicWr={ernData?.ernDynamicWr ?? 0}
-        personalWr={ernData?.personalWr ?? 0}
-        currentCape={ernData?.currentCape ?? 39}
-        mcSurvivalRate={mcData?.survivalRate ?? null}
-        totalCohorts={ernData?.historical.totalCohorts ?? 0}
-        isLoading={isLoading}
-      />
+      {(ernData || isLoading) && (
+        <ErnSummaryCards
+          failSafeSwr={ernData?.historical.failSafeSwr ?? 0}
+          medianSwr={ernData?.historical.medianSwr ?? 0}
+          ernDynamicWr={ernData?.ernDynamicWr ?? 0}
+          personalWr={ernData?.personalWr ?? 0}
+          currentCape={ernData?.currentCape ?? 39}
+          mcSurvivalRate={mcData?.survivalRate ?? null}
+          totalCohorts={ernData?.historical.totalCohorts ?? 0}
+          mcPaths={config.mcPaths}
+          isLoading={isLoading && !ernData}
+        />
+      )}
 
-      {/* AI Takeaways */}
-      <ErnTakeaways
-        takeaways={takeaways}
-        isLoading={takeawaysLoading}
-      />
+      <ErnTakeaways state={takeaways} onRetry={retryTakeaways} />
 
       {ernData && (
         <>
-          {/* CAPE Scatter Chart */}
           {ernData.historical.cohorts && (
             <CapeScatterChart
-              cohorts={ernData.historical.cohorts.map((c) => ({
-                cape: c.cape,
-                swr: c.swr,
-                startIndex: c.startIndex,
-              }))}
+              cohorts={ernData.historical.cohorts.map((c) => ({ cape: c.cape, swr: c.swr, startIndex: c.startIndex }))}
               personalWr={ernData.personalWr}
               ernDynamicWr={ernData.ernDynamicWr}
             />
           )}
 
-          {/* Monte Carlo Fan Chart */}
           {mcData && (
             <MonteCarloFanChart
               percentiles={mcData.percentiles}
@@ -338,22 +367,14 @@ export function ErnDashboard({ fireInputs }: ErnDashboardProps) {
               survivalRate={mcData.survivalRate}
               initialPortfolio={config.portfolio}
               retirementYear={mcData.retirementYear}
+              paths={config.mcPaths}
             />
           )}
 
-          {/* CAPE Withdrawal Curve */}
-          <CapeWithdrawalChart
-            curve={ernData.capeWithdrawalCurve}
-            currentCape={ernData.currentCape}
-            currentWr={ernData.ernDynamicWr}
-          />
+          <CapeWithdrawalChart curve={ernData.capeWithdrawalCurve} currentCape={ernData.currentCape} currentWr={ernData.ernDynamicWr} />
 
-          {/* Conditional Failure Table */}
-          <ConditionalFailureTable
-            table={ernData.conditionalFailureTable}
-          />
+          <ConditionalFailureTable table={ernData.conditionalFailureTable} personalWr={ernData.personalWr} />
 
-          {/* Drawdown Strategy Explainer */}
           {config.wrapperBalances && (
             <DrawdownExplainer
               wrapperBalances={config.wrapperBalances}
@@ -370,7 +391,6 @@ export function ErnDashboard({ fireInputs }: ErnDashboardProps) {
             />
           )}
 
-          {/* Model Explainer */}
           <ErnExplainer
             horizonYears={config.horizonYears}
             mcPaths={config.mcPaths}
@@ -381,13 +401,10 @@ export function ErnDashboard({ fireInputs }: ErnDashboardProps) {
         </>
       )}
 
-      {/* Empty state */}
       {!ernData && !isLoading && !error && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-12 shadow-sm text-center">
-          <p className="text-gray-500 dark:text-gray-400">
-            Click &quot;Run Analysis&quot; to compute ERN SWR metrics.
-          </p>
-        </div>
+        <EmptyState title="No analysis yet" action={<Button variant="primary" onClick={() => runAnalysis(config)}>Run analysis</Button>}>
+          The analysis tests your spending against every historical retirement since 1871.
+        </EmptyState>
       )}
     </div>
   );

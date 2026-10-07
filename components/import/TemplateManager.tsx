@@ -146,18 +146,18 @@ export function TemplateManager({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div className="bg-surface rounded-md shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-line flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Manage Templates</h2>
-            <p className="text-sm text-slate-500">
+            <h2 className="text-lg font-semibold text-ink">Manage Templates</h2>
+            <p className="text-sm text-ink-3">
               Edit or delete your saved import templates.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-2 text-ink-3 hover:text-ink-2 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -168,25 +168,25 @@ export function TemplateManager({
         {/* Content */}
         <div className="p-6 max-h-[60vh] overflow-y-auto">
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mb-4 bg-bad-soft border border-bad/40 rounded-md p-3">
+              <p className="text-sm text-bad">{error}</p>
             </div>
           )}
 
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <svg className="w-8 h-8 animate-spin text-slate-400" fill="none" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 animate-spin text-ink-3" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
             </div>
           ) : templates.length === 0 ? (
             <div className="text-center py-12">
-              <svg className="w-12 h-12 mx-auto text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-12 h-12 mx-auto text-ink-3 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <p className="text-slate-600 mb-2">No templates saved yet</p>
-              <p className="text-sm text-slate-400">
+              <p className="text-ink-2 mb-2">No templates saved yet</p>
+              <p className="text-sm text-ink-3">
                 Templates will appear here after you save a column mapping.
               </p>
             </div>
@@ -195,10 +195,10 @@ export function TemplateManager({
               {templates.map((template) => (
                 <div
                   key={template.id}
-                  className={`border rounded-lg ${
+                  className={`border rounded-md ${
                     editingId === template.id
-                      ? 'border-blue-300 bg-blue-50'
-                      : 'border-slate-200'
+                      ? 'border-accent bg-accent-soft'
+                      : 'border-line'
                   }`}
                 >
                   {editingId === template.id ? (
@@ -206,44 +206,44 @@ export function TemplateManager({
                     <div className="p-4 space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs text-slate-500 mb-1">Template Name</label>
+                          <label className="block text-xs text-ink-3 mb-1">Template Name</label>
                           <input
                             type="text"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 text-sm border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-slate-500 mb-1">Provider</label>
+                          <label className="block text-xs text-ink-3 mb-1">Provider</label>
                           <input
                             type="text"
                             value={editProvider}
                             onChange={(e) => setEditProvider(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 text-sm border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs text-slate-500 mb-1">Notes</label>
+                        <label className="block text-xs text-ink-3 mb-1">Notes</label>
                         <textarea
                           value={editNotes}
                           onChange={(e) => setEditNotes(e.target.value)}
                           rows={2}
-                          className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          className="w-full px-3 py-2 text-sm border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                         />
                       </div>
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={handleCancelEdit}
-                          className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800"
+                          className="px-3 py-1.5 text-sm text-ink-2 hover:text-ink"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleSaveEdit}
                           disabled={!editName.trim() || !editProvider.trim()}
-                          className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+                          className="px-3 py-1.5 text-sm bg-accent text-accent-ink rounded-md hover:opacity-90 disabled:opacity-50"
                         >
                           Save Changes
                         </button>
@@ -252,21 +252,21 @@ export function TemplateManager({
                   ) : confirmDelete === template.id ? (
                     // Delete Confirmation
                     <div className="p-4">
-                      <p className="text-sm text-slate-700 mb-3">
+                      <p className="text-sm text-ink-2 mb-3">
                         Delete <span className="font-medium">{template.name}</span>? This action cannot be undone.
                       </p>
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => setConfirmDelete(null)}
                           disabled={deletingId === template.id}
-                          className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800"
+                          className="px-3 py-1.5 text-sm text-ink-2 hover:text-ink"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={() => handleDelete(template.id)}
                           disabled={deletingId === template.id}
-                          className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-300 flex items-center gap-2"
+                          className="px-3 py-1.5 text-sm bg-bad text-surface rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
                         >
                           {deletingId === template.id ? (
                             <>
@@ -287,18 +287,18 @@ export function TemplateManager({
                     <div className="p-4 flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium text-slate-900">{template.name}</p>
+                          <p className="font-medium text-ink">{template.name}</p>
                           {template.use_count > 0 && (
-                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full">
+                            <span className="px-2 py-0.5 bg-sunk text-ink-2 text-xs rounded-full">
                               {template.use_count} uses
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-slate-500">{template.provider}</p>
+                        <p className="text-sm text-ink-3">{template.provider}</p>
                         {template.notes && (
-                          <p className="text-sm text-slate-400 mt-1 line-clamp-2">{template.notes}</p>
+                          <p className="text-sm text-ink-3 mt-1 line-clamp-2">{template.notes}</p>
                         )}
-                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
+                        <div className="flex items-center gap-4 mt-2 text-xs text-ink-3">
                           <span>Created: {formatDateGB(template.created_at)}</span>
                           <span>Last used: {formatLastUsed(template.last_used_at)}</span>
                         </div>
@@ -306,7 +306,7 @@ export function TemplateManager({
                       <div className="flex items-center gap-1 ml-4">
                         <button
                           onClick={() => handleStartEdit(template)}
-                          className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                          className="p-2 text-ink-3 hover:text-accent transition-colors"
                           title="Edit template"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -315,7 +315,7 @@ export function TemplateManager({
                         </button>
                         <button
                           onClick={() => setConfirmDelete(template.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                          className="p-2 text-ink-3 hover:text-bad transition-colors"
                           title="Delete template"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -332,10 +332,10 @@ export function TemplateManager({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end">
+        <div className="px-6 py-4 border-t border-line bg-sunk flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors"
+            className="px-4 py-2 bg-bar text-surface rounded-md hover:bg-bar transition-colors"
           >
             Done
           </button>

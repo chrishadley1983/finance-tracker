@@ -1,0 +1,2034 @@
+{
+ "/api/wealth/net-worth": {
+  "date": "2026-10-07",
+  "total": 1752702.18,
+  "previousTotal": 1735320.9,
+  "change": 17381.28,
+  "changePercent": 1,
+  "byType": [
+   {
+    "type": "isa",
+    "label": "ISAs",
+    "total": 431960.67
+   },
+   {
+    "type": "pension",
+    "label": "Pensions",
+    "total": 585724.75
+   },
+   {
+    "type": "investment",
+    "label": "Investments",
+    "total": 97520
+   },
+   {
+    "type": "savings",
+    "label": "Savings",
+    "total": 88200
+   },
+   {
+    "type": "current",
+    "label": "Current accounts",
+    "total": 4296.76
+   },
+   {
+    "type": "property",
+    "label": "Property",
+    "total": 545000
+   }
+  ],
+  "byAccount": [
+   {
+    "accountId": "acc-isa-1",
+    "accountName": "Vanguard Stocks & Shares ISA",
+    "accountType": "isa",
+    "balance": 288679.35
+   },
+   {
+    "accountId": "acc-isa-2",
+    "accountName": "Partner ISA (AJ Bell)",
+    "accountType": "isa",
+    "balance": 143281.32
+   },
+   {
+    "accountId": "acc-pen-1",
+    "accountName": "Aviva workplace pension",
+    "accountType": "pension",
+    "balance": 416085.32
+   },
+   {
+    "accountId": "acc-pen-2",
+    "accountName": "Fidelity SIPP",
+    "accountType": "pension",
+    "balance": 169639.43
+   },
+   {
+    "accountId": "acc-gia-1",
+    "accountName": "Trading 212 GIA",
+    "accountType": "investment",
+    "balance": 97520
+   },
+   {
+    "accountId": "acc-sav-1",
+    "accountName": "Marcus easy access",
+    "accountType": "savings",
+    "balance": 38200
+   },
+   {
+    "accountId": "acc-sav-2",
+    "accountName": "Premium Bonds",
+    "accountType": "savings",
+    "balance": 50000
+   },
+   {
+    "accountId": "acc-cur-1",
+    "accountName": "HSBC Joint Current Account",
+    "accountType": "current",
+    "balance": 4296.76
+   },
+   {
+    "accountId": "acc-prop-1",
+    "accountName": "Family home",
+    "accountType": "property",
+    "balance": 545000
+   }
+  ]
+ },
+ "/api/wealth/history": {
+  "snapshots": [
+   {
+    "date": "2021-10-01",
+    "total": 1321668.44,
+    "byType": {
+     "isa": 291410.3,
+     "pension": 395142.98,
+     "investment": 65789.16,
+     "savings": 74970,
+     "current": 3856,
+     "property": 490500
+    }
+   },
+   {
+    "date": "2021-11-01",
+    "total": 1338661.58,
+    "byType": {
+     "isa": 297083.83,
+     "pension": 402836.12,
+     "investment": 67070.03,
+     "savings": 75190.5,
+     "current": 5072.77,
+     "property": 491408.33
+    }
+   },
+   {
+    "date": "2021-12-01",
+    "total": 1334640.77,
+    "byType": {
+     "isa": 295051.2,
+     "pension": 400079.92,
+     "investment": 66611.14,
+     "savings": 75411,
+     "current": 5170.84,
+     "property": 492316.67
+    }
+   },
+   {
+    "date": "2022-01-01",
+    "total": 1334286.17,
+    "byType": {
+     "isa": 294906.86,
+     "pension": 399884.2,
+     "investment": 66578.55,
+     "savings": 75631.5,
+     "current": 4060.06,
+     "property": 493225
+    }
+   },
+   {
+    "date": "2022-02-01",
+    "total": 1353845.86,
+    "byType": {
+     "isa": 301700.98,
+     "pension": 409096.81,
+     "investment": 68112.4,
+     "savings": 75852,
+     "current": 4950.34,
+     "property": 494133.33
+    }
+   },
+   {
+    "date": "2022-03-01",
+    "total": 1361658.05,
+    "byType": {
+     "isa": 304176.49,
+     "pension": 412453.52,
+     "investment": 68671.27,
+     "savings": 76072.5,
+     "current": 5242.6,
+     "property": 495041.67
+    }
+   },
+   {
+    "date": "2022-04-01",
+    "total": 1349902.14,
+    "byType": {
+     "isa": 299566.33,
+     "pension": 406202.3,
+     "investment": 67630.48,
+     "savings": 76293,
+     "current": 4260.03,
+     "property": 495950
+    }
+   },
+   {
+    "date": "2022-05-01",
+    "total": 1350130.19,
+    "byType": {
+     "isa": 299005.95,
+     "pension": 405442.44,
+     "investment": 67503.97,
+     "savings": 76513.5,
+     "current": 4806,
+     "property": 496858.33
+    }
+   },
+   {
+    "date": "2022-06-01",
+    "total": 1358458.77,
+    "byType": {
+     "isa": 301608.52,
+     "pension": 408971.44,
+     "investment": 68091.53,
+     "savings": 76734,
+     "current": 5286.61,
+     "property": 497766.67
+    }
+   },
+   {
+    "date": "2022-07-01",
+    "total": 1344923.71,
+    "byType": {
+     "isa": 296251.96,
+     "pension": 401708.11,
+     "investment": 66882.22,
+     "savings": 76954.5,
+     "current": 4451.92,
+     "property": 498675
+    }
+   },
+   {
+    "date": "2022-08-01",
+    "total": 1323934.88,
+    "byType": {
+     "isa": 287611.08,
+     "pension": 389991.37,
+     "investment": 64931.45,
+     "savings": 77175,
+     "current": 4642.65,
+     "property": 499583.33
+    }
+   },
+   {
+    "date": "2022-09-01",
+    "total": 1326375.48,
+    "byType": {
+     "isa": 287863.79,
+     "pension": 390334.03,
+     "investment": 64988.5,
+     "savings": 77395.5,
+     "current": 5301.99,
+     "property": 500491.67
+    }
+   },
+   {
+    "date": "2022-10-01",
+    "total": 1338210.85,
+    "byType": {
+     "isa": 292270.39,
+     "pension": 396309.24,
+     "investment": 65983.34,
+     "savings": 77616,
+     "current": 4631.88,
+     "property": 501400
+    }
+   },
+   {
+    "date": "2022-11-01",
+    "total": 1339953.57,
+    "byType": {
+     "isa": 292573.37,
+     "pension": 396720.07,
+     "investment": 66051.74,
+     "savings": 77836.5,
+     "current": 4463.56,
+     "property": 502308.33
+    }
+   },
+   {
+    "date": "2022-12-01",
+    "total": 1352607.15,
+    "byType": {
+     "isa": 296717.83,
+     "pension": 402339.83,
+     "investment": 66987.4,
+     "savings": 78057,
+     "current": 5288.42,
+     "property": 503216.67
+    }
+   },
+   {
+    "date": "2023-01-01",
+    "total": 1387112.38,
+    "byType": {
+     "isa": 309836.37,
+     "pension": 420128.13,
+     "investment": 69949.06,
+     "savings": 78277.5,
+     "current": 4796.32,
+     "property": 504125
+    }
+   },
+   {
+    "date": "2023-02-01",
+    "total": 1413859.54,
+    "byType": {
+     "isa": 319962.27,
+     "pension": 433858.54,
+     "investment": 72235.09,
+     "savings": 78498,
+     "current": 4272.31,
+     "property": 505033.33
+    }
+   },
+   {
+    "date": "2023-03-01",
+    "total": 1421154.37,
+    "byType": {
+     "isa": 321973.37,
+     "pension": 436585.53,
+     "investment": 72689.12,
+     "savings": 78718.5,
+     "current": 5246.18,
+     "property": 505941.67
+    }
+   },
+   {
+    "date": "2023-04-01",
+    "total": 1434687.51,
+    "byType": {
+     "isa": 326895.87,
+     "pension": 443260.28,
+     "investment": 73800.43,
+     "savings": 78939,
+     "current": 4941.93,
+     "property": 506850
+    }
+   },
+   {
+    "date": "2023-05-01",
+    "total": 1458680.33,
+    "byType": {
+     "isa": 336088.63,
+     "pension": 455725.35,
+     "investment": 75875.8,
+     "savings": 79159.5,
+     "current": 4072.72,
+     "property": 507758.33
+    }
+   },
+   {
+    "date": "2023-06-01",
+    "total": 1466855.3,
+    "byType": {
+     "isa": 338390.47,
+     "pension": 458846.57,
+     "investment": 76395.47,
+     "savings": 79380,
+     "current": 5176.12,
+     "property": 508666.67
+    }
+   },
+   {
+    "date": "2023-07-01",
+    "total": 1461968.22,
+    "byType": {
+     "isa": 336103.01,
+     "pension": 455744.86,
+     "investment": 75879.05,
+     "savings": 79600.5,
+     "current": 5065.8,
+     "property": 509575
+    }
+   },
+   {
+    "date": "2023-08-01",
+    "total": 1473585.01,
+    "byType": {
+     "isa": 340629.03,
+     "pension": 461882,
+     "investment": 76900.85,
+     "savings": 79821,
+     "current": 3868.8,
+     "property": 510483.33
+    }
+   },
+   {
+    "date": "2023-09-01",
+    "total": 1493266.7,
+    "byType": {
+     "isa": 347346.24,
+     "pension": 470990.32,
+     "investment": 78417.34,
+     "savings": 80041.5,
+     "current": 5079.63,
+     "property": 511391.67
+    }
+   },
+   {
+    "date": "2023-10-01",
+    "total": 1492049.3,
+    "byType": {
+     "isa": 346404.21,
+     "pension": 469712.96,
+     "investment": 78204.66,
+     "savings": 80262,
+     "current": 5165.47,
+     "property": 512300
+    }
+   },
+   {
+    "date": "2023-11-01",
+    "total": 1488791.64,
+    "byType": {
+     "isa": 345138.24,
+     "pension": 467996.34,
+     "investment": 77918.85,
+     "savings": 80482.5,
+     "current": 4047.38,
+     "property": 513208.33
+    }
+   },
+   {
+    "date": "2023-12-01",
+    "total": 1507462.51,
+    "byType": {
+     "isa": 351579.95,
+     "pension": 476731.09,
+     "investment": 79373.14,
+     "savings": 80703,
+     "current": 4958.66,
+     "property": 514116.67
+    }
+   },
+   {
+    "date": "2024-01-01",
+    "total": 1521184.89,
+    "byType": {
+     "isa": 356349.35,
+     "pension": 483198.23,
+     "investment": 80449.89,
+     "savings": 80923.5,
+     "current": 5238.92,
+     "property": 515025
+    }
+   },
+   {
+    "date": "2024-02-01",
+    "total": 1514842.72,
+    "byType": {
+     "isa": 353839.47,
+     "pension": 479794.93,
+     "investment": 79883.26,
+     "savings": 81144,
+     "current": 4247.73,
+     "property": 515933.33
+    }
+   },
+   {
+    "date": "2024-03-01",
+    "total": 1519218.43,
+    "byType": {
+     "isa": 354877.15,
+     "pension": 481201.98,
+     "investment": 80117.52,
+     "savings": 81364.5,
+     "current": 4815.61,
+     "property": 516841.67
+    }
+   },
+   {
+    "date": "2024-04-01",
+    "total": 1539928.02,
+    "byType": {
+     "isa": 362279.81,
+     "pension": 491239.76,
+     "investment": 81788.76,
+     "savings": 81585,
+     "current": 5284.69,
+     "property": 517750
+    }
+   },
+   {
+    "date": "2024-05-01",
+    "total": 1545930.72,
+    "byType": {
+     "isa": 364494.73,
+     "pension": 494243.12,
+     "investment": 82288.8,
+     "savings": 81805.5,
+     "current": 4440.24,
+     "property": 518658.33
+    }
+   },
+   {
+    "date": "2024-06-01",
+    "total": 1540009.63,
+    "byType": {
+     "isa": 361681.48,
+     "pension": 490428.44,
+     "investment": 81653.68,
+     "savings": 82026,
+     "current": 4653.36,
+     "property": 519566.67
+    }
+   },
+   {
+    "date": "2024-07-01",
+    "total": 1551262.43,
+    "byType": {
+     "isa": 365351.68,
+     "pension": 495405.11,
+     "investment": 82482.27,
+     "savings": 82246.5,
+     "current": 5301.87,
+     "property": 520475
+    }
+   },
+   {
+    "date": "2024-08-01",
+    "total": 1569853.95,
+    "byType": {
+     "isa": 372379.34,
+     "pension": 504934.39,
+     "investment": 84068.84,
+     "savings": 82467,
+     "current": 4621.05,
+     "property": 521383.33
+    }
+   },
+   {
+    "date": "2024-09-01",
+    "total": 1570008.2,
+    "byType": {
+     "isa": 372058.36,
+     "pension": 504499.15,
+     "investment": 83996.37,
+     "savings": 82687.5,
+     "current": 4475.15,
+     "property": 522291.67
+    }
+   },
+   {
+    "date": "2024-10-01",
+    "total": 1567344.2,
+    "byType": {
+     "isa": 370273.59,
+     "pension": 502079.06,
+     "investment": 83593.44,
+     "savings": 82908,
+     "current": 5290.11,
+     "property": 523200
+    }
+   },
+   {
+    "date": "2024-11-01",
+    "total": 1583307.69,
+    "byType": {
+     "isa": 376214.65,
+     "pension": 510134.95,
+     "investment": 84934.7,
+     "savings": 83128.5,
+     "current": 4786.56,
+     "property": 524108.33
+    }
+   },
+   {
+    "date": "2024-12-01",
+    "total": 1597912.02,
+    "byType": {
+     "isa": 381628.65,
+     "pension": 517476.17,
+     "investment": 86156.98,
+     "savings": 83349,
+     "current": 4284.55,
+     "property": 525016.67
+    }
+   },
+   {
+    "date": "2025-01-01",
+    "total": 1594388.06,
+    "byType": {
+     "isa": 379452.64,
+     "pension": 514525.55,
+     "investment": 85665.72,
+     "savings": 83569.5,
+     "current": 5249.65,
+     "property": 525925
+    }
+   },
+   {
+    "date": "2025-02-01",
+    "total": 1595993.01,
+    "byType": {
+     "isa": 379759.54,
+     "pension": 514941.71,
+     "investment": 85735,
+     "savings": 83790,
+     "current": 4933.43,
+     "property": 526833.33
+    }
+   },
+   {
+    "date": "2025-03-01",
+    "total": 1615009.69,
+    "byType": {
+     "isa": 387016.65,
+     "pension": 524782.12,
+     "investment": 87373.38,
+     "savings": 84010.5,
+     "current": 4085.37,
+     "property": 527741.67
+    }
+   },
+   {
+    "date": "2025-04-01",
+    "total": 1624936.21,
+    "byType": {
+     "isa": 389999.83,
+     "pension": 528827.22,
+     "investment": 88046.87,
+     "savings": 84231,
+     "current": 5181.29,
+     "property": 528650
+    }
+   },
+   {
+    "date": "2025-05-01",
+    "total": 1618544.13,
+    "byType": {
+     "isa": 387134.17,
+     "pension": 524941.47,
+     "investment": 87399.91,
+     "savings": 84451.5,
+     "current": 5058.75,
+     "property": 529558.33
+    }
+   },
+   {
+    "date": "2025-06-01",
+    "total": 1626022.69,
+    "byType": {
+     "isa": 390049.61,
+     "pension": 528894.71,
+     "investment": 88058.1,
+     "savings": 84672,
+     "current": 3881.6,
+     "property": 530466.67
+    }
+   },
+   {
+    "date": "2025-07-01",
+    "total": 1647137.29,
+    "byType": {
+     "isa": 397324.18,
+     "pension": 538758.78,
+     "investment": 89700.42,
+     "savings": 84892.5,
+     "current": 5086.41,
+     "property": 531375
+    }
+   },
+   {
+    "date": "2025-08-01",
+    "total": 1649295.35,
+    "byType": {
+     "isa": 397694.34,
+     "pension": 539260.71,
+     "investment": 89783.98,
+     "savings": 85113,
+     "current": 5159.99,
+     "property": 532283.33
+    }
+   },
+   {
+    "date": "2025-09-01",
+    "total": 1643593.84,
+    "byType": {
+     "isa": 395484.56,
+     "pension": 536264.32,
+     "investment": 89285.1,
+     "savings": 85333.5,
+     "current": 4034.69,
+     "property": 533191.67
+    }
+   },
+   {
+    "date": "2025-10-01",
+    "total": 1659491.52,
+    "byType": {
+     "isa": 400844,
+     "pension": 543531.56,
+     "investment": 90495.06,
+     "savings": 85554,
+     "current": 4966.9,
+     "property": 534100
+    }
+   },
+   {
+    "date": "2025-11-01",
+    "total": 1676350.25,
+    "byType": {
+     "isa": 406832.88,
+     "pension": 551652.29,
+     "investment": 91847.12,
+     "savings": 85774.5,
+     "current": 5235.13,
+     "property": 535008.33
+    }
+   },
+   {
+    "date": "2025-12-01",
+    "total": 1671980.58,
+    "byType": {
+     "isa": 405090.34,
+     "pension": 549289.46,
+     "investment": 91453.72,
+     "savings": 85995,
+     "current": 4235.39,
+     "property": 535916.67
+    }
+   },
+   {
+    "date": "2026-01-01",
+    "total": 1672718.96,
+    "byType": {
+     "isa": 404710.67,
+     "pension": 548774.64,
+     "investment": 91368,
+     "savings": 86215.5,
+     "current": 4825.15,
+     "property": 536825
+    }
+   },
+   {
+    "date": "2026-02-01",
+    "total": 1692378.84,
+    "byType": {
+     "isa": 411711.23,
+     "pension": 558267.16,
+     "investment": 92948.46,
+     "savings": 86436,
+     "current": 5282.66,
+     "property": 537733.33
+    }
+   },
+   {
+    "date": "2026-03-01",
+    "total": 1702298.55,
+    "byType": {
+     "isa": 415447.1,
+     "pension": 563332.9,
+     "investment": 93791.87,
+     "savings": 86656.5,
+     "current": 4428.51,
+     "property": 538641.67
+    }
+   },
+   {
+    "date": "2026-04-01",
+    "total": 1696426.1,
+    "byType": {
+     "isa": 412644.03,
+     "pension": 559532.01,
+     "investment": 93159.05,
+     "savings": 86877,
+     "current": 4664.01,
+     "property": 539550
+    }
+   },
+   {
+    "date": "2026-05-01",
+    "total": 1703734.55,
+    "byType": {
+     "isa": 414790.64,
+     "pension": 562442.76,
+     "investment": 93643.67,
+     "savings": 87097.5,
+     "current": 5301.65,
+     "property": 540458.33
+    }
+   },
+   {
+    "date": "2026-06-01",
+    "total": 1723302.75,
+    "byType": {
+     "isa": 422200.74,
+     "pension": 572490.6,
+     "investment": 95316.58,
+     "savings": 87318,
+     "current": 4610.16,
+     "property": 541366.67
+    }
+   },
+   {
+    "date": "2026-07-01",
+    "total": 1727158.5,
+    "byType": {
+     "isa": 423304.8,
+     "pension": 573987.67,
+     "investment": 95565.84,
+     "savings": 87538.5,
+     "current": 4486.69,
+     "property": 542275
+    }
+   },
+   {
+    "date": "2026-08-01",
+    "total": 1722549.14,
+    "byType": {
+     "isa": 420770.38,
+     "pension": 570551.08,
+     "investment": 94993.66,
+     "savings": 87759,
+     "current": 5291.69,
+     "property": 543183.33
+    }
+   },
+   {
+    "date": "2026-09-01",
+    "total": 1735320.9,
+    "byType": {
+     "isa": 425479.58,
+     "pension": 576936.61,
+     "investment": 96056.82,
+     "savings": 87979.5,
+     "current": 4776.72,
+     "property": 544091.67
+    }
+   },
+   {
+    "date": "2026-10-01",
+    "total": 1752702.18,
+    "byType": {
+     "isa": 431960.67,
+     "pension": 585724.75,
+     "investment": 97520,
+     "savings": 88200,
+     "current": 4296.76,
+     "property": 545000
+    }
+   }
+  ],
+  "earliest": "2021-10-01",
+  "latest": "2026-10-01"
+ },
+ "/api/fire/coast": {
+  "coastFire": {
+   "value": 966913,
+   "fireNumberAtRetirement": 1428571,
+   "currentNetWorth": 1207702,
+   "progress": 124.9,
+   "surplus": 240789,
+   "isCoastFI": true
+  },
+  "inputs": {
+   "currentAge": 42,
+   "targetRetirementAge": 50,
+   "yearsLeft": 8,
+   "excludeProperty": true
+  },
+  "settings": {
+   "annualSpend": 50000,
+   "withdrawalRate": 3.5,
+   "expectedReturn": 5
+  }
+ },
+ "/api/accounts": {
+  "accounts": [
+   {
+    "id": "acc-isa-1",
+    "name": "Vanguard Stocks & Shares ISA",
+    "type": "isa",
+    "is_active": true,
+    "include_in_net_worth": true,
+    "exclude_from_snapshots": false,
+    "current_balance": 288679.35
+   },
+   {
+    "id": "acc-isa-2",
+    "name": "Partner ISA (AJ Bell)",
+    "type": "isa",
+    "is_active": true,
+    "include_in_net_worth": true,
+    "exclude_from_snapshots": false,
+    "current_balance": 143281.32
+   },
+   {
+    "id": "acc-pen-1",
+    "name": "Aviva workplace pension",
+    "type": "pension",
+    "is_active": true,
+    "include_in_net_worth": true,
+    "exclude_from_snapshots": false,
+    "current_balance": 416085.32
+   },
+   {
+    "id": "acc-pen-2",
+    "name": "Fidelity SIPP",
+    "type": "pension",
+    "is_active": true,
+    "include_in_net_worth": true,
+    "exclude_from_snapshots": false,
+    "current_balance": 169639.43
+   },
+   {
+    "id": "acc-gia-1",
+    "name": "Trading 212 GIA",
+    "type": "investment",
+    "is_active": true,
+    "include_in_net_worth": true,
+    "exclude_from_snapshots": false,
+    "current_balance": 97520
+   },
+   {
+    "id": "acc-sav-1",
+    "name": "Marcus easy access",
+    "type": "savings",
+    "is_active": true,
+    "include_in_net_worth": true,
+    "exclude_from_snapshots": false,
+    "current_balance": 38200
+   },
+   {
+    "id": "acc-sav-2",
+    "name": "Premium Bonds",
+    "type": "savings",
+    "is_active": true,
+    "include_in_net_worth": true,
+    "exclude_from_snapshots": false,
+    "current_balance": 50000
+   },
+   {
+    "id": "acc-cur-1",
+    "name": "HSBC Joint Current Account",
+    "type": "current",
+    "is_active": true,
+    "include_in_net_worth": true,
+    "exclude_from_snapshots": true,
+    "current_balance": 4296.76
+   },
+   {
+    "id": "acc-prop-1",
+    "name": "Family home",
+    "type": "property",
+    "is_active": true,
+    "include_in_net_worth": true,
+    "exclude_from_snapshots": false,
+    "current_balance": 545000
+   }
+  ]
+ },
+ "/api/wealth-snapshots": {
+  "snapshots": [
+   {
+    "id": "snap-acc-isa-1-2026-10",
+    "account_id": "acc-isa-1",
+    "date": "2026-10-01",
+    "balance": 288679.35,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2026-10",
+    "account_id": "acc-pen-1",
+    "date": "2026-10-01",
+    "balance": 416085.32,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2026-10",
+    "account_id": "acc-gia-1",
+    "date": "2026-10-01",
+    "balance": 97520,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2026-09",
+    "account_id": "acc-isa-1",
+    "date": "2026-09-01",
+    "balance": 284348.04,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2026-09",
+    "account_id": "acc-isa-2",
+    "date": "2026-09-01",
+    "balance": 141131.54,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2026-09",
+    "account_id": "acc-pen-1",
+    "date": "2026-09-01",
+    "balance": 409842.42,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2026-09",
+    "account_id": "acc-pen-2",
+    "date": "2026-09-01",
+    "balance": 167094.19,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2026-09",
+    "account_id": "acc-gia-1",
+    "date": "2026-09-01",
+    "balance": 96056.82,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2026-09",
+    "account_id": "acc-sav-1",
+    "date": "2026-09-01",
+    "balance": 38104.5,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2026-09",
+    "account_id": "acc-sav-2",
+    "date": "2026-09-01",
+    "balance": 49875,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2026-09",
+    "account_id": "acc-prop-1",
+    "date": "2026-09-01",
+    "balance": 544091.67,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2026-08",
+    "account_id": "acc-isa-1",
+    "date": "2026-08-01",
+    "balance": 281200.88,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2026-08",
+    "account_id": "acc-isa-2",
+    "date": "2026-08-01",
+    "balance": 139569.5,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2026-08",
+    "account_id": "acc-pen-1",
+    "date": "2026-08-01",
+    "balance": 405306.29,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2026-08",
+    "account_id": "acc-pen-2",
+    "date": "2026-08-01",
+    "balance": 165244.79,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2026-08",
+    "account_id": "acc-gia-1",
+    "date": "2026-08-01",
+    "balance": 94993.66,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2026-08",
+    "account_id": "acc-sav-1",
+    "date": "2026-08-01",
+    "balance": 38009,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2026-08",
+    "account_id": "acc-sav-2",
+    "date": "2026-08-01",
+    "balance": 49750,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2026-08",
+    "account_id": "acc-prop-1",
+    "date": "2026-08-01",
+    "balance": 543183.33,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2026-07",
+    "account_id": "acc-isa-1",
+    "date": "2026-07-01",
+    "balance": 282894.63,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2026-07",
+    "account_id": "acc-isa-2",
+    "date": "2026-07-01",
+    "balance": 140410.17,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2026-07",
+    "account_id": "acc-pen-1",
+    "date": "2026-07-01",
+    "balance": 407747.57,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2026-07",
+    "account_id": "acc-pen-2",
+    "date": "2026-07-01",
+    "balance": 166240.1,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2026-07",
+    "account_id": "acc-gia-1",
+    "date": "2026-07-01",
+    "balance": 95565.84,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2026-07",
+    "account_id": "acc-sav-1",
+    "date": "2026-07-01",
+    "balance": 37913.5,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2026-07",
+    "account_id": "acc-sav-2",
+    "date": "2026-07-01",
+    "balance": 49625,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2026-07",
+    "account_id": "acc-prop-1",
+    "date": "2026-07-01",
+    "balance": 542275,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2026-06",
+    "account_id": "acc-isa-1",
+    "date": "2026-06-01",
+    "balance": 282156.79,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2026-06",
+    "account_id": "acc-isa-2",
+    "date": "2026-06-01",
+    "balance": 140043.95,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2026-06",
+    "account_id": "acc-pen-1",
+    "date": "2026-06-01",
+    "balance": 406684.08,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2026-06",
+    "account_id": "acc-pen-2",
+    "date": "2026-06-01",
+    "balance": 165806.52,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2026-06",
+    "account_id": "acc-gia-1",
+    "date": "2026-06-01",
+    "balance": 95316.58,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2026-06",
+    "account_id": "acc-sav-1",
+    "date": "2026-06-01",
+    "balance": 37818,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2026-06",
+    "account_id": "acc-sav-2",
+    "date": "2026-06-01",
+    "balance": 49500,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2026-06",
+    "account_id": "acc-prop-1",
+    "date": "2026-06-01",
+    "balance": 541366.67,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2026-05",
+    "account_id": "acc-isa-1",
+    "date": "2026-05-01",
+    "balance": 277204.62,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2026-05",
+    "account_id": "acc-isa-2",
+    "date": "2026-05-01",
+    "balance": 137586.02,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2026-05",
+    "account_id": "acc-pen-1",
+    "date": "2026-05-01",
+    "balance": 399546.33,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2026-05",
+    "account_id": "acc-pen-2",
+    "date": "2026-05-01",
+    "balance": 162896.43,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2026-05",
+    "account_id": "acc-gia-1",
+    "date": "2026-05-01",
+    "balance": 93643.67,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2026-05",
+    "account_id": "acc-sav-1",
+    "date": "2026-05-01",
+    "balance": 37722.5,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2026-05",
+    "account_id": "acc-sav-2",
+    "date": "2026-05-01",
+    "balance": 49375,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2026-05",
+    "account_id": "acc-prop-1",
+    "date": "2026-05-01",
+    "balance": 540458.33,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2026-04",
+    "account_id": "acc-isa-1",
+    "date": "2026-04-01",
+    "balance": 275770.04,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2026-04",
+    "account_id": "acc-isa-2",
+    "date": "2026-04-01",
+    "balance": 136873.99,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2026-04",
+    "account_id": "acc-pen-1",
+    "date": "2026-04-01",
+    "balance": 397478.6,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2026-04",
+    "account_id": "acc-pen-2",
+    "date": "2026-04-01",
+    "balance": 162053.41,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2026-04",
+    "account_id": "acc-gia-1",
+    "date": "2026-04-01",
+    "balance": 93159.05,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2026-04",
+    "account_id": "acc-sav-1",
+    "date": "2026-04-01",
+    "balance": 37627,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2026-04",
+    "account_id": "acc-sav-2",
+    "date": "2026-04-01",
+    "balance": 49250,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2026-04",
+    "account_id": "acc-prop-1",
+    "date": "2026-04-01",
+    "balance": 539550,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2026-03",
+    "account_id": "acc-isa-1",
+    "date": "2026-03-01",
+    "balance": 277643.33,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2026-03",
+    "account_id": "acc-isa-2",
+    "date": "2026-03-01",
+    "balance": 137803.77,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2026-03",
+    "account_id": "acc-pen-1",
+    "date": "2026-03-01",
+    "balance": 400178.66,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2026-03",
+    "account_id": "acc-pen-2",
+    "date": "2026-03-01",
+    "balance": 163154.24,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2026-03",
+    "account_id": "acc-gia-1",
+    "date": "2026-03-01",
+    "balance": 93791.87,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2026-03",
+    "account_id": "acc-sav-1",
+    "date": "2026-03-01",
+    "balance": 37531.5,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2026-03",
+    "account_id": "acc-sav-2",
+    "date": "2026-03-01",
+    "balance": 49125,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2026-03",
+    "account_id": "acc-prop-1",
+    "date": "2026-03-01",
+    "balance": 538641.67,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2026-02",
+    "account_id": "acc-isa-1",
+    "date": "2026-02-01",
+    "balance": 275146.65,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2026-02",
+    "account_id": "acc-isa-2",
+    "date": "2026-02-01",
+    "balance": 136564.58,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2026-02",
+    "account_id": "acc-pen-1",
+    "date": "2026-02-01",
+    "balance": 396580.08,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2026-02",
+    "account_id": "acc-pen-2",
+    "date": "2026-02-01",
+    "balance": 161687.08,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2026-02",
+    "account_id": "acc-gia-1",
+    "date": "2026-02-01",
+    "balance": 92948.46,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2026-02",
+    "account_id": "acc-sav-1",
+    "date": "2026-02-01",
+    "balance": 37436,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2026-02",
+    "account_id": "acc-sav-2",
+    "date": "2026-02-01",
+    "balance": 49000,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2026-02",
+    "account_id": "acc-prop-1",
+    "date": "2026-02-01",
+    "balance": 537733.33,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2026-01",
+    "account_id": "acc-isa-1",
+    "date": "2026-01-01",
+    "balance": 270468.17,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2026-01",
+    "account_id": "acc-isa-2",
+    "date": "2026-01-01",
+    "balance": 134242.5,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2026-01",
+    "account_id": "acc-pen-1",
+    "date": "2026-01-01",
+    "balance": 389836.81,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2026-01",
+    "account_id": "acc-pen-2",
+    "date": "2026-01-01",
+    "balance": 158937.83,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2026-01",
+    "account_id": "acc-gia-1",
+    "date": "2026-01-01",
+    "balance": 91368,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2026-01",
+    "account_id": "acc-sav-1",
+    "date": "2026-01-01",
+    "balance": 37340.5,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2026-01",
+    "account_id": "acc-sav-2",
+    "date": "2026-01-01",
+    "balance": 48875,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2026-01",
+    "account_id": "acc-prop-1",
+    "date": "2026-01-01",
+    "balance": 536825,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2025-12",
+    "account_id": "acc-isa-1",
+    "date": "2025-12-01",
+    "balance": 270721.91,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2025-12",
+    "account_id": "acc-isa-2",
+    "date": "2025-12-01",
+    "balance": 134368.43,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2025-12",
+    "account_id": "acc-pen-1",
+    "date": "2025-12-01",
+    "balance": 390202.53,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2025-12",
+    "account_id": "acc-pen-2",
+    "date": "2025-12-01",
+    "balance": 159086.93,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2025-12",
+    "account_id": "acc-gia-1",
+    "date": "2025-12-01",
+    "balance": 91453.72,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2025-12",
+    "account_id": "acc-sav-1",
+    "date": "2025-12-01",
+    "balance": 37245,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2025-12",
+    "account_id": "acc-sav-2",
+    "date": "2025-12-01",
+    "balance": 48750,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2025-12",
+    "account_id": "acc-prop-1",
+    "date": "2025-12-01",
+    "balance": 535916.67,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2025-11",
+    "account_id": "acc-isa-1",
+    "date": "2025-11-01",
+    "balance": 271886.45,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2025-11",
+    "account_id": "acc-isa-2",
+    "date": "2025-11-01",
+    "balance": 134946.43,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2025-11",
+    "account_id": "acc-pen-1",
+    "date": "2025-11-01",
+    "balance": 391881.03,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2025-11",
+    "account_id": "acc-pen-2",
+    "date": "2025-11-01",
+    "balance": 159771.26,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2025-11",
+    "account_id": "acc-gia-1",
+    "date": "2025-11-01",
+    "balance": 91847.12,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2025-11",
+    "account_id": "acc-sav-1",
+    "date": "2025-11-01",
+    "balance": 37149.5,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2025-11",
+    "account_id": "acc-sav-2",
+    "date": "2025-11-01",
+    "balance": 48625,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2025-11",
+    "account_id": "acc-prop-1",
+    "date": "2025-11-01",
+    "balance": 535008.33,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   },
+   {
+    "id": "snap-acc-isa-1-2025-10",
+    "account_id": "acc-isa-1",
+    "date": "2025-10-01",
+    "balance": 267884.08,
+    "account": {
+     "id": "acc-isa-1",
+     "name": "Vanguard Stocks & Shares ISA",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-isa-2-2025-10",
+    "account_id": "acc-isa-2",
+    "date": "2025-10-01",
+    "balance": 132959.92,
+    "account": {
+     "id": "acc-isa-2",
+     "name": "Partner ISA (AJ Bell)",
+     "type": "isa"
+    }
+   },
+   {
+    "id": "snap-acc-pen-1-2025-10",
+    "account_id": "acc-pen-1",
+    "date": "2025-10-01",
+    "balance": 386112.25,
+    "account": {
+     "id": "acc-pen-1",
+     "name": "Aviva workplace pension",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-pen-2-2025-10",
+    "account_id": "acc-pen-2",
+    "date": "2025-10-01",
+    "balance": 157419.31,
+    "account": {
+     "id": "acc-pen-2",
+     "name": "Fidelity SIPP",
+     "type": "pension"
+    }
+   },
+   {
+    "id": "snap-acc-gia-1-2025-10",
+    "account_id": "acc-gia-1",
+    "date": "2025-10-01",
+    "balance": 90495.06,
+    "account": {
+     "id": "acc-gia-1",
+     "name": "Trading 212 GIA",
+     "type": "investment"
+    }
+   },
+   {
+    "id": "snap-acc-sav-1-2025-10",
+    "account_id": "acc-sav-1",
+    "date": "2025-10-01",
+    "balance": 37054,
+    "account": {
+     "id": "acc-sav-1",
+     "name": "Marcus easy access",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-sav-2-2025-10",
+    "account_id": "acc-sav-2",
+    "date": "2025-10-01",
+    "balance": 48500,
+    "account": {
+     "id": "acc-sav-2",
+     "name": "Premium Bonds",
+     "type": "savings"
+    }
+   },
+   {
+    "id": "snap-acc-prop-1-2025-10",
+    "account_id": "acc-prop-1",
+    "date": "2025-10-01",
+    "balance": 534100,
+    "account": {
+     "id": "acc-prop-1",
+     "name": "Family home",
+     "type": "property"
+    }
+   }
+  ]
+ }
+}

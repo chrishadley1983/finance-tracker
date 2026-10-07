@@ -98,10 +98,10 @@ export function BulkCategorise({
   };
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+    <div className="rounded-md border border-line bg-sunk px-3 py-2">
       <div className="flex flex-wrap items-center gap-3">
         {/* Selection Info */}
-        <div className="text-sm text-slate-600">
+        <div className="text-sm text-ink-2">
           {selectedCount > 0 ? (
             <span className="font-medium">{selectedCount} selected</span>
           ) : (
@@ -113,14 +113,14 @@ export function BulkCategorise({
         <div className="flex items-center gap-2">
           <button
             onClick={selectedCount === totalCount ? onSelectNone : onSelectAll}
-            className="text-xs px-2 py-1 text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded transition-colors"
+            className="text-xs px-2 py-1 text-ink-2 hover:text-ink hover:bg-line-2 rounded transition-colors"
           >
             {selectedCount === totalCount ? 'Select none' : 'Select all'}
           </button>
           {uncategorisedCount > 0 && (
             <button
               onClick={onSelectUncategorised}
-              className="text-xs px-2 py-1 text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded transition-colors"
+              className="text-xs px-2 py-1 text-ink-2 hover:text-ink hover:bg-line-2 rounded transition-colors"
             >
               Uncategorised ({uncategorisedCount})
             </button>
@@ -128,26 +128,26 @@ export function BulkCategorise({
           {lowConfidenceCount > 0 && (
             <button
               onClick={onSelectLowConfidence}
-              className="text-xs px-2 py-1 text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded transition-colors"
+              className="text-xs px-2 py-1 text-ink-2 hover:text-ink hover:bg-line-2 rounded transition-colors"
             >
-              Low confidence ({lowConfidenceCount})
+              Unsure ({lowConfidenceCount})
             </button>
           )}
         </div>
 
         {/* Divider */}
-        <div className="h-4 w-px bg-slate-300" />
+        <div className="h-4 w-px bg-line-2" />
 
         {/* Bulk Assign Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowDropdown(!showDropdown)}
             disabled={selectedCount === 0}
-            className="text-sm px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="text-sm h-8 px-2.5 bg-surface text-ink border border-line rounded-md hover:bg-sunk disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             Set category to...
             <svg
-              className="w-4 h-4 text-slate-400"
+              className="w-4 h-4 text-ink-3"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -162,16 +162,16 @@ export function BulkCategorise({
           </button>
 
           {showDropdown && (
-            <div className="absolute left-0 top-full mt-1 w-64 bg-white rounded-lg shadow-lg border border-slate-200 z-20 max-h-80 overflow-hidden">
+            <div className="absolute left-0 top-full mt-1 w-64 bg-surface rounded-md shadow-lg border border-line z-20 max-h-80 overflow-hidden">
               {/* Search Input */}
-              <div className="p-2 border-b border-slate-100">
+              <div className="p-2 border-b border-line-2">
                 <input
                   ref={inputRef}
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search categories..."
-                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1.5 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-accent"
                 />
               </div>
 
@@ -180,7 +180,7 @@ export function BulkCategorise({
                   // Flat list when searching
                   <div>
                     {filteredCategories.length === 0 ? (
-                      <div className="px-3 py-2 text-sm text-slate-400">
+                      <div className="px-3 py-2 text-sm text-ink-3">
                         No categories found
                       </div>
                     ) : (
@@ -188,10 +188,10 @@ export function BulkCategorise({
                         <button
                           key={cat.id}
                           onClick={() => handleSelect(cat.id, cat.name)}
-                          className="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50 flex items-center justify-between"
+                          className="w-full px-3 py-1.5 text-left text-sm hover:bg-sunk flex items-center justify-between"
                         >
                           <span>{cat.name}</span>
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-ink-3">
                             {cat.group_name}
                           </span>
                         </button>
@@ -202,14 +202,14 @@ export function BulkCategorise({
                   // Grouped when not searching
                   Object.entries(groupedCategories).map(([group, cats]) => (
                     <div key={group}>
-                      <div className="px-3 py-1.5 text-xs text-slate-500 bg-slate-50 sticky top-0">
+                      <div className="px-3 py-1.5 text-xs text-ink-3 bg-sunk sticky top-0">
                         {group}
                       </div>
                       {cats.map((cat) => (
                         <button
                           key={cat.id}
                           onClick={() => handleSelect(cat.id, cat.name)}
-                          className="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50"
+                          className="w-full px-3 py-1.5 text-left text-sm hover:bg-sunk"
                         >
                           {cat.name}
                         </button>
@@ -226,7 +226,7 @@ export function BulkCategorise({
         <button
           onClick={onRecategorise}
           disabled={selectedCount === 0 || isRecategorising}
-          className="text-sm px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded hover:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="text-sm h-8 px-2.5 bg-surface text-ink border border-line rounded-md hover:bg-sunk disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isRecategorising ? (
             <>
@@ -253,7 +253,6 @@ export function BulkCategorise({
             </>
           ) : (
             <>
-              <span className="text-base">✨</span>
               Re-categorise with AI
             </>
           )}

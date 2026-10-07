@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/Toast';
 import { NAV_SECTIONS, activeItem, type NavItem, type SectionId } from './nav-config';
 import type { NavSummary } from '@/lib/nav-summary';
 import { usePins } from './usePins';
+import { gbDate } from '@/lib/format';
 
 interface NavColumnProps {
   section: SectionId;
@@ -28,7 +29,7 @@ function syncLabel(iso: string | null): string {
   if (mins < 60) return `Synced ${Math.max(mins, 1)} min ago`;
   const hrs = Math.round(mins / 60);
   if (hrs < 24) return `Synced ${hrs}h ago`;
-  return `Synced ${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+  return `Synced ${gbDate(d, { day: 'numeric', month: 'short' })}`;
 }
 
 function Item({ item, summary, current, onNavigate }: { item: NavItem; summary: NavSummary | null; current: boolean; onNavigate?: () => void }) {

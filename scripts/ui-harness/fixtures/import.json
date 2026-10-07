@@ -1,0 +1,488 @@
+{
+  "/api/import/formats": {
+    "formats": [
+      {
+        "id": "f-hsbc",
+        "name": "Current account CSV",
+        "provider": "HSBC",
+        "is_system": true,
+        "column_mapping": {
+          "date": "Date",
+          "description": "Description",
+          "amount": "Amount"
+        }
+      },
+      {
+        "id": "f-monzo",
+        "name": "Monzo export",
+        "provider": "Monzo",
+        "is_system": true,
+        "column_mapping": {
+          "date": "Date",
+          "description": "Name",
+          "amount": "Amount"
+        }
+      }
+    ]
+  },
+  "/api/import/templates": {
+    "templates": []
+  },
+  "/api/import/preview": {
+    "transactions": [
+      {
+        "rowNumber": 2,
+        "date": "2026-09-01",
+        "amount": -84.27,
+        "description": "TESCO STORES 2841 SEVENOAKS",
+        "rawData": {
+          "Date": "2026-09-01",
+          "Description": "TESCO STORES 2841 SEVENOAKS",
+          "Amount": "-84.27"
+        }
+      },
+      {
+        "rowNumber": 3,
+        "date": "2026-09-01",
+        "amount": 3412.55,
+        "description": "ACME ENGINEERING LTD SALARY SEP",
+        "rawData": {
+          "Date": "2026-09-01",
+          "Description": "ACME ENGINEERING LTD SALARY SEP",
+          "Amount": "3412.55"
+        }
+      },
+      {
+        "rowNumber": 4,
+        "date": "2026-09-02",
+        "amount": -61.4,
+        "description": "SHELL TONBRIDGE",
+        "rawData": {
+          "Date": "2026-09-02",
+          "Description": "SHELL TONBRIDGE",
+          "Amount": "-61.4"
+        }
+      },
+      {
+        "rowNumber": 5,
+        "date": "2026-09-03",
+        "amount": -46.8,
+        "description": "PIZZA EXPRESS TUNBRIDGE WELLS",
+        "rawData": {
+          "Date": "2026-09-03",
+          "Description": "PIZZA EXPRESS TUNBRIDGE WELLS",
+          "Amount": "-46.8"
+        }
+      },
+      {
+        "rowNumber": 6,
+        "date": "2026-09-04",
+        "amount": -142.0,
+        "description": "OCTOPUS ENERGY DD",
+        "rawData": {
+          "Date": "2026-09-04",
+          "Description": "OCTOPUS ENERGY DD",
+          "Amount": "-142.0"
+        }
+      },
+      {
+        "rowNumber": 7,
+        "date": "2026-09-05",
+        "amount": -38.9,
+        "description": "SOUTHEASTERN RAIL 0193",
+        "rawData": {
+          "Date": "2026-09-05",
+          "Description": "SOUTHEASTERN RAIL 0193",
+          "Amount": "-38.9"
+        }
+      },
+      {
+        "rowNumber": 8,
+        "date": "2026-09-06",
+        "amount": -55.0,
+        "description": "SWIM ACADEMY KENT LTD",
+        "rawData": {
+          "Date": "2026-09-06",
+          "Description": "SWIM ACADEMY KENT LTD",
+          "Amount": "-55.0"
+        }
+      },
+      {
+        "rowNumber": 9,
+        "date": "2026-09-07",
+        "amount": -23.99,
+        "description": "AMAZON MKTPLACE PMTS AMZN.CO.UK/PM",
+        "rawData": {
+          "Date": "2026-09-07",
+          "Description": "AMAZON MKTPLACE PMTS AMZN.CO.UK/PM",
+          "Amount": "-23.99"
+        }
+      },
+      {
+        "rowNumber": 10,
+        "date": "2026-09-08",
+        "amount": -12.99,
+        "description": "NETFLIX.COM",
+        "rawData": {
+          "Date": "2026-09-08",
+          "Description": "NETFLIX.COM",
+          "Amount": "-12.99"
+        }
+      },
+      {
+        "rowNumber": 11,
+        "date": "2026-09-09",
+        "amount": -57.13,
+        "description": "SAINSBURYS S/MKTS 0712",
+        "rawData": {
+          "Date": "2026-09-09",
+          "Description": "SAINSBURYS S/MKTS 0712",
+          "Amount": "-57.13"
+        }
+      },
+      {
+        "rowNumber": 12,
+        "date": "2026-09-10",
+        "amount": 25.0,
+        "description": "J SMITH REFUND DINNER",
+        "rawData": {
+          "Date": "2026-09-10",
+          "Description": "J SMITH REFUND DINNER",
+          "Amount": "25.0"
+        }
+      },
+      {
+        "rowNumber": 13,
+        "date": "2026-09-11",
+        "amount": -18.99,
+        "description": "WATERSTONES 241 SEVENOAKS",
+        "rawData": {
+          "Date": "2026-09-11",
+          "Description": "WATERSTONES 241 SEVENOAKS",
+          "Amount": "-18.99"
+        }
+      }
+    ],
+    "validation": {
+      "totalRows": 12,
+      "validRows": 12,
+      "invalidRows": 0,
+      "errors": [],
+      "warnings": [],
+      "dateRange": {
+        "earliest": "2026-09-01",
+        "latest": "2026-09-11"
+      },
+      "totalCredits": 3437.55,
+      "totalDebits": 541.47
+    }
+  },
+  "/api/import/categorise": {
+    "results": [
+      {
+        "categoryId": "c-groc",
+        "categoryName": "Groceries",
+        "source": "rule_exact",
+        "confidence": 0.98,
+        "matchDetails": "Exact match on merchant",
+        "needsReview": false
+      },
+      {
+        "categoryId": "c-sal",
+        "categoryName": "Salary",
+        "source": "rule_exact",
+        "confidence": 1.0,
+        "matchDetails": "Exact match on merchant",
+        "needsReview": false
+      },
+      {
+        "categoryId": "c-fuel",
+        "categoryName": "Fuel",
+        "source": "rule_pattern",
+        "confidence": 0.92,
+        "matchDetails": "Pattern match",
+        "needsReview": false
+      },
+      {
+        "categoryId": "c-eat",
+        "categoryName": "Eating out",
+        "source": "similar",
+        "confidence": 0.71,
+        "matchDetails": "Similar to past transactions",
+        "needsReview": true
+      },
+      {
+        "categoryId": "c-util",
+        "categoryName": "Energy",
+        "source": "rule_exact",
+        "confidence": 0.99,
+        "matchDetails": "Exact match on merchant",
+        "needsReview": false
+      },
+      {
+        "categoryId": "c-train",
+        "categoryName": "Trains",
+        "source": "rule_pattern",
+        "confidence": 0.88,
+        "matchDetails": "Pattern match",
+        "needsReview": false
+      },
+      {
+        "categoryId": "c-kids",
+        "categoryName": "Kids activities",
+        "source": "ai",
+        "confidence": 0.62,
+        "matchDetails": "Looks like a children\u2019s activity",
+        "needsReview": true
+      },
+      {
+        "categoryId": null,
+        "categoryName": null,
+        "source": "none",
+        "confidence": 0,
+        "matchDetails": "No match",
+        "needsReview": true
+      },
+      {
+        "categoryId": "c-subs",
+        "categoryName": "Subscriptions",
+        "source": "rule_exact",
+        "confidence": 0.99,
+        "matchDetails": "Exact match on merchant",
+        "needsReview": false
+      },
+      {
+        "categoryId": "c-groc",
+        "categoryName": "Groceries",
+        "source": "rule_exact",
+        "confidence": 0.97,
+        "matchDetails": "Exact match on merchant",
+        "needsReview": false
+      },
+      {
+        "categoryId": null,
+        "categoryName": null,
+        "source": "none",
+        "confidence": 0,
+        "matchDetails": "No match",
+        "needsReview": true
+      },
+      {
+        "categoryId": "c-gift",
+        "categoryName": "Gifts",
+        "source": "ai",
+        "confidence": 0.55,
+        "matchDetails": "Looks like a children\u2019s activity",
+        "needsReview": true
+      }
+    ],
+    "stats": {
+      "total": 12,
+      "categorised": 10,
+      "uncategorised": 2,
+      "bySource": {},
+      "highConfidence": 7,
+      "lowConfidence": 3,
+      "aiUsed": 2
+    }
+  },
+  "/api/import/duplicates": {
+    "duplicates": [
+      {
+        "importRow": 2,
+        "importTransaction": {
+          "rowNumber": 2,
+          "date": "2026-09-01",
+          "amount": -84.27,
+          "description": "TESCO STORES 2841 SEVENOAKS",
+          "rawData": {
+            "Date": "2026-09-01",
+            "Description": "TESCO STORES 2841 SEVENOAKS",
+            "Amount": "-84.27"
+          }
+        },
+        "existingTransaction": {
+          "id": "e1",
+          "date": "2026-09-01",
+          "amount": -84.27,
+          "description": "TESCO STORES 2841 SEVENOAKS",
+          "account_id": "a-joint"
+        },
+        "matchType": "exact",
+        "similarity": 1
+      },
+      {
+        "importRow": 10,
+        "importTransaction": {
+          "rowNumber": 10,
+          "date": "2026-09-08",
+          "amount": -12.99,
+          "description": "NETFLIX.COM",
+          "rawData": {
+            "Date": "2026-09-08",
+            "Description": "NETFLIX.COM",
+            "Amount": "-12.99"
+          }
+        },
+        "existingTransaction": {
+          "id": "e2",
+          "date": "2026-09-08",
+          "amount": -12.99,
+          "description": "NETFLIX.COM 866-579-7172",
+          "account_id": "a-joint"
+        },
+        "matchType": "likely",
+        "similarity": 0.86
+      }
+    ]
+  },
+  "/api/categories/corrections": {
+    "suggestions": []
+  },
+  "/api/categories": [
+    {
+      "id": "c-groc",
+      "name": "Groceries",
+      "group_name": "Everyday",
+      "category_groups": {
+        "id": "g-Everyday",
+        "name": "Everyday",
+        "colour": null
+      }
+    },
+    {
+      "id": "c-eat",
+      "name": "Eating out",
+      "group_name": "Everyday",
+      "category_groups": {
+        "id": "g-Everyday",
+        "name": "Everyday",
+        "colour": null
+      }
+    },
+    {
+      "id": "c-fuel",
+      "name": "Fuel",
+      "group_name": "Transport",
+      "category_groups": {
+        "id": "g-Transport",
+        "name": "Transport",
+        "colour": null
+      }
+    },
+    {
+      "id": "c-train",
+      "name": "Trains",
+      "group_name": "Transport",
+      "category_groups": {
+        "id": "g-Transport",
+        "name": "Transport",
+        "colour": null
+      }
+    },
+    {
+      "id": "c-sal",
+      "name": "Salary",
+      "group_name": "Income",
+      "category_groups": {
+        "id": "g-Income",
+        "name": "Income",
+        "colour": null
+      }
+    },
+    {
+      "id": "c-util",
+      "name": "Energy",
+      "group_name": "Bills",
+      "category_groups": {
+        "id": "g-Bills",
+        "name": "Bills",
+        "colour": null
+      }
+    },
+    {
+      "id": "c-subs",
+      "name": "Subscriptions",
+      "group_name": "Bills",
+      "category_groups": {
+        "id": "g-Bills",
+        "name": "Bills",
+        "colour": null
+      }
+    },
+    {
+      "id": "c-kids",
+      "name": "Kids activities",
+      "group_name": "Family",
+      "category_groups": {
+        "id": "g-Family",
+        "name": "Family",
+        "colour": null
+      }
+    },
+    {
+      "id": "c-gift",
+      "name": "Gifts",
+      "group_name": "Family",
+      "category_groups": {
+        "id": "g-Family",
+        "name": "Family",
+        "colour": null
+      }
+    }
+  ],
+  "/api/accounts": {
+    "accounts": [
+      {
+        "id": "a-joint",
+        "name": "HSBC Joint Current",
+        "type": "current"
+      },
+      {
+        "id": "a-cc",
+        "name": "Amex Gold",
+        "type": "credit"
+      },
+      {
+        "id": "a-sav",
+        "name": "Marcus Savings",
+        "type": "savings"
+      },
+      {
+        "id": "a-isa",
+        "name": "Vanguard ISA",
+        "type": "investment"
+      }
+    ]
+  },
+  "/api/nav-summary": {
+    "asOf": "2026-10-07",
+    "review": {
+      "total": 5,
+      "uncategorised": 2,
+      "withSuggestion": 3
+    },
+    "transactions": {
+      "thisMonth": 48
+    },
+    "budget": {
+      "spent": 2148,
+      "planned": 3400,
+      "usedPct": 63
+    },
+    "subscriptions": {
+      "monthly": 486.4,
+      "next": {
+        "name": "Netflix",
+        "date": "2026-10-12",
+        "amount": 12.99
+      }
+    },
+    "sync": {
+      "lastSyncAt": "2026-10-07T09:12:00Z",
+      "accounts": [
+        "HSBC Joint Current"
+      ]
+    }
+  }
+}

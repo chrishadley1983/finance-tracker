@@ -20,6 +20,7 @@ const STATUS_OPTIONS: { value: TransactionStatusFilter | undefined; label: strin
   { value: undefined, label: 'All' },
   { value: 'uncategorised', label: 'Needs category' },
   { value: 'needs_review', label: 'Needs review' },
+  { value: 'unvalidated', label: 'Not validated' },
   { value: 'validated', label: 'Validated' },
 ];
 

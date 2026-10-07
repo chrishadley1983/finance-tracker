@@ -105,12 +105,12 @@ export function RuleSuggestion({
   };
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-lg max-w-md">
+    <div className="bg-accent-soft border border-accent rounded-md p-4 shadow-lg max-w-md">
       <div className="flex items-start gap-3">
         {/* Icon */}
         <div className="flex-shrink-0">
           <svg
-            className="w-5 h-5 text-blue-600"
+            className="w-5 h-5 text-accent"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -126,12 +126,12 @@ export function RuleSuggestion({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-blue-900">Create a categorisation rule?</h4>
-          <p className="mt-1 text-sm text-blue-700">
+          <h4 className="text-sm font-medium text-accent">Create a categorisation rule?</h4>
+          <p className="mt-1 text-sm text-accent">
             You've corrected <span className="font-medium">{suggestion.correctionCount}</span>{' '}
             transactions
             {suggestion.matchType === 'exact' ? ' with' : ' containing'}{' '}
-            <span className="font-mono text-xs bg-blue-100 px-1 py-0.5 rounded">
+            <span className="font-mono text-xs bg-accent-soft px-1 py-0.5 rounded">
               {suggestion.pattern}
             </span>{' '}
             to <span className="font-medium">{suggestion.categoryName}</span>.
@@ -140,7 +140,7 @@ export function RuleSuggestion({
           {/* Details Toggle */}
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="mt-2 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+            className="mt-2 text-xs text-accent hover:text-accent flex items-center gap-1"
           >
             {showDetails ? (
               <>
@@ -171,7 +171,7 @@ export function RuleSuggestion({
 
           {/* Details Section */}
           {showDetails && (
-            <div className="mt-2 text-xs text-blue-700 bg-blue-100 rounded p-2">
+            <div className="mt-2 text-xs text-accent bg-accent-soft rounded p-2">
               <p className="font-medium mb-1">Sample transactions:</p>
               <ul className="space-y-0.5">
                 {suggestion.sampleDescriptions.slice(0, 3).map((desc, i) => (
@@ -180,10 +180,10 @@ export function RuleSuggestion({
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-blue-600">
+              <p className="mt-2 text-accent">
                 Match type: {suggestion.matchType === 'exact' ? 'Exact match' : 'Contains pattern'}
               </p>
-              <p className="text-blue-600">
+              <p className="text-accent">
                 Confidence: {Math.round(suggestion.confidence * 100)}%
               </p>
             </div>
@@ -194,7 +194,7 @@ export function RuleSuggestion({
             <button
               onClick={handleAccept}
               disabled={isCreating}
-              className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 transition-colors flex items-center gap-1"
+              className="px-3 py-1.5 text-sm bg-accent text-accent-ink rounded-md hover:opacity-90 disabled:opacity-50 transition-colors flex items-center gap-1"
             >
               {isCreating ? (
                 <>
@@ -231,13 +231,13 @@ export function RuleSuggestion({
             </button>
             <button
               onClick={onDismiss}
-              className="px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-100 rounded-md transition-colors"
+              className="px-3 py-1.5 text-sm text-accent hover:bg-accent-soft rounded-md transition-colors"
             >
               Not now
             </button>
             <button
               onClick={handleNeverAsk}
-              className="px-3 py-1.5 text-xs text-blue-500 hover:text-blue-700 transition-colors"
+              className="px-3 py-1.5 text-xs text-accent hover:text-accent transition-colors"
             >
               Don't ask again
             </button>
@@ -247,7 +247,7 @@ export function RuleSuggestion({
         {/* Close button */}
         <button
           onClick={onDismiss}
-          className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+          className="flex-shrink-0 text-accent hover:text-accent transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -389,9 +389,9 @@ export function InlineRuleSuggestion({
   onDismiss,
 }: InlineRuleSuggestionProps) {
   return (
-    <div className="flex items-center gap-2 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-xs">
+    <div className="flex items-center gap-2 px-2 py-1 bg-warn-soft border border-warn/40 rounded text-xs">
       <svg
-        className="w-3.5 h-3.5 text-amber-600 flex-shrink-0"
+        className="w-3.5 h-3.5 text-warn flex-shrink-0"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -403,17 +403,17 @@ export function InlineRuleSuggestion({
           d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
         />
       </svg>
-      <span className="text-amber-800">
+      <span className="text-warn">
         <span className="font-medium">{correctionCount}</span> similar corrections to{' '}
         <span className="font-medium">{categoryName}</span>
       </span>
       <button
         onClick={onCreateRule}
-        className="px-1.5 py-0.5 bg-amber-600 text-white rounded hover:bg-amber-700 transition-colors"
+        className="px-1.5 py-0.5 bg-warn text-surface rounded hover:opacity-90 transition-colors"
       >
         Create rule
       </button>
-      <button onClick={onDismiss} className="text-amber-500 hover:text-amber-700">
+      <button onClick={onDismiss} className="text-warn hover:text-warn">
         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"

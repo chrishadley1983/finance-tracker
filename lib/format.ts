@@ -43,6 +43,16 @@ export function formatGBP(amount: number, opts?: FormatGBPOptions): string {
  * Compact GBP for chart axes and labels: "£1.2M", "£450k", "£999".
  * Values below £1,000 (including negatives) are shown as whole pounds via toFixed.
  */
+/** Money cell text: spending is a plain amount (shown in ink), income gets a leading "+". */
+export function formatAmount(amount: number): string {
+  return amount > 0 ? formatGBP(amount, { pence: true, signed: true }) : formatGBP(Math.abs(amount), { pence: true });
+}
+
+/** A day's net: signed both ways so a mixed day reads unambiguously. */
+export function formatNet(amount: number): string {
+  return formatGBP(amount, { pence: true, signed: true });
+}
+
 export function formatGBPCompact(amount: number): string {
   if (amount >= 1000000) {
     return `£${(amount / 1000000).toFixed(1)}M`;
@@ -70,22 +80,28 @@ export const MONTH_SHORT = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ] as const;
 
-/** en-GB date as "d MMM yyyy", e.g. "5 Mar 2025". */
+/**
+ * en-GB date as "d MMM yyyy", e.g. "5 Mar 2025". Built by hand because newer
+ * ICU data prints September as "Sept" for en-GB.
+ */
 export function formatDateGB(date: string | number | Date): string {
-  return new Date(date).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+  const d = new Date(date);
+  return `${d.getDate()} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/**
+ * Short calendar day from an ISO date (YYYY-MM-DD), e.g. "16 Oct". Parsed as a
+ * calendar day, so it never shifts with the time zone.
+ */
+export function formatDayMonth(isoDate: string): string {
+  const [, m, d] = isoDate.slice(0, 10).split('-').map(Number);
+  return `${d} ${MONTH_SHORT[m - 1]}`;
 }
 
 /** en-GB date as "dd MMM yyyy", e.g. "05 Mar 2025". */
 export function formatDateGBPadded(date: string | number | Date): string {
-  return new Date(date).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+  const d = new Date(date);
+  return `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
@@ -100,4 +116,12 @@ export function formatDayHeading(isoDate: string, now: Date = new Date()): strin
   const weekday = WEEKDAY_SHORT[new Date(y, m - 1, d).getDay()];
   const base = `${weekday} ${d} ${MONTH_NAMES[m - 1]}`;
   return y === now.getFullYear() ? base : `${base} ${y}`;
+}
+
+/**
+ * `toLocaleDateString('en-GB', opts)` with "Sep" for September: newer ICU data
+ * prints "Sept", which no other month abbreviation matches.
+ */
+export function gbDate(date: string | number | Date, opts: Intl.DateTimeFormatOptions): string {
+  return new Date(date).toLocaleDateString('en-GB', opts).replace(/\bSept\b/, 'Sep');
 }

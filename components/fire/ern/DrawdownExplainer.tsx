@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, Wallet } from 'lucide-react';
+import { useMemo } from 'react';
 import {
   projectDrawdown,
   type DrawdownProjectionConfig,
@@ -9,6 +8,8 @@ import {
 } from '@/lib/fire/ern/uk-drawdown';
 import type { WrapperBalances } from '@/lib/fire/ern/uk-drawdown';
 import { formatGBP } from '@/lib/format';
+import { Disclosure } from '../Disclosure';
+import { readableGBP } from '../readable';
 
 interface DrawdownExplainerProps {
   wrapperBalances: { isa: number; sipp: number; gia: number; cash: number };
@@ -82,8 +83,6 @@ export function DrawdownExplainer({
   partialEarningsAnnual = 0,
   partialEarningsYears = 0,
 }: DrawdownExplainerProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
   // capeImpliedReturn comes from the API as a percentage (e.g. 2.56 for CAPE 39)
   // Convert to decimal for projection (0.0256)
   const realReturn = capeImpliedReturn > 0
@@ -194,9 +193,6 @@ export function DrawdownExplainer({
   const retirementTotal = projection.retirementBalances.isa + projection.retirementBalances.sipp
     + projection.retirementBalances.gia + projection.retirementBalances.cash;
 
-  // Determine draw order phases
-  const prePensionYears = Math.max(0, statePensionStartAge - retirementAge);
-
   // Find wrapper depletion ages
   const isaDepletionYear = projection.years.find(y => y.remainingBalances.isa <= 0);
   const sippDepletionYear = projection.years.find(y => y.remainingBalances.sipp <= 0);
@@ -211,282 +207,238 @@ export function DrawdownExplainer({
   // Average effective tax rate
   const avgTaxRate = projection.totalDrawn > 0 ? projection.totalTaxPaid / projection.totalDrawn : 0;
 
+  const finalTotal = projection.finalBalances.isa + projection.finalBalances.sipp + projection.finalBalances.gia + projection.finalBalances.cash;
+
+  const phaseBox = 'rounded-[3px] border border-line bg-surface p-3';
+  const phaseList = 'mt-1.5 list-decimal space-y-0.5 pl-5 text-ink-2';
+  const sub = 'mb-2 text-[13px] font-semibold text-ink';
+  const dash = <span className="text-ink-3">–</span>;
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 text-left"
-      >
-        <div className="flex items-center gap-3">
-          <Wallet className="h-5 w-5 text-gray-400" />
-          <div>
-            <span className="font-medium text-gray-900 dark:text-white">Drawdown Strategy</span>
-            <span className="text-sm text-gray-500 dark:text-gray-400 ml-3">
-              {formatGBP(projection.totalTaxPaid)} lifetime tax ({pct(avgTaxRate)} effective)
-              {projection.depletionAge && ` | depletes at age ${projection.depletionAge}`}
-              {' | '}{pct(realReturn)} real return
-            </span>
-          </div>
-        </div>
-        {isOpen ? (
-          <ChevronUp className="h-5 w-5 text-gray-400" />
-        ) : (
-          <ChevronDown className="h-5 w-5 text-gray-400" />
-        )}
-      </button>
+    <Disclosure
+      title="Drawdown order and tax"
+      summary={
+        <>
+          About <span className="fig">{readableGBP(projection.totalTaxPaid)}</span> in tax over retirement ({pct(avgTaxRate)} of what you draw)
+          {projection.depletionAge ? `; the money runs out at ${projection.depletionAge}` : '; the money lasts the whole horizon'}.
+        </>
+      }
+    >
+      <div className="grid gap-6 text-[13px] text-ink-2">
+        <section>
+          <h3 className={sub}>Which pot to draw from, and when</h3>
+          <p className="mb-3 max-w-[80ch]">
+            Withdrawals follow a tax-efficient order that changes when the state pension starts at {statePensionStartAge}. Growth is
+            assumed at {pct(realReturn)} a year after inflation (from today&apos;s CAPE).
+            {partialEarningsAnnual > 0 && partialEarningsYears > 0 && (
+              <>
+                {' '}
+                Part-time earnings of {formatGBP(partialEarningsAnnual)} a year reduce withdrawals for the first {partialEarningsYears} years.
+              </>
+            )}
+          </p>
 
-      {isOpen && (
-        <div className="px-4 pb-6 border-t border-gray-100 dark:border-gray-700 pt-4 space-y-6 text-sm text-gray-700 dark:text-gray-300">
-          {/* Strategy Overview */}
-          <section>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-              Optimal Draw Order
-            </h4>
-            <p className="mb-3">
-              The model draws from your wrappers in a tax-efficient order that minimises lifetime
-              tax. The strategy adapts when state pension starts at age {statePensionStartAge}.
-              Returns are projected at {pct(realReturn)} real (CAPE-implied).
-              {partialEarningsAnnual > 0 && partialEarningsYears > 0 && (
-                <> Partial earnings of {formatGBP(partialEarningsAnnual)}/yr offset withdrawals for the first {partialEarningsYears} years of retirement.</>
-              )}
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Pre-SIPP access strategy (before age 57) */}
-              {retirementAge < 57 && (
-                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
-                  <h5 className="font-medium text-purple-800 dark:text-purple-300 mb-2">
-                    Pre-SIPP Access (age {retirementAge}&ndash;57)
-                  </h5>
-                  <ol className="list-decimal list-inside space-y-1 text-purple-700 dark:text-purple-400">
-                    <li><strong>ISA</strong> first &mdash; entirely tax-free</li>
-                    <li><strong>GIA</strong> if ISA insufficient &mdash; CGT on gains only</li>
-                    <li><strong>Cash</strong> as last resort</li>
-                  </ol>
-                  <p className="mt-2 text-xs text-purple-600 dark:text-purple-500">
-                    SIPP inaccessible until age 57 &mdash; pension stays invested and compounds
-                  </p>
-                </div>
-              )}
-
-              {/* Pre-pension, post-SIPP access strategy (age 57 to SPA) */}
-              {Math.max(retirementAge, 57) < statePensionStartAge && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                  <h5 className="font-medium text-blue-800 dark:text-blue-300 mb-2">
-                    SIPP Access, Pre-Pension (age {Math.max(retirementAge, 57)}&ndash;{statePensionStartAge})
-                  </h5>
-                  <ol className="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-400">
-                    <li><strong>SIPP</strong> up to Personal Allowance ({formatGBP(12570)}/yr) &mdash; taxed at 0% via PA</li>
-                    <li><strong>ISA</strong> for the remainder &mdash; entirely tax-free</li>
-                    <li><strong>GIA</strong> if ISA + SIPP insufficient &mdash; CGT on gains only</li>
-                    <li><strong>Cash</strong> as last resort</li>
-                  </ol>
-                  <p className="mt-2 text-xs text-blue-600 dark:text-blue-500">
-                    Uses PA that would otherwise be wasted while no state pension income
-                  </p>
-                </div>
-              )}
-
-              {/* Post-pension strategy */}
-              <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-4">
-                <h5 className="font-medium text-emerald-800 dark:text-emerald-300 mb-2">
-                  Post-Pension (age {Math.max(retirementAge, statePensionStartAge)}+)
-                </h5>
-                <ol className="list-decimal list-inside space-y-1 text-emerald-700 dark:text-emerald-400">
-                  <li><strong>ISA</strong> first &mdash; entirely tax-free</li>
-                  <li><strong>SIPP</strong> if ISA depleted &mdash; 25% TFLS tax-free, rest taxed as income</li>
-                  <li><strong>GIA</strong> if both depleted &mdash; CGT on gains only</li>
-                  <li><strong>Cash</strong> as last resort</li>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {retirementAge < 57 && (
+              <div className={phaseBox}>
+                <h4 className="font-medium text-ink">
+                  Before pension access (age {retirementAge}–57)
+                </h4>
+                <ol className={phaseList}>
+                  <li>ISA first: tax-free</li>
+                  <li>GIA if the ISA runs short: CGT on gains only</li>
+                  <li>Cash last</li>
                 </ol>
-                <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-500">
-                  State pension ({formatGBP(statePensionAnnual)}/yr) fills most of PA, so SIPP draws are taxed
-                </p>
+                <p className="mt-2 text-[12px] text-ink-3">The SIPP can&apos;t be touched until 57, so it keeps growing.</p>
               </div>
-            </div>
-          </section>
-
-          {/* Wrapper Balances: Now vs Retirement */}
-          <section>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-              {projection.accumulationYears > 0 ? 'Wrapper Balances (Now → Retirement)' : 'Starting Wrapper Balances'}
-            </h4>
-            {projection.accumulationYears > 0 && (
-              <p className="text-xs text-gray-500 mb-2">
-                After {projection.accumulationYears} years of accumulation
-                {annualSavings > 0 && <> saving {formatGBP(annualSavings)}/yr</>}
-                {' '}at {pct(realReturn)} real return. Savings distributed proportionally to current wrapper mix.
-              </p>
             )}
-            <div className="grid grid-cols-4 gap-3">
-              {[
-                { label: 'ISA', now: wrapperBalances.isa, ret: projection.retirementBalances.isa, color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300' },
-                { label: 'SIPP', now: wrapperBalances.sipp, ret: projection.retirementBalances.sipp, color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' },
-                { label: 'GIA', now: wrapperBalances.gia, ret: projection.retirementBalances.gia, color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300' },
-                { label: 'Cash', now: wrapperBalances.cash, ret: projection.retirementBalances.cash, color: 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300' },
-              ].map(({ label, now, ret, color }) => (
-                <div key={label} className={`rounded-lg p-3 ${color}`}>
-                  <div className="text-xs font-medium">{label}</div>
-                  {projection.accumulationYears > 0 ? (
-                    <>
-                      <div className="text-xs line-through opacity-60">{formatGBP(now)}</div>
-                      <div className="text-lg font-bold">{formatGBP(ret)}</div>
-                    </>
-                  ) : (
-                    <div className="text-lg font-bold">{formatGBP(ret)}</div>
+
+            {Math.max(retirementAge, 57) < statePensionStartAge && (
+              <div className={phaseBox}>
+                <h4 className="font-medium text-ink">
+                  Pension access, before state pension (age {Math.max(retirementAge, 57)}–{statePensionStartAge})
+                </h4>
+                <ol className={phaseList}>
+                  <li>SIPP up to the personal allowance ({formatGBP(12570)} a year): no tax</li>
+                  <li>ISA for the rest: tax-free</li>
+                  <li>GIA if those run short: CGT on gains only</li>
+                  <li>Cash last</li>
+                </ol>
+                <p className="mt-2 text-[12px] text-ink-3">Uses an allowance that would otherwise go to waste.</p>
+              </div>
+            )}
+
+            <div className={phaseBox}>
+              <h4 className="font-medium text-ink">After state pension (age {Math.max(retirementAge, statePensionStartAge)}+)</h4>
+              <ol className={phaseList}>
+                <li>ISA first: tax-free</li>
+                <li>SIPP when the ISA is used up: 25% tax-free, the rest taxed as income</li>
+                <li>GIA when both are used up: CGT on gains only</li>
+                <li>Cash last</li>
+              </ol>
+              <p className="mt-2 text-[12px] text-ink-3">
+                The state pension ({formatGBP(statePensionAnnual)} a year) uses most of the allowance, so SIPP draws are taxed.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 className={sub}>{projection.accumulationYears > 0 ? 'Your pots now and at retirement' : 'Your pots at the start'}</h3>
+          {projection.accumulationYears > 0 && (
+            <p className="mb-2 text-[12.5px] text-ink-3">
+              After {projection.accumulationYears} more years
+              {annualSavings > 0 && <> saving {formatGBP(annualSavings)} a year</>} at {pct(realReturn)} growth. Savings are split
+              in proportion to today&apos;s mix.
+            </p>
+          )}
+          <ul className="divide-y divide-line-2 rounded-[3px] border border-line bg-surface">
+            {[
+              { label: 'ISA', now: wrapperBalances.isa, ret: projection.retirementBalances.isa },
+              { label: 'SIPP', now: wrapperBalances.sipp, ret: projection.retirementBalances.sipp },
+              { label: 'GIA', now: wrapperBalances.gia, ret: projection.retirementBalances.gia },
+              { label: 'Cash', now: wrapperBalances.cash, ret: projection.retirementBalances.cash },
+            ].map(({ label, now, ret }) => (
+              <li key={label} className="flex items-baseline justify-between gap-3 px-3 py-2">
+                <span className="text-ink">{label}</span>
+                <span className="flex items-baseline gap-3">
+                  {projection.accumulationYears > 0 && (
+                    <span className="fig text-[12px] text-ink-3" title={`Today: ${formatGBP(now)}`}>
+                      {readableGBP(now)} now
+                    </span>
                   )}
-                  <div className="text-xs">{retirementTotal > 0 ? pct(ret / retirementTotal) : '0%'}</div>
-                </div>
-              ))}
-            </div>
-            {projection.accumulationYears > 0 && (
-              <p className="text-xs text-gray-500 mt-2">
-                Portfolio at retirement: {formatGBP(retirementTotal)} (from {formatGBP(totalPortfolio)} today)
-              </p>
-            )}
-          </section>
+                  <span className="fig text-ink" title={formatGBP(ret)}>
+                    {readableGBP(ret)}
+                  </span>
+                  <span className="fig w-10 text-right text-[12px] text-ink-3">{retirementTotal > 0 ? `${Math.round((ret / retirementTotal) * 100)}%` : '0%'}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+          {projection.accumulationYears > 0 && (
+            <p className="mt-2 text-[12.5px] text-ink-3">
+              Pot at retirement: <span className="fig text-ink-2">{formatGBP(retirementTotal)}</span> (from{' '}
+              <span className="fig">{formatGBP(totalPortfolio)}</span> today).
+            </p>
+          )}
+        </section>
 
-          {/* Year-by-Year Table */}
-          <section>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-              Projected Drawdown Timeline
-            </h4>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="py-2 px-2 text-left font-medium">Age</th>
-                    <th className="py-2 px-2 text-right font-medium">From ISA</th>
-                    <th className="py-2 px-2 text-right font-medium">From SIPP</th>
-                    <th className="py-2 px-2 text-right font-medium">From GIA</th>
-                    <th className="py-2 px-2 text-right font-medium">Pension</th>
-                    <th className="py-2 px-2 text-right font-medium">Tax</th>
-                    <th className="py-2 px-2 text-right font-medium">Tax Rate</th>
-                    <th className="py-2 px-2 text-right font-medium">ISA Bal</th>
-                    <th className="py-2 px-2 text-right font-medium">SIPP Bal</th>
-                    <th className="py-2 px-2 text-right font-medium">GIA Bal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sampleYears.map((y) => {
-                    const isPartialEarnings = partialEarningsAnnual > 0 && y.year < partialEarningsYears;
-                    return (
-                      <tr
-                        key={y.year}
-                        className={`border-b border-gray-100 dark:border-gray-800 ${
-                          y.age === statePensionStartAge ? 'bg-emerald-50 dark:bg-emerald-900/10' : ''
-                        }`}
-                      >
-                        <td className="py-1.5 px-2 font-medium">
-                          {y.age}
-                          {isPartialEarnings && <span className="text-purple-500 ml-1" title="Partial earnings active">*</span>}
-                        </td>
-                        <td className="py-1.5 px-2 text-right">{y.fromIsa > 0 ? formatGBP(y.fromIsa) : '—'}</td>
-                        <td className="py-1.5 px-2 text-right">{y.fromSipp > 0 ? formatGBP(y.fromSipp) : '—'}</td>
-                        <td className="py-1.5 px-2 text-right">{y.fromGia > 0 ? formatGBP(y.fromGia) : '—'}</td>
-                        <td className="py-1.5 px-2 text-right">{y.statePensionIncome > 0 ? formatGBP(y.statePensionIncome) : '—'}</td>
-                        <td className="py-1.5 px-2 text-right text-red-600 dark:text-red-400">
-                          {y.totalTax > 0 ? formatGBP(y.totalTax) : '—'}
-                        </td>
-                        <td className="py-1.5 px-2 text-right">
-                          {y.effectiveTaxRate > 0 ? pct(y.effectiveTaxRate) : '0%'}
-                        </td>
-                        <td className="py-1.5 px-2 text-right text-emerald-600 dark:text-emerald-400">
-                          {formatGBP(y.remainingBalances.isa)}
-                        </td>
-                        <td className="py-1.5 px-2 text-right text-blue-600 dark:text-blue-400">
-                          {formatGBP(y.remainingBalances.sipp)}
-                        </td>
-                        <td className="py-1.5 px-2 text-right text-amber-600 dark:text-amber-400">
-                          {formatGBP(y.remainingBalances.gia)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              {partialEarningsAnnual > 0 && partialEarningsYears > 0 && (
-                <p className="text-xs text-purple-500 mt-1">* Partial earnings ({formatGBP(partialEarningsAnnual)}/yr) reducing withdrawal need</p>
-              )}
-            </div>
-          </section>
+        <section>
+          <h3 className={sub}>Year by year (every fifth year)</h3>
+          <div className="overflow-x-auto rounded-[3px] border border-line bg-surface">
+            <table className="w-full border-collapse text-[12.5px]">
+              <thead>
+                <tr className="border-b border-line bg-sunk text-[11.5px] text-ink-3">
+                  <th scope="col" className="px-2.5 py-2 text-left font-medium">Age</th>
+                  <th scope="col" className="px-2.5 py-2 text-right font-medium">From ISA</th>
+                  <th scope="col" className="px-2.5 py-2 text-right font-medium">From SIPP</th>
+                  <th scope="col" className="px-2.5 py-2 text-right font-medium">From GIA</th>
+                  <th scope="col" className="px-2.5 py-2 text-right font-medium">State pension</th>
+                  <th scope="col" className="px-2.5 py-2 text-right font-medium">Tax</th>
+                  <th scope="col" className="px-2.5 py-2 text-right font-medium">Tax rate</th>
+                  <th scope="col" className="px-2.5 py-2 text-right font-medium">ISA left</th>
+                  <th scope="col" className="px-2.5 py-2 text-right font-medium">SIPP left</th>
+                  <th scope="col" className="px-2.5 py-2 text-right font-medium">GIA left</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line-2">
+                {sampleYears.map((y) => {
+                  const isPartialEarnings = partialEarningsAnnual > 0 && y.year < partialEarningsYears;
+                  return (
+                    <tr key={y.year} className={y.age === statePensionStartAge ? 'bg-sel' : ''}>
+                      <th scope="row" className="px-2.5 py-1.5 text-left font-medium text-ink">
+                        {y.age}
+                        {isPartialEarnings && (
+                          <span className="ml-0.5 text-ink-3" title="Part-time earnings in this year">
+                            *
+                          </span>
+                        )}
+                      </th>
+                      <td className="fig px-2.5 py-1.5 text-right">{y.fromIsa > 0 ? formatGBP(y.fromIsa) : dash}</td>
+                      <td className="fig px-2.5 py-1.5 text-right">{y.fromSipp > 0 ? formatGBP(y.fromSipp) : dash}</td>
+                      <td className="fig px-2.5 py-1.5 text-right">{y.fromGia > 0 ? formatGBP(y.fromGia) : dash}</td>
+                      <td className="fig px-2.5 py-1.5 text-right">{y.statePensionIncome > 0 ? formatGBP(y.statePensionIncome) : dash}</td>
+                      <td className="fig px-2.5 py-1.5 text-right text-ink">{y.totalTax > 0 ? formatGBP(y.totalTax) : dash}</td>
+                      <td className="fig px-2.5 py-1.5 text-right">{y.effectiveTaxRate > 0 ? pct(y.effectiveTaxRate) : '0%'}</td>
+                      <td className="fig px-2.5 py-1.5 text-right">{formatGBP(y.remainingBalances.isa)}</td>
+                      <td className="fig px-2.5 py-1.5 text-right">{formatGBP(y.remainingBalances.sipp)}</td>
+                      <td className="fig px-2.5 py-1.5 text-right">{formatGBP(y.remainingBalances.gia)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-1.5 text-[12px] text-ink-3">
+            The shaded row is the year the state pension starts.
+            {partialEarningsAnnual > 0 && partialEarningsYears > 0 && <> * Part-time earnings ({formatGBP(partialEarningsAnnual)} a year) reduce withdrawals.</>}
+          </p>
+        </section>
 
-          {/* Wrapper Depletion Timeline */}
-          <section>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-              Wrapper Depletion
-            </h4>
-            <div className="space-y-2">
+        <section className="grid gap-6 md:grid-cols-2">
+          <div>
+            <h3 className={sub}>When each pot runs out</h3>
+            <ul className="divide-y divide-line-2">
               {[
                 { label: 'ISA', data: isaDepletionYear, balance: projection.retirementBalances.isa },
                 { label: 'SIPP', data: sippDepletionYear, balance: projection.retirementBalances.sipp },
                 { label: 'GIA', data: giaDepletionYear, balance: projection.retirementBalances.gia },
                 { label: 'Cash', data: cashDepletionYear, balance: projection.retirementBalances.cash },
-              ].filter(w => w.balance > 0).map(({ label, data }) => (
-                <div key={label} className="flex items-center gap-3">
-                  <span className="w-12 font-medium">{label}</span>
-                  {data ? (
-                    <span className="text-amber-600 dark:text-amber-400">
-                      Depleted at age {data.age} (year {data.year})
-                    </span>
-                  ) : (
-                    <span className="text-emerald-600 dark:text-emerald-400">
-                      Survives full horizon
-                    </span>
-                  )}
+              ]
+                .filter((w) => w.balance > 0)
+                .map(({ label, data }) => (
+                  <li key={label} className="flex items-baseline justify-between gap-3 py-1.5">
+                    <span className="text-ink">{label}</span>
+                    {data ? (
+                      <span>
+                        used up at {data.age} <span className="text-ink-3">(year {data.year})</span>
+                      </span>
+                    ) : (
+                      <span className="text-in">lasts the whole horizon</span>
+                    )}
+                  </li>
+                ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className={sub}>Over the whole retirement</h3>
+            <dl className="divide-y divide-line-2">
+              {[
+                ['Total drawn', formatGBP(projection.totalDrawn)],
+                ['Total tax', formatGBP(projection.totalTaxPaid)],
+                ['Average tax rate', pct(avgTaxRate)],
+                ['Left at the end', formatGBP(finalTotal)],
+              ].map(([k, v]) => (
+                <div key={k} className="flex items-baseline justify-between gap-3 py-1.5">
+                  <dt>{k}</dt>
+                  <dd className="fig text-ink">{v}</dd>
                 </div>
               ))}
-            </div>
-          </section>
+            </dl>
+          </div>
+        </section>
 
-          {/* Summary Stats */}
-          <section className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-              Lifetime Summary
-            </h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <div className="text-xs text-gray-500">Total Drawn</div>
-                <div className="text-lg font-bold">{formatGBP(projection.totalDrawn)}</div>
-              </div>
-              <div>
-                <div className="text-xs text-gray-500">Total Tax Paid</div>
-                <div className="text-lg font-bold text-red-600 dark:text-red-400">{formatGBP(projection.totalTaxPaid)}</div>
-              </div>
-              <div>
-                <div className="text-xs text-gray-500">Avg Effective Tax Rate</div>
-                <div className="text-lg font-bold">{pct(avgTaxRate)}</div>
-              </div>
-              <div>
-                <div className="text-xs text-gray-500">Final Portfolio</div>
-                <div className="text-lg font-bold">
-                  {formatGBP(projection.finalBalances.isa + projection.finalBalances.sipp + projection.finalBalances.gia + projection.finalBalances.cash)}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Tax Assumptions */}
-          <section>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-              Tax Assumptions
-            </h4>
-            <ul className="list-disc list-inside space-y-1 text-xs text-gray-500">
-              <li>2025-26 UK tax bands: PA {formatGBP(12570)}, basic 20% to {formatGBP(50270)}, higher 40% to {formatGBP(125140)}, additional 45%</li>
-              <li>CGT allowance {formatGBP(3000)}/yr; rates 10%/20% (basic/higher rate taxpayers)</li>
-              <li>SIPP Tax-Free Lump Sum: 25% of crystallised amount, up to {formatGBP(268275)} lifetime</li>
-              <li>GIA gain fraction starts at 50% and increases 1pp/yr (reflecting compounding gains)</li>
-              <li>Fiscal drag not modelled (thresholds assumed frozen in real terms)</li>
-              <li>Real return: {pct(realReturn)} (CAPE-implied). Cash earns 0% real.</li>
-              {projection.accumulationYears > 0 && (
-                <li>Savings during accumulation ({formatGBP(annualSavings)}/yr) distributed proportionally to current wrapper mix</li>
-              )}
-              {partialEarningsAnnual > 0 && (
-                <li>Partial earnings ({formatGBP(partialEarningsAnnual)}/yr for {partialEarningsYears} years) reduce withdrawal need, not modelled as taxable income</li>
-              )}
-            </ul>
-          </section>
-        </div>
-      )}
-    </div>
+        <section>
+          <h3 className={sub}>Tax assumptions</h3>
+          <ul className="list-disc space-y-0.5 pl-5 text-[12.5px] text-ink-3">
+            <li>
+              2025-26 UK bands: personal allowance {formatGBP(12570)}, basic 20% to {formatGBP(50270)}, higher 40% to {formatGBP(125140)}, additional 45%
+            </li>
+            <li>CGT allowance {formatGBP(3000)} a year; 10% or 20% (basic or higher rate)</li>
+            <li>SIPP tax-free lump sum: 25% of what&apos;s crystallised, up to {formatGBP(268275)} in a lifetime</li>
+            <li>GIA gains start at half the value and grow by 1 percentage point a year</li>
+            <li>Fiscal drag isn&apos;t modelled (thresholds held flat in real terms)</li>
+            <li>Growth {pct(realReturn)} a year after inflation (from CAPE); cash earns nothing after inflation</li>
+            {projection.accumulationYears > 0 && <li>Savings until retirement ({formatGBP(annualSavings)} a year) are split in proportion to today&apos;s mix</li>}
+            {partialEarningsAnnual > 0 && (
+              <li>
+                Part-time earnings ({formatGBP(partialEarningsAnnual)} a year for {partialEarningsYears} years) reduce withdrawals and aren&apos;t taxed in the model
+              </li>
+            )}
+          </ul>
+        </section>
+      </div>
+    </Disclosure>
   );
 }

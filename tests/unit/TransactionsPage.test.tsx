@@ -27,6 +27,7 @@ const rows = [
 type Call = { url: string; init?: RequestInit };
 let calls: Call[] = [];
 let bulkFails = false;
+let toValidateCount: number | null = null;
 
 function json(body: unknown, ok = true) {
   return Promise.resolve({ ok, json: () => Promise.resolve(body) });
@@ -39,6 +40,13 @@ function respond(url: string, init?: RequestInit) {
   if (url.startsWith('/api/transactions/ids')) {
     const many = Array.from({ length: 40 }, (_, i) => ({ id: `id-${i}`, amount: -1, description: 'TESCO STORES 9', needs_review: false, category_id: null }));
     return json({ ids: many.map((r) => r.id), rows: many, total: 40, capped: false });
+  }
+  if (url.startsWith('/api/transactions/validate-matching')) {
+    if (init?.method === 'POST') {
+      const ids = Array.from({ length: 12 }, (_, i) => `v-${i}`);
+      return json({ updated: 12, ids, capped: false });
+    }
+    return json({ count: toValidateCount });
   }
   if (url.startsWith('/api/transactions?')) return json({ data: rows, total: 40, totals: { out: 1234.5, in: 100 } });
   if (url === '/api/transactions/bulk') {
@@ -67,6 +75,7 @@ describe('Transactions page', () => {
   beforeEach(() => {
     calls = [];
     bulkFails = false;
+    toValidateCount = null;
     search = new URLSearchParams();
     vi.clearAllMocks();
     __resetCategoriesCache();
@@ -125,6 +134,35 @@ describe('Transactions page', () => {
       { ids: ['a'], update: { is_validated: false } },
       { ids: ['b'], update: { is_validated: true } },
     ]);
+  });
+
+  it('filters to not-validated rows', async () => {
+    renderPage();
+    await screen.findByText('SALARY');
+    fireEvent.click(screen.getByRole('button', { name: 'Not validated' }));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/transactions?status=unvalidated', { scroll: false }));
+  });
+
+  it('validates everything matching the filters after a confirm, with Undo', async () => {
+    toValidateCount = 12;
+    search = new URLSearchParams('status=unvalidated');
+    renderPage();
+    const summary = await screen.findByTestId('transactions-summary');
+    await waitFor(() => expect(summary.textContent).toContain('12 not validated'));
+    expect(calls.some((c) => c.url === '/api/transactions/validate-matching?status=unvalidated')).toBe(true);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Validate all 12' }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog.textContent).toContain('every transaction matching the current filters');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Validate all' }));
+
+    await screen.findByText('12 transactions marked validated');
+    const post = calls.find((c) => c.url.startsWith('/api/transactions/validate-matching') && c.init?.method === 'POST');
+    expect(post?.url).toBe('/api/transactions/validate-matching?status=unvalidated');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    await screen.findByText('Undone');
+    expect(bulkCalls()).toEqual([{ ids: Array.from({ length: 12 }, (_, i) => `v-${i}`), update: { is_validated: false } }]);
   });
 
   it('flags and moves rows through the bulk API', async () => {

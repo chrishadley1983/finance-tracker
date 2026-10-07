@@ -2,13 +2,14 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Plus } from 'lucide-react';
+import { CheckCheck, Plus } from 'lucide-react';
 import { TransactionFilters, TRANSACTION_ACCOUNT_TYPES } from './TransactionFilters';
 import { TransactionTable, type TransactionWithRunningBalance } from './TransactionTable';
 import { TransactionPagination } from './TransactionPagination';
 import { TransactionPanel, readError, ruleToast } from './TransactionPanel';
 import { TransactionBulkBar } from './TransactionBulkBar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { useCategories } from '@/lib/hooks/useCategories';
 import { useAccounts } from '@/lib/hooks/useAccounts';
@@ -19,7 +20,7 @@ import {
   FilterState,
   TransactionWithRelations,
 } from '@/lib/hooks/useTransactions';
-import { filtersFromSearchParams, filtersToQueryString } from '@/lib/transactions/url-filters';
+import { filtersFromSearchParams, filtersToQueryString, hasActiveFilters } from '@/lib/transactions/url-filters';
 import { merchantKey } from '@/lib/categorisation/normalise';
 import { formatGBP } from '@/lib/format';
 
@@ -102,6 +103,8 @@ export function TransactionsPageContent() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingTransaction, setDeletingTransaction] = useState<TransactionWithRelations | null>(null);
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [validateAllOpen, setValidateAllOpen] = useState(false);
+  const [validatingAll, setValidatingAll] = useState(false);
 
   // Loading states for operations
   const [isOperating, setIsOperating] = useState(false);
@@ -425,6 +428,74 @@ export function TransactionsPageContent() {
     }
   }, [selectedIds, bulkPut, clearSelection, refetch, restore, toast]);
 
+  // ---- Validate everything matching the filters -----------------------------
+
+  /** How many matching transactions are not validated yet (null = unknown). */
+  const [toValidate, setToValidate] = useState<number | null>(null);
+  useEffect(() => {
+    if (filters.status === 'validated') {
+      setToValidate(0);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/transactions/validate-matching?${filterQueryParams(filters).toString()}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: { count?: number } | null) => {
+        if (!cancelled) setToValidate(typeof body?.count === 'number' ? body.count : null);
+      })
+      .catch(() => {
+        if (!cancelled) setToValidate(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Re-count whenever the list reloads (filters, edits, bulk actions).
+  }, [filters, regularTransactions]);
+
+  const handleValidateAll = useCallback(async () => {
+    setValidatingAll(true);
+    try {
+      const response = await fetch(`/api/transactions/validate-matching?${filterQueryParams(filters).toString()}`, {
+        method: 'POST',
+      });
+      const body: { updated?: number; ids?: string[]; capped?: boolean; error?: string } = await response
+        .json()
+        .catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || 'Failed to validate transactions');
+      const ids = body.ids ?? [];
+      setValidateAllOpen(false);
+      clearSelection();
+      await refetch();
+      toast({
+        tone: 'success',
+        message: `${plural(ids.length, 'transaction')} marked validated${body.capped ? '. More are left: run it again for the rest' : ''}`,
+        action: ids.length
+          ? {
+              label: 'Undo',
+              onClick: () => {
+                (async () => {
+                  for (let i = 0; i < ids.length; i += 2000) {
+                    await bulkPut(ids.slice(i, i + 2000), { is_validated: false });
+                  }
+                })()
+                  .then(() => {
+                    toast({ tone: 'neutral', message: 'Undone' });
+                    return refetch();
+                  })
+                  .catch((err: unknown) =>
+                    toast({ tone: 'error', message: err instanceof Error ? err.message : 'Undo failed' })
+                  );
+              },
+            }
+          : undefined,
+      });
+    } catch (err) {
+      toast({ tone: 'error', message: err instanceof Error ? err.message : 'Failed to validate transactions' });
+    } finally {
+      setValidatingAll(false);
+    }
+  }, [filters, bulkPut, clearSelection, refetch, toast]);
+
   const handleBulkSetCategory = useCallback(async (categoryId: string) => {
     if (selectedIds.size === 0) return;
     const count = selectedIds.size;
@@ -607,6 +678,16 @@ export function TransactionsPageContent() {
                   <span className="fig text-in">{formatGBP(totals.in, { pence: true })}</span> in
                 </>
               )}
+              {!!toValidate && (
+                <>
+                  <span className="text-ink-3"> · </span>
+                  <span className="fig text-ink">{toValidate.toLocaleString('en-GB')}</span> not validated{' '}
+                  <Button size="sm" className="-my-1 ml-1 h-7" onClick={() => setValidateAllOpen(true)}>
+                    <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                    Validate all {toValidate.toLocaleString('en-GB')}
+                  </Button>
+                </>
+              )}
             </p>
           </div>
 
@@ -729,6 +810,21 @@ export function TransactionsPageContent() {
           setDeleteDialogOpen(false);
           setDeletingTransaction(null);
         }}
+      />
+
+      {/* Validate everything matching */}
+      <ConfirmDialog
+        isOpen={validateAllOpen}
+        title={`Validate ${plural(toValidate ?? 0, 'transaction')}?`}
+        message={
+          hasActiveFilters(filters)
+            ? 'This marks every transaction matching the current filters as validated, not just this page. You can undo it straight after.'
+            : 'No filters are set, so this marks every transaction that is not validated yet, across all accounts and dates. You can undo it straight after.'
+        }
+        confirmLabel="Validate all"
+        busy={validatingAll}
+        onConfirm={handleValidateAll}
+        onCancel={() => setValidateAllOpen(false)}
       />
 
       {/* Bulk Delete Confirmation */}

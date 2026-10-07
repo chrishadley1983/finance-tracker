@@ -131,25 +131,25 @@ export function TemplateSelector({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
-        className="w-full px-4 py-3 border border-slate-300 rounded-lg text-left bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
+        className="w-full px-4 py-3 border border-line rounded-md text-left bg-surface hover:border-line focus:outline-none focus:ring-2 focus:ring-accent transition-colors disabled:opacity-50"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-10 h-10 bg-sunk rounded-md flex items-center justify-center">
+              <svg className="w-5 h-5 text-ink-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
             <div>
               {selectedTemplate ? (
                 <>
-                  <p className="font-medium text-slate-900">{selectedTemplate.name}</p>
-                  <p className="text-sm text-slate-500">{selectedTemplate.provider}</p>
+                  <p className="font-medium text-ink">{selectedTemplate.name}</p>
+                  <p className="text-sm text-ink-3">{selectedTemplate.provider}</p>
                 </>
               ) : (
                 <>
-                  <p className="font-medium text-slate-900">Select a template</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="font-medium text-ink">Select a template</p>
+                  <p className="text-sm text-ink-3">
                     {templates.length === 0
                       ? 'No saved templates'
                       : `${templates.length} template${templates.length !== 1 ? 's' : ''} available`}
@@ -159,7 +159,7 @@ export function TemplateSelector({
             </div>
           </div>
           <svg
-            className={`w-5 h-5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            className={`w-5 h-5 text-ink-3 transition-transform ${isOpen ? 'rotate-180' : ''}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -171,12 +171,12 @@ export function TemplateSelector({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-surface border border-line rounded-md shadow-xl z-50 overflow-hidden">
           {/* Search */}
-          <div className="p-3 border-b border-slate-100">
+          <div className="p-3 border-b border-line-2">
             <div className="relative">
               <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-3"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -188,7 +188,7 @@ export function TemplateSelector({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search templates..."
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                 autoFocus
               />
             </div>
@@ -197,7 +197,7 @@ export function TemplateSelector({
           {/* Template List */}
           <div className="max-h-64 overflow-y-auto">
             {filteredTemplates.length === 0 ? (
-              <div className="p-4 text-center text-slate-500 text-sm">
+              <div className="p-4 text-center text-ink-3 text-sm">
                 {searchTerm ? 'No templates match your search' : 'No templates saved yet'}
               </div>
             ) : (
@@ -206,24 +206,24 @@ export function TemplateSelector({
                   <button
                     key={template.id}
                     onClick={() => handleSelect(template)}
-                    className={`w-full p-3 rounded-lg text-left transition-colors ${
+                    className={`w-full p-3 rounded-md text-left transition-colors ${
                       template.id === selectedTemplateId
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'hover:bg-slate-50'
+                        ? 'bg-accent-soft border border-accent'
+                        : 'hover:bg-sunk'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-slate-900 truncate">{template.name}</p>
+                          <p className="font-medium text-ink truncate">{template.name}</p>
                           {template.isCompatible && (
-                            <span className="flex-shrink-0 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                            <span className="flex-shrink-0 px-2 py-0.5 bg-accent-soft text-in text-xs rounded-full">
                               Compatible
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-slate-500">{template.provider}</p>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-sm text-ink-3">{template.provider}</p>
+                        <p className="text-xs text-ink-3 mt-1">
                           {formatLastUsed(template.last_used_at)}
                           {template.use_count > 0 && ` • ${template.use_count} imports`}
                         </p>
@@ -233,10 +233,10 @@ export function TemplateSelector({
                           <div
                             className={`text-xs font-medium ${
                               template.matchScore >= 0.8
-                                ? 'text-green-600'
+                                ? 'text-in'
                                 : template.matchScore >= 0.5
-                                ? 'text-amber-600'
-                                : 'text-slate-400'
+                                ? 'text-warn'
+                                : 'text-ink-3'
                             }`}
                           >
                             {Math.round(template.matchScore * 100)}% match
@@ -251,13 +251,13 @@ export function TemplateSelector({
           </div>
 
           {/* Footer */}
-          <div className="p-3 border-t border-slate-100 bg-slate-50">
+          <div className="p-3 border-t border-line-2 bg-sunk">
             <button
               onClick={() => {
                 setIsOpen(false);
                 onManage();
               }}
-              className="w-full py-2 text-sm text-slate-600 hover:text-slate-800 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 text-sm text-ink-2 hover:text-ink transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />

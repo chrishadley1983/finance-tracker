@@ -1,14 +1,18 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, type ReactNode } from 'react';
+import { Button } from './Button';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
-  message: string;
+  message: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
+  /** danger = destroys something; warning = overwrites or changes a lot; default = neither. */
   variant?: 'danger' | 'warning' | 'default';
+  /** Shows a spinner on the confirm button while the action runs. */
+  busy?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -20,51 +24,42 @@ export function ConfirmDialog({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   variant = 'default',
+  busy = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Close on escape key
+  // Close on Escape (not while the action is running)
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !busy) {
         onCancel();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onCancel]);
+  }, [isOpen, busy, onCancel]);
 
-  // Focus trap
+  // Focus the dialog, and hand focus back to whatever opened it on close
   useEffect(() => {
-    if (isOpen && dialogRef.current) {
-      dialogRef.current.focus();
-    }
+    if (!isOpen || !dialogRef.current) return;
+    const opener = document.activeElement as HTMLElement | null;
+    dialogRef.current.focus();
+    return () => opener?.focus?.();
   }, [isOpen]);
 
   if (!isOpen) return null;
-
-  const getConfirmButtonClasses = () => {
-    switch (variant) {
-      case 'danger':
-        return 'bg-red-600 hover:bg-red-700 text-white';
-      case 'warning':
-        return 'bg-amber-600 hover:bg-amber-700 text-white';
-      default:
-        return 'bg-blue-600 hover:bg-blue-700 text-white';
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50"
-        onClick={onCancel}
+        className="absolute inset-0 bg-black/40"
+        onClick={busy ? undefined : onCancel}
         aria-hidden="true"
       />
 
@@ -76,34 +71,33 @@ export function ConfirmDialog({
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-description"
         tabIndex={-1}
-        className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 focus:outline-none"
+        className="relative mx-4 w-full max-w-md rounded-md border border-line bg-surface p-6 shadow-xl focus:outline-none"
       >
         <h2
           id="confirm-dialog-title"
-          className="text-lg font-semibold text-slate-900 mb-2"
+          className="mb-2 text-lg font-semibold text-ink"
         >
           {title}
         </h2>
-        <p
+        <div
           id="confirm-dialog-description"
-          className="text-sm text-slate-600 mb-6"
+          className="mb-6 text-sm text-ink-2"
         >
           {message}
-        </p>
+        </div>
 
         <div className="flex justify-end gap-3">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-          >
+          <Button onClick={onCancel} disabled={busy}>
             {cancelLabel}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={variant === 'danger' ? 'danger' : 'primary'}
+            className={variant === 'danger' ? 'font-semibold' : ''}
+            loading={busy}
             onClick={onConfirm}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${getConfirmButtonClasses()}`}
           >
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

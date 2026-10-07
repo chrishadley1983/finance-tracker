@@ -2,7 +2,11 @@
 
 import { useState, useCallback } from 'react';
 import type { ParsedTransaction, DuplicateMatchType } from '@/lib/types/import';
-import { formatDateGBPadded, formatGBP } from '@/lib/format';
+import { formatDateGB } from '@/lib/format';
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { Notice } from '@/components/ui/Notice';
+import { formatAmount } from '@/lib/format';
 
 interface DuplicateResult {
   importRow: number;
@@ -138,63 +142,50 @@ export function ImportStep({
     });
   };
 
-  const getMatchTypeColor = (matchType: DuplicateMatchType) => {
-    switch (matchType) {
-      case 'exact':
-        return 'bg-red-100 text-red-800';
-      case 'likely':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'possible':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-slate-100 text-slate-800';
-    }
-  };
+  const toImport = transactions.length - selectedDuplicates.size;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-slate-900 mb-2">Import Transactions</h2>
-        <p className="text-slate-600">
-          Check for duplicates and import {transactions.length} transactions.
+    <div className="grid gap-6">
+      <div className="grid gap-1">
+        <h2 className="text-[15px] font-semibold text-ink">Import</h2>
+        <p className="text-sm text-ink-2">
+          Ready to import <span className="fig text-ink">{toImport}</span> of{' '}
+          <span className="fig text-ink">{transactions.length}</span> transactions
+          {selectedDuplicates.size > 0 && (
+            <>
+              , skipping <span className="fig text-ink">{selectedDuplicates.size}</span> duplicate
+              {selectedDuplicates.size === 1 ? '' : 's'}
+            </>
+          )}
+          .
         </p>
       </div>
 
       {/* Duplicate Detection Options */}
-      <div className="bg-slate-50 rounded-lg p-4 space-y-4">
-        <h3 className="text-sm font-medium text-slate-900">Duplicate Detection</h3>
-
-        <div className="flex items-center gap-2">
+      <fieldset className="grid gap-3">
+        <legend className="mb-2 text-[13px] font-semibold text-ink">Duplicates</legend>
+        <label htmlFor="skipDuplicates" className="flex items-center gap-2 text-sm text-ink">
           <input
             type="checkbox"
             id="skipDuplicates"
             checked={skipDuplicates}
             onChange={(e) => setSkipDuplicates(e.target.checked)}
-            className="w-4 h-4 text-blue-600 rounded"
+            className="h-4 w-4 accent-accent"
           />
-          <label htmlFor="skipDuplicates" className="text-sm text-slate-700">
-            Skip duplicate transactions
-          </label>
-        </div>
+          Skip duplicate transactions
+        </label>
 
         {skipDuplicates && (
-          <div className="space-y-2">
-            <label className="block text-sm text-slate-700">Detection Strategy</label>
-            <div className="flex flex-wrap gap-3">
+          <>
+            <div role="radiogroup" aria-label="How to match duplicates" className="grid gap-2 sm:grid-cols-3">
               {[
-                { value: 'strict' as const, label: 'Strict', desc: 'Exact date, amount, description' },
-                { value: 'fuzzy' as const, label: 'Fuzzy', desc: 'Same date, similar amount/description' },
-                { value: 'dateRange' as const, label: 'Date Range', desc: 'Same amount within ±1 day' },
+                { value: 'strict' as const, label: 'Strict', desc: 'Exact date, amount and description' },
+                { value: 'fuzzy' as const, label: 'Fuzzy', desc: 'Same date, similar amount or description' },
+                { value: 'dateRange' as const, label: 'Date range', desc: 'Same amount within a day either side' },
               ].map((option) => (
                 <label
                   key={option.value}
-                  className={`
-                    flex-1 min-w-[140px] p-3 border rounded-lg cursor-pointer transition-colors
-                    ${duplicateStrategy === option.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-slate-200 hover:border-slate-300'
-                    }
-                  `}
+                  className="cursor-pointer rounded-md border border-line bg-surface px-3 py-2 hover:bg-sunk has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent"
                 >
                   <input
                     type="radio"
@@ -204,181 +195,133 @@ export function ImportStep({
                     onChange={() => setDuplicateStrategy(option.value)}
                     className="sr-only"
                   />
-                  <span className="block text-sm font-medium text-slate-900">
-                    {option.label}
-                  </span>
-                  <span className="block text-xs text-slate-500 mt-0.5">
-                    {option.desc}
-                  </span>
+                  <span className="block text-sm font-medium text-ink">{option.label}</span>
+                  <span className="block text-xs text-ink-3">{option.desc}</span>
                 </label>
               ))}
             </div>
-
-            <button
-              onClick={checkDuplicates}
-              disabled={isCheckingDuplicates}
-              className="mt-3 px-4 py-2 text-sm bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 disabled:opacity-50 transition-colors"
-            >
-              {isCheckingDuplicates ? 'Checking...' : 'Check for Duplicates'}
-            </button>
-          </div>
+            <div>
+              <Button size="sm" onClick={checkDuplicates} loading={isCheckingDuplicates}>
+                {isCheckingDuplicates ? 'Checking...' : 'Check for Duplicates'}
+              </Button>
+            </div>
+          </>
         )}
-      </div>
+      </fieldset>
 
       {/* Duplicate Results */}
       {duplicates !== null && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-slate-900">
+        <div className="grid gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-[13px] font-semibold text-ink">
               Found {duplicates.length} potential duplicate{duplicates.length !== 1 ? 's' : ''}
             </h3>
             {duplicates.length > 0 && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSelectedDuplicates(new Set(duplicates.map((d) => d.importRow)))}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
+              <div className="flex gap-1">
+                <Button size="sm" variant="ghost" onClick={() => setSelectedDuplicates(new Set(duplicates.map((d) => d.importRow)))}>
                   Skip all
-                </button>
-                <button
-                  onClick={() => setSelectedDuplicates(new Set())}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setSelectedDuplicates(new Set())}>
                   Import all
-                </button>
+                </Button>
               </div>
             )}
           </div>
 
           {duplicates.length === 0 ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-sm text-green-700">No duplicates found. Ready to import!</p>
-            </div>
+            <Notice tone="success">No duplicates found. Ready to import.</Notice>
           ) : (
-            <div className="border border-slate-200 rounded-lg overflow-hidden max-h-64 overflow-y-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 sticky top-0">
-                  <tr>
-                    <th className="px-3 py-2 text-left w-8">
-                      <span className="sr-only">Skip</span>
-                    </th>
-                    <th className="px-3 py-2 text-left text-slate-600 font-medium">New Transaction</th>
-                    <th className="px-3 py-2 text-left text-slate-600 font-medium">Existing</th>
-                    <th className="px-3 py-2 text-left text-slate-600 font-medium">Match</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {duplicates.map((dup) => (
-                    <tr key={dup.importRow} className="hover:bg-slate-50">
-                      <td className="px-3 py-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedDuplicates.has(dup.importRow)}
-                          onChange={() => toggleDuplicate(dup.importRow)}
-                          title={selectedDuplicates.has(dup.importRow) ? 'Will skip' : 'Will import'}
-                          className="w-4 h-4 text-blue-600 rounded"
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <div className="text-slate-900 truncate max-w-[200px]">
-                          {dup.importTransaction.description}
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {formatDateGBPadded(dup.importTransaction.date)} •{' '}
-                          {formatGBP(dup.importTransaction.amount, { pence: true })}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <div className="text-slate-900 truncate max-w-[200px]">
-                          {dup.existingTransaction.description}
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {formatDateGBPadded(dup.existingTransaction.date)} •{' '}
-                          {formatGBP(dup.existingTransaction.amount, { pence: true })}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <span
-                          className={`inline-block px-2 py-0.5 text-xs font-medium rounded ${getMatchTypeColor(
-                            dup.matchType
-                          )}`}
-                        >
-                          {dup.matchType}
-                        </span>
-                        <div className="text-xs text-slate-500 mt-0.5">
-                          {Math.round(dup.similarity * 100)}% match
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div role="table" aria-label="Possible duplicates" className="max-h-80 overflow-y-auto rounded-md border border-line bg-surface">
+              <div
+                role="row"
+                className="sticky top-0 hidden grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)_6rem] gap-x-3 border-b border-line bg-sunk px-3 py-2 text-xs font-medium uppercase tracking-wide text-ink-3 md:grid"
+              >
+                <span role="columnheader">
+                  <span className="sr-only">Skip</span>
+                </span>
+                <span role="columnheader">New</span>
+                <span role="columnheader">Already in your data</span>
+                <span role="columnheader">Match</span>
+              </div>
+              {duplicates.map((dup) => {
+                const skip = selectedDuplicates.has(dup.importRow);
+                return (
+                  <div
+                    key={dup.importRow}
+                    role="row"
+                    className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] gap-x-3 gap-y-1 border-b border-line-2 px-3 py-2 text-sm last:border-b-0 md:grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)_6rem] ${
+                      skip ? '' : 'bg-sel'
+                    }`}
+                  >
+                    <span role="cell" className="row-span-2 pt-0.5 md:row-span-1">
+                      <input
+                        type="checkbox"
+                        checked={skip}
+                        onChange={() => toggleDuplicate(dup.importRow)}
+                        aria-label={`Skip ${dup.importTransaction.description}`}
+                        title={skip ? 'Will skip' : 'Will import'}
+                        className="h-4 w-4 accent-accent"
+                      />
+                    </span>
+                    <DupSide label="New" tx={dup.importTransaction} />
+                    <span role="cell" className="text-right md:order-last md:text-left">
+                      <Chip tone={dup.matchType === 'exact' ? 'bad' : dup.matchType === 'likely' ? 'warn' : 'neutral'}>{dup.matchType}</Chip>
+                    </span>
+                    <DupSide label="Existing" tx={dup.existingTransaction} className="col-start-2 col-end-4 md:col-auto" />
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          <p className="text-xs text-slate-500">
-            Checked rows will be skipped during import. Uncheck to import anyway.
-          </p>
+          <p className="text-xs text-ink-3">Ticked rows are skipped. Untick a row to import it anyway.</p>
         </div>
       )}
 
-      {/* Import Summary */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-900 mb-2">Import Summary</h3>
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <p className="text-2xl font-semibold text-blue-900">{transactions.length}</p>
-            <p className="text-xs text-blue-700">Total</p>
-          </div>
-          <div>
-            <p className="text-2xl font-semibold text-green-600">
-              {transactions.length - selectedDuplicates.size}
-            </p>
-            <p className="text-xs text-green-700">To Import</p>
-          </div>
-          <div>
-            <p className="text-2xl font-semibold text-slate-600">{selectedDuplicates.size}</p>
-            <p className="text-xs text-slate-500">To Skip</p>
-          </div>
-        </div>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
-      )}
+      {error && <Notice tone="error">{error}</Notice>}
 
       {/* Import Progress */}
       {isImporting && (
-        <div className="space-y-2">
-          <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-600 transition-all duration-200"
-              style={{ width: `${importProgress}%` }}
-            />
+        <div className="grid gap-1.5" role="status">
+          <div className="h-1.5 overflow-hidden rounded-full bg-line-2">
+            <div className="h-full bg-accent transition-all duration-200" style={{ width: `${importProgress}%` }} />
           </div>
-          <p className="text-sm text-slate-600 text-center">Importing transactions...</p>
+          <p className="text-sm text-ink-2">Importing transactions...</p>
         </div>
       )}
 
       {/* Navigation */}
-      <div className="flex justify-between pt-4 border-t border-slate-200">
-        <button
-          onClick={onBack}
-          disabled={isImporting}
-          className="px-4 py-2 text-slate-600 hover:text-slate-800 disabled:opacity-50 transition-colors"
-        >
+      <div className="flex justify-between gap-3 border-t border-line pt-4">
+        <Button variant="ghost" onClick={onBack} disabled={isImporting}>
           Back
-        </button>
-        <button
-          onClick={handleImport}
-          disabled={isImporting || isCheckingDuplicates}
-          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-300 transition-colors"
-        >
-          {isImporting ? 'Importing...' : `Import ${transactions.length - selectedDuplicates.size} Transactions`}
-        </button>
+        </Button>
+        <Button variant="primary" onClick={handleImport} loading={isImporting} disabled={isCheckingDuplicates}>
+          {isImporting ? 'Importing...' : `Import ${toImport} Transactions`}
+        </Button>
       </div>
     </div>
+  );
+}
+
+function DupSide({
+  label,
+  tx,
+  className = '',
+}: {
+  label: string;
+  tx: { date: string; amount: number; description: string };
+  className?: string;
+}) {
+  return (
+    <span role="cell" className={`min-w-0 ${className}`}>
+      <span className="block truncate text-ink" title={tx.description}>
+        <span className="text-ink-3 md:hidden">{label}: </span>
+        {tx.description}
+      </span>
+      <span className="block text-xs text-ink-3">
+        {formatDateGB(tx.date)} ·{' '}
+        <span className={`fig ${tx.amount > 0 ? 'text-in' : ''}`}>{formatAmount(tx.amount)}</span>
+      </span>
+    </span>
   );
 }

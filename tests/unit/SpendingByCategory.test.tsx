@@ -1,146 +1,53 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
-import { SpendingByCategory } from '@/components/dashboard/SpendingByCategory';
-import { CategorySpend } from '@/lib/hooks/useDashboardData';
+import { describe, it, expect, afterEach } from 'vitest';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { SpendingByCategory, categoryHref } from '@/components/dashboard/SpendingByCategory';
+import type { CategorySpend } from '@/lib/hooks/useDashboardData';
 
-// Mock next/navigation
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-  }),
-}));
-
-const mockCategorySpend: CategorySpend[] = [
-  {
-    categoryId: 'cat-1',
-    categoryName: 'Groceries',
-    amount: 500,
-    percentage: 50,
-  },
-  {
-    categoryId: 'cat-2',
-    categoryName: 'Transport',
-    amount: 300,
-    percentage: 30,
-  },
-  {
-    categoryId: 'cat-3',
-    categoryName: 'Entertainment',
-    amount: 200,
-    percentage: 20,
-  },
+const data: CategorySpend[] = [
+  { categoryId: 'cat-2', categoryName: 'Transport', amount: 300, percentage: 30 },
+  { categoryId: 'cat-1', categoryName: 'Groceries', amount: 500, percentage: 50 },
+  { categoryId: 'cat-3', categoryName: 'Entertainment', amount: 200, percentage: 20 },
+  { categoryId: 'cat-4', categoryName: 'Refunds only', amount: -20, percentage: 0 },
 ];
 
 describe('SpendingByCategory', () => {
-  afterEach(() => {
-    cleanup();
+  afterEach(cleanup);
+
+  it('ranks categories by amount and drops non-spending rows', () => {
+    render(<SpendingByCategory data={data} dateFrom="2026-10-01" dateTo="2026-10-31" />);
+    const links = screen.getAllByRole('link');
+    expect(links.map((l) => l.textContent)).toEqual([
+      expect.stringContaining('Groceries'),
+      expect.stringContaining('Transport'),
+      expect.stringContaining('Entertainment'),
+    ]);
+    expect(screen.queryByText('Refunds only')).not.toBeInTheDocument();
   });
 
-  describe('rendering', () => {
-    it('renders the title', () => {
-      render(<SpendingByCategory data={mockCategorySpend} isLoading={false} />);
-
-      expect(screen.getByText('Spending by Category')).toBeInTheDocument();
-    });
-
-    it('renders all categories', () => {
-      render(<SpendingByCategory data={mockCategorySpend} isLoading={false} />);
-
-      expect(screen.getByText('Groceries')).toBeInTheDocument();
-      expect(screen.getByText('Transport')).toBeInTheDocument();
-      expect(screen.getByText('Entertainment')).toBeInTheDocument();
-    });
-
-    it('renders correct number of category items', () => {
-      const { container } = render(
-        <SpendingByCategory data={mockCategorySpend} isLoading={false} />
-      );
-
-      // Each category has a progress bar
-      const progressBars = container.querySelectorAll('.bg-blue-500');
-      expect(progressBars.length).toBe(3);
-    });
+  it('links each row to that category and month in Transactions', () => {
+    render(<SpendingByCategory data={data} dateFrom="2026-10-01" dateTo="2026-10-31" />);
+    expect(screen.getByText('Groceries').closest('a')).toHaveAttribute(
+      'href',
+      '/transactions?dateFrom=2026-10-01&dateTo=2026-10-31&categoryId=cat-1'
+    );
+    expect(categoryHref('x', '2026-09-01', '2026-09-30')).toBe('/transactions?dateFrom=2026-09-01&dateTo=2026-09-30&categoryId=x');
   });
 
-  describe('progress bars', () => {
-    it('renders progress bars with correct widths', () => {
-      const { container } = render(
-        <SpendingByCategory data={mockCategorySpend} isLoading={false} />
-      );
-
-      const progressBars = container.querySelectorAll('.bg-blue-500');
-
-      // Check that width styles are set
-      expect(progressBars[0]).toHaveStyle({ width: '50%' });
-      expect(progressBars[1]).toHaveStyle({ width: '30%' });
-      expect(progressBars[2]).toHaveStyle({ width: '20%' });
-    });
-
-    it('renders progress bar container', () => {
-      const { container } = render(
-        <SpendingByCategory data={mockCategorySpend} isLoading={false} />
-      );
-
-      const barContainers = container.querySelectorAll('.bg-slate-700.rounded-full');
-      expect(barContainers.length).toBe(3);
-    });
+  it('shows the amount and share', () => {
+    render(<SpendingByCategory data={data} dateFrom="2026-10-01" dateTo="2026-10-31" />);
+    expect(screen.getByText('£500')).toBeInTheDocument();
+    expect(screen.getByText('50%')).toBeInTheDocument();
   });
 
-  describe('amount formatting', () => {
-    it('formats amounts as GBP currency', () => {
-      render(<SpendingByCategory data={mockCategorySpend} isLoading={false} />);
-
-      expect(screen.getByText('£500')).toBeInTheDocument();
-      expect(screen.getByText('£300')).toBeInTheDocument();
-      expect(screen.getByText('£200')).toBeInTheDocument();
-    });
+  it('folds long lists behind "Show all"', () => {
+    render(<SpendingByCategory data={data} dateFrom="2026-10-01" dateTo="2026-10-31" initialRows={2} />);
+    expect(screen.getAllByRole('link')).toHaveLength(2);
+    fireEvent.click(screen.getByText('Show all 3 categories'));
+    expect(screen.getAllByRole('link')).toHaveLength(3);
   });
 
-  describe('loading state', () => {
-    it('shows skeleton rows when loading', () => {
-      const { container } = render(
-        <SpendingByCategory data={[]} isLoading={true} />
-      );
-
-      const skeletons = container.querySelectorAll('.animate-pulse');
-      expect(skeletons.length).toBe(5);
-    });
-
-    it('does not show categories when loading', () => {
-      render(<SpendingByCategory data={mockCategorySpend} isLoading={true} />);
-
-      expect(screen.queryByText('Groceries')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('empty state', () => {
-    it('shows empty message when no spending data', () => {
-      render(<SpendingByCategory data={[]} isLoading={false} />);
-
-      expect(screen.getByText('No spending data available')).toBeInTheDocument();
-    });
-  });
-
-  describe('container styling', () => {
-    it('has correct background class', () => {
-      const { container } = render(
-        <SpendingByCategory data={mockCategorySpend} isLoading={false} />
-      );
-
-      const mainContainer = container.querySelector('.bg-slate-800');
-      expect(mainContainer).toBeInTheDocument();
-    });
-  });
-
-  describe('category items', () => {
-    it('renders category names with correct styling', () => {
-      const { container } = render(
-        <SpendingByCategory data={mockCategorySpend} isLoading={false} />
-      );
-
-      // Categories are rendered as buttons with text-sm text-slate-300 spans
-      const categoryNames = container.querySelectorAll('.text-sm.text-slate-300');
-      expect(categoryNames.length).toBe(3);
-    });
+  it('has an empty state', () => {
+    render(<SpendingByCategory data={[]} dateFrom="2026-10-01" dateTo="2026-10-31" />);
+    expect(screen.getByText('No spending this month yet')).toBeInTheDocument();
   });
 });

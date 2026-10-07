@@ -1,195 +1,136 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
-import type { NetWorthHistory } from '@/lib/types/fire';
-import { ACCOUNT_TYPE_LABELS } from '@/lib/types/fire';
-import { formatGBPCompact } from '@/lib/format';
-
-type Period = 'all' | '1y' | '2y' | '5y';
+import { useMemo, useState } from 'react';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import type { NetWorthHistoryPoint } from '@/lib/types/fire';
+import { formatGBP } from '@/lib/format';
+import { axisProps, chart, gridProps, tooltipProps } from '@/lib/chart-theme';
+import { Button } from '@/components/ui/Button';
+import { EmptyState, Notice } from '@/components/ui/Notice';
+import { CHART_PERIODS, axisGBP, filterHistory, monthKey, monthLabel, shortMonthLabel, type ChartPeriod } from './net-worth-helpers';
 
 interface NetWorthChartProps {
-  initialPeriod?: Period;
+  history: NetWorthHistoryPoint[] | null;
+  isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
+  initialPeriod?: ChartPeriod;
 }
 
-const TYPE_COLORS: Record<string, string> = {
-  investment: '#10b981',
-  pension: '#6366f1',
-  isa: '#8b5cf6',
-  savings: '#3b82f6',
-  current: '#f59e0b',
-  property: '#ef4444',
-};
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+interface LatestDotProps {
+  cx?: number;
+  cy?: number;
+  index?: number;
 }
 
-export function NetWorthChart({ initialPeriod = '2y' }: NetWorthChartProps) {
-  const [period, setPeriod] = useState<Period>(initialPeriod);
-  const [data, setData] = useState<NetWorthHistory | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+/** Quiet text tabs for the chart period. */
+export function PeriodTabs({ value, onChange }: { value: ChartPeriod; onChange: (p: ChartPeriod) => void }) {
+  return (
+    <div role="group" aria-label="Chart period" className="flex gap-3 text-[12.5px]">
+      {CHART_PERIODS.map((p) => (
+        <button
+          key={p.id}
+          type="button"
+          aria-pressed={value === p.id}
+          onClick={() => onChange(p.id)}
+          className={`rounded-sm focus-visible:outline-2 focus-visible:outline-accent ${
+            value === p.id ? 'font-semibold text-ink underline decoration-[1.5px] underline-offset-[5px]' : 'text-ink-3 hover:text-ink-2'
+          }`}
+        >
+          {p.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
-  const fetchHistory = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`/api/wealth/history?period=${period}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch history');
-      }
-      const result = await response.json();
-      setData(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [period]);
+export function NetWorthChart({ history, isLoading = false, error = null, onRetry, initialPeriod = '2y' }: NetWorthChartProps) {
+  const [period, setPeriod] = useState<ChartPeriod>(initialPeriod);
 
-  useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
+  const points = useMemo(() => filterHistory(history ?? [], period), [history, period]);
+  const data = useMemo(
+    () => points.map((p) => ({ date: p.date, label: shortMonthLabel(p.date), total: Math.round(p.total) })),
+    [points]
+  );
+  const lastIndex = data.length - 1;
+  const latestIsPartial = lastIndex >= 0 && data[lastIndex].date.slice(0, 7) === monthKey(new Date());
 
-  if (isLoading) {
+  const renderDot = (props: LatestDotProps) => {
+    const { cx, cy, index } = props;
+    if (index !== lastIndex || cx === undefined || cy === undefined) return <g key={`d${index}`} />;
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-6">
-        <div className="h-64 flex items-center justify-center">
-          <div className="animate-pulse text-gray-400">Loading chart...</div>
+      <g key="latest">
+        <circle cx={cx} cy={cy} r={5} fill={latestIsPartial ? chart.surface : chart.accent} stroke={chart.accent} strokeWidth={2} />
+      </g>
+    );
+  };
+
+  let body: React.ReactNode;
+  if (isLoading && !history) {
+    body = <div className="h-64 animate-pulse rounded-[3px] bg-line-2" aria-busy="true" aria-label="Loading chart" />;
+  } else if (error) {
+    body = (
+      <Notice tone="error" action={onRetry && <Button size="sm" onClick={onRetry}>Try again</Button>}>
+        Couldn&apos;t load your net worth history. {error}
+      </Notice>
+    );
+  } else if (data.length < 2) {
+    body = (
+      <EmptyState title="Not enough history to draw a chart yet">
+        Enter month-end balances for at least two months and your net worth over time will appear here.
+      </EmptyState>
+    );
+  } else {
+    const first = data[0];
+    const last = data[lastIndex];
+    body = (
+      <>
+        <div className="h-64 sm:h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 12, right: 12, bottom: 0, left: 0 }}>
+              <CartesianGrid {...gridProps} />
+              <XAxis dataKey="label" {...axisProps} minTickGap={24} />
+              <YAxis {...axisProps} axisLine={false} width={60} tickFormatter={axisGBP} domain={['auto', 'auto']} />
+              <Tooltip
+                {...tooltipProps}
+                cursor={{ stroke: chart.grid }}
+                formatter={(value) => [formatGBP(Number(value)), 'Net worth']}
+                labelFormatter={(_, payload) => {
+                  const d = payload?.[0]?.payload?.date as string | undefined;
+                  return d ? monthLabel(d.slice(0, 7)) : '';
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="total"
+                stroke={chart.accent}
+                strokeWidth={2}
+                fill={chart.accent}
+                fillOpacity={0.08}
+                dot={renderDot}
+                activeDot={{ r: 4, fill: chart.accent, stroke: chart.surface }}
+                isAnimationActive={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
-      </div>
+        <p className="mt-2 text-[12.5px] text-ink-3">
+          Net worth at each month end, from {formatGBP(first.total)} in {monthLabel(first.date.slice(0, 7))} to{' '}
+          {formatGBP(last.total)} {latestIsPartial ? 'so far this month (hollow dot)' : `in ${monthLabel(last.date.slice(0, 7))}`}.
+        </p>
+      </>
     );
   }
-
-  if (error) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-6">
-        <div className="h-64 flex items-center justify-center">
-          <p className="text-red-500">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!data || data.snapshots.length === 0) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-6">
-        <div className="h-64 flex items-center justify-center">
-          <p className="text-gray-500 dark:text-gray-400">
-            No historical data available. Add wealth snapshots or investment valuations to see your net worth over time.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Get unique account types from data
-  const accountTypes = new Set<string>();
-  for (const snapshot of data.snapshots) {
-    for (const type of Object.keys(snapshot.byType)) {
-      accountTypes.add(type);
-    }
-  }
-
-  // Format data for recharts
-  const chartData = data.snapshots.map((snapshot) => ({
-    date: snapshot.date,
-    formattedDate: formatDate(snapshot.date),
-    total: snapshot.total,
-    ...snapshot.byType,
-  }));
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Net Worth Over Time
-        </h3>
-        <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          {(['1y', '2y', '5y', 'all'] as Period[]).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                period === p
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-              } ${p !== '1y' ? 'border-l border-gray-200 dark:border-gray-700' : ''}`}
-            >
-              {p === 'all' ? 'All' : p.toUpperCase()}
-            </button>
-          ))}
-        </div>
+    <section aria-labelledby="nw-chart-title" className="min-w-0 border-t-[1.5px] border-ink">
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2.5">
+        <h2 id="nw-chart-title" className="text-[13.5px] font-semibold text-ink">
+          Over time
+        </h2>
+        <PeriodTabs value={period} onChange={setPeriod} />
       </div>
-
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
-            <XAxis
-              dataKey="formattedDate"
-              stroke="#9ca3af"
-              fontSize={12}
-              tickLine={false}
-            />
-            <YAxis
-              stroke="#9ca3af"
-              fontSize={12}
-              tickLine={false}
-              tickFormatter={formatGBPCompact}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#1f2937',
-                border: 'none',
-                borderRadius: '8px',
-                color: '#fff',
-              }}
-              formatter={(value, name) => [
-                formatGBPCompact(Number(value)),
-                String(name) === 'total' ? 'Total' : ACCOUNT_TYPE_LABELS[String(name)] || String(name),
-              ]}
-              labelFormatter={(label) => String(label)}
-            />
-            <Legend
-              formatter={(value) =>
-                value === 'total' ? 'Total' : ACCOUNT_TYPE_LABELS[value] || value
-              }
-            />
-            <Line
-              type="monotone"
-              dataKey="total"
-              stroke="#10b981"
-              strokeWidth={3}
-              dot={false}
-              name="total"
-            />
-            {Array.from(accountTypes).map((type) => (
-              <Line
-                key={type}
-                type="monotone"
-                dataKey={type}
-                stroke={TYPE_COLORS[type] || '#9ca3af'}
-                strokeWidth={1.5}
-                strokeDasharray="5 5"
-                dot={false}
-                name={type}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+      {body}
+    </section>
   );
 }

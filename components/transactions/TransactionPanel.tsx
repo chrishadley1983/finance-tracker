@@ -10,7 +10,7 @@ import type { TransactionWithRelations } from '@/lib/hooks/useTransactions';
 import { merchantKey } from '@/lib/categorisation/normalise';
 import { formatDateGB, formatGBP } from '@/lib/format';
 import { TRANSACTION_ACCOUNT_TYPES } from './TransactionFilters';
-import { formatAmount } from './TransactionTable';
+import { formatAmount } from '@/lib/format';
 
 export interface TransactionPanelProps {
   open: boolean;

@@ -21,16 +21,17 @@ describe('UploadStep', () => {
     it('renders upload dropzone', () => {
       render(<UploadStep onComplete={mockOnComplete} />);
 
-      expect(screen.getByText('Upload Bank Statement')).toBeInTheDocument();
-      expect(screen.getByText(/drag & drop your csv or pdf file/i)).toBeInTheDocument();
+      expect(screen.getByText('Upload a bank statement')).toBeInTheDocument();
+      expect(screen.getByText(/drop a csv or pdf here/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Choose a file' })).toBeInTheDocument();
     });
 
     it('renders supported formats list', () => {
       render(<UploadStep onComplete={mockOnComplete} />);
 
-      expect(screen.getByText('Supported Formats')).toBeInTheDocument();
+      expect(screen.getByText('Supported formats')).toBeInTheDocument();
       expect(screen.getByText('CSV')).toBeInTheDocument();
-      expect(screen.getByText('PDF Statements')).toBeInTheDocument();
+      expect(screen.getByText('PDF statements')).toBeInTheDocument();
       // HSBC Current appears twice (once for CSV, once for PDF)
       expect(screen.getAllByText('HSBC Current')).toHaveLength(2);
       expect(screen.getByText('HSBC Credit Card')).toBeInTheDocument();
