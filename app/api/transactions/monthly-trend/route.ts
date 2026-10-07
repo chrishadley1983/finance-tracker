@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { classifyAmount } from '@/lib/reports/classify';
+import { MONTH_SHORT } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
@@ -147,13 +148,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Convert to array with month labels
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const result = Array.from(monthMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([monthKey, data]) => {
         const monthIndex = parseInt(monthKey.split('-')[1], 10) - 1;
         return {
-          month: monthNames[monthIndex],
+          month: MONTH_SHORT[monthIndex],
           income: data.income,
           expenses: data.expenses,
         };

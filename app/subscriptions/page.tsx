@@ -16,6 +16,7 @@ import type {
   Summary,
   UntrackedCandidate,
 } from '@/lib/subscriptions/analysis';
+import { formatGBP } from '@/lib/format';
 
 interface SubscriptionsResponse {
   as_of: string;
@@ -26,14 +27,6 @@ interface SubscriptionsResponse {
 
 type ScopeFilter = 'all' | 'personal' | 'business';
 type StatusFilter = 'active' | 'all' | 'paused' | 'cancelled' | 'trial';
-
-const gbp = (n: number, digits = 2) =>
-  new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  }).format(n);
 
 const shortDate = (iso: string | null) =>
   iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : '–';
@@ -234,16 +227,16 @@ export default function SubscriptionsPage() {
             <dl className="flex flex-wrap gap-x-8 gap-y-2">
               <div>
                 <dt className="text-xs uppercase tracking-wide text-slate-500">Per month</dt>
-                <dd className="text-2xl font-semibold text-slate-900 tabular-nums">{gbp(summary.monthly)}</dd>
+                <dd className="text-2xl font-semibold text-slate-900 tabular-nums">{formatGBP(summary.monthly, { pence: true })}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-slate-500">Per year</dt>
-                <dd className="text-2xl font-semibold text-slate-900 tabular-nums">{gbp(summary.annual, 0)}</dd>
+                <dd className="text-2xl font-semibold text-slate-900 tabular-nums">{formatGBP(summary.annual)}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-slate-500">Personal / Business</dt>
                 <dd className="text-lg font-medium text-slate-700 tabular-nums pt-1">
-                  {gbp(summary.personal_monthly)} / {gbp(summary.business_monthly)}
+                  {formatGBP(summary.personal_monthly, { pence: true })} / {formatGBP(summary.business_monthly, { pence: true })}
                 </dd>
               </div>
               <div>
@@ -319,7 +312,7 @@ export default function SubscriptionsPage() {
                               onClick={() => patch(s.id, { amount: s.last_amount })}
                               className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50"
                             >
-                              Use {gbp(s.last_amount)}
+                              Use {formatGBP(s.last_amount, { pence: true })}
                             </button>
                           )}
                           {signals.some((x) => x.type === 'missed_payment' || x.type === 'no_charges_found') && (
@@ -364,7 +357,7 @@ export default function SubscriptionsPage() {
                           )}
                         </td>
                         <td className="px-4 py-2 text-right tabular-nums text-slate-900">
-                          {gbp(Math.abs(s.amount))}
+                          {formatGBP(Math.abs(s.amount), { pence: true })}
                           <span className="text-slate-500">{PER[s.frequency] ?? ''}</span>
                         </td>
                       </tr>
@@ -443,16 +436,16 @@ export default function SubscriptionsPage() {
                           </td>
                           <td className="px-4 py-2 text-slate-600">{s.category ?? '–'}</td>
                           <td className="px-4 py-2 text-right tabular-nums text-slate-900">
-                            {gbp(Math.abs(s.amount))}
+                            {formatGBP(Math.abs(s.amount), { pence: true })}
                             <span className="text-slate-500">{PER[s.frequency] ?? ''}</span>
                           </td>
-                          <td className="px-4 py-2 text-right tabular-nums text-slate-900">{gbp(s.monthly_cost)}</td>
+                          <td className="px-4 py-2 text-right tabular-nums text-slate-900">{formatGBP(s.monthly_cost, { pence: true })}</td>
                           <td className="px-4 py-2 text-right tabular-nums text-slate-600">
                             {s.last_charged ? (
                               <>
                                 {shortDate(s.last_charged)}
                                 {s.last_amount !== null && Math.abs(s.last_amount - Math.abs(s.amount)) >= 0.01 && (
-                                  <span className="block text-xs text-amber-700">{gbp(s.last_amount)}</span>
+                                  <span className="block text-xs text-amber-700">{formatGBP(s.last_amount, { pence: true })}</span>
                                 )}
                               </>
                             ) : (
@@ -488,8 +481,8 @@ export default function SubscriptionsPage() {
                       <tr key={c.category}>
                         <td className="px-4 py-2 text-slate-900">{c.category}</td>
                         <td className="px-4 py-2 text-right tabular-nums text-slate-500 w-24">{c.count}</td>
-                        <td className="px-4 py-2 text-right tabular-nums text-slate-900 w-32">{gbp(c.monthly)}/mo</td>
-                        <td className="px-4 py-2 text-right tabular-nums text-slate-500 w-32">{gbp(c.monthly * 12, 0)}/yr</td>
+                        <td className="px-4 py-2 text-right tabular-nums text-slate-900 w-32">{formatGBP(c.monthly, { pence: true })}/mo</td>
+                        <td className="px-4 py-2 text-right tabular-nums text-slate-500 w-32">{formatGBP(c.monthly * 12)}/yr</td>
                       </tr>
                     ))}
                   </tbody>
@@ -510,7 +503,7 @@ export default function SubscriptionsPage() {
                     <li key={c.key} className="px-4 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                       <span className="flex-1 min-w-[200px] text-slate-900">{c.description}</span>
                       <span className="tabular-nums text-slate-600">
-                        {gbp(c.average_amount)} × {c.occurrences}
+                        {formatGBP(c.average_amount, { pence: true })} × {c.occurrences}
                       </span>
                       <span className="tabular-nums text-slate-500 w-40 text-right">
                         {shortDate(c.first_seen)} – {shortDate(c.last_seen)}

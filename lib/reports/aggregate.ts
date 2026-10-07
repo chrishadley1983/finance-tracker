@@ -17,11 +17,10 @@ import type {
 } from './types';
 import { generateTakeaways } from './takeaways';
 import { classifyAmount } from './classify';
+import { MONTH_NAMES as MONTH_NAMES_0, MONTH_SHORT } from '../format';
 
-const MONTH_NAMES = [
-  '', 'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+// 1-indexed (index 0 is blank) so MONTH_NAMES[month] works with 1-12 months.
+const MONTH_NAMES: string[] = ['', ...MONTH_NAMES_0];
 
 const TYPE_LABELS: Record<string, string> = {
   current: 'Current Accounts',
@@ -544,13 +543,12 @@ async function fetchMonthlyTrend(
     monthMap.set(monthKey, entry);
   }
 
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   return Array.from(monthMap.entries())
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([monthKey, data]) => ({
       month: monthKey,
-      monthLabel: monthNames[parseInt(monthKey.split('-')[1], 10) - 1],
+      monthLabel: MONTH_SHORT[parseInt(monthKey.split('-')[1], 10) - 1],
       income: data.income,
       expenses: data.expenses,
     }));

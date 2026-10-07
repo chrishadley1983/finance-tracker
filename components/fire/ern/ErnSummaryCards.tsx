@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { TrendingUp, Shield, Target, Activity } from 'lucide-react';
+import { formatPercent } from '@/lib/format';
 
 interface ErnSummaryCardsProps {
   failSafeSwr: number;
@@ -12,10 +13,6 @@ interface ErnSummaryCardsProps {
   mcSurvivalRate: number | null;
   totalCohorts: number;
   isLoading?: boolean;
-}
-
-function formatPct(value: number, decimals = 2): string {
-  return `${value.toFixed(decimals)}%`;
 }
 
 function Card({
@@ -86,16 +83,16 @@ export function ErnSummaryCards({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <Card
         title="Fail-Safe SWR"
-        value={formatPct(failSafeSwr)}
+        value={formatPercent(failSafeSwr)}
         subtitle={`Worst of ${totalCohorts} cohorts (1871-2026)`}
-        tooltip={`The lowest safe withdrawal rate across every possible retirement start date since 1871. If you'd retired in the single worst month in history, ${formatPct(failSafeSwr)} is the most you could have withdrawn annually without running out over your full horizon. This is the absolute floor — ultra-conservative.`}
+        tooltip={`The lowest safe withdrawal rate across every possible retirement start date since 1871. If you'd retired in the single worst month in history, ${formatPercent(failSafeSwr)} is the most you could have withdrawn annually without running out over your full horizon. This is the absolute floor — ultra-conservative.`}
         icon={<Shield className="h-5 w-5" />}
         color="text-emerald-500"
         isLoading={isLoading}
       />
       <Card
         title="ERN Dynamic WR"
-        value={formatPct(ernDynamicWr)}
+        value={formatPercent(ernDynamicWr)}
         subtitle={`CAPE ${currentCape} (1.75 + 0.50 × 1/CAPE)`}
         tooltip={`A market-aware withdrawal rate using ERN's regression formula. When CAPE (a valuation measure) is high, future returns tend to be lower, so this rate drops. At today's CAPE of ${currentCape}, it suggests withdrawing less than the historical fail-safe. Based on ERN Safe Withdrawal Rate Series Parts 18 & 54.`}
         icon={<Target className="h-5 w-5" />}
@@ -104,7 +101,7 @@ export function ErnSummaryCards({
       />
       <Card
         title="Your Withdrawal Rate"
-        value={formatPct(personalWr)}
+        value={formatPercent(personalWr)}
         subtitle={wrStatus}
         tooltip={`Your annual spend divided by your portfolio value at retirement. This is what you're actually planning to withdraw. Compare it to the ERN Dynamic WR — if yours is higher, you're taking more risk than current market valuations suggest is safe. The gap between the two rates is where sequence-of-returns risk lives.`}
         icon={<TrendingUp className="h-5 w-5" />}
@@ -113,7 +110,7 @@ export function ErnSummaryCards({
       />
       <Card
         title="MC Survival"
-        value={mcSurvivalRate !== null ? formatPct(mcSurvivalRate, 1) : '--'}
+        value={mcSurvivalRate !== null ? formatPercent(mcSurvivalRate, 1) : '--'}
         subtitle={mcSurvivalRate !== null ? '500-path block bootstrap' : 'Not yet run'}
         tooltip={`Percentage of 500 simulated futures where your portfolio didn't run out. Uses block-bootstrap resampling (60-month blocks) from real historical returns, preserving the clustering of good and bad periods seen in real markets. Accounts for state pension income and spending adjustments. Above 95% is generally considered robust.`}
         icon={<Activity className="h-5 w-5" />}

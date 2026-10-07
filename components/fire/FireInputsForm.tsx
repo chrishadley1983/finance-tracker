@@ -3,21 +3,13 @@
 import { useState, useEffect } from 'react';
 import { Settings, Save, X } from 'lucide-react';
 import type { FireInputs } from '@/lib/types/fire';
+import { formatGBP } from '@/lib/format';
 
 interface FireInputsFormProps {
   inputs: FireInputs | null;
   portfolioValue?: number;
   onSave: (inputs: Partial<FireInputs>) => Promise<void>;
   isLoading?: boolean;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 export function FireInputsForm({
@@ -109,9 +101,9 @@ export function FireInputsForm({
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Age: <span className="font-medium">{inputs?.currentAge ?? 35}</span>
               {' · '}
-              Portfolio: <span className="font-medium">{formatCurrency(displayPortfolio)}</span>
+              Portfolio: <span className="font-medium">{formatGBP(displayPortfolio)}</span>
               {' · '}
-              Saving: <span className="font-medium">{formatCurrency(displaySavings)}/yr</span>
+              Saving: <span className="font-medium">{formatGBP(displaySavings)}/yr</span>
               {' · '}
               Return: <span className="font-medium">{inputs?.expectedReturn ?? 7}%</span>
               {' · '}
@@ -204,7 +196,7 @@ export function FireInputsForm({
             onChange={(e) => setFormData({ ...formData, currentPortfolioValue: parseFloat(e.target.value) || 0 })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             min={0}
-            placeholder={portfolioValue ? `Auto: ${formatCurrency(portfolioValue)}` : '0'}
+            placeholder={portfolioValue ? `Auto: ${formatGBP(portfolioValue)}` : '0'}
           />
           {portfolioValue && !formData.currentPortfolioValue && (
             <p className="text-xs text-gray-500 mt-1">Auto-calculated from investments</p>
@@ -241,7 +233,7 @@ export function FireInputsForm({
               placeholder="1500"
             />
           </div>
-          <p className="text-xs text-gray-500 mt-1">Annual: {formatCurrency(formData.annualSavings || 0)}</p>
+          <p className="text-xs text-gray-500 mt-1">Annual: {formatGBP(formData.annualSavings || 0)}</p>
         </div>
 
         <div>

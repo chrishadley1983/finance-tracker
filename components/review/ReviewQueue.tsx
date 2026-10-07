@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Flag, FlagOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ReviewStats } from './ReviewStats';
 import { ReviewToolbar } from './ReviewToolbar';
+import { formatDateGBPadded, formatGBP } from '@/lib/format';
 
 interface ReviewTransaction {
   id: string;
@@ -156,21 +157,6 @@ export function ReviewQueue() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(amount);
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
-
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -293,7 +279,7 @@ export function ReviewQueue() {
                       />
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
-                      {formatDate(transaction.date)}
+                      {formatDateGBPadded(transaction.date)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-white max-w-xs truncate">
                       {transaction.description}
@@ -319,7 +305,7 @@ export function ReviewQueue() {
                           : 'text-red-600 dark:text-red-400'
                       }`}
                     >
-                      {formatCurrency(transaction.amount)}
+                      {formatGBP(transaction.amount, { pence: true })}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <button

@@ -1,6 +1,7 @@
 'use client';
 
 import { CategoryWithStats } from '@/lib/types/category';
+import { formatGBP } from '@/lib/format';
 
 interface CategoryCardProps {
   category: CategoryWithStats;
@@ -9,14 +10,6 @@ interface CategoryCardProps {
 }
 
 export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) {
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   return (
     <div
@@ -50,7 +43,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
           <div className="text-sm text-slate-500 dark:text-slate-400">
             {category.transaction_count} transactions
             {category.total_amount > 0 && (
-              <span className="ml-2">{formatAmount(category.total_amount)}</span>
+              <span className="ml-2">{formatGBP(category.total_amount)}</span>
             )}
           </div>
         </div>

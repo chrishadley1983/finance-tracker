@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CategoryWithStats } from '@/lib/types/category';
+import { formatGBP } from '@/lib/format';
 
 interface ReassignCategoryDialogProps {
   category: CategoryWithStats | null;
@@ -46,15 +47,6 @@ export function ReassignCategoryDialog({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
   };
 
   // Group categories by their group for easier selection
@@ -107,7 +99,7 @@ export function ReassignCategoryDialog({
               <p className="text-sm text-slate-600 dark:text-slate-400">Moving from:</p>
               <p className="font-medium text-slate-900 dark:text-slate-100">{category.name}</p>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {category.transaction_count} transactions ({formatAmount(category.total_amount)})
+                {category.transaction_count} transactions ({formatGBP(category.total_amount)})
               </p>
             </div>
 

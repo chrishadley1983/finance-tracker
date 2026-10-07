@@ -11,6 +11,7 @@ import {
   ReallocateDialog,
 } from '@/components/accounts';
 import { WealthSnapshotModal } from '@/components/wealth';
+import { formatGBP } from '@/lib/format';
 
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState<AccountWithStats[]>([]);
@@ -208,15 +209,6 @@ export default function AccountsPage() {
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
   return (
     <AppLayout title="Accounts">
       <div className="max-w-7xl mx-auto">
@@ -237,7 +229,7 @@ export default function AccountsPage() {
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <div className="text-sm text-gray-500">Net Worth</div>
           <div className={`text-2xl font-bold ${stats.totalBalance >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
-            {formatCurrency(stats.totalBalance)}
+            {formatGBP(stats.totalBalance)}
           </div>
           <div className="text-xs text-gray-400">Included in net worth</div>
         </div>

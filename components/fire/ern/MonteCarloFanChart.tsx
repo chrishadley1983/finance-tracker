@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
+import { formatGBP } from '@/lib/format';
 
 interface McPercentiles {
   p5: number[];
@@ -34,15 +35,6 @@ function formatCurrency(amount: number): string {
   if (amount >= 1_000) return `£${(amount / 1_000).toFixed(0)}k`;
   if (amount <= 0) return '£0';
   return `£${amount.toFixed(0)}`;
-}
-
-function formatCurrencyFull(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 export function MonteCarloFanChart({
@@ -128,7 +120,7 @@ export function MonteCarloFanChart({
                   p5: '5th percentile',
                   worst: 'Worst path',
                 };
-                return [formatCurrencyFull(Number(value)), labels[String(name)] || String(name)];
+                return [formatGBP(Number(value)), labels[String(name)] || String(name)];
               }}
               labelFormatter={(year) => `Year ${year}`}
             />

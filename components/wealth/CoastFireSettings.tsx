@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatGBP } from '@/lib/format';
 
 interface FireInputs {
   id: string;
@@ -108,15 +109,6 @@ export function CoastFireSettings({ onSave }: CoastFireSettingsProps) {
   const yearsLeft = retirementAge - currentAge;
   const fireNumber = annualSpend / (withdrawalRate / 100);
   const coastFire = yearsLeft > 0 ? fireNumber / Math.pow(1 + expectedReturn / 100, yearsLeft) : fireNumber;
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
 
   if (isLoading) {
     return (
@@ -266,7 +258,7 @@ export function CoastFireSettings({ onSave }: CoastFireSettingsProps) {
                 <span className="text-sm text-slate-600">FIRE Number</span>
                 <p className="text-xs text-slate-400">Annual Spend / SWR%</p>
               </div>
-              <span className="text-lg font-semibold text-slate-900">{formatCurrency(fireNumber)}</span>
+              <span className="text-lg font-semibold text-slate-900">{formatGBP(fireNumber)}</span>
             </div>
             <div className="border-t border-slate-200 pt-3">
               <div className="flex justify-between items-center">
@@ -274,7 +266,7 @@ export function CoastFireSettings({ onSave }: CoastFireSettingsProps) {
                   <span className="text-sm text-slate-600">Coast FIRE Target</span>
                   <p className="text-xs text-slate-400">Amount needed today to coast to retirement</p>
                 </div>
-                <span className="text-xl font-bold text-blue-600">{formatCurrency(coastFire)}</span>
+                <span className="text-xl font-bold text-blue-600">{formatGBP(coastFire)}</span>
               </div>
             </div>
           </div>
@@ -282,11 +274,11 @@ export function CoastFireSettings({ onSave }: CoastFireSettingsProps) {
             <p className="text-xs text-slate-500">
               <strong>Formula:</strong> Coast FIRE = FIRE Number / (1 + Return%)^Years
               <br />
-              = {formatCurrency(fireNumber)} / (1 + {expectedReturn}%)^{yearsLeft}
+              = {formatGBP(fireNumber)} / (1 + {expectedReturn}%)^{yearsLeft}
               <br />
-              = {formatCurrency(fireNumber)} / {Math.pow(1 + expectedReturn / 100, yearsLeft).toFixed(4)}
+              = {formatGBP(fireNumber)} / {Math.pow(1 + expectedReturn / 100, yearsLeft).toFixed(4)}
               <br />
-              = {formatCurrency(coastFire)}
+              = {formatGBP(coastFire)}
             </p>
           </div>
         </div>

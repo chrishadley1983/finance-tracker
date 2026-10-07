@@ -28,6 +28,7 @@
  */
 
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { MONTH_NAMES } from '../format';
 
 export type CheckKey = 'wealth' | 'synced' | 'categorised' | 'validated';
 
@@ -102,7 +103,7 @@ export interface ReadinessInput {
 }
 
 const TRANSACTIONAL_TYPES = new Set(['current', 'credit']);
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTHS = MONTH_NAMES;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AccountWithStats } from '@/lib/types/account';
 import { getAccountIcon, getAccountTypeLabel } from '@/lib/types/account';
+import { formatGBP } from '@/lib/format';
 
 // Account types that can have transactions
 const TRANSACTION_ACCOUNT_TYPES = ['current', 'savings', 'credit'];
@@ -44,14 +45,6 @@ export function AccountCard({
     } else if (isWealthAccount && onViewSnapshots) {
       onViewSnapshots();
     }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 2,
-    }).format(value);
   };
 
   const formatDate = (dateString: string | null) => {
@@ -227,7 +220,7 @@ export function AccountCard({
             account.currentBalance >= 0 ? 'text-gray-900' : 'text-red-600'
           }`}
         >
-          {formatCurrency(account.currentBalance)}
+          {formatGBP(account.currentBalance, { pence: true })}
         </p>
         {account.balanceSource !== 'none' ? (
           <div className="flex items-center gap-2">
