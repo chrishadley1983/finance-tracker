@@ -29,8 +29,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Categories marked "exclude from totals" (transfers between your own
+    // accounts, credit card payments) are not spending or income: leave them
+    // out, as the savings rate, reports and dashboard already do.
+    const { data: excludedRows, error: excludedError } = await supabaseAdmin
+      .from('categories')
+      .select('id')
+      .eq('exclude_from_totals', true);
+    if (excludedError) {
+      console.error('Error fetching excluded categories:', excludedError);
+      return NextResponse.json({ error: excludedError.message }, { status: 500 });
+    }
+    const excluded = new Set((excludedRows ?? []).map((c: { id: string }) => c.id));
+
     // Transform to camelCase and group by category group
-    const comparisons: BudgetComparison[] = (data || []).map((row: {
+    const comparisons: BudgetComparison[] = (data || []).filter((row: { category_id: string }) => !excluded.has(row.category_id)).map((row: {
       category_id: string;
       category_name: string;
       group_name: string;

@@ -107,7 +107,7 @@ function Figures({ d }: { d: CategoryDetail }) {
   const diff = d.actual - against;
   const diffTone = Math.abs(diff) < 0.5 ? 'text-ink' : inc ? (diff > 0 ? 'text-in' : 'text-warn') : diff > 0 ? 'text-bad' : 'text-ink';
   const diffWord = Math.abs(diff) < 0.5 ? 'On budget' : inc ? (diff > 0 ? 'Above plan' : 'Short of plan') : diff > 0 ? 'Over' : 'Under';
-  const cell = 'grid gap-0.5';
+  const cell = 'grid content-start gap-0.5';
   return (
     <dl className="grid grid-cols-3 gap-3 border-y border-line-2 py-3">
       <div className={cell}>
@@ -133,34 +133,46 @@ function Figures({ d }: { d: CategoryDetail }) {
  * Transactions page filtered to this category and period.
  */
 export function BudgetLinePanel({ target, onClose }: BudgetLinePanelProps) {
-  const [detail, setDetail] = useState<CategoryDetail | null>(null);
+  const [details, setDetails] = useState<{ month: CategoryDetail; year: CategoryDetail } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  /** Which period the figures at the top describe; starts as the view it was opened from. */
+  const [scope, setScope] = useState<'month' | 'year'>('month');
+
+  // The month to show: the one clicked, or (opened from the year) this month / December.
+  const month = target ? (target.month ?? (target.year === new Date().getFullYear() ? new Date().getMonth() + 1 : 12)) : null;
 
   useEffect(() => {
     if (!target) return;
+    setScope(target.month ? 'month' : 'year');
     let cancelled = false;
-    setDetail(null);
+    setDetails(null);
     setError(null);
-    const q = new URLSearchParams({ year: String(target.year) });
-    if (target.month) q.set('month', String(target.month));
-    fetch(`/api/budgets/category/${target.categoryId}?${q.toString()}`, { cache: 'no-store' })
-      .then(async (r) => {
+    const load = (m: number | null) => {
+      const q = new URLSearchParams({ year: String(target.year) });
+      if (m) q.set('month', String(m));
+      return fetch(`/api/budgets/category/${target.categoryId}?${q.toString()}`, { cache: 'no-store' }).then(async (r) => {
         const body = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(body?.error || 'Could not load this budget line.');
         return body as CategoryDetail;
-      })
-      .then((d) => !cancelled && setDetail(d))
+      });
+    };
+    Promise.all([load(month), load(null)])
+      .then(([m, y]) => !cancelled && setDetails({ month: m, year: y }))
       .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : 'Could not load this budget line.'));
     return () => {
       cancelled = true;
     };
-  }, [target, attempt]);
+  }, [target, month, attempt]);
 
-  const d = detail && target && detail.category.id === target.categoryId ? detail : null;
+  const ready = details && target && details.month.category.id === target.categoryId ? details : null;
+  /** The chart, trend and latest transactions follow where the panel was opened from. */
+  const base = ready ? (target?.month ? ready.month : ready.year) : null;
+  /** The figures, sentence and link follow the toggle. */
+  const d = ready ? ready[scope] : null;
   const href = d ? detailTransactionsHref(d) : null;
   const lede = d ? detailLede(d, whole) : null;
-  const trend = d ? trendSentence(d, whole) : null;
+  const trend = base ? trendSentence(base, whole) : null;
   const periodWords = d ? `in ${d.period.label}` : '';
 
   return (
@@ -174,7 +186,7 @@ export function BudgetLinePanel({ target, onClose }: BudgetLinePanelProps) {
           {d && (
             <span className="text-[12.5px] font-normal text-ink-3">
               {d.category.groupName}
-              {d.category.isIncome ? ' · income' : ''} · {d.period.label}
+              {d.category.isIncome ? ' · income' : ''}
             </span>
           )}
         </span>
@@ -206,18 +218,38 @@ export function BudgetLinePanel({ target, onClose }: BudgetLinePanelProps) {
         </div>
       ) : (
         <div className="grid gap-5">
-          {lede && <p className="text-[14.5px] leading-snug text-ink">{lede.text}</p>}
+          <div className="grid gap-3">
+            <div role="group" aria-label="Figures for" className="inline-flex w-fit rounded-md border border-line bg-surface p-0.5">
+              {(['month', 'year'] as const).map((v) => {
+                const on = scope === v;
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setScope(v)}
+                    className={`h-7 rounded px-3 text-[13px] focus-visible:outline-2 focus-visible:outline-accent ${
+                      on ? 'bg-sunk font-semibold text-ink' : 'text-ink-3 hover:text-ink-2'
+                    }`}
+                  >
+                    {ready![v].period.label}
+                  </button>
+                );
+              })}
+            </div>
+            {lede && <p className="text-[14.5px] leading-snug text-ink">{lede.text}</p>}
+          </div>
           <Figures d={d} />
-          <MonthsChart d={d} />
+          <MonthsChart d={base!} />
           {trend && <p className="text-[13.5px] text-ink-2">{trend}</p>}
 
           <section className="grid gap-1.5" aria-label="Latest transactions">
             <h3 className="border-t-[1.5px] border-ink pt-2 text-[13px] font-semibold text-ink">Latest transactions</h3>
-            {d.recent.length === 0 ? (
+            {base!.recent.length === 0 ? (
               <p className="text-[13px] text-ink-3">No transactions in this category yet.</p>
             ) : (
               <ul role="list" className="divide-y divide-line-2">
-                {d.recent.map((t) => (
+                {base!.recent.map((t) => (
                   <li key={t.id} className="grid grid-cols-[3.25rem_minmax(0,1fr)_auto] items-baseline gap-3 py-2 text-[13px]">
                     <span className="text-ink-3">{gbDate(`${t.date}T00:00:00`, { day: 'numeric', month: 'short' })}</span>
                     <span className="min-w-0">
