@@ -11,6 +11,8 @@ interface BudgetPaceProps {
   /** Fraction of the month gone (current month only); draws the even-pace tick. */
   pace?: number;
   budgetsHref: string;
+  /** Open the detail panel for a line. */
+  onOpen?: (c: BudgetComparison) => void;
 }
 
 /** Expense categories with a budget this month, the biggest plans first. */
@@ -28,7 +30,7 @@ export function overBudget(comparisons: BudgetComparison[]): string[] {
     .map((c) => c.categoryName);
 }
 
-export function BudgetPace({ rows, pace, budgetsHref }: BudgetPaceProps) {
+export function BudgetPace({ rows, pace, budgetsHref, onOpen }: BudgetPaceProps) {
   const budgeted = budgetRows(rows);
 
   if (budgeted.length === 0) {
@@ -56,7 +58,18 @@ export function BudgetPace({ rows, pace, budgetsHref }: BudgetPaceProps) {
           return (
             <li key={c.categoryId} className="grid gap-1.5">
               <div className="flex items-baseline justify-between gap-3 text-[13.5px]">
-                <span className="min-w-0 truncate text-ink">{c.categoryName}</span>
+                {onOpen ? (
+                  <button
+                    type="button"
+                    onClick={() => onOpen(c)}
+                    className="min-w-0 truncate text-left text-ink underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-accent"
+                    title={`${c.categoryName}: details`}
+                  >
+                    {c.categoryName}
+                  </button>
+                ) : (
+                  <span className="min-w-0 truncate text-ink">{c.categoryName}</span>
+                )}
                 <span className="shrink-0 text-ink-3">
                   {over > 0 && <span className="fig mr-2 text-bad">{formatGBP(over)} over</span>}
                   <span className="fig text-ink">{formatGBP(spent)}</span>
