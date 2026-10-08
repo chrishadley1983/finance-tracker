@@ -15,6 +15,7 @@ export interface SubscriptionDraft {
   amount: string;
   frequency: (typeof FREQUENCIES)[number];
   status: (typeof STATUSES)[number];
+  variable_amount: boolean;
   next_renewal_date: string;
   cancellation_notice_days: string;
   bank_description_pattern: string;
@@ -30,6 +31,7 @@ export const emptyDraft: SubscriptionDraft = {
   amount: '',
   frequency: 'monthly',
   status: 'active',
+  variable_amount: false,
   next_renewal_date: '',
   cancellation_notice_days: '',
   bank_description_pattern: '',
@@ -50,6 +52,7 @@ export function draftFrom(s: AssessedSubscription): SubscriptionDraft {
     status: (STATUSES as readonly string[]).includes(s.status ?? '')
       ? (s.status as SubscriptionDraft['status'])
       : 'active',
+    variable_amount: s.variable_amount ?? false,
     next_renewal_date: s.next_renewal_date ?? '',
     cancellation_notice_days: s.cancellation_notice_days != null ? String(s.cancellation_notice_days) : '',
     bank_description_pattern: s.bank_description_pattern ?? '',
@@ -69,6 +72,7 @@ export function bodyFrom(d: SubscriptionDraft) {
     amount: Number(d.amount),
     frequency: d.frequency,
     status: d.status,
+    variable_amount: d.variable_amount,
     next_renewal_date: orNull(d.next_renewal_date),
     cancellation_notice_days: d.cancellation_notice_days.trim() === '' ? null : Number(d.cancellation_notice_days),
     bank_description_pattern: orNull(d.bank_description_pattern),
@@ -93,6 +97,7 @@ const FREQ_LABEL: Record<SubscriptionDraft['frequency'], string> = {
   monthly: 'Month',
   quarterly: 'Quarter',
   termly: 'Term',
+  half_termly: 'Half term',
   annual: 'Year',
 };
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -190,6 +195,16 @@ export function SubscriptionDialog({ open, editingId, initial, categories, onClo
             <Input id="sub-provider" value={draft.provider} maxLength={120} onChange={(e) => set('provider', e.target.value)} />
           </Field>
         </div>
+        <label className="flex items-start gap-2 text-[13.5px] text-ink-2">
+          <input type="checkbox" className="mt-0.5" checked={draft.variable_amount}
+            onChange={(e) => set('variable_amount', e.target.checked)} />
+          <span>
+            Amount varies
+            <span className="block text-[12.5px] text-ink-3">
+              Usage billing, or an average (e.g. council tax over 10 months): checked on the last 12 months’ total, not each charge.
+            </span>
+          </span>
+        </label>
         <Field label="Text on the bank statement" htmlFor="sub-pattern"
           hint="Used to find its charges and spot missed payments or price changes.">
           <Input id="sub-pattern" className="fig" value={draft.bank_description_pattern} maxLength={120}

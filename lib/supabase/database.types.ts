@@ -1055,6 +1055,7 @@ export type Database = {
           status: string | null
           updated_at: string | null
           url: string | null
+          variable_amount: boolean
         }
         Insert: {
           amount: number
@@ -1079,6 +1080,7 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           url?: string | null
+          variable_amount?: boolean
         }
         Update: {
           amount?: number
@@ -1103,6 +1105,7 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           url?: string | null
+          variable_amount?: boolean
         }
         Relationships: []
       }

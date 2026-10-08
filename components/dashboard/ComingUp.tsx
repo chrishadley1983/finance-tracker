@@ -11,7 +11,7 @@ export function upcomingCharges(subs: UpcomingCharge[], now: Date = new Date(), 
   const from = isoDay(now);
   const until = isoDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() + days));
   return subs
-    .filter((s) => ['active', 'trial'].includes(s.status ?? 'active'))
+    .filter((s) => ['active', 'seasonal', 'trial'].includes(s.status ?? 'active'))
     .filter((s) => s.next_due !== null && s.next_due >= from && s.next_due <= until)
     .sort((a, b) => (a.next_due! < b.next_due! ? -1 : a.next_due! > b.next_due! ? 1 : a.name.localeCompare(b.name)));
 }

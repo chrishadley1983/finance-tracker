@@ -7,7 +7,7 @@ import {
   assessSubscription,
   cleanPattern,
   findUntracked,
-  likeLiteral,
+  likePattern,
   summarise,
   type Charge,
   type SubscriptionRow,
@@ -20,7 +20,8 @@ export const dynamic = 'force-dynamic';
 const CHARGE_LOOKBACK_DAYS = 400;
 /** How far back to look for repeating outgoings that nothing tracks. */
 const UNTRACKED_LOOKBACK_DAYS = 180;
-const CHARGES_PER_SUBSCRIPTION = 24;
+/** Enough for a weekly subscription's full lookback, so variable-amount 12-month totals are complete. */
+const CHARGES_PER_SUBSCRIPTION = 60;
 const PAGE = 1000;
 const PARALLEL = 8;
 
@@ -28,7 +29,7 @@ async function chargesFor(pattern: string, since: string): Promise<Charge[]> {
   const { data, error } = await supabaseAdmin
     .from('transactions')
     .select('date, amount, description')
-    .ilike('description', `%${likeLiteral(pattern)}%`)
+    .ilike('description', `%${likePattern(pattern)}%`)
     .lt('amount', 0)
     .gte('date', since)
     .order('date', { ascending: false })

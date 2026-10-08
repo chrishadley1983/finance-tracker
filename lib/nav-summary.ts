@@ -1,4 +1,4 @@
-import { monthlyCost } from '@/lib/subscriptions/analysis';
+import { isCosted, monthlyCost } from '@/lib/subscriptions/analysis';
 
 /**
  * Live figures for the navigation column and the Overview header. One small
@@ -38,7 +38,7 @@ interface SubLike {
 }
 
 export function subscriptionsSummary(subs: SubLike[], today: string) {
-  const active = subs.filter((s) => (s.status ?? 'active') === 'active');
+  const active = subs.filter((s) => isCosted(s.status));
   const monthly = Math.round(active.reduce((t, s) => t + monthlyCost(Number(s.amount), s.frequency), 0) * 100) / 100;
   const upcoming = active
     .filter((s) => s.next_renewal_date && s.next_renewal_date >= today)
