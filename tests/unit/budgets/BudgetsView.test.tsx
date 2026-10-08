@@ -51,6 +51,11 @@ function respond(url: string, init?: RequestInit) {
   if (url === '/api/budgets/sync') return json({ success: true });
   if (url.startsWith('/api/budgets/comparison')) return json({ groups: comparisonGroups });
   if (url.startsWith('/api/budgets/savings-rate')) return json({ savingsRate });
+  if (url.startsWith('/api/budgets/bulk?year=')) {
+    const months = (n: number) => Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, { id: `b${i}`, amount: n }]));
+    return json({ budgets: [{ categoryId: 'cat-eat', months: months(250) }, { categoryId: 'cat-gro', months: months(600) }, { categoryId: 'cat-sal', months: months(5000) }] });
+  }
+  if (url.startsWith('/api/budgets/category/')) return json(detail);
   if (url === '/api/budgets/bulk') return bulkOk ? json({ success: true }) : json({ error: 'Database is down' }, 500);
   if (url === '/api/budgets/copy-month') {
     const body = JSON.parse(String(init?.body));
@@ -59,6 +64,20 @@ function respond(url: string, init?: RequestInit) {
   }
   return json({}, 404);
 }
+
+const detail = {
+  category: { id: 'cat-eat', name: 'Eating out', groupName: 'Food', isIncome: false },
+  period: { view: 'month', year: 2026, month: 10, label: 'October 2026', from: '2026-10-01', to: '2026-10-31' },
+  budget: 250,
+  actual: 286,
+  budgetToDate: null,
+  months: Array.from({ length: 12 }, (_, i) => ({
+    key: `2026-${String(i + 1).padStart(2, '0')}`, year: 2026, month: i + 1, label: 'M', actual: 200, budget: 250, partial: i === 9, future: i > 9,
+  })),
+  trend: { recentAvg: 240, priorAvg: 200, change: 0.2, sameMonthLastYear: 190, recentMonths: 6 },
+  recent: [{ id: 't1', date: '2026-10-05', description: 'SOUL RAMEN', amount: -85.14, account: 'HSBC Joint' }],
+  count: 7,
+};
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
@@ -117,7 +136,9 @@ describe('BudgetsView', () => {
   it('year view reads ?view=year and fetches the whole year', async () => {
     search = new URLSearchParams('year=2026&view=year');
     renderView();
-    await screen.findByText(/spent in 2026 so far, 2 months to go/);
+    // Mid-year the sentence compares with the budget for January to October.
+    const lede = await screen.findByText(/spent in 2026 so far, against/);
+    expect(lede.textContent).toBe('£472 spent in 2026 so far, against £8,500 budgeted to date (£850 for the year), 2 months to go. Nothing is over budget so far.');
     expect(calls.some((c) => c.url === '/api/budgets/comparison?year=2026')).toBe(true);
   });
 
@@ -197,6 +218,48 @@ describe('BudgetsView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Copy from September' }));
     await screen.findByText('Copied 2 budgets from September.');
     expect(JSON.parse(String(posts('/api/budgets/copy-month')[0].init?.body)).overwrite).toBe(false);
+  });
+
+  it('opens a detail panel for a budget line, linking to its transactions', async () => {
+    renderView();
+    await screen.findByText(/24 days to go/);
+    fireEvent.click(screen.getByRole('button', { name: 'Eating out' }));
+    const panel = await screen.findByRole('dialog');
+    await within(panel).findByText('£286 of £250 spent in October 2026, £36 over budget.');
+    expect(calls.some((c) => c.url === '/api/budgets/category/cat-eat?year=2026&month=10')).toBe(true);
+    expect(within(panel).getByText('SOUL RAMEN')).toBeTruthy();
+    expect(within(panel).getByText(/Averaging £240 a month over the last 6 months, up 20% on the 6 before/)).toBeTruthy();
+    const link = within(panel).getByRole('link', { name: /See all 7 transactions in October 2026/ });
+    expect(link.getAttribute('href')).toBe('/transactions?categoryId=cat-eat&dateFrom=2026-10-01&dateTo=2026-10-31');
+  });
+
+  it('clicking the row opens the detail, clicking the budget figure still edits', async () => {
+    renderView();
+    await screen.findByText(/24 days to go/);
+    fireEvent.click(screen.getByRole('button', { name: /Edit budget for Groceries/ }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('textbox', { name: /Budget for Groceries/ })).toBeTruthy();
+    fireEvent.keyDown(screen.getByRole('textbox', { name: /Budget for Groceries/ }), { key: 'Escape' });
+    fireEvent.click(screen.getByText('£414 left'));
+    await screen.findByRole('dialog');
+    expect(calls.some((c) => c.url === '/api/budgets/category/cat-gro?year=2026&month=10')).toBe(true);
+  });
+
+  it('year view shows budget to date vs actual, with totals and the money left over', async () => {
+    search = new URLSearchParams('year=2026&view=year');
+    renderView();
+    const table = await screen.findByTestId('budget-year-table');
+    expect(within(table).getByText('Budget Jan–Oct')).toBeTruthy();
+    // Eating out: £250 x 10 months to date = £2,500 vs £286 actual
+    const eat = within(table).getAllByTestId('year-row').find((r) => r.textContent?.includes('Eating out'))!;
+    expect(eat.textContent).toContain('£2,500');
+    expect(eat.textContent).toContain('£2,214 under');
+    expect(within(table).getByText('Total money in')).toBeTruthy();
+    expect(within(table).getByText('Left over (money in minus spending)')).toBeTruthy();
+    // Clicking a category opens the year's detail
+    fireEvent.click(within(table).getByRole('button', { name: 'Salary' }));
+    await screen.findByRole('dialog');
+    expect(calls.some((c) => c.url === '/api/budgets/category/cat-sal?year=2026')).toBe(true);
   });
 
   it('shows an error with a retry when loading fails', async () => {

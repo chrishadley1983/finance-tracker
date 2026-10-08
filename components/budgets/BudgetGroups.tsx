@@ -18,6 +18,8 @@ interface BudgetGroupsProps {
   onSaveAmount?: (category: BudgetComparison, amount: number) => void;
   /** Year view: open the 12-month editor. */
   onOpenYear?: (category: BudgetComparison, groupName: string) => void;
+  /** Open the detail panel for a line (click the name or the row). */
+  onOpenLine?: (category: BudgetComparison) => void;
 }
 
 const isEmpty = (c: BudgetComparison) => c.budgetAmount === 0 && c.actualAmount === 0;
@@ -31,16 +33,39 @@ function CategoryRow({
   periodWords,
   onSaveAmount,
   onOpenYear,
+  onOpenLine,
 }: { c: BudgetComparison; groupName: string } & Omit<BudgetGroupsProps, 'groups'>) {
   const words = remainingWords(c, (n) => formatGBP(n));
   return (
     <li
       data-testid="budget-row"
-      className="grid grid-cols-[minmax(0,1fr)_8.75rem] items-center gap-x-4 gap-y-1.5 border-t border-line-2 py-2.5 first:border-t-0 md:grid-cols-[minmax(8rem,13rem)_minmax(0,1fr)_10rem_9.5rem]"
+      onClick={
+        onOpenLine
+          ? (e) => {
+              // The budget figure edits in place; everything else opens the detail.
+              if ((e.target as HTMLElement).closest('button, input, a')) return;
+              onOpenLine(c);
+            }
+          : undefined
+      }
+      className={`grid grid-cols-[minmax(0,1fr)_8.75rem] items-center gap-x-4 gap-y-1.5 border-t border-line-2 py-2.5 first:border-t-0 md:grid-cols-[minmax(8rem,13rem)_minmax(0,1fr)_10rem_9.5rem] ${
+        onOpenLine ? '-mx-2 cursor-pointer rounded-[3px] px-2 hover:bg-sunk' : ''
+      }`}
     >
-      <span className="col-start-1 row-start-1 min-w-0 truncate text-[13.5px] text-ink" title={c.categoryName}>
-        {c.categoryName}
-      </span>
+      {onOpenLine ? (
+        <button
+          type="button"
+          onClick={() => onOpenLine(c)}
+          className="col-start-1 row-start-1 min-w-0 truncate text-left text-[13.5px] text-ink underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-accent"
+          title={`${c.categoryName}: details`}
+        >
+          {c.categoryName}
+        </button>
+      ) : (
+        <span className="col-start-1 row-start-1 min-w-0 truncate text-[13.5px] text-ink" title={c.categoryName}>
+          {c.categoryName}
+        </span>
+      )}
       <div className="col-start-1 row-start-2 md:col-start-2 md:row-start-1">
         <PaceBar
           spent={c.actualAmount}
@@ -69,7 +94,7 @@ function CategoryRow({
 }
 
 /** Budget rows grouped by category group: spending first, then income. */
-export function BudgetGroups({ groups, pace, periodWords, onSaveAmount, onOpenYear }: BudgetGroupsProps) {
+export function BudgetGroups({ groups, pace, periodWords, onSaveAmount, onOpenYear, onOpenLine }: BudgetGroupsProps) {
   const [showEmpty, setShowEmpty] = useState(false);
   const emptyCount = groups.reduce((n, g) => n + g.categories.filter(isEmpty).length, 0);
   const ordered = [...groups.filter((g) => !g.isIncome), ...groups.filter((g) => g.isIncome)];
@@ -101,6 +126,7 @@ export function BudgetGroups({ groups, pace, periodWords, onSaveAmount, onOpenYe
                   periodWords={periodWords}
                   onSaveAmount={onSaveAmount}
                   onOpenYear={onOpenYear}
+                  onOpenLine={onOpenLine}
                 />
               ))}
             </ul>

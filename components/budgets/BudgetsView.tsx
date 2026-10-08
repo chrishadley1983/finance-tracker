@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { PageIntro } from '@/components/ui/PageIntro';
@@ -29,6 +29,9 @@ import { BudgetGroups } from './BudgetGroups';
 import { BudgetBulkEditDialog, type MonthlyBudget } from './BudgetBulkEditDialog';
 import { CopyBudgetDialog } from './CopyBudgetDialog';
 import { ExportMenu } from './ExportMenu';
+import { BudgetLinePanel, type BudgetLineTarget } from './BudgetLinePanel';
+import { BudgetYearTable } from './BudgetYearTable';
+import { buildYearTable, type MonthlyBudgets, type YearRow } from '@/lib/budgets/year-table';
 
 async function readError(res: Response, fallback: string): Promise<string> {
   const body = await res.json().catch(() => ({}));
@@ -51,9 +54,23 @@ function periodWords(p: BudgetPeriod, now: Date): string {
 }
 
 /** The opening sentence: where spending stands, and what is over. */
-export function BudgetLede({ period, totals, progress, now }: { period: BudgetPeriod; totals: BudgetTotals; progress: PeriodProgress; now: Date }) {
+export function BudgetLede({
+  period,
+  totals,
+  progress,
+  now,
+  toDate,
+}: {
+  period: BudgetPeriod;
+  totals: BudgetTotals;
+  progress: PeriodProgress;
+  now: Date;
+  /** Year view mid-year: compare with the budget for the months so far. */
+  toDate?: { planned: number; over: string[] } | null;
+}) {
   const words = periodWords(period, now);
-  const overNames = totals.over.map((c) => c.categoryName);
+  const midYear = period.view === 'year' && progress.timing === 'current' && toDate;
+  const overNames = midYear ? toDate.over : totals.over.map((c) => c.categoryName);
   const many = overNames.length > 1;
   const forYear = period.view === 'year' ? ' for the year' : '';
 
@@ -76,10 +93,19 @@ export function BudgetLede({ period, totals, progress, now }: { period: BudgetPe
 
   const overSentence =
     overNames.length > 0
-      ? ` ${listNames(overNames)} ${progress.timing === 'past' ? (many ? 'were' : 'was') : many ? 'are' : 'is'} over${forYear}.`
+      ? ` ${listNames(overNames)} ${progress.timing === 'past' ? (many ? 'were' : 'was') : many ? 'are' : 'is'} over${midYear ? ' budget to date' : forYear}.`
       : progress.timing === 'past'
         ? ' Everything stayed within budget.'
         : ' Nothing is over budget so far.';
+
+  if (midYear) {
+    return (
+      <p>
+        <strong className="fig">{formatGBP(totals.spent)}</strong> spent in {words} so far, against <span className="fig">{formatGBP(toDate.planned)}</span> budgeted to
+        date (<span className="fig">{formatGBP(totals.planned)}</span> for the year){tail}.{overSentence}
+      </p>
+    );
+  }
 
   return (
     <p>
@@ -130,6 +156,41 @@ export function BudgetsView({ now: nowProp }: { now?: Date } = {}) {
   const month = period.view === 'month' ? period.month : null;
   const { toast } = useToast();
   const { groups, savingsRate, isLoading, error, refresh, setLocalBudget } = useBudgets(period);
+
+  // ---- Detail panel for one line ---------------------------------------------
+  const [line, setLine] = useState<BudgetLineTarget | null>(null);
+  const openLine = useCallback(
+    (categoryId: string, categoryName: string) => setLine({ categoryId, categoryName, year: period.year, month }),
+    [period.year, month]
+  );
+
+  // ---- Year view: monthly budgets, for "budget to date" ----------------------
+  const [monthly, setMonthly] = useState<MonthlyBudgets | null>(null);
+  useEffect(() => {
+    if (period.view !== 'year') return;
+    let cancelled = false;
+    fetch(`/api/budgets/bulk?year=${period.year}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { budgets?: { categoryId: string; months: Record<number, { amount: number }> }[] } | null) => {
+        if (cancelled) return;
+        if (!data?.budgets) return setMonthly(null);
+        const out: MonthlyBudgets = {};
+        for (const b of data.budgets) {
+          out[b.categoryId] = {};
+          for (const [m, v] of Object.entries(b.months ?? {})) out[b.categoryId][Number(m)] = Number(v.amount);
+        }
+        setMonthly(out);
+      })
+      .catch(() => !cancelled && setMonthly(null));
+    return () => {
+      cancelled = true;
+    };
+    // Re-read after edits (groups change when budgets are saved).
+  }, [period.view, period.year, groups]);
+  const yearTable = useMemo(
+    () => (period.view === 'year' ? buildYearTable(groups, monthly, period.year, now) : null),
+    [period.view, period.year, groups, monthly, now]
+  );
 
   const progress = useMemo(() => periodProgress(period, now), [period, now]);
   const totals = useMemo(() => budgetTotals(groups), [groups]);
@@ -300,25 +361,63 @@ export function BudgetsView({ now: nowProp }: { now?: Date } = {}) {
                 </>
               }
             >
-              <BudgetLede period={period} totals={totals} progress={progress} now={now} />
+              <BudgetLede
+                period={period}
+                totals={totals}
+                progress={progress}
+                now={now}
+                toDate={
+                  yearTable && yearTable.monthsToDate < 12
+                    ? {
+                        planned: yearTable.totals.spending.budgetToDate,
+                        over: yearTable.spending
+                          .flatMap((g) => g.rows)
+                          .filter((r) => r.budgetToDate > 0 && r.diff >= 0.5)
+                          .sort((a, b) => b.diff - a.diff)
+                          .map((r) => r.name),
+                      }
+                    : null
+                }
+              />
             </PageIntro>
             {savingsRate && <SummaryLine s={savingsRate} />}
           </div>
 
-          <BudgetGroups
-            groups={groups}
-            pace={progress.pace}
-            periodWords={words}
-            onSaveAmount={period.view === 'month' ? (c, n) => void saveAmount(c, n) : undefined}
-            onOpenYear={period.view === 'year' ? (c, g) => void openYear(c, g) : undefined}
-          />
+          {period.view === 'month' ? (
+            <BudgetGroups
+              groups={groups}
+              pace={progress.pace}
+              periodWords={words}
+              onSaveAmount={(c, n) => void saveAmount(c, n)}
+              onOpenLine={(c) => openLine(c.categoryId, c.categoryName)}
+            />
+          ) : (
+            yearTable && (
+              <BudgetYearTable
+                table={yearTable}
+                year={period.year}
+                onOpenLine={(r: YearRow) => openLine(r.categoryId, r.name)}
+                onEditYear={(r: YearRow) => {
+                  const g = groups.find((x) => x.categories.some((c) => c.categoryId === r.categoryId));
+                  const c = g?.categories.find((x) => x.categoryId === r.categoryId);
+                  if (g && c) void openYear(c, g.groupName);
+                }}
+              />
+            )
+          )}
           <p className="text-[12.5px] text-ink-3">
             {period.view === 'month'
-              ? 'Click a budget figure to change it. Enter saves, Esc cancels.'
-              : 'Click a budget figure to set its twelve monthly amounts.'}
+              ? 'Click a category for its history and transactions. Click a budget figure to change it: Enter saves, Esc cancels.'
+              : `Click a category for its history and transactions. Click a full-year figure to set its twelve monthly amounts.${
+                  yearTable && yearTable.monthsToDate < 12
+                    ? ` Budget to date counts January to ${MONTH_NAMES[yearTable.monthsToDate - 1]}, so a part-used year compares fairly.`
+                    : ''
+                }`}
           </p>
         </>
       )}
+
+      <BudgetLinePanel target={line} onClose={() => setLine(null)} />
 
       {bulk && (
         <BudgetBulkEditDialog

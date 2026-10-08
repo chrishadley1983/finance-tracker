@@ -17,8 +17,8 @@
             "groupName": "Income",
             "isIncome": true,
             "budgetAmount": 5200,
-            "actualAmount": 5200.0,
-            "variance": 0.0
+            "actualAmount": 5200,
+            "variance": 0
           },
           {
             "categoryId": "959820d6-fd2e-5b07-9350-1a3bacc9d995",
@@ -26,8 +26,8 @@
             "groupName": "Income",
             "isIncome": true,
             "budgetAmount": 110,
-            "actualAmount": 110.0,
-            "variance": 0.0
+            "actualAmount": 110,
+            "variance": 0
           },
           {
             "categoryId": "259f3968-c172-5ba2-8bd1-340ed9e01905",
@@ -93,8 +93,8 @@
             "groupName": "Home",
             "isIncome": false,
             "budgetAmount": 1450,
-            "actualAmount": 1450.0,
-            "variance": 0.0
+            "actualAmount": 1450,
+            "variance": 0
           },
           {
             "categoryId": "f32cab75-76fa-5c9e-9fe2-73af1736ec26",
@@ -102,8 +102,8 @@
             "groupName": "Home",
             "isIncome": false,
             "budgetAmount": 210,
-            "actualAmount": 210.0,
-            "variance": 0.0
+            "actualAmount": 210,
+            "variance": 0
           },
           {
             "categoryId": "52ac44c1-9ac3-5ed3-81c5-d296377efe03",
@@ -120,8 +120,8 @@
             "groupName": "Home",
             "isIncome": false,
             "budgetAmount": 45,
-            "actualAmount": 45.0,
-            "variance": 0.0
+            "actualAmount": 45,
+            "variance": 0
           },
           {
             "categoryId": "2c49e85e-7c8f-51b2-a116-a1836b21aa68",
@@ -129,8 +129,8 @@
             "groupName": "Home",
             "isIncome": false,
             "budgetAmount": 0,
-            "actualAmount": 0.0,
-            "variance": 0.0
+            "actualAmount": 0,
+            "variance": 0
           }
         ],
         "totals": {
@@ -149,8 +149,8 @@
             "groupName": "Kids",
             "isIncome": false,
             "budgetAmount": 120,
-            "actualAmount": 148.0,
-            "variance": 28.0
+            "actualAmount": 148,
+            "variance": 28
           },
           {
             "categoryId": "81fb6788-1dfb-5a66-9358-bb2771454754",
@@ -167,8 +167,8 @@
             "groupName": "Kids",
             "isIncome": false,
             "budgetAmount": 0,
-            "actualAmount": 0.0,
-            "variance": 0.0
+            "actualAmount": 0,
+            "variance": 0
           }
         ],
         "totals": {
@@ -205,8 +205,8 @@
             "groupName": "Transport",
             "isIncome": false,
             "budgetAmount": 0,
-            "actualAmount": 0.0,
-            "variance": 0.0
+            "actualAmount": 0,
+            "variance": 0
           }
         ],
         "totals": {
@@ -234,8 +234,8 @@
             "groupName": "Lifestyle",
             "isIncome": false,
             "budgetAmount": 50,
-            "actualAmount": 0.0,
-            "variance": -50.0
+            "actualAmount": 0,
+            "variance": -50
           },
           {
             "categoryId": "8b7c4299-a92f-55f2-8737-4e7189ae13cc",
@@ -243,8 +243,8 @@
             "groupName": "Lifestyle",
             "isIncome": false,
             "budgetAmount": 300,
-            "actualAmount": 0.0,
-            "variance": -300.0
+            "actualAmount": 0,
+            "variance": -300
           }
         ],
         "totals": {
@@ -266,7 +266,7 @@
       "savingsBudget": 1765,
       "savingsActual": 2500.14,
       "savingsRateBudget": 33.1,
-      "savingsRateActual": 47.0
+      "savingsRateActual": 47
     }
   },
   "/api/budgets/bulk": {
@@ -448,51 +448,51 @@
         "months": {
           "1": {
             "id": "4ca0a953-c3ca-5d08-a54b-4f296e1beb54",
-            "amount": 50.0
+            "amount": 50
           },
           "2": {
             "id": "a96ca3b8-9dde-5d29-97bb-4cc6c10a6e04",
-            "amount": 50.0
+            "amount": 50
           },
           "3": {
             "id": "a9287c14-5e34-5596-9009-db8173b72806",
-            "amount": 50.0
+            "amount": 50
           },
           "4": {
             "id": "d684e640-81ac-59c6-a743-6180c6156188",
-            "amount": 50.0
+            "amount": 50
           },
           "5": {
             "id": "3a611282-a9c8-54b7-8ccc-9703442c445a",
-            "amount": 50.0
+            "amount": 50
           },
           "6": {
             "id": "2567e8b3-2cb0-52f5-8c05-5a6771187622",
-            "amount": 50.0
+            "amount": 50
           },
           "7": {
             "id": "4802f45d-18dd-5578-b39b-cfbbc07feaf1",
-            "amount": 50.0
+            "amount": 50
           },
           "8": {
             "id": "71af0f78-c371-5472-a774-3b7a5a608a10",
-            "amount": 50.0
+            "amount": 50
           },
           "9": {
             "id": "1c1bc442-998a-5268-a019-1da1a03eaf23",
-            "amount": 50.0
+            "amount": 50
           },
           "10": {
             "id": "7862de0b-8009-5d62-bf27-db1b35654e72",
-            "amount": 50.0
+            "amount": 50
           },
           "11": {
             "id": "96056154-41bf-54ae-902f-c5bf0567ba0e",
-            "amount": 50.0
+            "amount": 50
           },
           "12": {
             "id": "2659b0f6-8353-5e53-884c-cfa966b19c60",
-            "amount": 50.0
+            "amount": 50
           }
         }
       },
@@ -728,51 +728,51 @@
         "months": {
           "1": {
             "id": "9aaf3227-4f28-555d-8e78-f811925669e0",
-            "amount": 15.0
+            "amount": 15
           },
           "2": {
             "id": "87604992-a22d-5a73-a697-066cc3319c5d",
-            "amount": 15.0
+            "amount": 15
           },
           "3": {
             "id": "7cd9f6ce-d553-5fa1-bfbc-fa2f4c7c94de",
-            "amount": 15.0
+            "amount": 15
           },
           "4": {
             "id": "7dc3e7fc-c14d-5afd-9423-cd56c42bcc8c",
-            "amount": 15.0
+            "amount": 15
           },
           "5": {
             "id": "602b72ae-0ebe-5f38-beb6-dec34224b861",
-            "amount": 15.0
+            "amount": 15
           },
           "6": {
             "id": "1a1a110f-e824-5ddc-be86-77a80ca7824b",
-            "amount": 15.0
+            "amount": 15
           },
           "7": {
             "id": "2aa98324-0f92-58cb-9142-e4057a7c2d17",
-            "amount": 15.0
+            "amount": 15
           },
           "8": {
             "id": "dc8a4a48-d5c3-56ff-9253-307af9789c40",
-            "amount": 15.0
+            "amount": 15
           },
           "9": {
             "id": "083781e5-41b6-5f24-8011-cf51bf134c17",
-            "amount": 15.0
+            "amount": 15
           },
           "10": {
             "id": "d8f80e34-3696-5c1f-8a2f-8906632b54b5",
-            "amount": 15.0
+            "amount": 15
           },
           "11": {
             "id": "81a7c08e-55c9-5890-95bd-a22017b5599e",
-            "amount": 15.0
+            "amount": 15
           },
           "12": {
             "id": "16d52377-b328-5246-bc12-6439295de48b",
-            "amount": 15.0
+            "amount": 15
           }
         }
       },
@@ -896,51 +896,51 @@
         "months": {
           "1": {
             "id": "6a39bf7b-7522-57fa-b35e-4ef434af7fbf",
-            "amount": 10.0
+            "amount": 10
           },
           "2": {
             "id": "05c1a27f-9d9f-57de-a8be-e9634bc41d7a",
-            "amount": 10.0
+            "amount": 10
           },
           "3": {
             "id": "d1023f14-820c-5f53-834d-12fe13340192",
-            "amount": 10.0
+            "amount": 10
           },
           "4": {
             "id": "21df275b-7c3f-5bde-a41a-4f0c5c190440",
-            "amount": 10.0
+            "amount": 10
           },
           "5": {
             "id": "c4ef3304-d79c-5784-b54b-ce9d587fb129",
-            "amount": 10.0
+            "amount": 10
           },
           "6": {
             "id": "ea572e2a-ca5e-5545-b6c4-13706b840145",
-            "amount": 10.0
+            "amount": 10
           },
           "7": {
             "id": "69939a71-9028-5e66-847d-7084a80a5074",
-            "amount": 10.0
+            "amount": 10
           },
           "8": {
             "id": "e7ceb181-d47f-5dfe-9dd1-55a850d85687",
-            "amount": 10.0
+            "amount": 10
           },
           "9": {
             "id": "664c985b-9598-56be-a43c-f829a3a3758b",
-            "amount": 10.0
+            "amount": 10
           },
           "10": {
             "id": "01be4f4d-fe92-5584-96fe-7e1a7e397dc3",
-            "amount": 10.0
+            "amount": 10
           },
           "11": {
             "id": "4e1edacc-0d38-540a-89a0-25c6e07da962",
-            "amount": 10.0
+            "amount": 10
           },
           "12": {
             "id": "9266e71a-1485-593b-993e-7eb5d8ce5acc",
-            "amount": 10.0
+            "amount": 10
           }
         }
       },
@@ -1232,51 +1232,51 @@
         "months": {
           "1": {
             "id": "af2a84f5-3fed-547f-a9f5-c46ddf6bff51",
-            "amount": 5.0
+            "amount": 5
           },
           "2": {
             "id": "ce53c53c-fa24-5da0-babb-bf0297894d2c",
-            "amount": 5.0
+            "amount": 5
           },
           "3": {
             "id": "4a853e7f-0181-5540-ab8c-4f88bfbb160f",
-            "amount": 5.0
+            "amount": 5
           },
           "4": {
             "id": "0c4e5a14-8dbc-580a-b0df-993d4f5f7950",
-            "amount": 5.0
+            "amount": 5
           },
           "5": {
             "id": "45e2c126-6de6-5a99-a456-b49fb3b5f547",
-            "amount": 5.0
+            "amount": 5
           },
           "6": {
             "id": "44ddb219-f0ad-5b50-97ae-09959d4cdef8",
-            "amount": 5.0
+            "amount": 5
           },
           "7": {
             "id": "5a7447a2-0886-58f2-8cc8-15e239dd6f25",
-            "amount": 5.0
+            "amount": 5
           },
           "8": {
             "id": "088ac0db-47e6-5fdb-a50f-153baa67f686",
-            "amount": 5.0
+            "amount": 5
           },
           "9": {
             "id": "5517f865-d824-55a5-aa49-917542757020",
-            "amount": 5.0
+            "amount": 5
           },
           "10": {
             "id": "0b587f8e-4786-5be9-b4db-08cb5db22dd7",
-            "amount": 5.0
+            "amount": 5
           },
           "11": {
             "id": "2fd032aa-3a3e-513d-8d79-3f69a2b1399e",
-            "amount": 5.0
+            "amount": 5
           },
           "12": {
             "id": "9602ef9e-db71-519c-99f5-669f0ba81116",
-            "amount": 5.0
+            "amount": 5
           }
         }
       },
@@ -1344,51 +1344,51 @@
         "months": {
           "1": {
             "id": "adb72cae-58f1-5db2-a634-7c02ff5f2123",
-            "amount": 25.0
+            "amount": 25
           },
           "2": {
             "id": "d6193d5c-ba7b-527d-81b7-d4cf79fa7636",
-            "amount": 25.0
+            "amount": 25
           },
           "3": {
             "id": "55636b69-148c-5a6d-9839-ed7c6ebc8188",
-            "amount": 25.0
+            "amount": 25
           },
           "4": {
             "id": "6f80cb5d-c1a3-5fe9-96a4-0b76afd5022b",
-            "amount": 25.0
+            "amount": 25
           },
           "5": {
             "id": "30e088ba-917b-524b-8c73-9c24c1e2032e",
-            "amount": 25.0
+            "amount": 25
           },
           "6": {
             "id": "bce84567-e159-542d-8af0-5f8e9de40a08",
-            "amount": 25.0
+            "amount": 25
           },
           "7": {
             "id": "042dae93-3160-5857-add3-a3078049654b",
-            "amount": 25.0
+            "amount": 25
           },
           "8": {
             "id": "1e52eef8-5d49-5094-9d2d-5da6294ba971",
-            "amount": 25.0
+            "amount": 25
           },
           "9": {
             "id": "299f193f-92a9-5813-9001-7d2d70cfcc97",
-            "amount": 25.0
+            "amount": 25
           },
           "10": {
             "id": "43397b8e-d20b-5a3a-9601-e95606463a4b",
-            "amount": 25.0
+            "amount": 25
           },
           "11": {
             "id": "15fe2f64-5708-59f0-9403-2d9dc8351f39",
-            "amount": 25.0
+            "amount": 25
           },
           "12": {
             "id": "75950538-742a-5209-9b00-2754b8190860",
-            "amount": 25.0
+            "amount": 25
           }
         }
       }
@@ -1399,5 +1399,177 @@
     "copied": 14,
     "replaced": 0,
     "previous": []
+  },
+  "/api/budgets/category/": {
+    "category": {
+      "id": "093f81fc-9bb6-541e-b803-977bd85748f3",
+      "name": "Eating out",
+      "groupName": "Food",
+      "isIncome": false
+    },
+    "period": {
+      "view": "month",
+      "year": 2026,
+      "month": 10,
+      "label": "October 2026",
+      "from": "2026-10-01",
+      "to": "2026-10-31"
+    },
+    "budget": 350,
+    "actual": 286,
+    "budgetToDate": null,
+    "months": [
+      {
+        "key": "2025-11",
+        "year": 2025,
+        "month": 11,
+        "label": "Nov",
+        "actual": 300,
+        "budget": 300,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2025-12",
+        "year": 2025,
+        "month": 12,
+        "label": "Dec",
+        "actual": 250,
+        "budget": 300,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-01",
+        "year": 2026,
+        "month": 1,
+        "label": "Jan 26",
+        "actual": 290,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-02",
+        "year": 2026,
+        "month": 2,
+        "label": "Feb",
+        "actual": 640,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-03",
+        "year": 2026,
+        "month": 3,
+        "label": "Mar",
+        "actual": 260,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-04",
+        "year": 2026,
+        "month": 4,
+        "label": "Apr",
+        "actual": 360,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-05",
+        "year": 2026,
+        "month": 5,
+        "label": "May",
+        "actual": 650,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-06",
+        "year": 2026,
+        "month": 6,
+        "label": "Jun",
+        "actual": 790,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-07",
+        "year": 2026,
+        "month": 7,
+        "label": "Jul",
+        "actual": 150,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-08",
+        "year": 2026,
+        "month": 8,
+        "label": "Aug",
+        "actual": 290,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-09",
+        "year": 2026,
+        "month": 9,
+        "label": "Sep",
+        "actual": 410,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-10",
+        "year": 2026,
+        "month": 10,
+        "label": "Oct",
+        "actual": 286,
+        "budget": 350,
+        "partial": true,
+        "future": false
+      }
+    ],
+    "trend": {
+      "recentAvg": 441.67,
+      "priorAvg": 376.67,
+      "change": 0.1725648445588977,
+      "sameMonthLastYear": 520,
+      "recentMonths": 6
+    },
+    "recent": [
+      {
+        "id": "r1",
+        "date": "2026-10-05",
+        "description": "SOUL RAMEN TUNBRIDGE WEL",
+        "amount": -85.14,
+        "account": "HSBC Joint Current Account"
+      },
+      {
+        "id": "r2",
+        "date": "2026-10-03",
+        "description": "BILL'S SEVENOAKS",
+        "amount": -64.2,
+        "account": "Amex Gold"
+      },
+      {
+        "id": "r3",
+        "date": "2026-10-01",
+        "description": "PRET A MANGER LONDON BRIDGE",
+        "amount": -11.95,
+        "account": "HSBC Joint Current Account"
+      }
+    ],
+    "count": 9
   }
 }

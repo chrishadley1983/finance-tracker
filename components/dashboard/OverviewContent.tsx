@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PageIntro } from '@/components/ui/PageIntro';
@@ -20,6 +20,7 @@ import { MonthNav } from './MonthNav';
 import { NetWorthFigure } from './NetWorthFigure';
 import { OverviewLede } from './OverviewLede';
 import { BudgetPace, overBudget } from './BudgetPace';
+import { BudgetLinePanel, type BudgetLineTarget } from '@/components/budgets/BudgetLinePanel';
 import { NetByMonth } from './NetByMonth';
 import { SpendingByCategory } from './SpendingByCategory';
 import { ComingUp } from './ComingUp';
@@ -46,6 +47,7 @@ export function OverviewContent() {
 
   const pace = live ? monthElapsed(month) : undefined;
   const monthQuery = `month=${monthKey(month)}`;
+  const [line, setLine] = useState<BudgetLineTarget | null>(null);
 
   return (
     <div className="grid gap-7">
@@ -85,7 +87,14 @@ export function OverviewContent() {
             }
           >
             <SectionState resource={data.budgets} what="budgets" rows={6}>
-              {(rows) => <BudgetPace rows={rows} pace={pace} budgetsHref={`/budgets?${monthQuery}`} />}
+              {(rows) => (
+                <BudgetPace
+                  rows={rows}
+                  pace={pace}
+                  budgetsHref={`/budgets?${monthQuery}`}
+                  onOpen={(c) => setLine({ categoryId: c.categoryId, categoryName: c.categoryName, year: month.year, month: month.month })}
+                />
+              )}
             </SectionState>
           </Panel>
 
@@ -150,6 +159,7 @@ export function OverviewContent() {
           </Panel>
         </div>
       </div>
+      <BudgetLinePanel target={line} onClose={() => setLine(null)} />
     </div>
   );
 }

@@ -68,6 +68,7 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
     let head = false;
     let wantCount = false;
     let single = false;
+    let maybe = false;
     const filters: Filter[] = [];
     let sorter: ((a: Row, b: Row) => number) | null = null;
     let from = 0;
@@ -120,9 +121,10 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
       if (head) return { data: null, error: null, count };
       const data = page.map((r) => project(name, r, selectSpec));
       if (single) {
-        return data.length === 1
-          ? { data: data[0], error: null }
-          : { data: null, error: { code: 'PGRST116', message: 'not found' } };
+        if (data.length === 1) return { data: data[0], error: null };
+        // maybeSingle(): no row is not an error.
+        if (maybe && data.length === 0) return { data: null, error: null };
+        return { data: null, error: { code: 'PGRST116', message: 'not found' } };
       }
       return { data, error: null, count: wantCount ? count : null };
     };
@@ -203,7 +205,7 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
       range(f: number, t: number) { from = f; to = t; return b; },
       limit(n: number) { to = from + n - 1; return b; },
       single() { single = true; return b; },
-      maybeSingle() { single = true; return b; },
+      maybeSingle() { single = true; maybe = true; return b; },
       then<T>(resolve: (v: ReturnType<typeof exec>) => T, reject?: (e: unknown) => T) {
         try {
           return Promise.resolve(resolve(exec()));
