@@ -2690,5 +2690,177 @@
         }
       }
     ]
+  },
+  "/api/budgets/category/093f81fc-9bb6-541e-b803-977bd85748f3?year=2026&month=10": {
+    "category": {
+      "id": "093f81fc-9bb6-541e-b803-977bd85748f3",
+      "name": "Eating out",
+      "groupName": "Food",
+      "isIncome": false
+    },
+    "period": {
+      "view": "month",
+      "year": 2026,
+      "month": 10,
+      "label": "October 2026",
+      "from": "2026-10-01",
+      "to": "2026-10-31"
+    },
+    "budget": 350,
+    "actual": 286,
+    "budgetToDate": null,
+    "months": [
+      {
+        "key": "2025-11",
+        "year": 2025,
+        "month": 11,
+        "label": "Nov",
+        "actual": 300,
+        "budget": 300,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2025-12",
+        "year": 2025,
+        "month": 12,
+        "label": "Dec",
+        "actual": 250,
+        "budget": 300,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-01",
+        "year": 2026,
+        "month": 1,
+        "label": "Jan 26",
+        "actual": 290,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-02",
+        "year": 2026,
+        "month": 2,
+        "label": "Feb",
+        "actual": 640,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-03",
+        "year": 2026,
+        "month": 3,
+        "label": "Mar",
+        "actual": 260,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-04",
+        "year": 2026,
+        "month": 4,
+        "label": "Apr",
+        "actual": 360,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-05",
+        "year": 2026,
+        "month": 5,
+        "label": "May",
+        "actual": 650,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-06",
+        "year": 2026,
+        "month": 6,
+        "label": "Jun",
+        "actual": 790,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-07",
+        "year": 2026,
+        "month": 7,
+        "label": "Jul",
+        "actual": 150,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-08",
+        "year": 2026,
+        "month": 8,
+        "label": "Aug",
+        "actual": 290,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-09",
+        "year": 2026,
+        "month": 9,
+        "label": "Sep",
+        "actual": 410,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-10",
+        "year": 2026,
+        "month": 10,
+        "label": "Oct",
+        "actual": 286,
+        "budget": 350,
+        "partial": true,
+        "future": false
+      }
+    ],
+    "trend": {
+      "recentAvg": 441.67,
+      "priorAvg": 376.67,
+      "change": 0.1725648445588977,
+      "sameMonthLastYear": 520,
+      "recentMonths": 6
+    },
+    "recent": [
+      {
+        "id": "r1",
+        "date": "2026-10-05",
+        "description": "SOUL RAMEN TUNBRIDGE WEL",
+        "amount": -85.14,
+        "account": "HSBC Joint Current Account"
+      },
+      {
+        "id": "r2",
+        "date": "2026-10-03",
+        "description": "BILL'S SEVENOAKS",
+        "amount": -64.2,
+        "account": "Amex Gold"
+      },
+      {
+        "id": "r3",
+        "date": "2026-10-01",
+        "description": "PRET A MANGER LONDON BRIDGE",
+        "amount": -11.95,
+        "account": "HSBC Joint Current Account"
+      }
+    ],
+    "count": 9
   }
 }

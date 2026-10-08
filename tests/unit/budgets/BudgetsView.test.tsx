@@ -55,7 +55,7 @@ function respond(url: string, init?: RequestInit) {
     const months = (n: number) => Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, { id: `b${i}`, amount: n }]));
     return json({ budgets: [{ categoryId: 'cat-eat', months: months(250) }, { categoryId: 'cat-gro', months: months(600) }, { categoryId: 'cat-sal', months: months(5000) }] });
   }
-  if (url.startsWith('/api/budgets/category/')) return json(detail);
+  if (url.startsWith('/api/budgets/category/')) return json(url.includes('month=') ? detail : yearDetail);
   if (url === '/api/budgets/bulk') return bulkOk ? json({ success: true }) : json({ error: 'Database is down' }, 500);
   if (url === '/api/budgets/copy-month') {
     const body = JSON.parse(String(init?.body));
@@ -77,6 +77,15 @@ const detail = {
   trend: { recentAvg: 240, priorAvg: 200, change: 0.2, sameMonthLastYear: 190, recentMonths: 6 },
   recent: [{ id: 't1', date: '2026-10-05', description: 'SOUL RAMEN', amount: -85.14, account: 'HSBC Joint' }],
   count: 7,
+};
+
+const yearDetail = {
+  ...detail,
+  period: { view: 'year', year: 2026, month: null, label: '2026', from: '2026-01-01', to: '2026-12-31' },
+  budget: 3000,
+  actual: 2692,
+  budgetToDate: 2500,
+  count: 88,
 };
 
 const mockFetch = vi.fn();
@@ -231,6 +240,26 @@ describe('BudgetsView', () => {
     expect(within(panel).getByText(/Averaging £240 a month over the last 6 months, up 20% on the 6 before/)).toBeTruthy();
     const link = within(panel).getByRole('link', { name: /See all 7 transactions in October 2026/ });
     expect(link.getAttribute('href')).toBe('/transactions?categoryId=cat-eat&dateFrom=2026-10-01&dateTo=2026-10-31');
+  });
+
+  it('the panel toggles its figures between the month and the year', async () => {
+    renderView();
+    await screen.findByText(/24 days to go/);
+    fireEvent.click(screen.getByRole('button', { name: 'Eating out' }));
+    const panel = await screen.findByRole('dialog');
+    await within(panel).findByText('£286 of £250 spent in October 2026, £36 over budget.');
+    expect(calls.some((c) => c.url === '/api/budgets/category/cat-eat?year=2026')).toBe(true);
+    const toggle = within(panel).getByRole('group', { name: 'Figures for' });
+    expect(within(toggle).getByRole('button', { name: 'October 2026' }).getAttribute('aria-pressed')).toBe('true');
+
+    fireEvent.click(within(toggle).getByRole('button', { name: '2026' }));
+    expect(within(panel).getByText('£2,692 spent in 2026 so far, against £2,500 budgeted to date (£3,000 for the year), £192 over budget.')).toBeTruthy();
+    expect(within(panel).getByText('Budget to date')).toBeTruthy();
+    expect(within(panel).getByRole('link', { name: /See all 88 transactions in 2026/ }).getAttribute('href')).toBe(
+      '/transactions?categoryId=cat-eat&dateFrom=2026-01-01&dateTo=2026-12-31'
+    );
+    // The chart and latest transactions stay put.
+    expect(within(panel).getByText('SOUL RAMEN')).toBeTruthy();
   });
 
   it('clicking the row opens the detail, clicking the budget figure still edits', async () => {
