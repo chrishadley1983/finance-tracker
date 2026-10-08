@@ -50,6 +50,7 @@ describe('costs', () => {
     expect(annualCost(10, 'monthly')).toBe(120);
     expect(annualCost(10, 'quarterly')).toBe(40);
     expect(annualCost(10, 'termly')).toBe(30);
+    expect(annualCost(10, 'half_termly')).toBe(60);
     expect(annualCost(120, 'annual')).toBe(120);
     expect(monthlyCost(120, 'annual')).toBe(10);
   });
@@ -140,6 +141,106 @@ describe('assessSubscription', () => {
   it('rolls a projected date forward past today', () => {
     const r = assessSubscription(sub({ frequency: 'weekly', amount: 5 }), [charge('2026-09-28', -5)], TODAY);
     expect(r.next_due! >= TODAY).toBe(true);
+  });
+});
+
+describe('variable-amount subscriptions', () => {
+  /** One charge on the 1st of each month from `from` (YYYY-MM) for `n` months. */
+  const monthly = (from: string, n: number, amount: number, description = 'COUNCIL TAX'): Charge[] => {
+    const [y, m] = from.split('-').map(Number);
+    return Array.from({ length: n }, (_, i) => {
+      const d = new Date(Date.UTC(y, m - 1 + i, 1)).toISOString().slice(0, 10);
+      return charge(d, -amount, description);
+    }).reverse(); // newest first, as the API passes them
+  };
+  const councilTax = sub({ name: 'Council tax', amount: 249.17, bank_description_pattern: 'COUNCIL TAX', variable_amount: true });
+
+  it('accepts an averaged amount when the 12-month total matches (£299 x 10 stored as £249.17/mo)', () => {
+    // Ten £299 charges in the last year, plus an older one that proves a full year of history.
+    const charges = [...monthly('2025-12', 10, 299), charge('2025-09-01', -299, 'COUNCIL TAX')];
+    const r = assessSubscription(councilTax, charges, TODAY);
+    expect(r.signals).toEqual([]);
+    expect(r.twelve_month_total).toBe(2990);
+    expect(r.annual_cost).toBe(2990.04);
+  });
+
+  it('flags when the 12-month total is more than 15% off the expected annual cost', () => {
+    const charges = [...monthly('2025-11', 11, 320), charge('2025-09-01', -320, 'COUNCIL TAX')];
+    const r = assessSubscription(councilTax, charges, TODAY);
+    expect(r.signals.map((s) => s.type)).toEqual(['price_change']);
+    expect(r.signals[0].message).toBe('Last 12 months £3520.00 vs £2990.04 expected');
+  });
+
+  it('ignores a single charge that differs from the stored amount', () => {
+    const claude = sub({ name: 'Claude', amount: 135, bank_description_pattern: 'CLAUDE.AI', variable_amount: true });
+    const charges = [
+      ...monthly('2026-04', 6, 180, 'CLAUDE.AI'),
+      ...monthly('2025-09', 7, 90, 'CLAUDE.AI'),
+    ];
+    // Last charge £180 vs £135 stored would be a price change for a fixed subscription.
+    expect(assessSubscription({ ...claude, variable_amount: false }, charges, TODAY).signals.map((s) => s.type)).toEqual([
+      'price_change',
+    ]);
+    const r = assessSubscription(claude, charges, TODAY);
+    // In the window (from 6 Oct 2025): 6 x £180 + 5 x £90 = £1530, within 15% of 12 x £135 = £1620.
+    expect(r.signals).toEqual([]);
+    expect(r.twelve_month_total).toBe(1530);
+  });
+
+  it('skips the check without about 11 months of history rather than false-flag', () => {
+    const r = assessSubscription(councilTax, monthly('2026-07', 3, 600), TODAY);
+    expect(r.signals).toEqual([]);
+    expect(r.twelve_month_total).toBeNull();
+  });
+});
+
+describe('half-termly billing', () => {
+  const club = sub({ name: 'Swimming', amount: 60, frequency: 'half_termly', bank_description_pattern: 'SWIM' });
+
+  it('allows a half term plus a holiday between charges', () => {
+    expect(assessSubscription(club, [charge('2026-08-03', -60, 'SWIM')], TODAY).signals).toEqual([]); // 64 days
+  });
+
+  it('flags a missed payment past 70 days and projects roughly two months ahead', () => {
+    expect(assessSubscription(club, [charge('2026-07-20', -60, 'SWIM')], TODAY).signals.map((s) => s.type)).toEqual([
+      'missed_payment',
+    ]);
+    expect(assessSubscription(club, [charge('2026-09-01', -60, 'SWIM')], TODAY).next_due).toBe('2026-11-01');
+  });
+});
+
+describe('seasonal subscriptions', () => {
+  const gardener = sub({ name: 'Gardener', amount: 80, status: 'seasonal', bank_description_pattern: 'GARDEN' });
+
+  it('never flags a missed payment or still charging, and projects nothing out of season', () => {
+    const r = assessSubscription(gardener, [charge('2026-04-01', -80, 'GARDEN')], TODAY);
+    expect(r.signals).toEqual([]);
+    expect(r.next_due).toBeNull();
+    expect(assessSubscription(gardener, [charge('2026-09-28', -80, 'GARDEN')], TODAY).signals).toEqual([]);
+  });
+
+  it('shows a set renewal date', () => {
+    const r = assessSubscription({ ...gardener, next_renewal_date: '2027-04-01' }, [charge('2026-09-01', -80, 'GARDEN')], TODAY);
+    expect(r.next_due).toBe('2027-04-01');
+  });
+
+  it('still checks the price', () => {
+    expect(assessSubscription(gardener, [charge('2026-09-01', -100, 'GARDEN')], TODAY).signals.map((s) => s.type)).toEqual([
+      'price_change',
+    ]);
+  });
+
+  it('still flags a paused subscription that is charging', () => {
+    const r = assessSubscription({ ...gardener, status: 'paused' }, [charge('2026-09-28', -80, 'GARDEN')], TODAY);
+    expect(r.signals.map((s) => s.type)).toEqual(['still_charging']);
+  });
+
+  it('counts toward the totals like active', () => {
+    const a = assessSubscription(sub({ id: 'a' }), [charge('2026-09-20', -10.99)], TODAY);
+    const g = assessSubscription({ ...gardener, id: 'g' }, [charge('2026-09-01', -80, 'GARDEN')], TODAY);
+    const s = summarise([a, g]);
+    expect(s.active_count).toBe(2);
+    expect(s.monthly).toBe(90.99);
   });
 });
 

@@ -4,15 +4,26 @@
  * Pure functions (no I/O) so the API route stays thin and the rules are testable.
  * Ported from the Peter Dashboard's subscriptions health check (moved here 6 Oct 2026),
  * with one addition: a cancelled or paused subscription that is still being charged.
+ *
+ * Variable-amount subscriptions (usage billing, or an amount stored as an average, e.g. council tax
+ * over 10 months) are checked on their last 12 months' total rather than on the last single charge.
+ * Seasonal ones (a summer gardener) cost like active ones but are never chased for missing charges.
  */
 
 import { formatDayMonth } from '@/lib/format';
 
-export const FREQUENCIES = ['weekly', 'fortnightly', 'monthly', 'quarterly', 'termly', 'annual'] as const;
+export const FREQUENCIES = ['weekly', 'fortnightly', 'monthly', 'quarterly', 'termly', 'half_termly', 'annual'] as const;
 export type Frequency = (typeof FREQUENCIES)[number];
 
 export const SCOPES = ['personal', 'business'] as const;
-export const STATUSES = ['active', 'paused', 'cancelled', 'trial'] as const;
+export const STATUSES = ['active', 'seasonal', 'paused', 'cancelled', 'trial'] as const;
+
+/** Statuses whose cost counts toward the totals. */
+export const COSTED_STATUSES: readonly string[] = ['active', 'seasonal'];
+
+export function isCosted(status: string | null | undefined): boolean {
+  return COSTED_STATUSES.includes(status ?? 'active');
+}
 
 const PER_YEAR: Record<Frequency, number> = {
   weekly: 52,
@@ -20,6 +31,7 @@ const PER_YEAR: Record<Frequency, number> = {
   monthly: 12,
   quarterly: 4,
   termly: 3,
+  half_termly: 6,
   annual: 1,
 };
 
@@ -30,6 +42,7 @@ const EXPECTED_GAP_DAYS: Record<Frequency, number> = {
   monthly: 45,
   quarterly: 105,
   termly: 140,
+  half_termly: 70, // a half term of ~7 weeks plus a 2-week holiday
   annual: 400,
 };
 
@@ -40,11 +53,21 @@ const PERIOD_DAYS: Record<Frequency, number> = {
   monthly: 30,
   quarterly: 91,
   termly: 122,
+  half_termly: 61,
   annual: 365,
 };
 
 /** A charge more than this far from the stored amount counts as a price change (allows for FX). */
 export const PRICE_TOLERANCE = 0.1;
+
+/** A variable-amount subscription whose last-12-months total is this far from its annual cost is flagged. */
+export const VARIABLE_TOLERANCE = 0.15;
+
+/** The 12-month window used for variable-amount subscriptions. */
+export const VARIABLE_WINDOW_DAYS = 365;
+
+/** A variable-amount subscription needs a charge at least this old before its 12-month total is trusted. */
+export const VARIABLE_MIN_HISTORY_DAYS = 330;
 
 /** A cancelled or paused subscription charged within this many days is flagged. */
 export const STILL_CHARGING_DAYS = 45;
@@ -114,6 +137,8 @@ export interface SubscriptionRow {
   billing_day: number | null;
   start_date: string | null;
   end_date: string | null;
+  /** True when charges vary (usage billing, an averaged amount): checked on the 12-month total. */
+  variable_amount?: boolean | null;
 }
 
 export interface Charge {
@@ -140,6 +165,8 @@ export interface AssessedSubscription extends SubscriptionRow {
   annual_cost: number;
   last_charged: string | null;
   last_amount: number | null;
+  /** Variable-amount only: total of matching charges in the last 12 months, when there's enough history. */
+  twelve_month_total: number | null;
   charges_found: number;
   next_due: string | null;
   next_due_source: 'renewal_date' | 'projected' | null;
@@ -162,6 +189,15 @@ export function assessSubscription(sub: SubscriptionRow, charges: Charge[], toda
   const lastCharged = latest ? latest.date : null;
   const lastAmount = latest ? round2(Math.abs(latest.amount)) : null;
 
+  let twelveMonthTotal: number | null = null;
+  if (sub.variable_amount && charges.length > 0) {
+    const oldest = charges[charges.length - 1];
+    if (daysBetween(oldest.date, today) >= VARIABLE_MIN_HISTORY_DAYS) {
+      const since = addDays(today, -VARIABLE_WINDOW_DAYS);
+      twelveMonthTotal = round2(charges.filter((c) => c.date > since).reduce((t, c) => t + Math.abs(c.amount), 0));
+    }
+  }
+
   if (status === 'cancelled' || status === 'paused') {
     if (latest && daysBetween(latest.date, today) <= STILL_CHARGING_DAYS) {
       signals.push({
@@ -175,7 +211,16 @@ export function assessSubscription(sub: SubscriptionRow, charges: Charge[], toda
     } else if (!latest) {
       signals.push({ type: 'no_charges_found', message: 'No matching charge in the last 400 days' });
     } else {
-      if (stored > 0 && Math.abs(lastAmount! - stored) / stored > PRICE_TOLERANCE) {
+      if (sub.variable_amount) {
+        // Too little history to total a year: skip rather than false-flag.
+        const expected = annualCost(stored, frequency);
+        if (twelveMonthTotal !== null && expected > 0 && Math.abs(twelveMonthTotal - expected) / expected > VARIABLE_TOLERANCE) {
+          signals.push({
+            type: 'price_change',
+            message: `Last 12 months ${gbp(twelveMonthTotal)} vs ${gbp(expected)} expected`,
+          });
+        }
+      } else if (stored > 0 && Math.abs(lastAmount! - stored) / stored > PRICE_TOLERANCE) {
         signals.push({
           type: 'price_change',
           message: `Last charge ${gbp(lastAmount!)} vs ${gbp(stored)} recorded`,
@@ -183,7 +228,8 @@ export function assessSubscription(sub: SubscriptionRow, charges: Charge[], toda
       }
       const since = daysBetween(latest.date, today);
       const gap = EXPECTED_GAP_DAYS[frequency];
-      if (since > gap) {
+      // A seasonal subscription goes quiet out of season, so a gap isn't a missed payment.
+      if (status !== 'seasonal' && since > gap) {
         signals.push({
           type: 'missed_payment',
           message: `No charge for ${since} days (expected within ${gap})`,
@@ -205,11 +251,12 @@ export function assessSubscription(sub: SubscriptionRow, charges: Charge[], toda
 
   let nextDue: string | null = null;
   let nextDueSource: AssessedSubscription['next_due_source'] = null;
-  if (status === 'active' || status === 'trial') {
+  // Seasonal ones only show a set renewal date: projecting from the last charge would run out of season.
+  if (status === 'active' || status === 'trial' || status === 'seasonal') {
     if (sub.next_renewal_date && sub.next_renewal_date >= today) {
       nextDue = sub.next_renewal_date;
       nextDueSource = 'renewal_date';
-    } else if (latest && !signals.some((x) => x.type === 'missed_payment')) {
+    } else if (status !== 'seasonal' && latest && !signals.some((x) => x.type === 'missed_payment')) {
       // A subscription that has stopped charging has no believable next date, so none is projected.
       let projected = addDays(latest.date, PERIOD_DAYS[frequency]);
       // Roll forward past today so a slightly late charge still shows the next one.
@@ -226,6 +273,7 @@ export function assessSubscription(sub: SubscriptionRow, charges: Charge[], toda
     annual_cost: round2(annualCost(stored, frequency)),
     last_charged: lastCharged,
     last_amount: lastAmount,
+    twelve_month_total: twelveMonthTotal,
     charges_found: charges.length,
     next_due: nextDue,
     next_due_source: nextDueSource,
@@ -245,7 +293,7 @@ export interface Summary {
 }
 
 export function summarise(subs: AssessedSubscription[]): Summary {
-  const active = subs.filter((s) => (s.status ?? 'active') === 'active');
+  const active = subs.filter((s) => isCosted(s.status));
   const sum = (rows: AssessedSubscription[]) => round2(rows.reduce((t, s) => t + monthlyCost(s.amount, s.frequency), 0));
   const cats = new Map<string, { count: number; monthly: number }>();
   for (const s of active) {

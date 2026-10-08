@@ -22,7 +22,7 @@ export interface SubscriptionsResponse {
 }
 
 type ScopeFilter = 'all' | 'personal' | 'business';
-type StatusFilter = 'active' | 'all' | 'paused' | 'cancelled' | 'trial';
+type StatusFilter = 'active' | 'all' | 'seasonal' | 'paused' | 'cancelled' | 'trial';
 
 const SCOPES: { id: ScopeFilter; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -31,6 +31,7 @@ const SCOPES: { id: ScopeFilter; label: string }[] = [
 ];
 const STATUSES: { id: StatusFilter; label: string }[] = [
   { id: 'active', label: 'Active' },
+  { id: 'seasonal', label: 'Seasonal' },
   { id: 'trial', label: 'Trial' },
   { id: 'paused', label: 'Paused' },
   { id: 'cancelled', label: 'Cancelled' },
@@ -57,6 +58,7 @@ const PER: Record<string, string> = {
   monthly: '/mo',
   quarterly: '/qtr',
   termly: '/term',
+  half_termly: '/half term',
   annual: '/yr',
 };
 
@@ -85,7 +87,11 @@ function attentionSignals(s: AssessedSubscription): Signal[] {
     .sort((a, b) => SIGNAL_ORDER.indexOf(a.type) - SIGNAL_ORDER.indexOf(b.type));
 }
 
-const priceDiff = (s: AssessedSubscription) => (s.last_amount ?? Math.abs(s.amount)) - Math.abs(s.amount);
+/** Per charge, or for a variable-amount subscription the last 12 months against its expected annual cost. */
+const priceDiff = (s: AssessedSubscription) =>
+  s.variable_amount
+    ? (s.twelve_month_total ?? s.annual_cost) - s.annual_cost
+    : (s.last_amount ?? Math.abs(s.amount)) - Math.abs(s.amount);
 
 /**
  * The opening sentence: monthly total, then the one or two things worth
@@ -103,11 +109,13 @@ export function subscriptionsLede(data: SubscriptionsResponse): ReactNode {
   if (changed.length > 0) {
     const s = changed[0];
     const diff = priceDiff(s);
-    const dir = diff >= 0 ? 'goes up' : 'goes down';
+    const dir = s.variable_amount ? 'ran' : diff >= 0 ? 'goes up' : 'goes down';
     notes.push(
       <span key="price">
         {s.name} {dir} <span className="fig">{formatGBP(Math.abs(diff))}</span>
-        {s.next_due ? ` on ${shortDate(s.next_due, refYear)}` : ''}
+        {s.variable_amount
+          ? ` ${diff >= 0 ? 'over' : 'under'} over the last 12 months`
+          : s.next_due ? ` on ${shortDate(s.next_due, refYear)}` : ''}
         {changed.length > 1 ? ` (${changed.length - 1} other price${changed.length > 2 ? 's have' : ' has'} changed)` : ''}
       </span>
     );
@@ -439,7 +447,7 @@ export function SubscriptionsPageContent() {
                         </ul>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {priceChange && s.last_amount !== null && (
+                        {priceChange && !s.variable_amount && s.last_amount !== null && (
                           <Button size="sm" disabled={busyId === s.id} onClick={() => acceptPrice(s)}>
                             Use <span className="fig">{formatGBP(s.last_amount, { pence: true })}</span>
                           </Button>
@@ -540,7 +548,7 @@ export function SubscriptionsPageContent() {
                   </div>
                   <ul>
                     {listed.map((s) => {
-                      const changed = s.last_amount !== null && Math.abs(s.last_amount - Math.abs(s.amount)) >= 0.01;
+                      const changed = !s.variable_amount && s.last_amount !== null && Math.abs(s.last_amount - Math.abs(s.amount)) >= 0.01;
                       return (
                         <li
                           key={s.id}

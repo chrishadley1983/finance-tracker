@@ -22,6 +22,7 @@ const subscriptionFields = z.object({
   payment_method: optionalText(60),
   bank_description_pattern: optionalText(120),
   status: z.enum(STATUSES),
+  variable_amount: z.boolean().optional(),
   plan_tier: optionalText(60),
   notes: optionalText(1000),
   url: z.string().trim().url().max(500).nullable().optional().or(z.literal('').transform(() => null)),
