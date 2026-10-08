@@ -7,7 +7,7 @@ import {
   assessSubscription,
   cleanPattern,
   findUntracked,
-  likeLiteral,
+  likePattern,
   summarise,
   type Charge,
   type SubscriptionRow,
@@ -29,7 +29,7 @@ async function chargesFor(pattern: string, since: string): Promise<Charge[]> {
   const { data, error } = await supabaseAdmin
     .from('transactions')
     .select('date, amount, description')
-    .ilike('description', `%${likeLiteral(pattern)}%`)
+    .ilike('description', `%${likePattern(pattern)}%`)
     .lt('amount', 0)
     .gte('date', since)
     .order('date', { ascending: false })

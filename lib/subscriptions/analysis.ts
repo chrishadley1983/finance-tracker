@@ -105,15 +105,32 @@ export function addDays(iso: string, days: number): string {
   return new Date(Date.parse(iso) + days * 86_400_000).toISOString().slice(0, 10);
 }
 
-/** The usable part of a stored bank pattern ("NETFLIX*" -> "netflix"), or null if none. */
+/**
+ * The usable part of a stored bank pattern, or null if none. A '*' inside is a wildcard
+ * ("PAYPAL *NETFLIX"); leading and trailing ones are dropped, as the match is a substring anyway.
+ */
 export function cleanPattern(pattern: string | null | undefined): string | null {
-  const clean = (pattern ?? '').replace(/\*/g, '').trim();
+  const clean = (pattern ?? '').trim().replace(/^[\s*]+|[\s*]+$/g, '');
   return clean.length > 0 ? clean : null;
 }
 
 /** Escape LIKE wildcards so a pattern is matched literally inside %…%. */
 export function likeLiteral(text: string): string {
   return text.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
+/** A cleaned pattern as a LIKE body (wrap in %…%): '*' matches anything, everything else literally. */
+export function likePattern(pattern: string): string {
+  return pattern.split('*').map(likeLiteral).join('%');
+}
+
+/** Whether `text` contains `pattern` (case-insensitive, '*' matches anything): the in-memory twin of likePattern. */
+export function patternMatches(pattern: string, text: string): boolean {
+  const body = pattern
+    .split('*')
+    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('.*');
+  return new RegExp(body, 'i').test(text);
 }
 
 export interface SubscriptionRow {
@@ -360,7 +377,7 @@ export function findUntracked(
   trackedPatterns: string[],
   dismissed: string[],
 ): UntrackedCandidate[] {
-  const tracked = trackedPatterns.map((p) => p.toLowerCase());
+  const tracked = trackedPatterns;
   const excluded = dismissed.map((p) => p.toLowerCase());
   const groups = new Map<string, Charge[]>();
   for (const c of charges) {
@@ -376,7 +393,7 @@ export function findUntracked(
     if (txs.length < 3) continue;
     if (NOT_SUBSCRIPTIONS.some((x) => key.includes(x))) continue;
     if (excluded.some((x) => key.includes(x))) continue;
-    if (tracked.some((x) => key.includes(x))) continue;
+    if (tracked.some((x) => patternMatches(x, key))) continue;
 
     const amounts = txs.map((t) => Math.abs(t.amount));
     const avg = amounts.reduce((a, b) => a + b, 0) / amounts.length;

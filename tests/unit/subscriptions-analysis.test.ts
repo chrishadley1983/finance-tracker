@@ -5,8 +5,10 @@ import {
   cleanPattern,
   findUntracked,
   likeLiteral,
+  likePattern,
   monthlyCost,
   normaliseDescription,
+  patternMatches,
   summarise,
   ukToday,
   type Charge,
@@ -61,14 +63,30 @@ describe('costs', () => {
 });
 
 describe('patterns', () => {
-  it('strips wildcards and refuses empty patterns', () => {
+  it('drops outer wildcards, keeps inner ones and refuses empty patterns', () => {
     expect(cleanPattern(' NETFLIX* ')).toBe('NETFLIX');
+    expect(cleanPattern('PAYPAL *NETFLIX')).toBe('PAYPAL *NETFLIX');
     expect(cleanPattern('**')).toBeNull();
     expect(cleanPattern(null)).toBeNull();
   });
 
   it('escapes LIKE wildcards so they match literally', () => {
     expect(likeLiteral('50%_off\\x')).toBe('50\\%\\_off\\\\x');
+  });
+
+  it("treats '*' as a wildcard in the LIKE body, escaping everything else", () => {
+    expect(likePattern('PAYPAL *NETFLIX')).toBe('PAYPAL %NETFLIX');
+    expect(likePattern('50%*off')).toBe('50\\%%off');
+    expect(likePattern(cleanPattern('Amazon Prime*')!)).toBe('Amazon Prime');
+  });
+
+  it("matches PayPal-style descriptions with '*' as a wildcard", () => {
+    expect(patternMatches('PAYPAL *NETFLIX', 'PAYPAL *NETFLIX 35314369001')).toBe(true);
+    expect(patternMatches('PAYPAL *NETFLIX', 'PAYPAL * NETFLIX')).toBe(true);
+    expect(patternMatches('PAYPAL *NETFLIX', 'paypal *disneyplus')).toBe(false);
+    expect(patternMatches(cleanPattern('Amazon Prime*')!, 'Amazon Prime*NO8A3 amzn.co.uk/pm')).toBe(true);
+    expect(patternMatches('A.B (x)', 'A.B (x) 123')).toBe(true);
+    expect(patternMatches('A.B', 'AxB')).toBe(false);
   });
 
   it('groups descriptions by dropping trailing references', () => {
