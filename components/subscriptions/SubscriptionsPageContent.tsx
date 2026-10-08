@@ -114,7 +114,7 @@ export function subscriptionsLede(data: SubscriptionsResponse): ReactNode {
       <span key="price">
         {s.name} {dir} <span className="fig">{formatGBP(Math.abs(diff))}</span>
         {s.variable_amount
-          ? ` ${diff >= 0 ? 'over' : 'under'} over the last 12 months`
+          ? ` ${diff >= 0 ? 'over' : 'under'} expected in the last 12 months`
           : s.next_due ? ` on ${shortDate(s.next_due, refYear)}` : ''}
         {changed.length > 1 ? ` (${changed.length - 1} other price${changed.length > 2 ? 's have' : ' has'} changed)` : ''}
       </span>
@@ -278,7 +278,7 @@ export function SubscriptionsPageContent() {
   const listed = useMemo(() => {
     const q = search.trim().toLowerCase();
     return inScope
-      .filter((s) => status === 'all' || (s.status ?? 'active') === status)
+      .filter((s) => status === 'all' || (s.status ?? 'active') === status || (status === 'active' && s.status === 'seasonal'))
       .filter((s) => !q || [s.name, s.provider, s.category, s.bank_description_pattern].some((v) => v?.toLowerCase().includes(q)))
       .sort((a, b) => b.monthly_cost - a.monthly_cost);
   }, [inScope, status, search]);
@@ -286,6 +286,8 @@ export function SubscriptionsPageContent() {
   const statusCounts = useMemo(() => {
     const c: Record<string, number> = { all: inScope.length };
     for (const s of inScope) c[s.status ?? 'active'] = (c[s.status ?? 'active'] ?? 0) + 1;
+    // Active includes seasonal, matching the header's total.
+    c.active = (c.active ?? 0) + (c.seasonal ?? 0);
     return c;
   }, [inScope]);
 

@@ -63,11 +63,29 @@ export const PRICE_TOLERANCE = 0.1;
 /** A variable-amount subscription whose last-12-months total is this far from its annual cost is flagged. */
 export const VARIABLE_TOLERANCE = 0.15;
 
-/** The 12-month window used for variable-amount subscriptions. */
-export const VARIABLE_WINDOW_DAYS = 365;
+/**
+ * A variable-amount subscription's year of billing: the charges in the 365 days, less half a billing period,
+ * up to and including its latest charge. Anchoring on the latest charge (not today) means a charge that is due
+ * but not yet posted doesn't shrink the total, and the half-period margin absorbs dates that drift either way,
+ * so the window holds exactly one year's charges (12 monthly, 3 termly, 1 annual) without double-counting.
+ */
+export function yearOfBilling(charges: Charge[], frequency: string): Charge[] {
+  if (charges.length === 0) return [];
+  const f = asFrequency(frequency);
+  const since = addDays(charges[0].date, -Math.floor(365 - PERIOD_DAYS[f] / 2));
+  return charges.filter((c) => c.date > since);
+}
 
-/** A variable-amount subscription needs a charge at least this old before its 12-month total is trusted. */
-export const VARIABLE_MIN_HISTORY_DAYS = 330;
+/**
+ * Whether there's enough history to trust a year's total: the charges span at least a year's worth of
+ * billing periods, less half a period (e.g. ~11 months for monthly, ~6 months for termly, any for annual).
+ */
+export function hasYearOfHistory(charges: Charge[], frequency: string): boolean {
+  if (charges.length === 0) return false;
+  const f = asFrequency(frequency);
+  const needed = (PER_YEAR[f] - 1) * PERIOD_DAYS[f] - PERIOD_DAYS[f] / 2;
+  return daysBetween(charges[charges.length - 1].date, charges[0].date) >= needed;
+}
 
 /** A cancelled or paused subscription charged within this many days is flagged. */
 export const STILL_CHARGING_DAYS = 45;
@@ -207,12 +225,8 @@ export function assessSubscription(sub: SubscriptionRow, charges: Charge[], toda
   const lastAmount = latest ? round2(Math.abs(latest.amount)) : null;
 
   let twelveMonthTotal: number | null = null;
-  if (sub.variable_amount && charges.length > 0) {
-    const oldest = charges[charges.length - 1];
-    if (daysBetween(oldest.date, today) >= VARIABLE_MIN_HISTORY_DAYS) {
-      const since = addDays(today, -VARIABLE_WINDOW_DAYS);
-      twelveMonthTotal = round2(charges.filter((c) => c.date > since).reduce((t, c) => t + Math.abs(c.amount), 0));
-    }
+  if (sub.variable_amount && hasYearOfHistory(charges, frequency)) {
+    twelveMonthTotal = round2(yearOfBilling(charges, frequency).reduce((t, c) => t + Math.abs(c.amount), 0));
   }
 
   if (status === 'cancelled' || status === 'paused') {
@@ -229,9 +243,10 @@ export function assessSubscription(sub: SubscriptionRow, charges: Charge[], toda
       signals.push({ type: 'no_charges_found', message: 'No matching charge in the last 400 days' });
     } else {
       if (sub.variable_amount) {
-        // Too little history to total a year: skip rather than false-flag.
+        // Too little history to total a year: skip rather than false-flag. A seasonal one's year is
+        // partial by nature, so its total isn't compared either.
         const expected = annualCost(stored, frequency);
-        if (twelveMonthTotal !== null && expected > 0 && Math.abs(twelveMonthTotal - expected) / expected > VARIABLE_TOLERANCE) {
+        if (status !== 'seasonal' && twelveMonthTotal !== null && expected > 0 && Math.abs(twelveMonthTotal - expected) / expected > VARIABLE_TOLERANCE) {
           signals.push({
             type: 'price_change',
             message: `Last 12 months ${gbp(twelveMonthTotal)} vs ${gbp(expected)} expected`,

@@ -200,9 +200,45 @@ describe('variable-amount subscriptions', () => {
       'price_change',
     ]);
     const r = assessSubscription(claude, charges, TODAY);
-    // In the window (from 6 Oct 2025): 6 x £180 + 5 x £90 = £1530, within 15% of 12 x £135 = £1620.
+    // The year to the latest charge (1 Sep 2026): 6 x £180 + 6 x £90 = £1620, exactly 12 x £135.
     expect(r.signals).toEqual([]);
-    expect(r.twelve_month_total).toBe(1530);
+    expect(r.twelve_month_total).toBe(1620);
+  });
+
+  it('does not flag an annual charge just over a year old when the next has not posted', () => {
+    const tax = sub({ name: 'Domain', amount: 300, frequency: 'annual', bank_description_pattern: 'DOMAIN', variable_amount: true });
+    const r = assessSubscription(tax, [charge('2025-10-05', -300, 'DOMAIN')], '2026-10-08');
+    expect(r.signals).toEqual([]);
+    expect(r.twelve_month_total).toBe(300);
+  });
+
+  it('does not double-count two annual charges a year apart', () => {
+    const tax = sub({ name: 'Domain', amount: 300, frequency: 'annual', bank_description_pattern: 'DOMAIN', variable_amount: true });
+    const r = assessSubscription(tax, [charge('2026-04-01', -300, 'DOMAIN'), charge('2025-04-01', -300, 'DOMAIN')], TODAY);
+    expect(r.twelve_month_total).toBe(300);
+    expect(r.signals).toEqual([]);
+  });
+
+  it('counts a full year of termly charges when the next term has not been charged yet', () => {
+    const club = sub({ name: 'Tennis', amount: 100, frequency: 'termly', bank_description_pattern: 'TENNIS', variable_amount: true });
+    const charges = ['2026-04-20', '2026-01-05', '2025-09-03', '2025-04-21'].map((d) => charge(d, -100, 'TENNIS'));
+    const r = assessSubscription(club, charges, '2026-09-05');
+    expect(r.twelve_month_total).toBe(300);
+    expect(r.signals).toEqual([]);
+  });
+
+  it('counts a full year of half-termly charges when the next has not posted', () => {
+    const club = sub({ name: 'Swim', amount: 60, frequency: 'half_termly', bank_description_pattern: 'SWIM', variable_amount: true });
+    const dates = ['2026-08-03', '2026-06-08', '2026-04-13', '2026-02-09', '2025-12-08', '2025-10-06', '2025-08-04'];
+    const r = assessSubscription(club, dates.map((d) => charge(d, -60, 'SWIM')), '2026-10-08');
+    expect(r.twelve_month_total).toBe(360);
+    expect(r.signals).toEqual([]);
+  });
+
+  it('does not compare a seasonal subscription’s partial year', () => {
+    const charges = monthly('2025-09', 13, 400); // £4800 a year: flagged for an active one
+    expect(assessSubscription(councilTax, charges, TODAY).signals.map((x) => x.type)).toEqual(['price_change']);
+    expect(assessSubscription({ ...councilTax, status: 'seasonal' }, charges, TODAY).signals).toEqual([]);
   });
 
   it('skips the check without about 11 months of history rather than false-flag', () => {
