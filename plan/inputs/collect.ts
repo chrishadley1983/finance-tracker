@@ -11,6 +11,7 @@ import { getGiltPrices } from './gilt-prices.mjs';
 import { newestPayslip } from './payslips.mjs';
 import { observeSnapshots, observeRunRate, observeIncome, observeRungs } from './adapters';
 import { getDb } from './db';
+import { ukToday } from './uk-date.mjs';
 
 const planDir = path.resolve(__dirname, '..');
 
@@ -24,7 +25,7 @@ export interface CollectOptions {
 
 export async function collectInputs(opts: CollectOptions = {}) {
   const log = opts.log ?? (() => {});
-  const today = opts.today ?? new Date().toISOString().slice(0, 10);
+  const today = opts.today ?? ukToday();
   const file = JSON.parse(fs.readFileSync(path.join(planDir, 'assumptions.json'), 'utf8'));
   const built = buildAssumptions(file);
   const a = built.values;

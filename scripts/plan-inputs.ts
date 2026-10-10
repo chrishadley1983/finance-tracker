@@ -13,11 +13,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { collectInputs } from '../plan/inputs/collect';
+import { ukToday } from '../plan/inputs/uk-date.mjs';
 
 const args = process.argv.slice(2);
 const opt = (name: string) => { const i = args.indexOf('--' + name); return i >= 0 ? args[i + 1] : undefined; };
 const live = !args.includes('--offline');
-const today = opt('today') ?? new Date().toISOString().slice(0, 10);
+const today = opt('today') ?? ukToday();
 
 (async () => {
   const { inputs, drift } = await collectInputs({ live, savePrices: args.includes('--save-prices'), today, log: (m) => console.log('  ' + m) });

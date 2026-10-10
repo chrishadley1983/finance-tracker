@@ -16,6 +16,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { buildAssumptions, freshness } from '../plan/inputs/assumptions.mjs';
 import { pivotProgramme, pivotYear, takeHomeNominal } from '../lib/plan/pivot';
+import { ukToday } from '../plan/inputs/uk-date.mjs';
 
 const root = path.resolve(__dirname, '..');
 const file = JSON.parse(fs.readFileSync(path.join(root, 'plan/assumptions.json'), 'utf8'));
@@ -73,7 +74,7 @@ console.log(`\nKnown limitations carried: ${built.knownLimitations.map((l) => l.
     console.log('\nLive drift (assumptions vs database and price feed):');
     try {
       const { collectInputs } = await import('../plan/inputs/collect');
-      const { drift } = await collectInputs({ live: true, offlinePrices: process.argv.includes('--offline-prices'), today: today.toISOString().slice(0, 10) });
+      const { drift } = await collectInputs({ live: true, offlinePrices: process.argv.includes('--offline-prices'), today: ukToday(today) });
       for (const d of drift.items) flag(d.level, `${d.item}: ${d.detail}`);
     } catch (err) {
       flag('RED', `live drift check failed: ${(err as Error).message.split('\n')[0]}`);
@@ -85,7 +86,7 @@ console.log(`\nKnown limitations carried: ${built.knownLimitations.map((l) => l.
   console.log(`\n${verdict}: ${red} red, ${amber} amber`);
   if (process.argv.includes('--notify') && red) {
     const { notifyDiscord, notifyEmail } = await import('../plan/inputs/notify.mjs');
-    const msg = `Plan check ${today.toISOString().slice(0, 10)}: RED (${red} red, ${amber} amber) — see plan-check.log`;
+    const msg = `Plan check ${ukToday(today)}: RED (${red} red, ${amber} amber) — see plan-check.log`;
     await notifyDiscord(msg);
     notifyEmail({ subject: 'Household plan check: RED', html: `<pre>${msg}</pre>` });
   }

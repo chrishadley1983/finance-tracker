@@ -102,7 +102,8 @@ export function independentLedger(a, yields, o = {}) {
             const now = tax(inc.c) + tax(inc.a); short -= got - (now - owed); owed = now;
           }
         }
-        if (short > 1e-9) p.cash -= short; // everything but the crypto is gone: the cash line goes negative
+        // short < 0: a taxed draw sized as fully taxable netted more (25% tax-free) — the excess stays as cash.
+        p.cash -= short; // short > 0: everything but the crypto is gone: the cash line goes negative
       } else {
         const surplus = -short; const toIsa = year <= a.dates.chrisPensionAccessYear ? surplus : Math.min(surplus, k(a.ledger.isaAllowanceCouple));
         p.isa += toIsa; p.gia += surplus - toIsa;

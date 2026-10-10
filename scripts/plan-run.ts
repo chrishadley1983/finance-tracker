@@ -27,18 +27,25 @@ import { writeManifest } from '../plan/inputs/manifest.mjs';
 import { notifyDiscord, notifyEmail } from '../plan/inputs/notify.mjs';
 import { writeWorkbook } from '../plan/render/xlsx.mjs';
 import { htmlToPdf } from '../plan/render/pdf.mjs';
+import { ukToday } from '../plan/inputs/uk-date.mjs';
+import { guardAcceptedRun } from '../plan/inputs/run-guard.mjs';
 
 loadEnvConfig(process.cwd(), true);
 const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const opt = (name: string) => { const i = args.indexOf('--' + name); return i >= 0 ? args[i + 1] : undefined; };
 const runsDir = path.resolve(root, opt('dir') ?? 'plan/runs');
-const today = opt('today') ?? new Date().toISOString().slice(0, 10);
+const today = opt('today') ?? ukToday();
 const runId = today + (opt('tag') ? '-' + opt('tag') : '');
 const log = (m: string) => console.log(m);
 
 export async function main() {
   const started = Date.now();
+  // Before any network call or write: never silently rewrite an accepted (hash-locked) run.
+  if (!args.includes('--check-only')) {
+    const { warning } = guardAcceptedRun(runsDir, runId, { force: args.includes('--force') });
+    if (warning) log(`WARNING ${warning}`);
+  }
   log(`[${new Date().toISOString()}] plan run ${runId} (${args.includes('--offline') ? 'offline' : 'live'}${args.includes('--check-only') ? ', check-only' : ''})`);
   const assumptionsFile = JSON.parse(fs.readFileSync(path.join(root, 'plan/assumptions.json'), 'utf8'));
   const { inputs: collected, drift } = await collectInputs({ live: !args.includes('--offline'), savePrices: !args.includes('--offline') && !args.includes('--check-only'), today, log: (m) => log('  ' + m) });
