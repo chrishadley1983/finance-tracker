@@ -78,6 +78,17 @@ async function getValidAccessToken(connectionId: string): Promise<string> {
     tokens = await refreshAccessToken(conn.refresh_token);
   } catch (e) {
     if (isRefreshRejected(e)) {
+      // A concurrent sync may have refreshed first: TrueLayer rotates refresh tokens, so our copy is now
+      // dead even though the connection is healthy. Re-read before declaring the consent lost.
+      const { data: latest } = await supabaseAdmin
+        .from('truelayer_connections')
+        .select('access_token, refresh_token, token_expires_at')
+        .eq('id', connectionId)
+        .single();
+      const latestExp = latest?.token_expires_at ? new Date(latest.token_expires_at).getTime() : 0;
+      if (latest?.access_token && latest.refresh_token !== conn.refresh_token && latestExp - 60_000 > Date.now()) {
+        return latest.access_token;
+      }
       // The refresh token itself is dead (consent lapsed, ~90 days) — mark the connection so the UI
       // prompts re-consent.
       await supabaseAdmin.from('truelayer_connections').update({ status: 'expired' }).eq('id', connectionId);
@@ -92,26 +103,40 @@ async function getValidAccessToken(connectionId: string): Promise<string> {
   // TrueLayer rotates refresh tokens: losing the new one leaves a dead token stored, so a failed save
   // must fail loudly rather than surface weeks later as an "expired" connection.
   const newExp = new Date(now + tokens.expires_in * 1000).toISOString();
-  const { error: saveErr } = await supabaseAdmin
-    .from('truelayer_connections')
-    .update({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token ?? conn.refresh_token,
-      token_expires_at: newExp,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', connectionId);
-  if (saveErr) {
-    throw new TrueLayerError(`Refreshed token could not be saved: ${saveErr.message}`, 500, 'TOKEN_SAVE');
+  let saveErr: string | null = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const { error: err } = await supabaseAdmin
+        .from('truelayer_connections')
+        .update({
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token ?? conn.refresh_token,
+          token_expires_at: newExp,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', connectionId);
+      saveErr = err ? err.message : null;
+    } catch (e) {
+      saveErr = e instanceof Error ? e.message : String(e);
+    }
+    if (!saveErr) return tokens.access_token;
   }
-  return tokens.access_token;
+  throw new TrueLayerError(
+    `Refreshed token could not be saved (${saveErr}) — the stored refresh token is now stale, so this connection will need re-consent`,
+    500,
+    'TOKEN_SAVE',
+  );
 }
 
-/** True only when TrueLayer rejected the refresh token itself (OAuth `invalid_grant`, or 401). */
+/**
+ * True when TrueLayer rejected the refresh request for a reason a retry won't fix: any 4xx from the
+ * token endpoint except timeouts (408), rate limits (429) and a bad client credential (invalid_client:
+ * our config, not the user's consent — expiring every connection for it would be wrong).
+ */
 export function isRefreshRejected(e: unknown): boolean {
   if (!(e instanceof TrueLayerError) || e.code !== 'TOKEN') return false;
-  if (e.status === 401) return true;
-  return e.status === 400 && /invalid_grant/i.test(String(e.body ?? ''));
+  if (e.status < 400 || e.status >= 500 || e.status === 408 || e.status === 429) return false;
+  return !/invalid_client/i.test(String(e.body ?? ''));
 }
 
 /** Sync a single linked account. */

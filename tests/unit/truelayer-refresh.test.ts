@@ -39,8 +39,35 @@ describe('TrueLayer token refresh', () => {
 
   it('a network error leaves the connection active and reports a temporary failure', async () => {
     refresh.impl = () => Promise.reject(new TypeError('fetch failed'));
+    await expect(syncAccount(ACC)).rejects.toMatchObject({ code: 'REFRESH_TEMPORARY', status: 503 });
+    expect(status()).toBe('active');
+  });
+
+  it('a 400 other than invalid_grant (e.g. revoked consent) still expires the connection', async () => {
+    refresh.impl = () => Promise.reject(new TrueLayerError('Token request failed (400)', 400, 'TOKEN', '{"error":"access_denied"}'));
+    await expect(syncAccount(ACC)).rejects.toMatchObject({ code: 'RECONSENT' });
+    expect(status()).toBe('expired');
+  });
+
+  it('invalid_client (our config) never expires the connection', async () => {
+    refresh.impl = () => Promise.reject(new TrueLayerError('Token request failed (401)', 401, 'TOKEN', '{"error":"invalid_client"}'));
     await expect(syncAccount(ACC)).rejects.toMatchObject({ code: 'REFRESH_TEMPORARY' });
     expect(status()).toBe('active');
+  });
+
+  it('losing a refresh race to a concurrent sync uses its token instead of expiring the connection', async () => {
+    refresh.impl = () => {
+      // the other sync refreshed first: rotated token + fresh access token are already stored
+      Object.assign(db.current!.tables.truelayer_connections[0], {
+        access_token: 'from-other-sync',
+        refresh_token: 'r2',
+        token_expires_at: '2099-01-01T00:00:00Z',
+      });
+      return Promise.reject(new TrueLayerError('Token request failed (400)', 400, 'TOKEN', '{"error":"invalid_grant"}'));
+    };
+    await syncAccount(ACC).catch(() => undefined);
+    expect(status()).toBe('active');
+    expect(db.current!.tables.truelayer_connections[0].refresh_token).toBe('r2');
   });
 
   it('a TrueLayer 5xx leaves the connection active', async () => {
@@ -61,11 +88,14 @@ describe('TrueLayer token refresh', () => {
     expect(db.current!.tables.truelayer_connections[0]).toMatchObject({ access_token: 'new', refresh_token: 'r2', status: 'active' });
   });
 
-  it('isRefreshRejected: only TOKEN errors that reject the grant', () => {
+  it('isRefreshRejected: token-endpoint 4xx except timeout, rate limit and invalid_client', () => {
     expect(isRefreshRejected(new TrueLayerError('x', 401, 'TOKEN'))).toBe(true);
     expect(isRefreshRejected(new TrueLayerError('x', 400, 'TOKEN', '{"error":"invalid_grant"}'))).toBe(true);
-    expect(isRefreshRejected(new TrueLayerError('x', 400, 'TOKEN', '{"error":"invalid_request"}'))).toBe(false);
+    expect(isRefreshRejected(new TrueLayerError('x', 400, 'TOKEN', '{"error":"invalid_request"}'))).toBe(true);
+    expect(isRefreshRejected(new TrueLayerError('x', 400, 'TOKEN', '{"error":"invalid_client"}'))).toBe(false);
+    expect(isRefreshRejected(new TrueLayerError('x', 408, 'TOKEN'))).toBe(false);
     expect(isRefreshRejected(new TrueLayerError('x', 429, 'TOKEN'))).toBe(false);
+    expect(isRefreshRejected(new TrueLayerError('x', 502, 'TOKEN'))).toBe(false);
     expect(isRefreshRejected(new TrueLayerError('Missing env var', 500, 'CONFIG'))).toBe(false);
     expect(isRefreshRejected(new Error('boom'))).toBe(false);
   });
