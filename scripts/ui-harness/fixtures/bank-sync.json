@@ -1,0 +1,99 @@
+{
+  "/api/truelayer/status": {
+    "configured": true,
+    "accounts": [
+      {
+        "id": "a-joint",
+        "name": "HSBC Joint Current",
+        "type": "current",
+        "linked": true,
+        "syncEnabled": true,
+        "lastSyncAt": "2026-10-07T09:12:00Z",
+        "provider": "HSBC",
+        "connectionActive": true,
+        "needsReconsent": false
+      },
+      {
+        "id": "a-cc",
+        "name": "HSBC Credit Card",
+        "type": "credit",
+        "linked": true,
+        "syncEnabled": true,
+        "lastSyncAt": "2026-09-28T06:00:00Z",
+        "provider": "HSBC",
+        "connectionActive": false,
+        "needsReconsent": true
+      },
+      {
+        "id": "a-sav",
+        "name": "HSBC Online Bonus Saver",
+        "type": "savings",
+        "linked": true,
+        "syncEnabled": true,
+        "lastSyncAt": "2026-10-06T21:40:00Z",
+        "provider": "HSBC",
+        "connectionActive": true,
+        "needsReconsent": false
+      },
+      {
+        "id": "a-amex",
+        "name": "Amex Gold",
+        "type": "credit",
+        "linked": false,
+        "syncEnabled": false,
+        "lastSyncAt": null,
+        "provider": null,
+        "connectionActive": false,
+        "needsReconsent": false
+      },
+      {
+        "id": "a-isa",
+        "name": "Vanguard Stocks and Shares ISA",
+        "type": "investment",
+        "linked": false,
+        "syncEnabled": false,
+        "lastSyncAt": null,
+        "provider": null,
+        "connectionActive": false,
+        "needsReconsent": false
+      }
+    ]
+  },
+  "/api/truelayer/link": {
+    "connection": {
+      "id": "conn-1",
+      "provider": "HSBC",
+      "status": "active"
+    },
+    "tlAccounts": [
+      {
+        "uid": "tl-1",
+        "name": "JOINT CURRENT ACCOUNT",
+        "kind": "account",
+        "currency": "GBP",
+        "detail": "40-12-34 ****5678"
+      },
+      {
+        "uid": "tl-2",
+        "name": "HSBC PREMIER CREDIT CARD",
+        "kind": "card",
+        "currency": "GBP",
+        "detail": "**** 4421"
+      }
+    ],
+    "financeAccounts": [
+      {
+        "id": "a-joint",
+        "name": "HSBC Joint Current",
+        "type": "current",
+        "truelayer_account_id": null
+      },
+      {
+        "id": "a-cc",
+        "name": "HSBC Credit Card",
+        "type": "credit",
+        "truelayer_account_id": null
+      }
+    ]
+  }
+}

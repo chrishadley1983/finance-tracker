@@ -2,6 +2,9 @@
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { Notice } from '@/components/ui/Notice';
 
 interface UploadResult {
   sessionId: string;
@@ -90,7 +93,7 @@ export function UploadStep({ onComplete }: UploadStepProps) {
     [onComplete]
   );
 
-  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, isDragReject, open } = useDropzone({
     onDrop,
     accept: {
       'text/csv': ['.csv'],
@@ -100,143 +103,72 @@ export function UploadStep({ onComplete }: UploadStepProps) {
     },
     maxFiles: 1,
     disabled: isUploading,
+    // The "Choose a file" button opens the picker; the area itself only takes drops.
+    noClick: true,
+    noKeyboard: true,
   });
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-xl font-semibold text-slate-900 mb-2">Upload Bank Statement</h2>
-        <p className="text-slate-600">
-          Upload a CSV export or PDF statement from your bank. We support most major UK banks.
-        </p>
-      </div>
+    <div className="grid gap-5">
+      <h2 className="text-[15px] font-semibold text-ink">Upload a bank statement</h2>
 
       <div
         {...getRootProps()}
-        className={`
-          border-2 border-dashed rounded-lg p-12 text-center cursor-pointer
-          transition-colors
-          ${isDragActive && !isDragReject ? 'border-blue-500 bg-blue-50' : ''}
-          ${isDragReject ? 'border-red-500 bg-red-50' : ''}
-          ${!isDragActive && !isDragReject ? 'border-slate-300 hover:border-slate-400 hover:bg-slate-50' : ''}
-          ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
-        `}
+        className={`grid min-h-[96px] place-items-center rounded-[3px] border border-dashed px-4 py-6 text-center transition-colors ${
+          isDragReject ? 'border-bad bg-bad-soft' : isDragActive ? 'border-accent bg-accent-soft' : 'border-line'
+        } ${isUploading ? 'cursor-wait opacity-70' : ''}`}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps()} aria-label="Statement file" />
 
         {isUploading ? (
-          <div className="space-y-4">
-            <div className="w-12 h-12 mx-auto">
-              <svg
-                className="animate-spin text-blue-600"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
+          <div className="grid w-full max-w-xs gap-2" role="status">
+            <div className="h-1.5 overflow-hidden rounded-full bg-line-2">
+              <div className="h-full bg-accent transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
             </div>
-            <div className="w-64 mx-auto">
-              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-blue-600 transition-all duration-200"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <p className="text-sm text-slate-600 mt-2">
-                {fileType === 'pdf'
-                  ? 'Extracting transactions from PDF... This may take a minute.'
-                  : 'Processing file...'}
-              </p>
-            </div>
+            <p className="text-sm text-ink-2">
+              {fileType === 'pdf' ? 'Reading the PDF statement. This can take a minute.' : 'Reading the file...'}
+            </p>
           </div>
         ) : (
-          <>
-            <div className="w-16 h-16 mx-auto mb-4 text-slate-400">
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
-            </div>
-            {isDragActive && !isDragReject && (
-              <p className="text-lg font-medium text-blue-600">Drop the file here...</p>
-            )}
-            {isDragReject && (
-              <p className="text-lg font-medium text-red-600">
-                Only CSV and PDF files are accepted
-              </p>
-            )}
-            {!isDragActive && (
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
+            {isDragReject ? (
+              <p className="text-bad">Only CSV and PDF files can be imported</p>
+            ) : isDragActive ? (
+              <p className="text-accent">Drop the file to upload it</p>
+            ) : (
               <>
-                <p className="text-lg font-medium text-slate-700 mb-1">
-                  Drag & drop your CSV or PDF file here
-                </p>
-                <p className="text-slate-500">or click to browse</p>
+                <p className="text-ink-2">Drop a CSV or PDF here, or</p>
+                <Button size="sm" onClick={open}>
+                  Choose a file
+                </Button>
               </>
             )}
-          </>
+          </div>
         )}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <svg
-              className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <div>
-              <h3 className="text-sm font-medium text-red-800">Upload failed</h3>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
-            </div>
-          </div>
-        </div>
+        <Notice tone="error">
+          <p className="font-medium">Upload failed</p>
+          <p className="mt-0.5">{error}</p>
+        </Notice>
       )}
 
-      <div className="bg-slate-50 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-slate-900 mb-2">Supported Formats</h3>
-        <div className="space-y-2">
-          <div>
-            <span className="text-xs font-medium text-slate-700 uppercase tracking-wide">CSV</span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm text-slate-600 mt-1">
-              <span>HSBC Current</span>
-              <span>HSBC Credit Card</span>
-              <span>Monzo</span>
-              <span>American Express UK</span>
-            </div>
-          </div>
-          <div>
-            <span className="text-xs font-medium text-slate-700 uppercase tracking-wide">PDF Statements</span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm text-slate-600 mt-1">
-              <span>HSBC Current</span>
-            </div>
-          </div>
-        </div>
-        <p className="text-xs text-slate-500 mt-3">
-          Don&apos;t see your bank? CSV files can be manually mapped in the next step.
-        </p>
+      <div className="grid gap-2 text-sm">
+        <h3 className="text-[13px] font-medium text-ink-2">Supported formats</h3>
+        <dl className="grid gap-1.5 sm:grid-cols-[8rem_1fr]">
+          <dt className="text-ink-3">CSV</dt>
+          <dd className="flex flex-wrap gap-1.5">
+            {['HSBC Current', 'HSBC Credit Card', 'Monzo', 'American Express UK'].map((b) => (
+              <Chip key={b}>{b}</Chip>
+            ))}
+          </dd>
+          <dt className="text-ink-3">PDF statements</dt>
+          <dd className="flex flex-wrap gap-1.5">
+            <Chip>HSBC Current</Chip>
+          </dd>
+        </dl>
+        <p className="text-xs text-ink-3">Another bank? Any CSV works: you match its columns in the next step.</p>
       </div>
     </div>
   );

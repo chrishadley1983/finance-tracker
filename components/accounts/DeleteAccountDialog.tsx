@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import type { AccountWithStats } from '@/lib/types/account';
+import { Modal } from '@/components/dialogs/Modal';
+import { Button } from '@/components/ui/Button';
+import { Field, Input } from '@/components/ui/Field';
+import { Notice } from '@/components/ui/Notice';
 
 interface DeleteAccountDialogProps {
   open: boolean;
@@ -12,35 +16,14 @@ interface DeleteAccountDialogProps {
   isLoading?: boolean;
 }
 
-export function DeleteAccountDialog({
-  open,
-  onOpenChange,
-  account,
-  onConfirm,
-  onReallocate,
-  isLoading = false,
-}: DeleteAccountDialogProps) {
+/** Deleting an account that has transactions: move them first, or type the name to delete everything. */
+export function DeleteAccountDialog({ open, onOpenChange, account, onConfirm, onReallocate, isLoading = false }: DeleteAccountDialogProps) {
   const [confirmName, setConfirmName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const hasTransactions = account.transactionCount > 0;
   const canDelete = !hasTransactions || confirmName === account.name;
-
-  const handleDelete = async () => {
-    setError(null);
-
-    if (hasTransactions && confirmName !== account.name) {
-      setError('Please type the account name to confirm');
-      return;
-    }
-
-    try {
-      await onConfirm(hasTransactions);
-      onOpenChange(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete account');
-    }
-  };
+  const count = account.transactionCount.toLocaleString('en-GB');
 
   const handleClose = () => {
     setConfirmName('');
@@ -48,112 +31,69 @@ export function DeleteAccountDialog({
     onOpenChange(false);
   };
 
-  if (!open) return null;
+  const handleDelete = async () => {
+    setError(null);
+    if (!canDelete) {
+      setError('Type the account name exactly to confirm.');
+      return;
+    }
+    try {
+      await onConfirm(hasTransactions);
+      handleClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete the account');
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
-
-      {/* Dialog */}
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Delete Account</h2>
-          <button
-            onClick={handleClose}
-            className="p-1 text-gray-400 hover:text-gray-600 rounded"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-
-          {hasTransactions ? (
-            <>
-              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                <div className="flex items-start gap-2">
-                  <svg className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <div>
-                    <p className="text-sm font-medium text-amber-800">
-                      This account has {account.transactionCount.toLocaleString()} transaction{account.transactionCount !== 1 ? 's' : ''}
-                    </p>
-                    <p className="text-sm text-amber-700 mt-1">
-                      You can move these transactions to another account before deleting, or delete everything.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Option 1: Reallocate */}
-              <button
-                onClick={() => {
-                  handleClose();
-                  onReallocate();
-                }}
-                className="w-full mb-3 px-4 py-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="font-medium text-gray-900">Move transactions first</div>
-                <div className="text-sm text-gray-500 mt-1">
-                  Move all transactions to another account, then delete this one
-                </div>
-              </button>
-
-              {/* Option 2: Force delete */}
-              <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                <div className="font-medium text-red-800 mb-2">
-                  Delete account and all {account.transactionCount.toLocaleString()} transactions
-                </div>
-                <p className="text-sm text-red-700 mb-3">
-                  This action cannot be undone. Type <strong>{account.name}</strong> to confirm.
-                </p>
-                <input
-                  type="text"
-                  value={confirmName}
-                  onChange={(e) => setConfirmName(e.target.value)}
-                  className="w-full px-3 py-2 border border-red-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  placeholder="Type account name to confirm"
-                />
-              </div>
-            </>
-          ) : (
-            <p className="text-gray-600">
-              Are you sure you want to delete <strong>{account.name}</strong>? This action cannot be undone.
-            </p>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isLoading}
-          >
+    <Modal
+      open={open}
+      onClose={handleClose}
+      title={`Delete ${account.name}`}
+      footer={
+        <>
+          <Button onClick={handleClose} disabled={isLoading}>
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isLoading || !canDelete}
-          >
-            {isLoading ? 'Deleting...' : 'Delete Account'}
-          </button>
-        </div>
+          </Button>
+          <Button variant="danger" onClick={handleDelete} loading={isLoading} disabled={!canDelete}>
+            Delete account{hasTransactions ? ' and transactions' : ''}
+          </Button>
+        </>
+      }
+    >
+      <div className="grid gap-4 text-sm text-ink-2">
+        {error && <Notice tone="error">{error}</Notice>}
+        {hasTransactions ? (
+          <>
+            <Notice tone="warn">
+              This account has <span className="fig">{count}</span> transaction{account.transactionCount === 1 ? '' : 's'}. Move them to
+              another account first, or delete everything.
+            </Notice>
+            <button
+              type="button"
+              onClick={() => {
+                handleClose();
+                onReallocate();
+              }}
+              className="rounded-md border border-line px-4 py-3 text-left hover:bg-sunk focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              <span className="block font-medium text-ink">Move transactions first</span>
+              <span className="block text-[13px] text-ink-3">Move them to another account, then delete this one.</span>
+            </button>
+            <Field
+              label={`To delete all ${count} transactions too, type ${account.name}`}
+              htmlFor="delete-account-confirm"
+              hint="This can't be undone."
+            >
+              <Input id="delete-account-confirm" value={confirmName} onChange={(e) => setConfirmName(e.target.value)} autoComplete="off" />
+            </Field>
+          </>
+        ) : (
+          <p>
+            Delete <strong className="text-ink">{account.name}</strong>? This can&apos;t be undone.
+          </p>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }

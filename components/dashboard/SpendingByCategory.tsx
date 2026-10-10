@@ -1,103 +1,64 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CategorySpend } from '@/lib/hooks/useDashboardData';
-
-const INITIAL_DISPLAY_COUNT = 8;
+import Link from 'next/link';
+import { EmptyState } from '@/components/ui/Notice';
+import { formatGBP } from '@/lib/format';
+import type { CategorySpend } from '@/lib/hooks/useDashboardData';
 
 interface SpendingByCategoryProps {
   data: CategorySpend[];
-  isLoading: boolean;
-  dateFrom?: string;
-  dateTo?: string;
+  /** ISO dates for the month, used for the links into Transactions. */
+  dateFrom: string;
+  dateTo: string;
+  /** Rows shown before "Show all". */
+  initialRows?: number;
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+export function categoryHref(categoryId: string, dateFrom: string, dateTo: string): string {
+  return `/transactions?${new URLSearchParams({ dateFrom, dateTo, categoryId }).toString()}`;
 }
 
-function SkeletonRow() {
-  return (
-    <div className="animate-pulse">
-      <div className="flex justify-between items-center mb-1">
-        <div className="h-4 bg-slate-700 rounded w-24"></div>
-        <div className="h-4 bg-slate-700 rounded w-16"></div>
-      </div>
-      <div className="h-2 bg-slate-700 rounded-full"></div>
-    </div>
-  );
-}
+/** Spending for the month, ranked, each row opening that category's transactions. */
+export function SpendingByCategory({ data, dateFrom, dateTo, initialRows = 8 }: SpendingByCategoryProps) {
+  const [showAll, setShowAll] = useState(false);
+  const ranked = data.filter((c) => c.amount > 0).sort((a, b) => b.amount - a.amount);
 
-export function SpendingByCategory({ data, isLoading, dateFrom, dateTo }: SpendingByCategoryProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const router = useRouter();
+  if (ranked.length === 0) {
+    return (
+      <EmptyState title="No spending this month yet">Categorised spending will be ranked here as it comes in.</EmptyState>
+    );
+  }
 
-  const hasMore = data.length > INITIAL_DISPLAY_COUNT;
-  const displayData = isExpanded ? data : data.slice(0, INITIAL_DISPLAY_COUNT);
-  const hiddenCount = data.length - INITIAL_DISPLAY_COUNT;
-
-  const handleCategoryClick = (categoryId: string) => {
-    const params = new URLSearchParams();
-    params.set('categoryId', categoryId);
-    if (dateFrom) params.set('dateFrom', dateFrom);
-    if (dateTo) params.set('dateTo', dateTo);
-    router.push(`/transactions?${params.toString()}`);
-  };
+  const max = ranked[0].amount;
+  const shown = showAll ? ranked : ranked.slice(0, initialRows);
 
   return (
-    <div className="bg-slate-800 rounded-lg p-4">
-      <h2 className="text-lg font-semibold text-white mb-4">Spending by Category</h2>
-
-      <div className="space-y-4">
-        {isLoading ? (
-          <>
-            <SkeletonRow />
-            <SkeletonRow />
-            <SkeletonRow />
-            <SkeletonRow />
-            <SkeletonRow />
-          </>
-        ) : data.length === 0 ? (
-          <p className="text-slate-400 text-sm py-4 text-center">No spending data available</p>
-        ) : (
-          <>
-            {displayData.map((category) => (
-              <button
-                key={category.categoryId}
-                onClick={() => handleCategoryClick(category.categoryId)}
-                className="w-full text-left hover:bg-slate-700/50 rounded-lg p-2 -mx-2 transition-colors"
-              >
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm text-slate-300">{category.categoryName}</span>
-                  <span className="text-sm text-slate-400">
-                    {formatCurrency(category.amount)}
-                  </span>
-                </div>
-                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                    style={{ width: `${category.percentage}%` }}
-                  />
-                </div>
-              </button>
-            ))}
-            {hasMore && (
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full text-center text-sm text-blue-400 hover:text-blue-300 py-2 transition-colors"
-              >
-                {isExpanded ? 'Show less' : `See ${hiddenCount} more`}
-              </button>
-            )}
-          </>
-        )}
-      </div>
+    <div>
+      <ul className="grid">
+        {shown.map((c) => (
+          <li key={c.categoryId}>
+            <Link
+              href={categoryHref(c.categoryId, dateFrom, dateTo)}
+              className="group grid grid-cols-[minmax(0,9.5rem)_1fr_auto] items-center gap-3 rounded-md px-1 py-1.5 -mx-1 text-[13.5px] hover:bg-sunk focus-visible:outline-2 focus-visible:outline-accent max-sm:grid-cols-[minmax(0,1fr)_auto] max-sm:gap-y-1"
+            >
+              <span className="truncate text-ink group-hover:underline">{c.categoryName}</span>
+              <span className="h-1.5 rounded-full bg-line-2 max-sm:order-last max-sm:col-span-2" aria-hidden>
+                <span className="block h-full rounded-full bg-ink-2" style={{ width: `${Math.max((c.amount / max) * 100, 1.5)}%` }} />
+              </span>
+              <span className="fig text-right text-ink">
+                {formatGBP(c.amount)}
+                <span className="ml-2 inline-block w-[3.2ch] text-ink-3">{Math.round(c.percentage)}%</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {ranked.length > initialRows && (
+        <button type="button" onClick={() => setShowAll((s) => !s)} className="mt-2 text-[13px] text-accent hover:underline">
+          {showAll ? 'Show fewer' : `Show all ${ranked.length} categories`}
+        </button>
+      )}
     </div>
   );
 }

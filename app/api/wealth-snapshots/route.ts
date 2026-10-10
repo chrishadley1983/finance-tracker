@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
     // Transform data to match expected format with nested account object
     const snapshots = (data || []).map(snapshot => ({
       id: snapshot.id,
+      account_id: snapshot.account_id,
       date: snapshot.date,
       balance: snapshot.balance,
       account: snapshot.account ? {

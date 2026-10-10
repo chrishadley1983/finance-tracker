@@ -1,196 +1,104 @@
+/**
+ * New navigation shell (option D): labelled rail, live column with figures
+ * from /api/nav-summary, pins, ⌘K palette and G-key shortcuts.
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { render, screen, fireEvent, cleanup, waitFor, within } from '@testing-library/react';
 
-// Mock next/navigation — Sidebar uses useRouter for post-logout redirect
+const push = vi.fn();
+let pathname = '/';
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/',
-  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => pathname,
+  useRouter: () => ({ push, refresh: vi.fn() }),
 }));
-
-// Mock Supabase client — Sidebar logout button calls createClient().auth.signOut()
 vi.mock('@/lib/supabase/client', () => ({
   createClient: () => ({ auth: { signOut: vi.fn().mockResolvedValue({ error: null }) } }),
 }));
-
-// Mock next/link
 vi.mock('next/link', () => ({
-  default: ({ children, href, onClick }: { children: React.ReactNode; href: string; onClick?: () => void }) => (
-    <a href={href} onClick={onClick}>{children}</a>
+  default: ({ children, href, onClick, ...rest }: { children: React.ReactNode; href: string; onClick?: () => void }) => (
+    <a href={href} onClick={onClick} {...rest}>
+      {children}
+    </a>
   ),
 }));
 
+import { AppLayout } from '@/components/layout/AppLayout';
+import { activeItem, activeSection } from '@/components/layout/nav-config';
+
+const summary = {
+  asOf: '2026-10-07',
+  review: { total: 23, uncategorised: 14, withSuggestion: 17 },
+  transactions: { thisMonth: 48 },
+  budget: { spent: 2148, planned: 3400, usedPct: 63 },
+  subscriptions: { monthly: 486, next: { name: 'Netflix', date: '2026-10-12', amount: 12.99 } },
+  sync: { lastSyncAt: new Date(Date.now() - 2 * 3600_000).toISOString(), accounts: ['HSBC'] },
+};
+
+const fetchMock = vi.fn(async (url: string) => {
+  if (url.startsWith('/api/nav-summary')) return new Response(JSON.stringify(summary));
+  if (url.startsWith('/api/nav-pins')) return new Response(JSON.stringify({ pins: [{ id: 'p1', href: '/reports', label: 'September report' }] }));
+  return new Response(JSON.stringify({ data: [] }));
+});
+
 describe('AppLayout', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    pathname = '/';
+    push.mockReset();
+    vi.stubGlobal('fetch', fetchMock);
+    localStorage.clear();
   });
-
   afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
   });
 
-  describe('rendering', () => {
-    it('renders children content', () => {
-      render(
-        <AppLayout title="Test Page">
-          <div data-testid="child-content">Hello World</div>
-        </AppLayout>
-      );
-
-      expect(screen.getByTestId('child-content')).toBeInTheDocument();
-      expect(screen.getByText('Hello World')).toBeInTheDocument();
-    });
-
-    it('renders the Header with correct title', () => {
-      render(
-        <AppLayout title="Dashboard">
-          <div>Content</div>
-        </AppLayout>
-      );
-
-      expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
-    });
-
-    it('renders the Sidebar', () => {
-      const { container } = render(
-        <AppLayout title="Dashboard">
-          <div>Content</div>
-        </AppLayout>
-      );
-
-      // Sidebar should contain navigation items
-      const sidebar = container.querySelector('aside');
-      expect(sidebar).toBeInTheDocument();
-      expect(screen.getByText('Transactions')).toBeInTheDocument();
-    });
-
-    it('renders main element with children', () => {
-      const { container } = render(
-        <AppLayout title="Dashboard">
-          <p>Main content here</p>
-        </AppLayout>
-      );
-
-      const main = container.querySelector('main');
-      expect(main).toBeInTheDocument();
-      expect(main).toHaveTextContent('Main content here');
-    });
+  it('renders the page title and content', () => {
+    render(
+      <AppLayout title="Overview">
+        <div data-testid="child">Hello</div>
+      </AppLayout>
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeInTheDocument();
+    expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 
-  describe('sidebar toggle', () => {
-    it('sidebar is closed by default on mobile', () => {
-      const { container } = render(
-        <AppLayout title="Dashboard">
-          <div>Content</div>
-        </AppLayout>
-      );
-
-      const sidebar = container.querySelector('aside');
-      expect(sidebar).toHaveClass('-translate-x-full');
-    });
-
-    it('opens sidebar when menu button is clicked', () => {
-      const { container } = render(
-        <AppLayout title="Dashboard">
-          <div>Content</div>
-        </AppLayout>
-      );
-
-      const menuButton = container.querySelector('button[aria-label="Open menu"]');
-      if (menuButton) {
-        fireEvent.click(menuButton);
-      }
-
-      const sidebar = container.querySelector('aside');
-      expect(sidebar).toHaveClass('translate-x-0');
-    });
-
-    it('closes sidebar when overlay is clicked', () => {
-      const { container } = render(
-        <AppLayout title="Dashboard">
-          <div>Content</div>
-        </AppLayout>
-      );
-
-      // Open sidebar first
-      const menuButton = container.querySelector('button[aria-label="Open menu"]');
-      if (menuButton) {
-        fireEvent.click(menuButton);
-      }
-
-      // Click overlay to close
-      const overlay = container.querySelector('.bg-black\\/50');
-      if (overlay) {
-        fireEvent.click(overlay);
-      }
-
-      const sidebar = container.querySelector('aside');
-      expect(sidebar).toHaveClass('-translate-x-full');
-    });
-
-    it('closes sidebar when navigation link is clicked', () => {
-      const { container } = render(
-        <AppLayout title="Dashboard">
-          <div>Content</div>
-        </AppLayout>
-      );
-
-      // Open sidebar first
-      const menuButton = container.querySelector('button[aria-label="Open menu"]');
-      if (menuButton) {
-        fireEvent.click(menuButton);
-      }
-
-      // Click a nav link
-      const transactionsLink = screen.getByText('Transactions').closest('a');
-      if (transactionsLink) {
-        fireEvent.click(transactionsLink);
-      }
-
-      const sidebar = container.querySelector('aside');
-      expect(sidebar).toHaveClass('-translate-x-full');
-    });
+  it('shows live figures from the summary in the column', async () => {
+    render(<AppLayout title="Overview">x</AppLayout>);
+    const column = screen.getAllByRole('heading', { name: 'Day to day' })[0].parentElement!;
+    await waitFor(() => expect(within(column).getByText('23')).toBeInTheDocument());
+    expect(within(column).getByText('17 have a suggestion')).toBeInTheDocument();
+    expect(within(column).getByText('48')).toBeInTheDocument();
+    expect(screen.getByText('September report')).toBeInTheDocument();
+    expect(screen.getByText('Synced 2h ago')).toBeInTheDocument();
   });
 
-  describe('layout structure', () => {
-    it('has correct wrapper structure', () => {
-      const { container } = render(
-        <AppLayout title="Dashboard">
-          <div>Content</div>
-        </AppLayout>
-      );
-
-      // Root div should have min-h-screen
-      const rootDiv = container.querySelector('.min-h-screen');
-      expect(rootDiv).toBeInTheDocument();
-    });
-
-    it('has main content offset for sidebar', () => {
-      const { container } = render(
-        <AppLayout title="Dashboard">
-          <div>Content</div>
-        </AppLayout>
-      );
-
-      // Main content container should have left padding for sidebar on desktop
-      const contentWrapper = container.querySelector('.lg\\:pl-64');
-      expect(contentWrapper).toBeInTheDocument();
-    });
+  it('switches the column when a rail section is chosen', async () => {
+    render(<AppLayout title="Overview">x</AppLayout>);
+    fireEvent.click(screen.getByRole('button', { name: 'Plan' }));
+    await waitFor(() => expect(screen.getAllByRole('heading', { name: 'Planning' }).length).toBeGreaterThan(0));
+    expect(screen.getAllByText('63%').length).toBeGreaterThan(0);
   });
 
-  describe('different page titles', () => {
-    it.each([
-      'Test Title 1',
-      'Test Title 2',
-      'Test Title 3',
-    ])('renders with title "%s"', (title) => {
-      render(
-        <AppLayout title={title}>
-          <div>Content</div>
-        </AppLayout>
-      );
+  it('opens the command palette with Ctrl+K and jumps to a page', async () => {
+    render(<AppLayout title="Overview">x</AppLayout>);
+    fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+    const input = await screen.findByPlaceholderText('Search pages, actions or transactions…');
+    fireEvent.change(input, { target: { value: 'budg' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(push).toHaveBeenCalledWith('/budgets');
+  });
 
-      expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
-    });
+  it('G then T goes to transactions', () => {
+    render(<AppLayout title="Overview">x</AppLayout>);
+    fireEvent.keyDown(window, { key: 'g' });
+    fireEvent.keyDown(window, { key: 't' });
+    expect(push).toHaveBeenCalledWith('/transactions');
+  });
+
+  it('marks sub-pages against their parent item', () => {
+    expect(activeItem('/settings/bank-sync')?.label).toBe('Bank sync');
+    expect(activeItem('/settings')?.label).toBe('Settings');
+    expect(activeSection('/fire')).toBe('wealth');
+    expect(activeSection('/pets')).toBe('day');
   });
 });

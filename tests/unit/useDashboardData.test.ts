@@ -1,445 +1,103 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useDashboardData } from '@/lib/hooks/useDashboardData';
 
-// Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-const mockSummary = {
-  totalBalance: 5000,
-  periodIncome: 3000,
-  periodExpenses: 1500,
-  periodNet: 1500,
-  period: 'this_month',
-  startDate: '2026-01-01',
-  endDate: '2026-01-31',
+const ok = (body: unknown) => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) });
+const fail = (status: number, body: unknown) => Promise.resolve({ ok: false, status, json: () => Promise.resolve(body) });
+
+const bodies: Record<string, unknown> = {
+  '/api/accounts/summary': { netWorth: 1000, accountTypeBalances: [] },
+  '/api/wealth/history': { snapshots: [{ date: '2026-10-01', total: 1000, byType: {} }], earliest: null, latest: null },
+  '/api/budgets/savings-rate': { savingsRate: { totalExpenseActual: 100, totalExpenseBudget: 200, totalIncomeActual: 300 } },
+  '/api/budgets/comparison': { comparisons: [{ categoryId: 'c', categoryName: 'Food', isIncome: false, budgetAmount: 200, actualAmount: 100 }] },
+  '/api/transactions/by-category': [{ categoryId: 'c', categoryName: 'Food', amount: 100, percentage: 100 }],
+  '/api/transactions/monthly-trend': [{ month: 'Oct', income: 300, expenses: 100 }],
+  '/api/transactions/ids': { ids: [], rows: [], total: 4 },
+  '/api/transactions': { data: [{ id: 't', date: '2026-10-01', amount: -1, description: 'x', category: null }], total: 1 },
+  '/api/subscriptions': { subscriptions: [{ id: 's', name: 'Netflix', amount: 12.99, status: 'active', next_due: '2026-10-12' }] },
+  '/api/fire/coast': { coastFire: null, error: 'not set up' },
 };
 
-const mockAccountSummary = {
-  netWorth: 10000,
-  accountTypeBalances: [
-    { type: 'current', label: 'Current', balance: 5000 },
-    { type: 'savings', label: 'Savings', balance: 5000 },
-  ],
-};
+function route(url: string) {
+  const path = url.split('?')[0];
+  return bodies[path];
+}
 
-const mockTransactions = {
-  data: [
-    { id: 'txn-1', date: '2025-01-15', amount: -50, description: 'Test', category: null },
-  ],
-};
-
-const mockCategorySpend = [
-  { categoryId: 'cat-1', categoryName: 'Groceries', amount: 500, percentage: 50 },
-];
-
-const mockIncomeByCategory = [
-  { categoryId: 'cat-2', categoryName: 'Salary', amount: 3000, percentage: 100 },
-];
-
-const mockMonthlyTrend = [
-  { month: 'Jan', income: 3000, expenses: 1500 },
-];
+const OCT = { year: 2026, month: 10 };
 
 describe('useDashboardData', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockFetch.mockReset();
+    mockFetch.mockImplementation((url: string) => ok(route(url)));
   });
 
-  afterEach(() => {
-    // vi.restoreAllMocks(); - removed to preserve module mocks
+  it('starts every section loading', () => {
+    mockFetch.mockImplementation(() => new Promise(() => {}));
+    const { result } = renderHook(() => useDashboardData(OCT));
+    expect(result.current.budgets.isLoading).toBe(true);
+    expect(result.current.netWorth.isLoading).toBe(true);
   });
 
-  describe('initial state', () => {
-    it('returns loading state initially', async () => {
-      mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
-
-      const { result } = renderHook(() => useDashboardData());
-
-      expect(result.current.isLoading).toBe(true);
-    });
-
-    it('returns null summary initially', async () => {
-      mockFetch.mockImplementation(() => new Promise(() => {}));
-
-      const { result } = renderHook(() => useDashboardData());
-
-      expect(result.current.summary).toBeNull();
-    });
-
-    it('returns empty arrays initially', async () => {
-      mockFetch.mockImplementation(() => new Promise(() => {}));
-
-      const { result } = renderHook(() => useDashboardData());
-
-      expect(result.current.recentTransactions).toEqual([]);
-      expect(result.current.categorySpend).toEqual([]);
-      expect(result.current.monthlyTrend).toEqual([]);
-    });
-
-    it('returns no error initially', async () => {
-      mockFetch.mockImplementation(() => new Promise(() => {}));
-
-      const { result } = renderHook(() => useDashboardData());
-
-      expect(result.current.error).toBeNull();
-    });
+  it('asks each API for the chosen month', async () => {
+    renderHook(() => useDashboardData(OCT));
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(10));
+    const urls = mockFetch.mock.calls.map((c) => c[0] as string);
+    expect(urls).toContain('/api/budgets/comparison?year=2026&month=10');
+    expect(urls).toContain('/api/budgets/savings-rate?year=2026&month=10');
+    expect(urls).toContain('/api/transactions/by-category?period=custom&start=2026-10-01&end=2026-10-31');
+    expect(urls).toContain('/api/transactions/ids?start_date=2026-10-01&end_date=2026-10-31&status=uncategorised');
+    expect(urls).toContain('/api/transactions?start_date=2026-10-01&end_date=2026-10-31&limit=5&sort_column=date&sort_direction=desc&totals=0');
+    expect(urls).toContain('/api/transactions/monthly-trend?months=12');
   });
 
-  describe('successful data fetching', () => {
-    beforeEach(() => {
-      mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/api/transactions/summary')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockSummary),
-          });
-        }
-        if (url.includes('/api/accounts/summary')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockAccountSummary),
-          });
-        }
-        if (url.includes('/api/transactions?') && url.includes('limit=10')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockTransactions),
-          });
-        }
-        if (url.includes('/api/transactions/by-category')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategorySpend),
-          });
-        }
-        if (url.includes('/api/transactions/income-by-category')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockIncomeByCategory),
-          });
-        }
-        if (url.includes('/api/transactions/monthly-trend')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockMonthlyTrend),
-          });
-        }
-        return Promise.reject(new Error('Unknown URL: ' + url));
-      });
-    });
-
-    it('fetches all 6 endpoints', async () => {
-      renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(6);
-      });
-    });
-
-    it('fetches summary endpoint with period', async () => {
-      renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
-        const summaryCall = calls.find((url: string) => url.includes('/api/transactions/summary'));
-        expect(summaryCall).toBeDefined();
-        expect(summaryCall).toContain('period=this_month');
-      });
-    });
-
-    it('fetches transactions with limit', async () => {
-      renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
-        const txnCall = calls.find((url: string) => url.includes('/api/transactions?') && url.includes('limit=10'));
-        expect(txnCall).toBeDefined();
-      });
-    });
-
-    it('fetches by-category endpoint with period', async () => {
-      renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
-        const catCall = calls.find((url: string) => url.includes('/api/transactions/by-category'));
-        expect(catCall).toBeDefined();
-        expect(catCall).toContain('period=this_month');
-      });
-    });
-
-    it('fetches monthly-trend endpoint', async () => {
-      renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
-        const trendCall = calls.find((url: string) => url.includes('/api/transactions/monthly-trend'));
-        expect(trendCall).toBeDefined();
-      });
-    });
-
-    it('fetches account summary endpoint', async () => {
-      renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
-        const accountCall = calls.find((url: string) => url.includes('/api/accounts/summary'));
-        expect(accountCall).toBeDefined();
-      });
-    });
-
-    it('fetches income-by-category endpoint', async () => {
-      renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        const calls = mockFetch.mock.calls.map((c: string[]) => c[0]);
-        const incomeCall = calls.find((url: string) => url.includes('/api/transactions/income-by-category'));
-        expect(incomeCall).toBeDefined();
-      });
-    });
-
-    it('returns summary data after fetching', async () => {
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.summary).toEqual(mockSummary);
-    });
-
-    it('returns transactions data after fetching', async () => {
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.recentTransactions).toEqual(mockTransactions.data);
-    });
-
-    it('returns category spend data after fetching', async () => {
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.categorySpend).toEqual(mockCategorySpend);
-    });
-
-    it('returns monthly trend data after fetching', async () => {
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.monthlyTrend).toEqual(mockMonthlyTrend);
-    });
-
-    it('sets isLoading to false after fetching', async () => {
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-    });
+  it('picks out the data each section needs', async () => {
+    const { result } = renderHook(() => useDashboardData(OCT));
+    await waitFor(() => expect(result.current.fire.isLoading).toBe(false));
+    await waitFor(() => expect(result.current.latest.data).not.toBeNull());
+    expect(result.current.netWorth.data).toEqual({ netWorth: 1000 });
+    expect(result.current.savings.data?.totalExpenseBudget).toBe(200);
+    expect(result.current.budgets.data).toHaveLength(1);
+    expect(result.current.uncategorised.data).toBe(4);
+    expect(result.current.latest.data).toHaveLength(1);
+    expect(result.current.upcoming.data?.[0].name).toBe('Netflix');
+    expect(result.current.fire.data?.coastFire).toBeNull();
   });
 
-  describe('error handling', () => {
-    it('handles summary API error', async () => {
-      mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/api/transactions/summary')) {
-          return Promise.resolve({
-            ok: false,
-            json: () => Promise.resolve({ error: 'Summary failed' }),
-          });
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({}),
-        });
-      });
+  it('fails one section without affecting the others, and retries it', async () => {
+    let budgetsFail = true;
+    mockFetch.mockImplementation((url: string) =>
+      url.startsWith('/api/budgets/comparison') && budgetsFail ? fail(500, { error: 'RPC timed out' }) : ok(route(url))
+    );
+    const { result } = renderHook(() => useDashboardData(OCT));
+    await waitFor(() => expect(result.current.budgets.error).toBe('RPC timed out'));
+    await waitFor(() => expect(result.current.savings.data).not.toBeNull());
+    expect(result.current.savings.error).toBeNull();
 
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.error).toBe('Summary failed');
-    });
-
-    it('handles transactions API error', async () => {
-      mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/api/transactions?') && url.includes('limit=10')) {
-          return Promise.resolve({
-            ok: false,
-            json: () => Promise.resolve({ error: 'Transactions failed' }),
-          });
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({}),
-        });
-      });
-
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      // The hook checks errors sequentially, so the first failing check determines the error.
-      // accountSummary is checked before transactions, so if accountSummary also fails
-      // we'd get that error. But here accountSummary returns ok:true with empty data.
-      // However the hook checks: summaryRes, accountSummaryRes, transactionsRes in order.
-      // Since the mock returns ok:true for accountSummary (default), transactionsRes error should be caught.
-      expect(result.current.error).toBe('Transactions failed');
-    });
-
-    it('handles category API error', async () => {
-      mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/api/transactions/by-category')) {
-          return Promise.resolve({
-            ok: false,
-            json: () => Promise.resolve({ error: 'Category failed' }),
-          });
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({}),
-        });
-      });
-
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.error).toBe('Category failed');
-    });
-
-    it('handles trend API error', async () => {
-      mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/api/transactions/monthly-trend')) {
-          return Promise.resolve({
-            ok: false,
-            json: () => Promise.resolve({ error: 'Trend failed' }),
-          });
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({}),
-        });
-      });
-
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.error).toBe('Trend failed');
-    });
-
-    it('handles network error', async () => {
-      mockFetch.mockRejectedValue(new Error('Network error'));
-
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.error).toBe('Network error');
-    });
+    budgetsFail = false;
+    act(() => result.current.budgets.retry());
+    await waitFor(() => expect(result.current.budgets.data).toHaveLength(1));
+    expect(result.current.budgets.error).toBeNull();
   });
 
-  describe('data shape', () => {
-    beforeEach(() => {
-      mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/api/transactions/summary')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockSummary),
-          });
-        }
-        if (url.includes('/api/accounts/summary')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockAccountSummary),
-          });
-        }
-        if (url.includes('/api/transactions?') && url.includes('limit=10')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockTransactions),
-          });
-        }
-        if (url.includes('/api/transactions/by-category')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategorySpend),
-          });
-        }
-        if (url.includes('/api/transactions/income-by-category')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockIncomeByCategory),
-          });
-        }
-        if (url.includes('/api/transactions/monthly-trend')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockMonthlyTrend),
-          });
-        }
-        return Promise.reject(new Error('Unknown URL: ' + url));
-      });
-    });
+  it('reports a status when the error body is not JSON', async () => {
+    mockFetch.mockImplementation((url: string) =>
+      url === '/api/fire/coast' ? Promise.resolve({ ok: false, status: 502, json: () => Promise.reject(new Error('html')) }) : ok(route(url))
+    );
+    const { result } = renderHook(() => useDashboardData(OCT));
+    await waitFor(() => expect(result.current.fire.error).toBe('The server answered 502'));
+  });
 
-    it('returns correct summary shape', async () => {
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.summary).toHaveProperty('totalBalance');
-      expect(result.current.summary).toHaveProperty('periodIncome');
-      expect(result.current.summary).toHaveProperty('periodExpenses');
-      expect(result.current.summary).toHaveProperty('periodNet');
-      expect(result.current.summary).toHaveProperty('period');
-      expect(result.current.summary).toHaveProperty('startDate');
-      expect(result.current.summary).toHaveProperty('endDate');
-    });
-
-    it('handles missing data field in transactions response', async () => {
-      mockFetch.mockImplementation((url: string) => {
-        if (url.includes('/api/transactions?') && url.includes('limit=10')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({}), // No data field
-          });
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({}),
-        });
-      });
-
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.recentTransactions).toEqual([]);
-    });
+  it('refetches month-scoped sections when the month changes', async () => {
+    const { rerender } = renderHook(({ m }) => useDashboardData(m), { initialProps: { m: OCT } });
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(10));
+    rerender({ m: { year: 2026, month: 9 } });
+    await waitFor(() =>
+      expect(mockFetch.mock.calls.map((c) => c[0])).toContain('/api/budgets/comparison?year=2026&month=9')
+    );
+    // Month-independent sections are not fetched again.
+    expect(mockFetch.mock.calls.filter((c) => c[0] === '/api/accounts/summary')).toHaveLength(1);
   });
 });

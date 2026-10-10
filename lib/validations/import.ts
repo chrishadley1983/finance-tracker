@@ -125,8 +125,12 @@ export const parsedTransactionSchema = z.object({
   // Category assignment from categorisation step
   categoryId: z.string().uuid().optional().nullable(),
   categoryName: z.string().optional().nullable(),
-  categorisationSource: z.enum(['rule_exact', 'rule_pattern', 'similar', 'ai', 'manual', 'none']).optional(),
+  categorisationSource: z
+    .enum(['policy', 'policy_ask', 'rule_exact', 'rule_pattern', 'similar', 'ai', 'manual', 'none'])
+    .optional(),
   categorisationConfidence: z.number().min(0).max(1).optional(),
+  // The engine's own review decision (e.g. policy 'ask' rules, low confidence)
+  needsReview: z.boolean().optional(),
 });
 
 export type ParsedTransaction = z.infer<typeof parsedTransactionSchema>;

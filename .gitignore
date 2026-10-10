@@ -96,3 +96,6 @@ bank-sync.log
 # plan job logs
 /plan-run.log
 /plan-check.log
+
+# Agent worktrees
+.claude/worktrees/

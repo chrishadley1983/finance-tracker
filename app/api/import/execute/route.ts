@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { executeImportRequestSchema } from '@/lib/validations/import';
 import { deleteSessionData } from '@/lib/import';
-import { planImportWithKeys, tupleKey } from '@/lib/import/dedup';
+import { planImportWithKeys, importHash } from '@/lib/import/dedup';
+import { importCategoryFields } from '@/lib/import/category-fields';
 import { ZodError } from 'zod';
-import crypto from 'crypto';
 
 interface ImportError {
   row: number;
@@ -20,23 +20,7 @@ interface VerificationMismatch {
   kind: 'surplus' | 'missing';
 }
 
-type DbCategorisationSource = 'manual' | 'rule' | 'ai' | 'import';
-
-function mapCategorisationSource(source: string | undefined): DbCategorisationSource {
-  if (!source) return 'import';
-  switch (source) {
-    case 'manual': return 'manual';
-    case 'rule_exact':
-    case 'rule_pattern':
-    case 'similar': return 'rule';
-    case 'ai': return 'ai';
-    default: return 'import';
-  }
-}
-
-function hashFor(date: string, amount: number, description: string): string {
-  return crypto.createHash('sha256').update(tupleKey(date, amount, description)).digest('hex');
-}
+const hashFor = importHash;
 
 /**
  * Populate `into` with transactionId → original import hash for the given
@@ -155,48 +139,69 @@ export async function POST(request: NextRequest) {
     let imported = 0;
     let skipped = explicitSkipped + toSkip.length;
 
-    for (const tx of toInsert) {
-      const hasCategory = tx.categoryId && tx.categoryId !== null;
-      const { data: newTransaction, error: insertError } = await supabaseAdmin
-        .from('transactions')
-        .insert({
-          account_id: accountId,
-          date: tx.date,
-          amount: tx.amount,
-          description: tx.description,
-          category_id: hasCategory ? tx.categoryId : null,
-          categorisation_source: mapCategorisationSource(tx.categorisationSource),
-          engine_source: tx.categorisationSource ?? null,
-          needs_review: !hasCategory,
-        })
-        .select('id')
-        .single();
+    // Insert in chunks; if a chunk fails, retry its rows one at a time so a
+    // single bad row is reported against its row number instead of failing
+    // the whole chunk.
+    const INSERT_CHUNK = 200;
+    const rowFor = (tx: (typeof toInsert)[number]) => ({
+      account_id: accountId,
+      date: tx.date,
+      amount: tx.amount,
+      description: tx.description,
+      ...importCategoryFields(tx),
+    });
+    const inserted: Array<{ tx: (typeof toInsert)[number]; id: string }> = [];
 
-      if (insertError) {
-        errors.push({ row: tx.rowNumber, error: insertError.message });
+    for (let i = 0; i < toInsert.length; i += INSERT_CHUNK) {
+      const chunk = toInsert.slice(i, i + INSERT_CHUNK);
+      const { data: rows, error: chunkError } = await supabaseAdmin
+        .from('transactions')
+        .insert(chunk.map(rowFor))
+        .select('id');
+
+      if (!chunkError && rows && rows.length === chunk.length) {
+        rows.forEach((r, j) => inserted.push({ tx: chunk[j], id: r.id }));
         continue;
       }
 
-      // Best-effort audit log. Unique-constraint violations are expected
-      // when legitimate repeat transactions share a hash, so we don't
-      // let them abort the import.
+      for (const tx of chunk) {
+        const { data: one, error: oneError } = await supabaseAdmin
+          .from('transactions')
+          .insert(rowFor(tx))
+          .select('id')
+          .single();
+        if (oneError || !one) {
+          errors.push({ row: tx.rowNumber, error: oneError?.message ?? 'Insert failed' });
+        } else {
+          inserted.push({ tx, id: one.id });
+        }
+      }
+    }
+    imported = inserted.length;
+
+    // Best-effort audit log. Unique-constraint violations are expected when
+    // legitimate repeat transactions share a hash, so they never abort the
+    // import; on a chunk failure fall back to row-by-row so one duplicate
+    // hash doesn't drop the rest.
+    for (let i = 0; i < inserted.length; i += INSERT_CHUNK) {
+      const hashRows = inserted.slice(i, i + INSERT_CHUNK).map(({ tx, id }) => ({
+        transaction_id: id,
+        hash: hashFor(tx.date, tx.amount, tx.description),
+        import_session_id: sessionId,
+        source_row: tx.rawData,
+      }));
       try {
-        const { error: hashErr } = await supabaseAdmin
-          .from('imported_transaction_hashes')
-          .insert({
-            transaction_id: newTransaction.id,
-            hash: hashFor(tx.date, tx.amount, tx.description),
-            import_session_id: sessionId,
-            source_row: tx.rawData,
-          });
-        if (hashErr && !hashErr.message?.includes('duplicate key')) {
-          console.warn(`Hash audit log write failed for tx ${newTransaction.id}: ${hashErr.message}`);
+        const { error: hashErr } = await supabaseAdmin.from('imported_transaction_hashes').insert(hashRows);
+        if (!hashErr) continue;
+        for (const row of hashRows) {
+          const { error: oneErr } = await supabaseAdmin.from('imported_transaction_hashes').insert(row);
+          if (oneErr && !oneErr.message?.includes('duplicate key')) {
+            console.warn(`Hash audit log write failed for tx ${row.transaction_id}: ${oneErr.message}`);
+          }
         }
       } catch (e) {
         console.warn('Hash audit log threw:', e);
       }
-
-      imported++;
     }
 
     // 5. Post-import verification: re-count DB and compare to CSV tuples.

@@ -6,6 +6,7 @@
  */
 
 import type { MonthlyReportData, Takeaway } from './types';
+import { gbDate } from '@/lib/format';
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -61,7 +62,7 @@ function tagColour(tag: string): { bg: string; text: string } {
  */
 export function generateMonthlyReportHtml(data: MonthlyReportData): string {
   const title = `${data.monthName} ${data.year} — Monthly Financial Report`;
-  const generated = new Date(data.generatedAt).toLocaleDateString('en-GB', {
+  const generated = gbDate(new Date(data.generatedAt), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -120,7 +121,7 @@ export function generateMonthlyReportHtml(data: MonthlyReportData): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(title)}</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root {
     --bg: #ffffff; --bg2: #f9fafb; --bg3: #f3f4f6;
@@ -430,7 +431,7 @@ new Chart(document.getElementById('trendChart'), {
     },
   }
 });
-<\/script>
+</script>
 
 </body>
 </html>`;

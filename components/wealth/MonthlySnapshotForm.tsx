@@ -1,6 +1,16 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { EyeOff } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { MoneyInput } from '@/components/ui/MoneyInput';
+import { MonthSwitcher } from '@/components/ui/MonthSwitcher';
+import { EmptyState, Notice, SkeletonRows } from '@/components/ui/Notice';
+import { useToast } from '@/components/ui/Toast';
+import { formatGBP } from '@/lib/format';
+import { addMonths, describeChange, monthKey, monthLabel, parseMonthParam } from './net-worth-helpers';
 
 interface Account {
   id: string;
@@ -13,82 +23,104 @@ interface SnapshotEntry {
   accountId: string;
   accountName: string;
   accountType: string;
-  balance: number;
+  /** null = no value entered; such accounts are never saved */
+  balance: number | null;
   existingSnapshotId?: string;
+  /** Balance already saved for this month, to detect changes */
+  savedBalance?: number;
   previousBalance?: number; // Balance from previous month
+  /** Pre-filled from last month and not yet edited */
+  carried?: boolean;
 }
+
+/** Entries that need writing: new values, or saved values that changed. */
+export function entriesToSave(entries: SnapshotEntry[]): SnapshotEntry[] {
+  return entries.filter(
+    (e) => e.balance !== null && (e.savedBalance === undefined || e.balance !== e.savedBalance)
+  );
+}
+
+/** Total for the month and for last month (same accounts), and the change. */
+export function monthTotals(entries: SnapshotEntry[]): { total: number; previousTotal: number | null; change: number | null } {
+  const total = entries.reduce((sum, e) => sum + (e.balance ?? 0), 0);
+  const withPrevious = entries.filter((e) => e.previousBalance !== undefined);
+  if (withPrevious.length === 0) return { total, previousTotal: null, change: null };
+  const previousTotal = withPrevious.reduce((sum, e) => sum + (e.previousBalance ?? 0), 0);
+  return { total, previousTotal, change: total - previousTotal };
+}
+
+const TYPE_LABELS: Record<string, string> = {
+  pension: 'Pension',
+  isa: 'ISA',
+  investment: 'Investment',
+  savings: 'Savings',
+  property: 'Property',
+  current: 'Current',
+  other: 'Other',
+};
+
+const TYPE_ORDER: Record<string, number> = { pension: 1, isa: 2, investment: 3, savings: 4, property: 5, current: 6, other: 7 };
 
 interface MonthlySnapshotFormProps {
   onSaveComplete?: () => void;
+  /** Month being edited (YYYY-MM). When given with onMonthChange the parent owns it (e.g. in the URL). */
+  month?: string;
+  onMonthChange?: (month: string) => void;
+  /** Change this to refetch (e.g. after balances were edited elsewhere). */
+  refreshKey?: number;
 }
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-];
+export function MonthlySnapshotForm({ onSaveComplete, month: monthProp, onMonthChange, refreshKey = 0 }: MonthlySnapshotFormProps) {
+  const { toast } = useToast();
+  const [ownMonth, setOwnMonth] = useState(() => monthKey(new Date()));
+  const month = monthProp ? parseMonthParam(monthProp) : ownMonth;
+  const setMonth = (m: string) => (onMonthChange ? onMonthChange(m) : setOwnMonth(m));
+  const prevMonth = addMonths(month, -1);
+  const currentMonth = monthKey(new Date());
 
-export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps) {
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
   const [entries, setEntries] = useState<SnapshotEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isExcluding, setIsExcluding] = useState<string | null>(null);
+  const [confirmExclude, setConfirmExclude] = useState<SnapshotEntry | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  // Calculate previous month/year
-  const getPreviousMonth = useCallback(() => {
-    if (month === 1) {
-      return { month: 12, year: year - 1 };
-    }
-    return { month: month - 1, year };
-  }, [month, year]);
 
   // Fetch accounts and existing snapshots for the selected month
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    setSuccessMessage(null);
 
     try {
       // Fetch accounts that should be included in net worth
       const accountsRes = await fetch('/api/accounts?includeInNetWorth=true');
-      if (!accountsRes.ok) throw new Error('Failed to fetch accounts');
+      if (!accountsRes.ok) throw new Error('Couldn’t load your accounts.');
       const accountsData = await accountsRes.json();
       const accounts: Account[] = accountsData.accounts || [];
 
       // Fetch existing snapshots for this month
-      const dateStr = `${year}-${String(month).padStart(2, '0')}-01`;
+      const dateStr = `${month}-01`;
       const snapshotsRes = await fetch(`/api/wealth-snapshots?start_date=${dateStr}&end_date=${dateStr}`);
-      if (!snapshotsRes.ok) throw new Error('Failed to fetch snapshots');
+      if (!snapshotsRes.ok) throw new Error('Couldn’t load this month’s balances.');
       const snapshotsData = await snapshotsRes.json();
-      const snapshots = snapshotsData.snapshots || [];
+      // Keep only this month's rows (the API filters too; this guards against a wider range).
+      const snapshots = ((snapshotsData.snapshots || []) as { date?: string; account_id: string; id: string; balance: number }[]).filter((s) => !s.date || s.date.startsWith(dateStr));
 
       // Fetch previous month's snapshots
-      const prev = getPreviousMonth();
-      const prevDateStr = `${prev.year}-${String(prev.month).padStart(2, '0')}-01`;
+      const prevDateStr = `${prevMonth}-01`;
       const prevSnapshotsRes = await fetch(`/api/wealth-snapshots?start_date=${prevDateStr}&end_date=${prevDateStr}`);
       let prevSnapshots: { account_id: string; balance: number }[] = [];
       if (prevSnapshotsRes.ok) {
         const prevData = await prevSnapshotsRes.json();
-        prevSnapshots = prevData.snapshots || [];
+        prevSnapshots = ((prevData.snapshots || []) as { date?: string; account_id: string; balance: number }[]).filter(
+          (s) => !s.date || s.date.startsWith(prevDateStr)
+        );
       }
 
-      // Map accounts to entries with existing balances
       const snapshotMap = new Map<string, { id: string; balance: number }>(
-        snapshots.map((s: { account_id: string; id: string; balance: number }) => [
-          s.account_id,
-          { id: s.id, balance: s.balance }
-        ])
+        snapshots.map((s: { account_id: string; id: string; balance: number }) => [s.account_id, { id: s.id, balance: s.balance }])
       );
-
       const prevSnapshotMap = new Map<string, number>(
-        prevSnapshots.map((s: { account_id: string; balance: number }) => [
-          s.account_id,
-          s.balance
-        ])
+        prevSnapshots.map((s: { account_id: string; balance: number }) => [s.account_id, s.balance])
       );
 
       const newEntries: SnapshotEntry[] = accounts
@@ -97,83 +129,87 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
         .map((account: Account) => {
           const existing = snapshotMap.get(account.id);
           const prevBalance = prevSnapshotMap.get(account.id);
+          const previousBalance = prevBalance !== undefined ? Number(prevBalance) : undefined;
+          // Never default to 0: an account with no value this month starts
+          // from last month's balance, or stays blank (and unsaved).
           return {
             accountId: account.id,
             accountName: account.name,
             accountType: account.type,
-            balance: existing ? Number(existing.balance) : 0,
+            balance: existing ? Number(existing.balance) : previousBalance ?? null,
             existingSnapshotId: existing?.id,
-            previousBalance: prevBalance !== undefined ? Number(prevBalance) : undefined,
+            savedBalance: existing ? Number(existing.balance) : undefined,
+            previousBalance,
+            carried: !existing && previousBalance !== undefined,
           };
         })
         .sort((a: SnapshotEntry, b: SnapshotEntry) => {
-          // Sort by type, then name
-          const typeOrder: Record<string, number> = { pension: 1, isa: 2, investment: 3, savings: 4, property: 5, current: 6, other: 7 };
-          const aOrder = typeOrder[a.accountType] || 99;
-          const bOrder = typeOrder[b.accountType] || 99;
+          const aOrder = TYPE_ORDER[a.accountType] || 99;
+          const bOrder = TYPE_ORDER[b.accountType] || 99;
           if (aOrder !== bOrder) return aOrder - bOrder;
           return a.accountName.localeCompare(b.accountName);
         });
 
       setEntries(newEntries);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
       setIsLoading(false);
     }
-  }, [year, month, getPreviousMonth]);
+  }, [month, prevMonth]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, refreshKey]);
 
-  const handleBalanceChange = (accountId: string, value: string) => {
-    const numValue = value === '' ? 0 : parseFloat(value);
-    setEntries(prev =>
-      prev.map(entry =>
-        entry.accountId === accountId
-          ? { ...entry, balance: isNaN(numValue) ? entry.balance : numValue }
-          : entry
-      )
-    );
+  const handleBalanceChange = (accountId: string, value: number | null) => {
+    setEntries((prev) => prev.map((entry) => (entry.accountId === accountId ? { ...entry, balance: value, carried: false } : entry)));
   };
 
   const handleCopyFromPrevious = (accountId: string) => {
-    setEntries(prev =>
-      prev.map(entry =>
+    setEntries((prev) =>
+      prev.map((entry) =>
         entry.accountId === accountId && entry.previousBalance !== undefined
-          ? { ...entry, balance: entry.previousBalance }
+          ? { ...entry, balance: entry.previousBalance, carried: false }
           : entry
       )
     );
   };
 
   const handleCopyAllFromPrevious = () => {
-    setEntries(prev =>
-      prev.map(entry =>
-        entry.previousBalance !== undefined
-          ? { ...entry, balance: entry.previousBalance }
-          : entry
-      )
+    setEntries((prev) =>
+      prev.map((entry) => (entry.previousBalance !== undefined ? { ...entry, balance: entry.previousBalance, carried: false } : entry))
     );
   };
 
-  const handleExcludeAccount = async (accountId: string) => {
-    setIsExcluding(accountId);
+  const setExcluded = async (accountId: string, exclude: boolean) => {
+    const res = await fetch(`/api/accounts/${accountId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ exclude_from_snapshots: exclude }),
+    });
+    if (!res.ok) throw new Error(exclude ? 'Couldn’t hide the account. Try again.' : 'Couldn’t bring the account back. Try again.');
+  };
+
+  const handleExcludeAccount = async (entry: SnapshotEntry) => {
+    setIsExcluding(entry.accountId);
     try {
-      const res = await fetch(`/api/accounts/${accountId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ exclude_from_snapshots: true }),
+      await setExcluded(entry.accountId, true);
+      setEntries((prev) => prev.filter((e) => e.accountId !== entry.accountId));
+      toast({
+        message: `${entry.accountName} won't appear in monthly balances any more`,
+        tone: 'success',
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            setExcluded(entry.accountId, false)
+              .then(fetchData)
+              .catch((err) => toast({ message: err instanceof Error ? err.message : 'Undo failed', tone: 'error' }));
+          },
+        },
       });
-
-      if (!res.ok) throw new Error('Failed to exclude account');
-
-      // Remove from entries list
-      setEntries(prev => prev.filter(e => e.accountId !== accountId));
-      setSuccessMessage('Account excluded from snapshots');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to exclude account');
+      setError(err instanceof Error ? err.message : 'Couldn’t hide the account.');
     } finally {
       setIsExcluding(null);
     }
@@ -182,234 +218,188 @@ export function MonthlySnapshotForm({ onSaveComplete }: MonthlySnapshotFormProps
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
-    setSuccessMessage(null);
 
     try {
-      const dateStr = `${year}-${String(month).padStart(2, '0')}-01`;
-      let created = 0;
-      let updated = 0;
-
-      for (const entry of entries) {
-        if (entry.existingSnapshotId) {
-          // Update existing snapshot
-          const res = await fetch(`/api/wealth-snapshots/${entry.existingSnapshotId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ balance: entry.balance }),
-          });
-          if (!res.ok) throw new Error(`Failed to update ${entry.accountName}`);
-          updated++;
-        } else {
-          // Create new snapshot
-          const res = await fetch('/api/wealth-snapshots', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              account_id: entry.accountId,
-              date: dateStr,
-              balance: entry.balance,
-            }),
-          });
-          if (!res.ok) throw new Error(`Failed to create snapshot for ${entry.accountName}`);
-          created++;
-        }
+      const toSave = entriesToSave(entries);
+      if (toSave.length === 0) {
+        toast({ message: 'Nothing to save: no balances have changed' });
+        return;
       }
 
-      setSuccessMessage(`Saved ${MONTH_NAMES[month - 1]} ${year}: ${created} created, ${updated} updated`);
+      // One request for the whole month, so a failure can't leave it half-saved.
+      const res = await fetch('/api/wealth-snapshots/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: `${month}-01`,
+          entries: toSave.map((e) => ({ account_id: e.accountId, balance: e.balance })),
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || 'Couldn’t save the balances. Nothing was changed; try again.');
+      }
+
+      const created = toSave.filter((e) => !e.existingSnapshotId).length;
+      const updated = toSave.length - created;
+      const parts = [created > 0 && `${created} added`, updated > 0 && `${updated} updated`].filter(Boolean).join(', ');
+      toast({ message: `Saved ${monthLabel(month)}: ${parts}`, tone: 'success' });
 
       // Refresh to get new IDs
       await fetchData();
-
-      if (onSaveComplete) {
-        onSaveComplete();
-      }
+      onSaveComplete?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
+      setError(err instanceof Error ? err.message : 'Couldn’t save the balances.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const totalBalance = entries.reduce((sum, e) => sum + e.balance, 0);
-  const hasPreviousData = entries.some(e => e.previousBalance !== undefined);
-  const prev = getPreviousMonth();
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
-  const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      pension: 'Pension',
-      isa: 'ISA',
-      investment: 'Investment',
-      savings: 'Savings',
-      property: 'Property',
-      current: 'Current',
-      other: 'Other',
-    };
-    return labels[type] || type;
-  };
-
-  const getTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      pension: 'bg-indigo-100 text-indigo-700',
-      isa: 'bg-purple-100 text-purple-700',
-      investment: 'bg-emerald-100 text-emerald-700',
-      savings: 'bg-blue-100 text-blue-700',
-      property: 'bg-red-100 text-red-700',
-      current: 'bg-amber-100 text-amber-700',
-      other: 'bg-slate-100 text-slate-700',
-    };
-    return colors[type] || 'bg-slate-100 text-slate-700';
-  };
-
-  // Generate year options (current year and 10 years back)
-  const yearOptions = Array.from({ length: 11 }, (_, i) => now.getFullYear() - i);
+  const { total, change } = monthTotals(entries);
+  const pendingCount = entriesToSave(entries).length;
+  const hasPreviousData = entries.some((e) => e.previousBalance !== undefined);
+  const prevLabel = monthLabel(prevMonth).split(' ')[0];
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-slate-900">Monthly Snapshot Entry</h2>
-        <div className="flex items-center gap-3">
-          <select
-            value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
-            className="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {MONTH_NAMES.map((name, idx) => (
-              <option key={idx} value={idx + 1}>{name}</option>
-            ))}
-          </select>
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            className="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {yearOptions.map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+    <div className="grid gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+        <div className="min-w-0 max-w-[62ch] text-[14.5px] text-ink-2">
+          {isLoading ? (
+            <>Loading {monthLabel(month)}…</>
+          ) : entries.length === 0 ? null : (
+            <>
+              Month-end balances for <strong className="font-semibold text-ink">{monthLabel(month)}</strong> add up to{' '}
+              <strong className="fig font-semibold text-ink">{formatGBP(total)}</strong>
+              {change !== null && (
+                <>
+                  , {Math.round(change) === 0 ? `the same as ${prevLabel}` : `${describeChange(change, (n) => formatGBP(n))} on ${prevLabel}`}
+                </>
+              )}
+              .
+            </>
+          )}
         </div>
+        <MonthSwitcher value={month} max={currentMonth} min="2000-01" align="end" size="md" onChange={setMonth} maxReason="month-end balances come after the month" />
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+        <Notice tone="error" action={<Button size="sm" onClick={() => setError(null)}>Dismiss</Button>}>
           {error}
-        </div>
+        </Notice>
       )}
 
-      {successMessage && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-700 text-sm">
-          {successMessage}
+      <div className="rounded-[3px] border border-line bg-surface">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line-2 px-4 py-2.5">
+          <h2 className="text-[13.5px] font-semibold text-ink">Accounts</h2>
+          {!isLoading && hasPreviousData && (
+            <Button size="sm" variant="ghost" onClick={handleCopyAllFromPrevious}>
+              Copy all from {prevLabel}
+            </Button>
+          )}
         </div>
-      )}
 
-      {/* Copy from previous month button */}
-      {!isLoading && hasPreviousData && (
-        <div className="mb-4">
-          <button
-            onClick={handleCopyAllFromPrevious}
-            className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
-          >
-            Copy all from {MONTH_NAMES[prev.month - 1]}
-          </button>
-        </div>
-      )}
-
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="animate-pulse flex items-center gap-4">
-              <div className="h-4 bg-slate-200 rounded w-32"></div>
-              <div className="h-8 bg-slate-200 rounded w-40 ml-auto"></div>
+        {isLoading ? (
+          <div className="p-4">
+            <SkeletonRows rows={6} />
+          </div>
+        ) : entries.length === 0 ? (
+          <EmptyState title="No accounts to enter">
+            Every account is either hidden from monthly balances or not counted in net worth. Change this on the Accounts page.
+          </EmptyState>
+        ) : (
+          <>
+            <div className="hidden grid-cols-[minmax(0,1fr)_8rem_10rem_2rem] gap-3 border-b border-line-2 px-4 py-1.5 text-[11.5px] text-ink-3 sm:grid">
+              <span>Account</span>
+              <span className="text-right">{prevLabel}</span>
+              <span className="text-right">{monthLabel(month).split(' ')[0]}</span>
+              <span className="sr-only">Actions</span>
             </div>
-          ))}
-        </div>
-      ) : entries.length === 0 ? (
-        <div className="text-center py-8 text-slate-500">
-          <p>No accounts to show.</p>
-          <p className="text-sm mt-1">All accounts are either excluded from snapshots or not included in net worth.</p>
-        </div>
-      ) : (
-        <>
-          <div className="space-y-3">
-            {entries.map(entry => (
-              <div
-                key={entry.accountId}
-                className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0"
-              >
-                <span className={`px-2 py-0.5 text-xs font-medium rounded ${getTypeColor(entry.accountType)}`}>
-                  {getTypeLabel(entry.accountType)}
-                </span>
-                <span className="flex-1 text-sm text-slate-700">{entry.accountName}</span>
-
-                {/* Previous month value indicator - clickable to copy */}
-                {entry.previousBalance !== undefined && (
-                  <button
-                    onClick={() => handleCopyFromPrevious(entry.accountId)}
-                    className="text-xs text-slate-400 hover:text-blue-600 transition-colors"
-                    title={`Copy from ${MONTH_NAMES[prev.month - 1]}: ${formatCurrency(entry.previousBalance)}`}
+            <ul className="divide-y divide-line-2">
+              {entries.map((entry) => {
+                const dirty = entry.balance !== null && entry.savedBalance !== undefined && entry.balance !== entry.savedBalance;
+                return (
+                  <li
+                    key={entry.accountId}
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 px-4 py-2 sm:grid-cols-[minmax(0,1fr)_8rem_10rem_2rem]"
                   >
-                    {formatCurrency(entry.previousBalance)}
-                  </button>
-                )}
+                    <div className="col-span-2 flex min-w-0 items-center gap-2 sm:col-span-1">
+                      <span className="truncate text-sm text-ink">{entry.accountName}</span>
+                      <Chip>{TYPE_LABELS[entry.accountType] ?? entry.accountType}</Chip>
+                      {dirty && <span className="text-[11.5px] text-warn">changed</span>}
+                    </div>
+                    <div className="text-left sm:text-right">
+                      {entry.previousBalance !== undefined ? (
+                        <button
+                          type="button"
+                          onClick={() => handleCopyFromPrevious(entry.accountId)}
+                          className="fig whitespace-nowrap rounded-sm text-[12.5px] text-ink-3 hover:text-accent focus-visible:outline-2 focus-visible:outline-accent"
+                          title={`Use ${prevLabel}'s balance`}
+                          aria-label={`Use ${prevLabel}'s balance for ${entry.accountName}: ${formatGBP(entry.previousBalance, { pence: true })}`}
+                        >
+                          <span className="font-sans sm:hidden">{prevLabel.slice(0, 3)} </span>
+                          {formatGBP(entry.previousBalance)}
+                        </button>
+                      ) : (
+                        <span className="text-[12.5px] text-ink-3">
+                          <span className="sm:hidden">{prevLabel.slice(0, 3)} </span>none
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-end gap-2 sm:contents">
+                      <MoneyInput
+                        value={entry.balance}
+                        onChange={(v) => handleBalanceChange(entry.accountId, v)}
+                        size="sm"
+                        align="right"
+                        placeholder="–"
+                        label={`${entry.accountName} balance`}
+                        title={entry.carried ? `Carried over from ${prevLabel}` : undefined}
+                        className="w-40 sm:w-auto"
+                        inputClassName={entry.carried ? 'border-dashed text-ink-3' : ''}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setConfirmExclude(entry)}
+                        disabled={isExcluding === entry.accountId}
+                        className="grid h-8 w-8 place-items-center rounded-md text-ink-3 hover:bg-line-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50"
+                        title="Hide from monthly balances"
+                        aria-label={`Hide ${entry.accountName} from monthly balances`}
+                      >
+                        <EyeOff className="h-4 w-4" aria-hidden />
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
 
-                <div className="flex items-center gap-1">
-                  <span className="text-slate-500">£</span>
-                  <input
-                    type="number"
-                    value={entry.balance || ''}
-                    onChange={(e) => handleBalanceChange(entry.accountId, e.target.value)}
-                    placeholder="0"
-                    className="w-28 px-3 py-1.5 border border-slate-300 rounded-md text-right text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Exclude button */}
-                <button
-                  onClick={() => handleExcludeAccount(entry.accountId)}
-                  disabled={isExcluding === entry.accountId}
-                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                  title="Exclude from snapshots"
-                >
-                  {isExcluding === entry.accountId ? (
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-slate-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-sm text-slate-500">Total Net Worth</span>
-                <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalBalance)}</p>
-              </div>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isSaving ? 'Saving...' : 'Save Snapshots'}
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3">
+              <p className="text-[12.5px] text-ink-3">
+                {entries.some((e) => e.carried)
+                  ? `Dashed boxes are carried over from ${prevLabel}. They're saved with this month unless you clear them.`
+                  : 'Only balances you change are saved.'}
+              </p>
+              <Button variant="primary" onClick={handleSave} loading={isSaving} disabled={pendingCount === 0}>
+                {isSaving ? 'Saving…' : pendingCount === 0 ? 'No changes' : `Save ${pendingCount} balance${pendingCount === 1 ? '' : 's'}`}
+              </Button>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
+
+      <ConfirmDialog
+        isOpen={confirmExclude !== null}
+        title="Hide this account from monthly balances?"
+        message={`${confirmExclude?.accountName ?? 'This account'} will no longer appear here. Its saved balances are kept, and you can undo this straight away.`}
+        confirmLabel="Hide account"
+        variant="warning"
+        onConfirm={() => {
+          const target = confirmExclude;
+          setConfirmExclude(null);
+          if (target) handleExcludeAccount(target);
+        }}
+        onCancel={() => setConfirmExclude(null)}
+      />
     </div>
   );
 }

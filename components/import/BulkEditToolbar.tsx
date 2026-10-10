@@ -131,28 +131,28 @@ export function BulkEditToolbar({
   const hasSelection = selectedCount > 0;
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+    <div className="bg-sunk border border-line rounded-md p-3">
       <div className="flex flex-wrap items-center gap-3">
         {/* Selection Controls */}
         <div className="flex items-center gap-2">
           <button
             onClick={selectedCount === totalCount ? onSelectNone : onSelectAll}
-            className="text-xs px-2 py-1 text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded transition-colors"
+            className="text-xs px-2 py-1 text-ink-2 hover:text-ink hover:bg-line-2 rounded transition-colors"
           >
             {selectedCount === totalCount ? 'Select none' : 'Select all'}
           </button>
-          <span className="text-sm text-slate-600">
+          <span className="text-sm text-ink-2">
             {selectedCount > 0 ? (
               <span className="font-medium">{selectedCount} selected</span>
             ) : (
               'No selection'
             )}
-            <span className="text-slate-400 ml-1">of {totalCount}</span>
+            <span className="text-ink-3 ml-1">of {totalCount}</span>
           </span>
         </div>
 
         {/* Divider */}
-        <div className="h-4 w-px bg-slate-300" />
+        <div className="h-4 w-px bg-line-2" />
 
         {/* Bulk Edit Actions */}
         <div className="flex items-center gap-2" ref={dropdownRef}>
@@ -161,7 +161,7 @@ export function BulkEditToolbar({
             <button
               onClick={() => setOpenDropdown(openDropdown === 'date' ? null : 'date')}
               disabled={!hasSelection}
-              className="text-sm px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              className="text-sm px-3 py-1.5 bg-surface border border-line rounded hover:bg-sunk disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
             >
               Set Date
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -169,18 +169,18 @@ export function BulkEditToolbar({
               </svg>
             </button>
             {openDropdown === 'date' && (
-              <div className="absolute left-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-slate-200 z-20 p-3 w-56">
-                <label className="block text-xs text-slate-500 mb-1">Apply date to {selectedCount} rows</label>
+              <div className="absolute left-0 top-full mt-1 bg-surface rounded-md shadow-lg border border-line z-20 p-3 w-56">
+                <label className="block text-xs text-ink-3 mb-1">Apply date to {selectedCount} rows</label>
                 <input
                   type="date"
                   value={dateValue}
                   onChange={(e) => setDateValue(e.target.value)}
-                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1.5 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-accent"
                 />
                 <button
                   onClick={handleDateApply}
                   disabled={!dateValue}
-                  className="mt-2 w-full px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-blue-300"
+                  className="mt-2 w-full px-3 py-1.5 bg-accent text-accent-ink text-sm rounded hover:opacity-90 disabled:opacity-50"
                 >
                   Apply
                 </button>
@@ -193,7 +193,7 @@ export function BulkEditToolbar({
             <button
               onClick={() => setOpenDropdown(openDropdown === 'category' ? null : 'category')}
               disabled={!hasSelection}
-              className="text-sm px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              className="text-sm px-3 py-1.5 bg-surface border border-line rounded hover:bg-sunk disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
             >
               Set Category
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -201,31 +201,31 @@ export function BulkEditToolbar({
               </svg>
             </button>
             {openDropdown === 'category' && (
-              <div className="absolute left-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-slate-200 z-20 w-64 max-h-80 overflow-hidden">
-                <div className="p-2 border-b border-slate-100">
+              <div className="absolute left-0 top-full mt-1 bg-surface rounded-md shadow-lg border border-line z-20 w-64 max-h-80 overflow-hidden">
+                <div className="p-2 border-b border-line-2">
                   <input
                     type="text"
                     value={categorySearch}
                     onChange={(e) => setCategorySearch(e.target.value)}
                     placeholder="Search categories..."
-                    className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1.5 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-accent"
                     autoFocus
                   />
                 </div>
                 <div className="overflow-y-auto max-h-60">
                   {Object.entries(groupedCategories).length === 0 ? (
-                    <div className="px-3 py-2 text-sm text-slate-400">No categories found</div>
+                    <div className="px-3 py-2 text-sm text-ink-3">No categories found</div>
                   ) : (
                     Object.entries(groupedCategories).map(([group, cats]) => (
                       <div key={group}>
-                        <div className="px-3 py-1.5 text-xs text-slate-500 bg-slate-50 sticky top-0">
+                        <div className="px-3 py-1.5 text-xs text-ink-3 bg-sunk sticky top-0">
                           {group}
                         </div>
                         {cats.map((cat) => (
                           <button
                             key={cat.id}
                             onClick={() => handleCategorySelect(cat)}
-                            className="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50"
+                            className="w-full px-3 py-1.5 text-left text-sm hover:bg-sunk"
                           >
                             {cat.name}
                           </button>
@@ -243,7 +243,7 @@ export function BulkEditToolbar({
             <button
               onClick={() => setOpenDropdown(openDropdown === 'amount' ? null : 'amount')}
               disabled={!hasSelection}
-              className="text-sm px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              className="text-sm px-3 py-1.5 bg-surface border border-line rounded hover:bg-sunk disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
             >
               Adjust Amount
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -251,13 +251,13 @@ export function BulkEditToolbar({
               </svg>
             </button>
             {openDropdown === 'amount' && (
-              <div className="absolute left-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-slate-200 z-20 p-3 w-64">
-                <label className="block text-xs text-slate-500 mb-2">Adjust amounts for {selectedCount} rows</label>
+              <div className="absolute left-0 top-full mt-1 bg-surface rounded-md shadow-lg border border-line z-20 p-3 w-64">
+                <label className="block text-xs text-ink-3 mb-2">Adjust amounts for {selectedCount} rows</label>
                 <div className="flex gap-2 mb-2">
                   <select
                     value={amountType}
                     onChange={(e) => setAmountType(e.target.value as 'add' | 'subtract' | 'multiply')}
-                    className="flex-1 px-2 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-2 py-1.5 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-accent"
                   >
                     <option value="add">Add (+)</option>
                     <option value="subtract">Subtract (-)</option>
@@ -269,10 +269,10 @@ export function BulkEditToolbar({
                     onChange={(e) => setAmountValue(e.target.value)}
                     placeholder={amountType === 'multiply' ? '10 for 10%' : '0.00'}
                     step="0.01"
-                    className="flex-1 px-2 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-2 py-1.5 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-accent"
                   />
                 </div>
-                <p className="text-xs text-slate-400 mb-2">
+                <p className="text-xs text-ink-3 mb-2">
                   {amountType === 'add' && 'Add a fixed amount to each selected row'}
                   {amountType === 'subtract' && 'Subtract a fixed amount from each selected row'}
                   {amountType === 'multiply' && 'Adjust by percentage (e.g., 10 = +10%)'}
@@ -280,7 +280,7 @@ export function BulkEditToolbar({
                 <button
                   onClick={handleAmountApply}
                   disabled={!amountValue || isNaN(parseFloat(amountValue))}
-                  className="w-full px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-blue-300"
+                  className="w-full px-3 py-1.5 bg-accent text-accent-ink text-sm rounded hover:opacity-90 disabled:opacity-50"
                 >
                   Apply
                 </button>
@@ -290,13 +290,13 @@ export function BulkEditToolbar({
         </div>
 
         {/* Divider */}
-        <div className="h-4 w-px bg-slate-300" />
+        <div className="h-4 w-px bg-line-2" />
 
         {/* Row Actions */}
         <div className="flex items-center gap-2">
           <button
             onClick={onAddTransaction}
-            className="text-sm px-3 py-1.5 text-green-600 border border-green-300 rounded hover:bg-green-50 flex items-center gap-1"
+            className="text-sm px-3 py-1.5 text-in border border-accent/40 rounded hover:bg-accent-soft flex items-center gap-1"
             title="Add a new transaction manually"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -307,7 +307,7 @@ export function BulkEditToolbar({
           <button
             onClick={onBulkSkip}
             disabled={!hasSelection}
-            className="text-sm px-3 py-1.5 text-slate-600 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-sm px-3 py-1.5 text-ink-2 border border-line rounded hover:bg-sunk disabled:opacity-50 disabled:cursor-not-allowed"
             title="Skip selected rows (won't be imported)"
           >
             Skip
@@ -315,7 +315,7 @@ export function BulkEditToolbar({
           <button
             onClick={onBulkDelete}
             disabled={!hasSelection}
-            className="text-sm px-3 py-1.5 text-red-600 border border-red-200 rounded hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-sm px-3 py-1.5 text-bad border border-bad/40 rounded hover:bg-bad-soft disabled:opacity-50 disabled:cursor-not-allowed"
             title="Delete selected rows from import"
           >
             Delete
@@ -323,7 +323,7 @@ export function BulkEditToolbar({
           <button
             onClick={onBulkReset}
             disabled={!hasSelection}
-            className="text-sm px-3 py-1.5 text-slate-600 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-sm px-3 py-1.5 text-ink-2 border border-line rounded hover:bg-sunk disabled:opacity-50 disabled:cursor-not-allowed"
             title="Reset selected rows to original values"
           >
             Reset
@@ -331,14 +331,14 @@ export function BulkEditToolbar({
         </div>
 
         {/* Divider */}
-        <div className="h-4 w-px bg-slate-300" />
+        <div className="h-4 w-px bg-line-2" />
 
         {/* Undo/Redo/Reset All */}
         <div className="flex items-center gap-2">
           <button
             onClick={onUndo}
             disabled={!canUndo}
-            className="text-sm px-2 py-1.5 text-slate-600 hover:bg-slate-200 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-sm px-2 py-1.5 text-ink-2 hover:bg-line-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
             title="Undo (Ctrl+Z)"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -348,7 +348,7 @@ export function BulkEditToolbar({
           <button
             onClick={onRedo}
             disabled={!canRedo}
-            className="text-sm px-2 py-1.5 text-slate-600 hover:bg-slate-200 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-sm px-2 py-1.5 text-ink-2 hover:bg-line-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
             title="Redo (Ctrl+Shift+Z)"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -358,7 +358,7 @@ export function BulkEditToolbar({
           <button
             onClick={onResetAll}
             disabled={modifiedCount === 0 && skippedCount === 0}
-            className="text-sm px-3 py-1.5 text-slate-600 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-sm px-3 py-1.5 text-ink-2 border border-line rounded hover:bg-sunk disabled:opacity-50 disabled:cursor-not-allowed"
             title="Reset all changes"
           >
             Reset All
@@ -368,17 +368,17 @@ export function BulkEditToolbar({
         {/* Status Indicators */}
         {(modifiedCount > 0 || skippedCount > 0) && (
           <>
-            <div className="h-4 w-px bg-slate-300" />
+            <div className="h-4 w-px bg-line-2" />
             <div className="flex items-center gap-3 text-sm">
               {modifiedCount > 0 && (
-                <span className="flex items-center gap-1 text-amber-600">
-                  <span className="w-2 h-2 bg-amber-500 rounded-full" />
+                <span className="flex items-center gap-1 text-warn">
+                  <span className="w-2 h-2 bg-warn rounded-full" />
                   {modifiedCount} modified
                 </span>
               )}
               {skippedCount > 0 && (
-                <span className="flex items-center gap-1 text-slate-500">
-                  <span className="w-2 h-2 bg-slate-400 rounded-full" />
+                <span className="flex items-center gap-1 text-ink-3">
+                  <span className="w-2 h-2 bg-ink-3 rounded-full" />
                   {skippedCount} skipped
                 </span>
               )}

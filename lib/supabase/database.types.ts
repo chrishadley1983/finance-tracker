@@ -906,6 +906,30 @@ export type Database = {
           },
         ]
       }
+      nav_pins: {
+        Row: {
+          created_at: string
+          href: string
+          id: string
+          label: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          href: string
+          id?: string
+          label: string
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          href?: string
+          id?: string
+          label?: string
+          position?: number
+        }
+        Relationships: []
+      }
       planning_notes: {
         Row: {
           content: string
@@ -983,6 +1007,105 @@ export type Database = {
           name?: string
           updated_at?: string | null
           year_label?: string | null
+        }
+        Relationships: []
+      }
+      subscription_exclusions: {
+        Row: {
+          created_at: string | null
+          description_pattern: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description_pattern: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description_pattern?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          amount: number
+          auto_renew: boolean | null
+          bank_description_pattern: string | null
+          billing_day: number | null
+          cancellation_notice_days: number | null
+          category: string | null
+          created_at: string | null
+          currency: string | null
+          end_date: string | null
+          frequency: string
+          id: string
+          name: string
+          next_renewal_date: string | null
+          notes: string | null
+          payment_method: string | null
+          plan_tier: string | null
+          provider: string | null
+          scope: string
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+          url: string | null
+          variable_amount: boolean
+        }
+        Insert: {
+          amount: number
+          auto_renew?: boolean | null
+          bank_description_pattern?: string | null
+          billing_day?: number | null
+          cancellation_notice_days?: number | null
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          end_date?: string | null
+          frequency: string
+          id?: string
+          name: string
+          next_renewal_date?: string | null
+          notes?: string | null
+          payment_method?: string | null
+          plan_tier?: string | null
+          provider?: string | null
+          scope: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          url?: string | null
+          variable_amount?: boolean
+        }
+        Update: {
+          amount?: number
+          auto_renew?: boolean | null
+          bank_description_pattern?: string | null
+          billing_day?: number | null
+          cancellation_notice_days?: number | null
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          name?: string
+          next_renewal_date?: string | null
+          notes?: string | null
+          payment_method?: string | null
+          plan_tier?: string | null
+          provider?: string | null
+          scope?: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          url?: string | null
+          variable_amount?: boolean
         }
         Relationships: []
       }

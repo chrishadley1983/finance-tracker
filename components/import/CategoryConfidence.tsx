@@ -1,70 +1,47 @@
 'use client';
 
 import type { CategorisationResult } from '@/lib/categorisation';
+import { isUnsure } from '@/lib/review/queue';
 
 interface CategoryConfidenceProps {
   result: CategorisationResult;
   showTooltip?: boolean;
 }
 
-/**
- * Visual confidence indicator for categorisation results.
- * - Green (>0.8): High confidence
- * - Yellow (0.5-0.8): Medium confidence
- * - Red (<0.5): Low confidence
- * - Gray: No categorisation
- */
-export function CategoryConfidence({
-  result,
-  showTooltip = true,
-}: CategoryConfidenceProps) {
+/** Plain-English explanation of where a category came from (used as a tooltip). */
+export function confidenceText(result: CategorisationResult): string {
   const { confidence, source, matchDetails } = result;
+  switch (source) {
+    case 'rule_exact':
+      return `Exact match: ${matchDetails}`;
+    case 'rule_pattern':
+      return `Pattern match: ${matchDetails}`;
+    case 'similar':
+      return matchDetails;
+    case 'ai':
+      return `AI suggestion (${Math.round(confidence * 100)}% confident): ${matchDetails}`;
+    case 'none':
+      return 'No category assigned';
+    default:
+      return matchDetails;
+  }
+}
 
-  // Determine color based on confidence
-  const getColorClasses = () => {
-    if (source === 'none' || !result.categoryId) {
-      return 'bg-slate-300';
-    }
-    if (confidence >= 0.8) {
-      return 'bg-green-500';
-    }
-    if (confidence >= 0.5) {
-      return 'bg-yellow-500';
-    }
-    return 'bg-red-500';
-  };
-
-  // Generate tooltip text based on source
-  const getTooltipText = () => {
-    switch (source) {
-      case 'rule_exact':
-        return `Exact match: ${matchDetails}`;
-      case 'rule_pattern':
-        return `Pattern match: ${matchDetails}`;
-      case 'similar':
-        return matchDetails;
-      case 'ai':
-        return `AI suggestion (${Math.round(confidence * 100)}% confident): ${matchDetails}`;
-      case 'none':
-        return 'No category assigned';
-      default:
-        return matchDetails;
-    }
-  };
-
+/**
+ * Confidence is only shown when it matters: an "unsure" marker on categorised
+ * rows below the review threshold (the same rows that will land in Review).
+ * Confident and uncategorised rows show nothing extra.
+ */
+export function CategoryConfidence({ result, showTooltip = true }: CategoryConfidenceProps) {
+  if (!result.categoryId || result.source === 'none' || !isUnsure(result.confidence)) return null;
   return (
-    <div className="relative group inline-flex items-center">
-      <span
-        className={`inline-block w-2.5 h-2.5 rounded-full ${getColorClasses()}`}
-        aria-label={getTooltipText()}
-      />
-      {showTooltip && (
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 text-xs text-white bg-slate-800 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 max-w-xs truncate">
-          {getTooltipText()}
-          <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-slate-800" />
-        </div>
-      )}
-    </div>
+    <span
+      className="fig shrink-0 rounded bg-warn-soft px-1 text-[11px] text-warn"
+      title={showTooltip ? confidenceText(result) : undefined}
+      aria-label={`unsure: ${confidenceText(result)}`}
+    >
+      unsure
+    </span>
   );
 }
 
@@ -96,22 +73,7 @@ export function SourceBadge({ source }: SourceBadgeProps) {
     }
   };
 
-  const getColorClasses = () => {
-    switch (source) {
-      case 'rule_exact':
-      case 'rule_pattern':
-      case 'policy':
-        return 'bg-blue-100 text-blue-700';
-      case 'policy_ask':
-        return 'bg-amber-100 text-amber-700';
-      case 'similar':
-        return 'bg-purple-100 text-purple-700';
-      case 'ai':
-        return 'bg-amber-100 text-amber-700';
-      default:
-        return '';
-    }
-  };
+  const getColorClasses = () => (source === 'policy_ask' ? 'bg-warn-soft text-warn' : 'bg-line-2 text-ink-2');
 
   const label = getLabel();
   if (!label) return null;

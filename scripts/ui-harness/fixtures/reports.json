@@ -1,0 +1,140 @@
+{
+  "/api/monthly-reports/list": [
+    {
+      "year": 2026,
+      "month": 9,
+      "generated_at": "2026-10-03T08:12:00Z",
+      "report_data": {
+        "net_worth": 412880,
+        "net_worth_change": 4210,
+        "income": 5330,
+        "expenses": 3656.38,
+        "savings_rate": 31.4,
+        "budget_total": 3565
+      }
+    },
+    {
+      "year": 2026,
+      "month": 8,
+      "generated_at": "2026-09-04T07:55:00Z",
+      "report_data": {
+        "net_worth": 408670,
+        "net_worth_change": -1240,
+        "income": 5330,
+        "expenses": 4647.76,
+        "savings_rate": 12.8,
+        "budget_total": 3565
+      }
+    },
+    {
+      "year": 2026,
+      "month": 7,
+      "generated_at": "2026-08-03T09:01:00Z",
+      "report_data": {
+        "net_worth": 409910,
+        "net_worth_change": 6830,
+        "income": 5330,
+        "expenses": 3400.54,
+        "savings_rate": 36.2,
+        "budget_total": 3565
+      }
+    },
+    {
+      "year": 2026,
+      "month": 6,
+      "generated_at": "2026-07-02T19:30:00Z",
+      "report_data": {
+        "net_worth": 403080,
+        "net_worth_change": 2975,
+        "income": 5330,
+        "expenses": 3789.63,
+        "savings_rate": 28.9,
+        "budget_total": 3565
+      }
+    },
+    {
+      "year": 2026,
+      "month": 5,
+      "generated_at": "2026-06-03T08:40:00Z",
+      "report_data": {
+        "net_worth": 400105,
+        "net_worth_change": 3410,
+        "income": 5330,
+        "expenses": 3725.67,
+        "savings_rate": 30.1,
+        "budget_total": 3565
+      }
+    },
+    {
+      "year": 2026,
+      "month": 4,
+      "generated_at": "2026-05-05T10:15:00Z",
+      "report_data": {
+        "net_worth": 396695,
+        "net_worth_change": null,
+        "income": 5330,
+        "expenses": 3864.25,
+        "savings_rate": 27.5,
+        "budget_total": 3565
+      }
+    }
+  ],
+  "/api/monthly-reports/readiness": {
+    "year": 2026,
+    "month": 9,
+    "monthLabel": "September 2026",
+    "ready": false,
+    "checks": [
+      {
+        "key": "wealth",
+        "ok": false,
+        "detail": "Vanguard ISA, Workplace pension missing 1 Oct snapshot",
+        "missing": [
+          "Vanguard ISA",
+          "Workplace pension"
+        ]
+      },
+      {
+        "key": "synced",
+        "ok": false,
+        "detail": "Amex not synced since 2 Oct",
+        "missing": [
+          "Amex"
+        ]
+      },
+      {
+        "key": "categorised",
+        "ok": false,
+        "detail": "3 uncategorised or flagged",
+        "count": 3
+      },
+      {
+        "key": "validated",
+        "ok": true,
+        "detail": "all validated",
+        "count": 0,
+        "byAccount": {}
+      }
+    ],
+    "reportExists": true,
+    "reportGeneratedAt": "2026-10-03T08:12:00Z",
+    "dataChangedAt": "2026-10-05T12:00:00Z",
+    "changedSinceReport": true,
+    "lateTransactions": 2,
+    "action": "wait"
+  },
+  "/api/monthly-reports/2026-09": {
+    "year": 2026,
+    "month": 9,
+    "generatedAt": "2026-10-03T08:12:00Z",
+    "reportData": {
+      "net_worth": 412880,
+      "net_worth_change": 4210,
+      "income": 5330,
+      "expenses": 3656.38,
+      "savings_rate": 31.4,
+      "budget_total": 3565
+    },
+    "html": "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>September 2026</title>\n<style>body{font-family:system-ui,sans-serif;color:#1c1d1a;background:#fff;margin:0;padding:32px;max-width:860px}\nh1{font-size:24px;margin:0 0 4px}p{color:#55574f}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}\ntd,th{padding:6px 8px;border-bottom:1px solid #e3e2dc;text-align:left}td:last-child,th:last-child{text-align:right;font-family:ui-monospace,monospace}\n.lede{font-size:16px}</style></head><body>\n<h1>September 2026</h1><p class=\"lede\">Example report. Net worth rose &pound;4,210 to &pound;412,880; 31% of income saved.</p>\n<h2>Spending vs budget</h2><table><thead><tr><th>Category</th><th>Spent</th></tr></thead><tbody>\n<tr><td>Groceries</td><td>&pound;588</td></tr><tr><td>Eating out</td><td>&pound;241</td></tr><tr><td>Energy</td><td>&pound;122</td></tr>\n<tr><td>Fuel</td><td>&pound;139</td></tr><tr><td>Clubs &amp; activities</td><td>&pound;120</td></tr></tbody></table>\n<h2>Net worth</h2><table><tbody><tr><td>Pensions</td><td>&pound;221,400</td></tr><tr><td>ISAs</td><td>&pound;118,230</td></tr><tr><td>Cash</td><td>&pound;24,950</td></tr><tr><td>Property equity</td><td>&pound;48,300</td></tr></tbody></table>\n</body></html>"
+  }
+}

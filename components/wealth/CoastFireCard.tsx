@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { formatGBP } from '@/lib/format';
+import { Button } from '@/components/ui/Button';
+import { Notice, SkeletonRows } from '@/components/ui/Notice';
 
-interface CoastFireData {
+export interface CoastFireData {
   coastFire: {
     value: number;
     fireNumberAtRetirement: number;
@@ -15,6 +19,7 @@ interface CoastFireData {
     currentAge: number;
     targetRetirementAge: number;
     yearsLeft: number;
+    excludeProperty?: boolean;
   };
   settings: {
     annualSpend: number;
@@ -24,131 +29,127 @@ interface CoastFireData {
   error?: string;
 }
 
-export function CoastFireCard() {
+/** Where FIRE inputs are edited (the one place). */
+export const FIRE_SETTINGS_HREF = '/fire?tab=settings';
+
+function plural(n: number, word: string) {
+  return `${n} ${word}${n === 1 ? '' : 's'}`;
+}
+
+interface CoastFireCardProps {
+  /** Change this to refetch (e.g. after balances are saved). */
+  refreshKey?: number;
+}
+
+/**
+ * Coast FIRE in plain words, plus a read-only summary of the FIRE inputs it
+ * uses. The inputs are edited on the FIRE page only.
+ */
+export function CoastFireCard({ refreshKey = 0 }: CoastFireCardProps) {
   const [data, setData] = useState<CoastFireData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notConfigured, setNotConfigured] = useState(false);
+  const loaded = useRef(false);
 
-  useEffect(() => {
-    async function fetchCoastFire() {
-      try {
-        const response = await fetch('/api/fire/coast', {
-          cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache' },
-        });
-        if (!response.ok) throw new Error('Failed to fetch Coast FIRE data');
-        const result = await response.json();
-        if (result.error) {
-          setError(result.error);
-        } else {
-          setData(result);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setIsLoading(false);
+  const load = useCallback(async () => {
+    if (!loaded.current) setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/fire/coast', { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } });
+      const result = (await response.json().catch(() => ({}))) as Partial<CoastFireData>;
+      if (!response.ok) throw new Error(result.error || 'The server returned an error.');
+      if (!result.coastFire) {
+        setNotConfigured(true);
+        setData(null);
+      } else {
+        setNotConfigured(false);
+        setData(result as CoastFireData);
       }
+      loaded.current = true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
+    } finally {
+      setIsLoading(false);
     }
-    fetchCoastFire();
   }, []);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  useEffect(() => {
+    load();
+  }, [load, refreshKey]);
 
-  if (isLoading) {
-    return (
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-5 bg-slate-200 rounded w-32"></div>
-          <div className="h-10 bg-slate-200 rounded w-48"></div>
-          <div className="h-4 bg-slate-200 rounded w-full"></div>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <SkeletonRows rows={4} />;
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
-        <h3 className="text-sm font-medium text-slate-500 mb-2">Coast FIRE</h3>
-        <p className="text-sm text-slate-400">{error}</p>
-      </div>
+      <Notice tone="error" action={<Button size="sm" onClick={load}>Try again</Button>}>
+        Couldn&apos;t work out Coast FIRE. {error}
+      </Notice>
     );
   }
 
-  if (!data || !data.coastFire) {
-    return null;
+  if (notConfigured || !data?.coastFire) {
+    return (
+      <p className="text-sm text-ink-2">
+        Coast FIRE needs your spending, withdrawal rate and retirement age.{' '}
+        <Link href={FIRE_SETTINGS_HREF} className="text-accent underline-offset-2 hover:underline">
+          Set them on the FIRE page
+        </Link>
+        .
+      </p>
+    );
   }
 
   const { coastFire, inputs, settings } = data;
-  const progressCapped = Math.min(coastFire.progress, 100);
+  const ahead = coastFire.surplus >= 0;
+  const progress = Math.max(0, Math.min(coastFire.progress, 100));
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-slate-500">Coast FIRE Target</h3>
-        {coastFire.isCoastFI && (
-          <span className="px-2 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full">
-            Coast FI Achieved!
-          </span>
+    <div className="grid gap-3">
+      <p className="text-[14px] leading-relaxed text-ink-2">
+        To stop saving and still retire at {inputs.targetRetirementAge}, you need about{' '}
+        <strong className="fig font-semibold text-ink">{formatGBP(coastFire.value)}</strong> invested today.{' '}
+        {ahead ? (
+          <>
+            You have <span className="fig text-ink">{formatGBP(coastFire.currentNetWorth)}</span>, so you&apos;re{' '}
+            <span className="fig font-medium text-in">{formatGBP(coastFire.surplus)}</span> past it.
+          </>
+        ) : (
+          <>
+            You have <span className="fig text-ink">{formatGBP(coastFire.currentNetWorth)}</span>, so you&apos;re{' '}
+            <span className="fig font-medium text-ink">{formatGBP(Math.abs(coastFire.surplus))}</span> short.
+          </>
         )}
-      </div>
+      </p>
 
-      <div className="mb-4">
-        <p className="text-3xl font-bold text-slate-900">{formatCurrency(coastFire.value)}</p>
-        <p className="text-sm text-slate-500 mt-1">
-          Required today to retire at {inputs.targetRetirementAge} ({inputs.yearsLeft} years)
+      <div>
+        <div
+          role="meter"
+          aria-label="Progress to Coast FIRE"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(progress)}
+          className="relative h-1.5 rounded-full bg-line-2"
+        >
+          <div className={`absolute inset-y-0 left-0 rounded-full ${ahead ? 'bg-accent' : 'bg-ink-2'}`} style={{ width: `${progress}%` }} />
+        </div>
+        <p className="mt-1 text-[12px] text-ink-3">
+          <span className="fig">{Math.round(coastFire.progress)}%</span> of the way there
         </p>
       </div>
 
-      {/* Progress bar */}
-      <div className="mb-4">
-        <div className="flex justify-between text-sm mb-1">
-          <span className="text-slate-600">Progress</span>
-          <span className={`font-medium ${coastFire.isCoastFI ? 'text-emerald-600' : 'text-slate-900'}`}>
-            {coastFire.progress.toFixed(1)}%
-          </span>
-        </div>
-        <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${
-              coastFire.isCoastFI ? 'bg-emerald-500' : 'bg-blue-500'
-            }`}
-            style={{ width: `${progressCapped}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-xs text-slate-400 mt-1">
-          <span>Current: {formatCurrency(coastFire.currentNetWorth)}</span>
-          <span>Target: {formatCurrency(coastFire.value)}</span>
-        </div>
-      </div>
-
-      {/* Surplus/Deficit */}
-      <div className={`p-3 rounded-lg ${coastFire.surplus >= 0 ? 'bg-emerald-50' : 'bg-amber-50'}`}>
-        <div className="flex justify-between items-center">
-          <span className={`text-sm ${coastFire.surplus >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
-            {coastFire.surplus >= 0 ? 'Surplus' : 'Gap to Coast FI'}
-          </span>
-          <span className={`font-semibold ${coastFire.surplus >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
-            {coastFire.surplus >= 0 ? '+' : ''}{formatCurrency(coastFire.surplus)}
-          </span>
-        </div>
-      </div>
-
-      {/* Settings details */}
-      <div className="mt-4 pt-4 border-t border-slate-100">
-        <p className="text-xs text-slate-400">
-          {formatCurrency(settings.annualSpend)}/yr spend, {settings.withdrawalRate}% SWR, {settings.expectedReturn}% return
+      <div className="border-t border-line-2 pt-3">
+        <p className="text-[12.5px] leading-relaxed text-ink-3">
+          Based on spending <span className="fig text-ink-2">{formatGBP(settings.annualSpend)}</span> a year, a{' '}
+          <span className="fig text-ink-2">{settings.withdrawalRate}%</span> withdrawal rate and{' '}
+          <span className="fig text-ink-2">{settings.expectedReturn}%</span> growth a year, retiring in{' '}
+          {plural(inputs.yearsLeft, 'year')} (target pot{' '}
+          <span className="fig text-ink-2">{formatGBP(coastFire.fireNumberAtRetirement)}</span>)
+          {inputs.excludeProperty ? ', not counting property' : ''}.
         </p>
-        <p className="text-xs text-slate-400 mt-1">
-          FIRE number at retirement: {formatCurrency(coastFire.fireNumberAtRetirement)}
-        </p>
+        <Link href={FIRE_SETTINGS_HREF} className="mt-1.5 inline-block text-[12.5px] text-accent underline-offset-2 hover:underline">
+          Edit on the FIRE page
+        </Link>
       </div>
     </div>
   );

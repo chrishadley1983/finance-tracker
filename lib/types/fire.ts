@@ -160,7 +160,7 @@ export const calculateFireRequestSchema = z.object({
 // =============================================================================
 
 export const ACCOUNT_TYPE_LABELS: Record<string, string> = {
-  current: 'Current Accounts',
+  current: 'Current accounts',
   savings: 'Savings',
   isa: 'ISAs',
   pension: 'Pensions',

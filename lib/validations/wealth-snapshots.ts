@@ -23,6 +23,14 @@ export const updateWealthSnapshotSchema = z.object({
   notes: z.string().nullable().optional(),
 });
 
+export const bulkUpsertWealthSnapshotsSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+  entries: z
+    .array(z.object({ account_id: z.string().uuid(), balance: z.number().finite() }))
+    .min(1, 'Nothing to save')
+    .max(200),
+});
+
 // Query params for filtering wealth snapshots
 export const wealthSnapshotQuerySchema = z.object({
   account_id: z.string().uuid().optional(),

@@ -1,113 +1,95 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import type {
-  BudgetGroupComparison,
-  SavingsRate,
-  BudgetViewMode,
-} from '@/lib/types/budget';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { BudgetGroupComparison, SavingsRate } from '@/lib/types/budget';
+import type { BudgetPeriod } from '@/lib/budgets/period';
 
-interface UseBudgetsReturn {
-  year: number;
-  month: number | null;
-  viewMode: BudgetViewMode;
+export interface UseBudgetsReturn {
   groups: BudgetGroupComparison[];
   savingsRate: SavingsRate | null;
+  /** True while the period's data is first loading (not during a quiet refresh). */
   isLoading: boolean;
   error: string | null;
-  setYear: (year: number) => void;
-  setMonth: (month: number | null) => void;
-  setViewMode: (mode: BudgetViewMode) => void;
-  refresh: () => void;
+  /** Re-fetch. `quiet` keeps the current rows on screen instead of showing the skeleton. */
+  refresh: (opts?: { quiet?: boolean }) => Promise<void>;
+  /** Set one category's budget locally (for optimistic edits); totals are recomputed. */
+  setLocalBudget: (categoryId: string, amount: number) => void;
 }
 
-export function useBudgets(): UseBudgetsReturn {
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState<number | null>(now.getMonth() + 1);
-  const [viewMode, setViewMode] = useState<BudgetViewMode>('month');
+/** Replace one category's budget amount and recompute variances and group totals. */
+export function patchBudget(groups: BudgetGroupComparison[], categoryId: string, amount: number): BudgetGroupComparison[] {
+  return groups.map((g) => {
+    if (!g.categories.some((c) => c.categoryId === categoryId)) return g;
+    const categories = g.categories.map((c) =>
+      c.categoryId === categoryId ? { ...c, budgetAmount: amount, variance: c.actualAmount - amount } : c
+    );
+    const budget = categories.reduce((s, c) => s + c.budgetAmount, 0);
+    const actual = categories.reduce((s, c) => s + c.actualAmount, 0);
+    return { ...g, categories, totals: { budget, actual, variance: actual - budget } };
+  });
+}
+
+const noStore: RequestInit = { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } };
+
+/** Budget vs actual and the savings summary for one month or one year. */
+export function useBudgets(period: BudgetPeriod): UseBudgetsReturn {
+  const year = period.year;
+  const month = period.view === 'month' ? period.month : null;
   const [groups, setGroups] = useState<BudgetGroupComparison[]>([]);
   const [savingsRate, setSavingsRate] = useState<SavingsRate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const syncedYears = useRef(new Set<number>());
+  const requestId = useRef(0);
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const fetchData = useCallback(
+    async (opts: { quiet?: boolean } = {}) => {
+      const id = ++requestId.current;
+      if (!opts.quiet) setIsLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams({ year: String(year) });
+        if (month !== null) params.set('month', String(month));
 
-    try {
-      const queryMonth = viewMode === 'year' ? null : month;
-      const params = new URLSearchParams({ year: String(year) });
-      if (queryMonth !== null) {
-        params.set('month', String(queryMonth));
+        // Make sure every category has budget rows for this year. Only needed
+        // once per year per visit, not on every month change or refresh.
+        if (!syncedYears.current.has(year)) {
+          const syncRes = await fetch('/api/budgets/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ year }),
+          });
+          if (syncRes.ok) syncedYears.current.add(year);
+        }
+
+        const [comparisonRes, savingsRes] = await Promise.all([
+          fetch(`/api/budgets/comparison?${params}`, noStore),
+          fetch(`/api/budgets/savings-rate?${params}`, noStore),
+        ]);
+        if (!comparisonRes.ok) throw new Error('Could not load budgets for this period. Try again in a moment.');
+        if (!savingsRes.ok) throw new Error('Could not load the income and savings summary. Try again in a moment.');
+        const comparisonData = await comparisonRes.json();
+        const savingsData = await savingsRes.json();
+        if (id !== requestId.current) return; // a newer request has started
+        setGroups(comparisonData.groups || []);
+        setSavingsRate(savingsData.savingsRate || null);
+      } catch (err) {
+        if (id !== requestId.current) return;
+        setError(err instanceof Error ? err.message : 'Could not load budgets.');
+      } finally {
+        if (id === requestId.current) setIsLoading(false);
       }
-
-      // Fetch options to prevent caching
-      const fetchOptions: RequestInit = {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      };
-
-      // First, sync budgets to ensure all categories have entries
-      await fetch('/api/budgets/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ year }),
-      });
-
-      // Then fetch the data
-      const [comparisonRes, savingsRes] = await Promise.all([
-        fetch(`/api/budgets/comparison?${params}`, fetchOptions),
-        fetch(`/api/budgets/savings-rate?${params}`, fetchOptions),
-      ]);
-
-      if (!comparisonRes.ok) {
-        throw new Error('Failed to fetch budget comparison');
-      }
-      if (!savingsRes.ok) {
-        throw new Error('Failed to fetch savings rate');
-      }
-
-      const comparisonData = await comparisonRes.json();
-      const savingsData = await savingsRes.json();
-
-      setGroups(comparisonData.groups || []);
-      setSavingsRate(savingsData.savingsRate || null);
-    } catch (err) {
-      console.error('Error fetching budget data:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [year, month, viewMode]);
+    },
+    [year, month]
+  );
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
-  // When view mode changes, update month accordingly
-  const handleViewModeChange = useCallback((mode: BudgetViewMode) => {
-    setViewMode(mode);
-    if (mode === 'year') {
-      // Keep month for when user switches back
-    } else if (month === null) {
-      setMonth(new Date().getMonth() + 1);
-    }
-  }, [month]);
+  const setLocalBudget = useCallback((categoryId: string, amount: number) => {
+    setGroups((gs) => patchBudget(gs, categoryId, amount));
+  }, []);
 
-  return {
-    year,
-    month: viewMode === 'year' ? null : month,
-    viewMode,
-    groups,
-    savingsRate,
-    isLoading,
-    error,
-    setYear,
-    setMonth,
-    setViewMode: handleViewModeChange,
-    refresh: fetchData,
-  };
+  return { groups, savingsRate, isLoading, error, refresh: fetchData, setLocalBudget };
 }

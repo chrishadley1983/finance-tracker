@@ -6,7 +6,8 @@
  */
 
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { clearRulesCache } from './rule-matcher';
+import { clearRulesCache, ruleApplies, type RuleRecord } from './rule-matcher';
+import { logRuleEvents } from './rule-events';
 import { markCorrectionsAsProcessed, type PatternSuggestion } from './learning';
 
 // =============================================================================
@@ -168,6 +169,9 @@ export async function createRule(input: CreateRuleInput): Promise<Rule | null> {
   }
 
   clearRulesCache();
+  await logRuleEvents([
+    { ruleId: data.id, pattern: data.pattern, event: 'created', newCategoryId: data.category_id, source: 'ui' },
+  ]);
   return data as unknown as Rule;
 }
 
@@ -211,6 +215,8 @@ export async function updateRule(id: string, input: UpdateRuleInput): Promise<Ru
     return getRule(id);
   }
 
+  const before = await getRule(id);
+
   const { data, error } = await supabaseAdmin
     .from('category_mappings')
     .update(updates)
@@ -236,6 +242,18 @@ export async function updateRule(id: string, input: UpdateRuleInput): Promise<Ru
   }
 
   clearRulesCache();
+  const categoryChanged = before && before.category_id !== data.category_id;
+  await logRuleEvents([
+    {
+      ruleId: id,
+      pattern: data.pattern,
+      event: categoryChanged ? 'repointed' : 'updated',
+      oldCategoryId: before?.category_id ?? null,
+      newCategoryId: data.category_id,
+      source: 'ui',
+      detail: { changed: Object.keys(updates) },
+    },
+  ]);
   return data as unknown as Rule;
 }
 
@@ -259,6 +277,15 @@ export async function deleteRule(id: string): Promise<boolean> {
   }
 
   clearRulesCache();
+  await logRuleEvents([
+    {
+      ruleId: id,
+      pattern: existing?.pattern ?? '',
+      event: 'deleted',
+      oldCategoryId: existing?.category_id ?? null,
+      source: 'ui',
+    },
+  ]);
   return true;
 }
 
@@ -285,6 +312,7 @@ export async function testRule(
       date,
       description,
       amount,
+      account_id,
       category_id,
       category:category_id(id, name)
     `
@@ -300,27 +328,24 @@ export async function testRule(
   const matchedTransactions: RuleTestResult['transactions'] = [];
   let wouldChange = 0;
 
-  for (const tx of transactions || []) {
-    const description = tx.description || '';
-    let isMatch = false;
+  // Use the engine's own matcher (normalised, token-bounded) so the counts
+  // shown here match what categorisation will actually do.
+  const candidate: RuleRecord = {
+    id: 'test',
+    pattern,
+    category_id: categoryId,
+    match_type: matchType,
+    confidence: 1,
+    categories: null,
+  };
 
-    switch (matchType) {
-      case 'exact':
-        isMatch = description.toLowerCase().trim() === pattern.toLowerCase().trim();
-        break;
-      case 'contains':
-        isMatch = description.toLowerCase().includes(pattern.toLowerCase());
-        break;
-      case 'regex':
-        try {
-          const regex = new RegExp(pattern, 'i');
-          isMatch = regex.test(description);
-        } catch {
-          // Invalid regex
-          isMatch = false;
-        }
-        break;
-    }
+  for (const tx of transactions || []) {
+    const isMatch = ruleApplies(candidate, {
+      description: tx.description || '',
+      amount: Number(tx.amount),
+      accountId: tx.account_id,
+      date: tx.date,
+    });
 
     if (isMatch) {
       const category = tx.category as { id: string; name: string } | null;

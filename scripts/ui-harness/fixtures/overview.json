@@ -1,0 +1,651 @@
+{
+  "/api/accounts/summary": {
+    "netWorth": 486320.55,
+    "accountTypeBalances": [
+      {
+        "type": "pension",
+        "label": "Pensions",
+        "balance": 241800
+      },
+      {
+        "type": "isa",
+        "label": "ISAs",
+        "balance": 118400
+      },
+      {
+        "type": "property",
+        "label": "Property",
+        "balance": 112000
+      },
+      {
+        "type": "savings",
+        "label": "Savings",
+        "balance": 12650
+      },
+      {
+        "type": "current",
+        "label": "Current",
+        "balance": 3870.55
+      },
+      {
+        "type": "credit",
+        "label": "Credit",
+        "balance": -2400
+      }
+    ]
+  },
+  "/api/wealth/history": {
+    "snapshots": [
+      {
+        "date": "2025-10-01",
+        "total": 431200,
+        "byType": {}
+      },
+      {
+        "date": "2025-11-01",
+        "total": 436900,
+        "byType": {}
+      },
+      {
+        "date": "2025-12-01",
+        "total": 441300,
+        "byType": {}
+      },
+      {
+        "date": "2026-01-01",
+        "total": 444100,
+        "byType": {}
+      },
+      {
+        "date": "2026-02-01",
+        "total": 449800,
+        "byType": {}
+      },
+      {
+        "date": "2026-03-01",
+        "total": 446200,
+        "byType": {}
+      },
+      {
+        "date": "2026-04-01",
+        "total": 455600,
+        "byType": {}
+      },
+      {
+        "date": "2026-05-01",
+        "total": 461900,
+        "byType": {}
+      },
+      {
+        "date": "2026-06-01",
+        "total": 466400,
+        "byType": {}
+      },
+      {
+        "date": "2026-07-01",
+        "total": 471800,
+        "byType": {}
+      },
+      {
+        "date": "2026-08-01",
+        "total": 476300,
+        "byType": {}
+      },
+      {
+        "date": "2026-09-01",
+        "total": 480200,
+        "byType": {}
+      },
+      {
+        "date": "2026-10-01",
+        "total": 486320,
+        "byType": {}
+      }
+    ],
+    "earliest": "2025-10-01",
+    "latest": "2026-10-01"
+  },
+  "/api/budgets/savings-rate": {
+    "year": 2026,
+    "month": 10,
+    "savingsRate": {
+      "totalIncomeBudget": 5200,
+      "totalIncomeActual": 4100,
+      "totalExpenseBudget": 3400,
+      "totalExpenseActual": 1148,
+      "savingsBudget": 1800,
+      "savingsActual": 2952,
+      "savingsRateBudget": 34.6,
+      "savingsRateActual": 72
+    }
+  },
+  "/api/budgets/comparison": {
+    "year": 2026,
+    "month": 10,
+    "groups": [],
+    "comparisons": [
+      {
+        "categoryId": "c-salary",
+        "categoryName": "Salary",
+        "groupName": "Income",
+        "isIncome": true,
+        "budgetAmount": 5200,
+        "actualAmount": 4100,
+        "variance": -1100
+      },
+      {
+        "categoryId": "c-groceries",
+        "categoryName": "Groceries",
+        "groupName": "Food",
+        "isIncome": false,
+        "budgetAmount": 600,
+        "actualAmount": 186.4,
+        "variance": -413.6
+      },
+      {
+        "categoryId": "c-eating",
+        "categoryName": "Eating out",
+        "groupName": "Food",
+        "isIncome": false,
+        "budgetAmount": 180,
+        "actualAmount": 214.3,
+        "variance": 34.3
+      },
+      {
+        "categoryId": "c-bills",
+        "categoryName": "Bills",
+        "groupName": "Home",
+        "isIncome": false,
+        "budgetAmount": 420,
+        "actualAmount": 312.6,
+        "variance": -107.4
+      },
+      {
+        "categoryId": "c-transport",
+        "categoryName": "Transport",
+        "groupName": "Travel",
+        "isIncome": false,
+        "budgetAmount": 300,
+        "actualAmount": 58.2,
+        "variance": -241.8
+      },
+      {
+        "categoryId": "c-kids",
+        "categoryName": "Kids activities",
+        "groupName": "Family",
+        "isIncome": false,
+        "budgetAmount": 250,
+        "actualAmount": 64,
+        "variance": -186
+      },
+      {
+        "categoryId": "c-shopping",
+        "categoryName": "Shopping",
+        "groupName": "Personal",
+        "isIncome": false,
+        "budgetAmount": 200,
+        "actualAmount": 121.5,
+        "variance": -78.5
+      },
+      {
+        "categoryId": "c-subs",
+        "categoryName": "Subscriptions",
+        "groupName": "Home",
+        "isIncome": false,
+        "budgetAmount": 150,
+        "actualAmount": 48.97,
+        "variance": -101.03
+      },
+      {
+        "categoryId": "c-pets",
+        "categoryName": "Pets",
+        "groupName": "Family",
+        "isIncome": false,
+        "budgetAmount": 120,
+        "actualAmount": 22,
+        "variance": -98
+      },
+      {
+        "categoryId": "c-gifts",
+        "categoryName": "Gifts",
+        "groupName": "Personal",
+        "isIncome": false,
+        "budgetAmount": 80,
+        "actualAmount": 0,
+        "variance": -80
+      },
+      {
+        "categoryId": "c-diy",
+        "categoryName": "Home and garden",
+        "groupName": "Home",
+        "isIncome": false,
+        "budgetAmount": 1100,
+        "actualAmount": 120,
+        "variance": -980
+      }
+    ]
+  },
+  "/api/transactions/by-category": [
+    {
+      "categoryId": "c-bills",
+      "categoryName": "Bills",
+      "amount": 312.6,
+      "percentage": 27.2
+    },
+    {
+      "categoryId": "c-eating",
+      "categoryName": "Eating out",
+      "amount": 214.3,
+      "percentage": 18.7
+    },
+    {
+      "categoryId": "c-groceries",
+      "categoryName": "Groceries",
+      "amount": 186.4,
+      "percentage": 16.2
+    },
+    {
+      "categoryId": "c-shopping",
+      "categoryName": "Shopping",
+      "amount": 121.5,
+      "percentage": 10.6
+    },
+    {
+      "categoryId": "c-diy",
+      "categoryName": "Home and garden",
+      "amount": 120,
+      "percentage": 10.5
+    },
+    {
+      "categoryId": "c-kids",
+      "categoryName": "Kids activities",
+      "amount": 64,
+      "percentage": 5.6
+    },
+    {
+      "categoryId": "c-transport",
+      "categoryName": "Transport",
+      "amount": 58.2,
+      "percentage": 5.1
+    },
+    {
+      "categoryId": "c-subs",
+      "categoryName": "Subscriptions",
+      "amount": 48.97,
+      "percentage": 4.3
+    },
+    {
+      "categoryId": "c-pets",
+      "categoryName": "Pets",
+      "amount": 22,
+      "percentage": 1.9
+    }
+  ],
+  "/api/transactions/monthly-trend": [
+    {
+      "month": "Nov",
+      "income": 5180,
+      "expenses": 3920
+    },
+    {
+      "month": "Dec",
+      "income": 5240,
+      "expenses": 6110
+    },
+    {
+      "month": "Jan",
+      "income": 5200,
+      "expenses": 3480
+    },
+    {
+      "month": "Feb",
+      "income": 5200,
+      "expenses": 3610
+    },
+    {
+      "month": "Mar",
+      "income": 5350,
+      "expenses": 4020
+    },
+    {
+      "month": "Apr",
+      "income": 5200,
+      "expenses": 5790
+    },
+    {
+      "month": "May",
+      "income": 5200,
+      "expenses": 3390
+    },
+    {
+      "month": "Jun",
+      "income": 5420,
+      "expenses": 3870
+    },
+    {
+      "month": "Jul",
+      "income": 5200,
+      "expenses": 4410
+    },
+    {
+      "month": "Aug",
+      "income": 5200,
+      "expenses": 5960
+    },
+    {
+      "month": "Sep",
+      "income": 5260,
+      "expenses": 3720
+    },
+    {
+      "month": "Oct",
+      "income": 4100,
+      "expenses": 1148
+    }
+  ],
+  "/api/transactions/ids": {
+    "ids": [],
+    "rows": [],
+    "total": 6,
+    "capped": false
+  },
+  "/api/transactions": {
+    "data": [
+      {
+        "id": "t1",
+        "date": "2026-10-07",
+        "amount": -38.6,
+        "description": "TESCO STORES 2231 SEVENOAKS",
+        "needs_review": false,
+        "category": {
+          "name": "Groceries"
+        }
+      },
+      {
+        "id": "t2",
+        "date": "2026-10-06",
+        "amount": -14.5,
+        "description": "SQ *THE BAKEHOUSE",
+        "needs_review": false,
+        "category": null
+      },
+      {
+        "id": "t3",
+        "date": "2026-10-06",
+        "amount": -64,
+        "description": "TONBRIDGE SWIMMING CLUB",
+        "needs_review": false,
+        "category": {
+          "name": "Kids activities"
+        }
+      },
+      {
+        "id": "t4",
+        "date": "2026-10-05",
+        "amount": 120,
+        "description": "VINTED REFUND 88213",
+        "needs_review": false,
+        "category": null
+      },
+      {
+        "id": "t5",
+        "date": "2026-10-04",
+        "amount": -52.8,
+        "description": "PIZZA EXPRESS TUNBRIDGE WELLS",
+        "needs_review": false,
+        "category": {
+          "name": "Eating out"
+        }
+      }
+    ],
+    "total": 48
+  },
+  "/api/subscriptions": {
+    "as_of": "2026-10-07",
+    "subscriptions": [
+      {
+        "id": "s1",
+        "name": "Netflix",
+        "amount": 12.99,
+        "frequency": "monthly",
+        "status": "active",
+        "next_due": "2026-10-12"
+      },
+      {
+        "id": "s2",
+        "name": "Council tax",
+        "amount": 212,
+        "frequency": "monthly",
+        "status": "active",
+        "next_due": "2026-10-15"
+      },
+      {
+        "id": "s3",
+        "name": "Spotify Family",
+        "amount": 19.99,
+        "frequency": "monthly",
+        "status": "active",
+        "next_due": "2026-10-18"
+      },
+      {
+        "id": "s4",
+        "name": "Octopus Energy",
+        "amount": 148.5,
+        "frequency": "monthly",
+        "status": "active",
+        "next_due": "2026-10-20"
+      },
+      {
+        "id": "s5",
+        "name": "Amazon Prime",
+        "amount": 95,
+        "frequency": "annual",
+        "status": "active",
+        "next_due": "2026-12-02"
+      },
+      {
+        "id": "s6",
+        "name": "Old gym",
+        "amount": 42,
+        "frequency": "monthly",
+        "status": "cancelled",
+        "next_due": "2026-10-10"
+      }
+    ],
+    "summary": {},
+    "untracked": []
+  },
+  "/api/fire/coast": {
+    "coastFire": {
+      "value": 402000,
+      "fireNumberAtRetirement": 1250000,
+      "currentNetWorth": 362600,
+      "progress": 90.2,
+      "surplus": -39400,
+      "isCoastFI": false
+    },
+    "inputs": {
+      "currentAge": 43,
+      "targetRetirementAge": 55,
+      "yearsLeft": 12,
+      "excludeProperty": true
+    },
+    "settings": {
+      "annualSpend": 50000,
+      "withdrawalRate": 4,
+      "expectedReturn": 7
+    }
+  },
+  "/api/budgets/category/": {
+    "category": {
+      "id": "093f81fc-9bb6-541e-b803-977bd85748f3",
+      "name": "Eating out",
+      "groupName": "Food",
+      "isIncome": false
+    },
+    "period": {
+      "view": "month",
+      "year": 2026,
+      "month": 10,
+      "label": "October 2026",
+      "from": "2026-10-01",
+      "to": "2026-10-31"
+    },
+    "budget": 350,
+    "actual": 286,
+    "budgetToDate": null,
+    "months": [
+      {
+        "key": "2025-11",
+        "year": 2025,
+        "month": 11,
+        "label": "Nov",
+        "actual": 300,
+        "budget": 300,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2025-12",
+        "year": 2025,
+        "month": 12,
+        "label": "Dec",
+        "actual": 250,
+        "budget": 300,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-01",
+        "year": 2026,
+        "month": 1,
+        "label": "Jan 26",
+        "actual": 290,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-02",
+        "year": 2026,
+        "month": 2,
+        "label": "Feb",
+        "actual": 640,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-03",
+        "year": 2026,
+        "month": 3,
+        "label": "Mar",
+        "actual": 260,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-04",
+        "year": 2026,
+        "month": 4,
+        "label": "Apr",
+        "actual": 360,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-05",
+        "year": 2026,
+        "month": 5,
+        "label": "May",
+        "actual": 650,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-06",
+        "year": 2026,
+        "month": 6,
+        "label": "Jun",
+        "actual": 790,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-07",
+        "year": 2026,
+        "month": 7,
+        "label": "Jul",
+        "actual": 150,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-08",
+        "year": 2026,
+        "month": 8,
+        "label": "Aug",
+        "actual": 290,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-09",
+        "year": 2026,
+        "month": 9,
+        "label": "Sep",
+        "actual": 410,
+        "budget": 350,
+        "partial": false,
+        "future": false
+      },
+      {
+        "key": "2026-10",
+        "year": 2026,
+        "month": 10,
+        "label": "Oct",
+        "actual": 286,
+        "budget": 350,
+        "partial": true,
+        "future": false
+      }
+    ],
+    "trend": {
+      "recentAvg": 441.67,
+      "priorAvg": 376.67,
+      "change": 0.1725648445588977,
+      "sameMonthLastYear": 520,
+      "recentMonths": 6
+    },
+    "recent": [
+      {
+        "id": "r1",
+        "date": "2026-10-05",
+        "description": "SOUL RAMEN TUNBRIDGE WEL",
+        "amount": -85.14,
+        "account": "HSBC Joint Current Account"
+      },
+      {
+        "id": "r2",
+        "date": "2026-10-03",
+        "description": "BILL'S SEVENOAKS",
+        "amount": -64.2,
+        "account": "Amex Gold"
+      },
+      {
+        "id": "r3",
+        "date": "2026-10-01",
+        "description": "PRET A MANGER LONDON BRIDGE",
+        "amount": -11.95,
+        "account": "HSBC Joint Current Account"
+      }
+    ],
+    "count": 9
+  }
+}

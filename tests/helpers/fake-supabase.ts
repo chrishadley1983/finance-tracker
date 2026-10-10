@@ -68,6 +68,7 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
     let head = false;
     let wantCount = false;
     let single = false;
+    let maybe = false;
     const filters: Filter[] = [];
     let sorter: ((a: Row, b: Row) => number) | null = null;
     let from = 0;
@@ -120,9 +121,10 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
       if (head) return { data: null, error: null, count };
       const data = page.map((r) => project(name, r, selectSpec));
       if (single) {
-        return data.length === 1
-          ? { data: data[0], error: null }
-          : { data: null, error: { code: 'PGRST116', message: 'not found' } };
+        if (data.length === 1) return { data: data[0], error: null };
+        // maybeSingle(): no row is not an error.
+        if (maybe && data.length === 0) return { data: null, error: null };
+        return { data: null, error: { code: 'PGRST116', message: 'not found' } };
       }
       return { data, error: null, count: wantCount ? count : null };
     };
@@ -161,10 +163,34 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
       eq(c: string, v: unknown) { filters.push((r) => r[c] === v); return b; },
       neq(c: string, v: unknown) { filters.push((r) => r[c] !== v && r[c] !== null && r[c] !== undefined); return b; },
       in(c: string, vs: unknown[]) { filters.push((r) => vs.includes(r[c])); return b; },
+      /** PostgREST or(): comma-separated `col.is.null` / `col.eq.value` terms. */
+      or(spec: string) {
+        const terms = spec.split(',').map((t) => {
+          const [col, op, ...rest] = t.split('.');
+          const val = rest.join('.');
+          return (r: Row) =>
+            op === 'is' && val === 'null'
+              ? r[col] === null || r[col] === undefined
+              : op === 'eq'
+                ? String(r[col]) === val
+                : false;
+        });
+        filters.push((r) => terms.some((f) => f(r)));
+        return b;
+      },
       is(c: string, v: unknown) { filters.push((r) => (v === null ? r[c] === null || r[c] === undefined : r[c] === v)); return b; },
       not(c: string, o: string, v: unknown) {
         if (o === 'is') filters.push((r) => (v === null ? r[c] !== null && r[c] !== undefined : r[c] !== v));
         else if (o === 'eq') filters.push((r) => r[c] !== v);
+        return b;
+      },
+      ilike(c: string, pattern: string) {
+        const source = pattern
+          .split('')
+          .map((ch) => (ch === '%' ? '.*' : ch === '_' ? '.' : ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+          .join('');
+        const re = new RegExp(`^${source}$`, 'is');
+        filters.push((r) => typeof r[c] === 'string' && re.test(r[c] as string));
         return b;
       },
       gte(c: string, v: unknown) { filters.push((r) => r[c] !== null && r[c] !== undefined && cmp(r[c], v) >= 0); return b; },
@@ -179,7 +205,7 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
       range(f: number, t: number) { from = f; to = t; return b; },
       limit(n: number) { to = from + n - 1; return b; },
       single() { single = true; return b; },
-      maybeSingle() { single = true; return b; },
+      maybeSingle() { single = true; maybe = true; return b; },
       then<T>(resolve: (v: ReturnType<typeof exec>) => T, reject?: (e: unknown) => T) {
         try {
           return Promise.resolve(resolve(exec()));
