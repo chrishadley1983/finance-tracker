@@ -47,13 +47,19 @@ export async function GET(request: NextRequest) {
     }
 
     const row = data[0];
+    const totalIncomeBudget = Number(row.total_income_budget) || 0;
+    const totalIncomeActual = Number(row.total_income_actual) || 0;
+    const totalExpenseBudget = Number(row.total_expense_budget) || 0;
+    const totalExpenseActual = Number(row.total_expense_actual) || 0;
     const savingsRate: SavingsRate = {
-      totalIncomeBudget: Number(row.total_income_budget) || 0,
-      totalIncomeActual: Number(row.total_income_actual) || 0,
-      totalExpenseBudget: Number(row.total_expense_budget) || 0,
-      totalExpenseActual: Number(row.total_expense_actual) || 0,
-      savingsBudget: Number(row.savings_budget) || 0,
-      savingsActual: Number(row.savings_actual) || 0,
+      totalIncomeBudget,
+      totalIncomeActual,
+      totalExpenseBudget,
+      totalExpenseActual,
+      // get_savings_rate returns no savings columns (only the totals and rates); reading
+      // row.savings_actual gave undefined → "Saved £0". Derive them, as the rates are derived.
+      savingsBudget: totalIncomeBudget - totalExpenseBudget,
+      savingsActual: totalIncomeActual - totalExpenseActual,
       savingsRateBudget: Number(row.savings_rate_budget) || 0,
       savingsRateActual: Number(row.savings_rate_actual) || 0,
     };
