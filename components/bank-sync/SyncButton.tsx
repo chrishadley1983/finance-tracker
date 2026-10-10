@@ -61,7 +61,9 @@ export function SyncButton({ accountId, label, className, onDone }: SyncButtonPr
 
       const data = await response.json().catch(() => ({}));
 
-      if (response.status === 503) {
+      // 503 without a code = TrueLayer not configured; with a code (e.g. REFRESH_TEMPORARY) it is a
+      // transient sync failure and should show as an ordinary error, not a set-up prompt.
+      if (response.status === 503 && (!data.code || data.code === 'CONFIG')) {
         setNotConfigured(true);
         setError(data.error || 'TrueLayer is not configured');
         scheduleClear();
