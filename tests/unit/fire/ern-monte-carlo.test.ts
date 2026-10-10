@@ -133,6 +133,43 @@ describe('ERN Monte Carlo Engine', () => {
     });
   });
 
+  describe('tax-aware mode (wrapper balances)', () => {
+    // All in an ISA: the tax-aware engine draws the same spending gap as the simple model plus the
+    // income tax on the State Pension, so it can never end richer. The old engine took the pension
+    // off spending twice (£50k − £23k − £23k → £4k a year drawn after 67) and never charged tax,
+    // so it ended far richer and its survival rate was overstated.
+    const isaOnly = { ...baseConfig, wrapperBalances: { isa: baseConfig.portfolio, sipp: 0, gia: 0, cash: 0 }, statePensionAnnual: 23_000, statePensionStartAge: 67 };
+
+    it('never ends richer than the simple (no-tax) model', () => {
+      const simple = runMonteCarlo(baseConfig);
+      const taxAware = runMonteCarlo(isaOnly);
+      const last = (r: typeof simple) => r.percentiles.p50[r.percentiles.p50.length - 1];
+      expect(last(taxAware)).toBeLessThanOrEqual(last(simple) * 1.001);
+      expect(taxAware.survivalRate).toBeLessThanOrEqual(simple.survivalRate);
+    });
+
+    it('a year the accessible pots cannot fund fails the path (locked SIPP is not "survival")', () => {
+      // Retire at 42 with almost everything in a SIPP locked until 57 and a small ISA: the bridge runs
+      // dry within a few years. The old engine dropped the unpaid spending, the SIPP grew untouched
+      // and nearly every path "survived".
+      const r = runMonteCarlo({
+        ...baseConfig,
+        wrapperBalances: { isa: 100_000, sipp: 1_438_050, gia: 0, cash: 0 },
+        statePensionAnnual: 23_000,
+        statePensionStartAge: 67,
+      });
+      expect(r.survivalRate).toBe(0);
+    });
+
+    it('takes the State Pension off spending once, not twice', () => {
+      // Spend exactly equal to the pension: after 67 nothing should be drawn in either mode; before 67
+      // both draw the full spend. A double offset made no difference here, so pair it with the case
+      // above — together they pin the pension to a single deduction.
+      const r = runMonteCarlo({ ...isaOnly, annualSpend: 23_000 });
+      expect(r.survivalRate).toBe(100);
+    });
+  });
+
   describe('spending decline (corrected go-go model)', () => {
     it('spending decline improves survival vs flat spending', () => {
       const flat = runMonteCarlo({ ...baseConfig, gogoEnabled: false });

@@ -114,13 +114,27 @@ export function computeOptimalDrawdown(config: DrawdownConfig): DrawdownResult {
   const statePensionNet = receivingStatePension ? statePensionAnnual : 0;
   const spendingGap = Math.max(0, annualSpend - statePensionNet);
 
+  // The pots must pay the tax too: draw for gap + tax, re-estimating the tax until it settles.
+  // (Drawing only the pre-tax gap left the household short by the whole tax bill every year.)
+  // Converges because the marginal rate is below 100%; when the pots run out the draws (and so the
+  // tax) stop growing and it settles with netIncome below annualSpend — an honest shortfall.
+  let draw = allocate(spendingGap);
+  for (let i = 0; i < 20; i++) {
+    const next = allocate(spendingGap + draw.totalTax);
+    const settled = Math.abs(next.totalTax - draw.totalTax) < 0.5;
+    draw = next;
+    if (settled) break;
+  }
+  return draw;
+
+  function allocate(target: number): DrawdownResult {
   let fromIsa = 0;
   let fromSipp = 0;
   let fromSippTaxFree = 0;
   let fromSippTaxable = 0;
   let fromGia = 0;
   let fromCash = 0;
-  let remaining = spendingGap;
+  let remaining = target;
 
   // SIPP is inaccessible before minimum pension age (57 in UK)
   const effectiveSipp = canAccessSipp ? balances.sipp : 0;
@@ -218,6 +232,7 @@ export function computeOptimalDrawdown(config: DrawdownConfig): DrawdownResult {
       cash: balances.cash - fromCash,
     },
   };
+  }
 }
 
 // =============================================================================
