@@ -28,6 +28,7 @@ import { notifyDiscord, notifyEmail } from '../plan/inputs/notify.mjs';
 import { writeWorkbook } from '../plan/render/xlsx.mjs';
 import { htmlToPdf } from '../plan/render/pdf.mjs';
 import { ukToday } from '../plan/inputs/uk-date.mjs';
+import { guardAcceptedRun } from '../plan/inputs/run-guard.mjs';
 
 loadEnvConfig(process.cwd(), true);
 const root = path.resolve(__dirname, '..');
@@ -40,6 +41,11 @@ const log = (m: string) => console.log(m);
 
 export async function main() {
   const started = Date.now();
+  // Before any network call or write: never silently rewrite an accepted (hash-locked) run.
+  if (!args.includes('--check-only')) {
+    const { warning } = guardAcceptedRun(runsDir, runId, { force: args.includes('--force') });
+    if (warning) log(`WARNING ${warning}`);
+  }
   log(`[${new Date().toISOString()}] plan run ${runId} (${args.includes('--offline') ? 'offline' : 'live'}${args.includes('--check-only') ? ', check-only' : ''})`);
   const assumptionsFile = JSON.parse(fs.readFileSync(path.join(root, 'plan/assumptions.json'), 'utf8'));
   const { inputs: collected, drift } = await collectInputs({ live: !args.includes('--offline'), savePrices: !args.includes('--offline') && !args.includes('--check-only'), today, log: (m) => log('  ' + m) });
@@ -67,11 +73,6 @@ export async function main() {
   let dir: string | null = null;
   if (!args.includes('--check-only')) {
     dir = path.join(runsDir, runId);
-    // An accepted run is a hash-locked record: rewriting its files and re-signing the manifest would
-    // silently replace the numbers that latest-accepted.json points at. Use --tag for a second run.
-    if (fs.existsSync(path.join(dir, 'ACCEPTED.json')) && !args.includes('--force')) {
-      throw new Error(`plan/runs/${runId} is an accepted run — refusing to overwrite it. Re-run with --tag <name> (or --force to overwrite deliberately).`);
-    }
     fs.mkdirSync(dir, { recursive: true });
     const docs = renderAll(outputs, inputs, { generatedAt: today, assumptionsFile, drift, runId });
     fs.writeFileSync(path.join(dir, 'inputs.json'), JSON.stringify(inputs, null, 1));

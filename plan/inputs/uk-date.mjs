@@ -5,5 +5,8 @@
  * and, on 6 April, used the previous tax year.
  */
 export function ukToday(/** @type {Date=} */ now = new Date()) {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+  // Built from parts: a locale's whole-date format (e.g. en-CA) has changed across ICU releases.
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+  const get = (/** @type {string} */ t) => parts.find((p) => p.type === t)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
 }
