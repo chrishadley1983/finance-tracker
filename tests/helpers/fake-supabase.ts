@@ -33,7 +33,13 @@ function parseSelect(spec: string): { cols: string[] | null; embeds: { alias: st
   return { cols: cols.includes('*') || cols.length === 0 ? null : cols, embeds };
 }
 
-export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Record<string, (args: Row) => unknown> = {}) {
+export function createFakeSupabase(
+  initial: Record<string, Row[]> = {},
+  rpcs: Record<string, (args: Row) => unknown> = {},
+  /** maxRows: cap every response like PostgREST's max-rows (Supabase default 1,000). Off unless set. */
+  opts: { maxRows?: number } = {},
+) {
+  const maxRows = opts.maxRows ?? Infinity;
   const tables: Record<string, Row[]> = {};
   for (const [k, v] of Object.entries(initial)) tables[k] = v.map((r) => ({ ...r }));
   const table = (name: string) => (tables[name] ??= []);
@@ -117,7 +123,8 @@ export function createFakeSupabase(initial: Record<string, Row[]> = {}, rpcs: Re
       }
       if (sorter) matched = [...matched].sort(sorter);
       const count = matched.length;
-      const page = matched.slice(from, to === Infinity ? undefined : to + 1);
+      const end = Math.min(to === Infinity ? Infinity : to + 1, from + maxRows);
+      const page = matched.slice(from, end === Infinity ? undefined : end);
       if (head) return { data: null, error: null, count };
       const data = page.map((r) => project(name, r, selectSpec));
       if (single) {

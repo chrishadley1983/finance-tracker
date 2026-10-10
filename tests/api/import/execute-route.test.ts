@@ -96,4 +96,20 @@ describe('POST /api/import/execute', () => {
     expect(second).toMatchObject({ imported: 0, skipped: 450 });
     expect(db.current!.tables.transactions).toHaveLength(450);
   });
+
+  it('dedups a re-import of more than 1,000 rows (the existing-row read is paged)', async () => {
+    db.current = createFakeSupabase(
+      { import_sessions: [{ id: SESSION, status: 'pending' }], accounts: [{ id: ACCOUNT }], transactions: [], imported_transaction_hashes: [] },
+      {},
+      { maxRows: 1000 }, // behave like Supabase: an unpaged read silently stops at 1,000 rows
+    );
+    const rows = Array.from({ length: 1200 }, (_, i) => ({ ...row(i + 1), description: `SHOP ${i + 1}` }));
+    await POST(req(rows));
+    expect(db.current!.tables.transactions).toHaveLength(1200);
+    db.current!.tables.import_sessions[0].status = 'pending';
+    const second = await (await POST(req(rows))).json();
+    expect(second).toMatchObject({ imported: 0, skipped: 1200 });
+    expect(db.current!.tables.transactions).toHaveLength(1200);
+  });
+
 });

@@ -10,6 +10,7 @@
  * barrel deliberately excludes it; only API routes + the local script import it).
  */
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { pageAll } from '@/lib/supabase/page-all';
 import {
   categoriseMultiple,
   toTransactionCategoryFields,
@@ -138,14 +139,31 @@ export async function syncAccount(
     if (t.date < minDate) minDate = t.date;
     if (t.date > maxDate) maxDate = t.date;
   }
-  const { data: existingRows, error: exErr } = await supabaseAdmin
-    .from('transactions')
-    .select('id, date, amount, hsbc_transaction_id')
-    .eq('account_id', financeAccountId)
-    .gte('date', minDate)
-    .lte('date', maxDate);
-  if (exErr) throw new TrueLayerError(`Failed to read transactions: ${exErr.message}`, 500, 'DB');
-  const existing: ExistingDbRow[] = (existingRows ?? []).map((r) => ({
+  // Widen by the reconcile's date tolerance so a CSV row just outside the window can still match
+  // (pass 2 matches amount within ±tolerance days), and page past Supabase's 1,000-row cap: a truncated
+  // read makes planReconcile treat unseen rows as missing (unique-ref errors, or duplicates of CSV rows).
+  const tolerance = opts.dateToleranceDays ?? 3;
+  const shift = (d: string, days: number) => isoDate(new Date(new Date(`${d}T00:00:00Z`).getTime() + days * 86_400_000));
+  let existingRows: Array<{ id: string; date: string; amount: number; hsbc_transaction_id: string | null }>;
+  try {
+    existingRows = await pageAll((from, to) =>
+      supabaseAdmin
+        .from('transactions')
+        .select('id, date, amount, hsbc_transaction_id')
+        .eq('account_id', financeAccountId)
+        .gte('date', shift(minDate, -tolerance))
+        .lte('date', shift(maxDate, tolerance))
+        .order('id')
+        .range(from, to),
+    );
+  } catch (e) {
+    throw new TrueLayerError(`Failed to read transactions: ${e instanceof Error ? e.message : String(e)}`, 500, 'DB');
+  }
+  // The ±tolerance margin exists for CSV/manual rows whose booking date sits just outside the window.
+  // Bank-referenced rows in the margin belong to transactions outside this fetch: offering them to the
+  // amount/date pass could absorb a genuinely new same-amount transaction, so keep them out.
+  const inMargin = (d: string) => d < minDate || d > maxDate;
+  const existing: ExistingDbRow[] = existingRows.filter((r) => !(inMargin(r.date) && r.hsbc_transaction_id)).map((r) => ({
     id: r.id,
     date: r.date,
     amount: Number(r.amount),
