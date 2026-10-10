@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { ACCOUNT_TYPE_LABELS, type NetWorthSummary } from '@/lib/types/fire';
-import { buildValuer, previousMonthEnd, totalAt } from '@/lib/wealth/net-worth';
+import { buildValuer, previousMonthEnd } from '@/lib/wealth/net-worth';
+import { ukToday } from '@/plan/inputs/uk-date.mjs';
 import { loadBalanceData } from '@/lib/wealth/load';
 
 // =============================================================================
@@ -10,7 +11,7 @@ import { loadBalanceData } from '@/lib/wealth/load';
 
 export async function GET() {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = ukToday();
 
     // Active accounts that count towards net worth (include_in_net_worth, as the monthly report does)
     const { data: accounts, error: accountsError } = await supabaseAdmin
@@ -103,11 +104,24 @@ export async function GET() {
     // "Since last month": last month-end valued the same way as today (snapshot + later transactions
     // for current/credit accounts), over the accounts that existed then. Comparing today's
     // transaction-adjusted total with raw old snapshots counted months of movement as one month's.
-    const { snapshots, transactions } = await loadBalanceData(accounts);
-    const previous = totalAt(accounts, buildValuer(snapshots, transactions), previousMonthEnd(today));
-    const previousTotal = previous ? previous.total : null;
-    const change = previousTotal !== null ? total - previousTotal : null;
-    const changePercent = previousTotal ? ((total - previousTotal) / Math.abs(previousTotal)) * 100 : null;
+    // Change is over the accounts valued at both dates, so a newly added account's balance is not a "gain".
+    // A failure here degrades to "no comparison" rather than failing the headline.
+    let previousTotal: number | null = null;
+    let change: number | null = null;
+    try {
+      const prevEnd = previousMonthEnd(today);
+      const { snapshots, transactions } = await loadBalanceData(accounts, { upTo: prevEnd });
+      const valuer = buildValuer(snapshots, transactions);
+      for (const a of accounts) {
+        const prev = valuer.balanceAt(a, prevEnd);
+        if (prev === null) continue;
+        previousTotal = (previousTotal ?? 0) + prev;
+        change = (change ?? 0) + ((snapshotBalances.get(a.id) || 0) - prev);
+      }
+    } catch (e) {
+      console.error('Net worth: previous month-end total unavailable:', e);
+    }
+    const changePercent = previousTotal && change !== null ? (change / Math.abs(previousTotal)) * 100 : null;
 
     const result: NetWorthSummary = {
       date: today,

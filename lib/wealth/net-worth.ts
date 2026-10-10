@@ -4,12 +4,11 @@
  *
  * - Every account: the latest snapshot on or before the date, carried forward per ACCOUNT (not
  *   per type — carrying a type total forward dropped accounts snapshotted less often).
- * - Transactional accounts (current, credit): that snapshot plus the account's transactions after
- *   the snapshot date, up to and including the date (matches get_account_balances_with_snapshots).
+ * - Plus the account's transactions dated ON OR AFTER the snapshot date, up to and including the
+ *   date — exactly the live get_account_balances_with_snapshots rule (t.date >= snapshot_date, every
+ *   account type), so the chart's latest point equals the headline.
  * - An account with no snapshot on or before the date has no value yet (it didn't exist then).
  */
-
-export const TRANSACTIONAL_TYPES = new Set(['current', 'credit']);
 
 export interface WealthAccount {
   id: string;
@@ -55,10 +54,9 @@ export function buildValuer(snapshots: BalancePoint[], transactions: TxPoint[]):
         else break;
       }
       if (!base) return null;
-      if (!TRANSACTIONAL_TYPES.has(account.type)) return base.balance;
       let balance = base.balance;
       for (const t of txs.get(account.id) ?? []) {
-        if (t.date > base.date && t.date <= date) balance += t.amount;
+        if (t.date >= base.date && t.date <= date) balance += t.amount;
       }
       return balance;
     },

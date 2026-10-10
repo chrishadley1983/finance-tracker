@@ -18,7 +18,7 @@ import { GET as history } from '@/app/api/wealth/history/route';
 type Row = Record<string, unknown>;
 const acct = (id: string, type: string, extra: Row = {}) => ({ id, name: `Acc ${id}`, type, is_active: true, include_in_net_worth: true, ...extra });
 
-/** Balance RPC: same rule as the live function — latest snapshot plus later transactions. */
+/** Balance RPC: the live rule — newest snapshot plus transactions dated on or after it (t.date >= snapshot_date). */
 function seed(accounts: Row[], snapshots: Row[] = [], transactions: Row[] = []) {
   db.current = createFakeSupabase(
     {
@@ -34,7 +34,7 @@ function seed(accounts: Row[], snapshots: Row[] = [], transactions: Row[] = []) 
           const last = snaps[snaps.length - 1];
           const base = last ? Number(last.balance) : 0;
           const txSum = db.current!.tables.transactions
-            .filter((t) => t.account_id === id && (!last || String(t.date) > String(last.date)))
+            .filter((t) => t.account_id === id && (!last || String(t.date) >= String(last.date)))
             .reduce((s, t) => s + Number(t.amount), 0);
           return { account_id: id, snapshot_date: last?.date ?? null, snapshot_balance: base, transactions_sum: txSum, current_balance: base + txSum };
         }),
@@ -91,6 +91,17 @@ describe('GET /api/wealth/net-worth', () => {
     expect(body.change).toBe(1_000);
   });
 
+  it('a newly added account is not counted as a gain since last month', async () => {
+    seed([acct('p', 'pension'), acct('new', 'isa')], [
+      { account_id: 'p', date: '2026-09-01', balance: 300 },
+      { account_id: 'p', date: '2026-10-01', balance: 310 },
+      { account_id: 'new', date: '2026-10-01', balance: 20_000 }, // opened this month
+    ]);
+    const body = await (await netWorth()).json();
+    expect(body.total).toBe(20_310);
+    expect(body.change).toBe(10);
+  });
+
   it('reports a change against a zero or negative previous total', async () => {
     seed([acct('cc', 'credit')], [{ account_id: 'cc', date: '2026-08-01', balance: -500 }], [
       { account_id: 'cc', date: '2026-10-02', amount: 200 },
@@ -127,6 +138,17 @@ describe('GET /api/wealth/history', () => {
       ['2026-09-01', 360],
       ['2026-10-01', 360],
     ]);
+  });
+
+  it("the latest point equals the headline, including a transaction on the snapshot's own date", async () => {
+    seed([acct('c', 'current')], [{ account_id: 'c', date: '2026-10-01', balance: 1_000 }], [
+      { account_id: 'c', date: '2026-10-01', amount: 50 },
+      { account_id: 'c', date: '2026-10-04', amount: -20 },
+    ]);
+    const headline = (await (await netWorth()).json()).total;
+    const latest = (await (await history(req())).json()).snapshots.at(-1).total;
+    expect(headline).toBe(1_030);
+    expect(latest).toBe(headline);
   });
 
   it('a period still uses earlier snapshots as starting balances', async () => {

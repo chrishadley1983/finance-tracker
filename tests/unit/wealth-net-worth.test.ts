@@ -23,14 +23,14 @@ describe('net worth valuation', () => {
     expect(h).toEqual([{ date: '2026-03-01', total: 50_000, byType: { investment: 50_000 } }]);
   });
 
-  it('current accounts: snapshot plus later transactions up to month-end', () => {
+  it('snapshot plus transactions on or after its date, up to month-end (the live RPC rule)', () => {
     const v = buildValuer([{ account_id: 'C', date: '2026-02-10', balance: 2_000 }], [
-      { account_id: 'C', date: '2026-02-10', amount: 999 }, // on the snapshot day: already in the snapshot
+      { account_id: 'C', date: '2026-02-10', amount: 100 }, // on the snapshot day: counted, as the live RPC does
       { account_id: 'C', date: '2026-02-20', amount: 500 },
       { account_id: 'C', date: '2026-03-05', amount: -200 },
     ]);
-    expect(v.balanceAt(current, '2026-02-28')).toBe(2_500);
-    expect(v.balanceAt(current, '2026-03-31')).toBe(2_300);
+    expect(v.balanceAt(current, '2026-02-28')).toBe(2_600);
+    expect(v.balanceAt(current, '2026-03-31')).toBe(2_400);
     expect(v.balanceAt(current, '2026-01-31')).toBeNull(); // no snapshot yet: the account did not count then
   });
 
