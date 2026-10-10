@@ -1,0 +1,3 @@
+
+# Accepted plan runs are hash-locked by their manifests: store byte-for-byte, never convert line endings
+plan/runs/** -text

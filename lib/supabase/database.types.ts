@@ -1172,6 +1172,39 @@ export type Database = {
           },
         ]
       }
+      plan_ladder_rungs: {
+        Row: {
+          year: number
+          status: string
+          epic: string | null
+          face_value: number | null
+          cost: number | null
+          purchased_on: string | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          year: number
+          status?: string
+          epic?: string | null
+          face_value?: number | null
+          cost?: number | null
+          purchased_on?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          year?: number
+          status?: string
+          epic?: string | null
+          face_value?: number | null
+          cost?: number | null
+          purchased_on?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       wealth_snapshots: {
         Row: {
           account_id: string

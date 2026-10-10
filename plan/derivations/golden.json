@@ -1,0 +1,21 @@
+{
+  "note": "Independent hand derivations. Every `expected` was produced OUTSIDE the engine (calculator, HMRC rules, longhand) and its working is in the named file. A golden may only change with a new derivation file and a plan/decisions.md line. Tests: tests/unit/plan/golden.test.ts.",
+  "goldens": [
+    { "id": "netpay-apr-2026", "check": "netPay(cash=(5825*0.955+541.67)*12, taxable=cash+110.83*12)/12", "expected": 4330.10, "tol": 1.0, "unit": "GBP/month", "derivedBy": "Chris/Claude from the April 2026 payslip", "on": "2026-09-20", "file": "netpay-2026.md" },
+    { "id": "netpay-aug-2026", "check": "netPay(cash=(6153.15*0.955+541.67)*12, taxable=cash+110.83*12)/12", "expected": 4511.60, "tol": 1.0, "unit": "GBP/month", "derivedBy": "Chris/Claude from the August 2026 payslip", "on": "2026-09-20", "file": "netpay-2026.md" },
+    { "id": "pivot-2026-27-extra-at-60k", "check": "pivotYear(0, 60000).extraSacrifice", "expected": 22037, "tol": 1, "unit": "GBP", "derivedBy": "longhand", "on": "2026-09-20", "file": "pivot-2026-27.md" },
+    { "id": "pivot-2034-35-extra-at-60k", "check": "pivotYear(8, 60000).extraSacrifice", "expected": 34776, "tol": 2, "unit": "GBP", "derivedBy": "longhand", "on": "2026-09-20", "file": "pivot-2026-27.md" },
+    { "id": "pivot-nine-year-total-at-60k", "check": "pivotProgramme(60000).totals.extraSacrifice", "expected": 254330, "tol": 15, "unit": "GBP", "derivedBy": "longhand geometric sum", "on": "2026-09-20", "file": "pivot-2026-27.md" },
+    { "id": "takehome-year1-at-60k-line", "check": "takeHomeNominal(0, extra at 60k)", "expected": 43498, "tol": 5, "unit": "GBP/yr", "derivedBy": "longhand PAYE at £60,000 ANI, code 1117L", "on": "2026-09-20", "file": "pivot-2026-27.md" },
+    { "id": "hicbc-half-at-70k", "check": "childBenefitKept(70000, 2337.4) / 2337.4", "expected": 0.5, "tol": 0.0001, "unit": "fraction", "derivedBy": "gov.uk rule: 1% per £200 over £60k → 50 steps", "on": "2026-09-20", "file": "hicbc.md" },
+    { "id": "hicbc-one-step-at-60200", "check": "childBenefitKept(60200, 2337.4) / 2337.4", "expected": 0.99, "tol": 0.0001, "unit": "fraction", "derivedBy": "gov.uk rule: floor((60200−60000)/200)=1 step", "on": "2026-09-20", "file": "hicbc.md" },
+    { "id": "child-benefit-2026-27", "check": "assumptions.childBenefit.annual2026", "expected": 2337.4, "tol": 0.01, "unit": "GBP/yr", "derivedBy": "(27.05 + 17.90) × 52", "on": "2026-09-20", "file": "hicbc.md" },
+    { "id": "tr40-face-at-60k", "check": "buildLadder(FALLBACK 2026-07-29, {amountPerYear: 60000}).byGilt.TR40.face", "expected": 31204, "tol": 40, "unit": "GBP nominal", "derivedBy": "60000 ÷ (156.06/81.15)", "on": "2026-09-20", "file": "tr40-rung.md" },
+    { "id": "tr40-cost-at-60k", "check": "buildLadder(FALLBACK 2026-07-29, {amountPerYear: 60000}).byGilt.TR40.estCost", "expected": 48696, "tol": 60, "unit": "GBP", "derivedBy": "face/100 × 156.06 = 60000 × 81.15/100", "on": "2026-09-20", "file": "tr40-rung.md" },
+    { "id": "size-by-budget-two-gilt-fixture", "check": "sizeByBudget([clean 80 @2035, clean 60 @2036], 140000, 2035–2036)", "expected": 100000, "tol": 0.01, "unit": "GBP real per year", "derivedBy": "140000 ÷ (0.80 + 0.60)", "on": "2026-09-20", "file": "size-by-budget.md" },
+    { "id": "annuity-40y-2pct", "check": "annuity(40, 0.02)", "expected": 27.3555, "tol": 0.0005, "unit": "years", "derivedBy": "(1 − 1.02^−40) / 0.02", "on": "2026-09-20", "file": "annuity.md" },
+    { "id": "nmw-annual-floor-40h", "check": "assumptions.nmw.annualFloor", "expected": 26508, "tol": 5, "unit": "GBP/yr", "derivedBy": "12.71 × 40 × 52.14", "on": "2026-09-20", "file": "nmw.md" },
+    { "id": "avc-recipe-aug-2026", "check": "avcRecipeFromYtd(payslip 2026-08).avcPct", "expected": 55, "tol": 0, "unit": "percent of basic", "derivedBy": "longhand from the August YTD", "on": "2026-09-20", "file": "avc-aug-2026.md" },
+    { "id": "ledger-2027-isa-ladder", "check": "runLedger(yields 2026-09-20).rows[2027].isaLadC + isaLadA", "expected": 527.5, "tol": 0.3, "unit": "GBP k real", "derivedBy": "521.829 × 1.0201 − ISA coupons 4.83 (re-derived after the ISA pot rebase)", "on": "2026-09-29", "file": "ledger-2027-row.md" }
+  ]
+}

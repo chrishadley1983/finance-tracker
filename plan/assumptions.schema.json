@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Household plan assumptions",
+  "description": "The single home for every chosen or quoted planning number. Validated by plan/inputs/assumptions.mjs on every load. Observations (measured, dated inputs) live in plan/observations; outputs live in plan/runs/<date>/outputs.json.",
+  "type": "object",
+  "required": ["schemaVersion", "preparedOn", "entries", "knownLimitations"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "preparedOn": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "moneyBasis": { "type": "string", "description": "Which pounds the real figures are in, e.g. 'Sep 2026 pounds'" },
+    "entries": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$" },
+      "additionalProperties": { "$ref": "#/definitions/entry" }
+    },
+    "knownLimitations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "raised"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "text": { "type": "string", "minLength": 20 },
+          "raised": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "fixBy": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "impact": { "type": "string" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "entry": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "description": "Absent for DERIVED entries (the loader computes it); required otherwise." },
+        "unit": { "type": "string" },
+        "status": { "type": "string", "enum": ["FACT", "CHECK", "GUESS", "DECISION", "DERIVED"] },
+        "source": { "type": "string", "minLength": 3, "description": "Where the value came from. DECISION entries must reference plan/decisions.md." },
+        "asOf": { "type": "string", "pattern": "^\\d{4}-\\d{2}(-\\d{2})?$" },
+        "reviewBy": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "cadence": { "type": "string", "enum": ["monthly", "quarterly", "tax-year", "annual", "event", "none"] },
+        "triggers": { "type": "array", "items": { "type": "string" } },
+        "formula": { "type": "string", "description": "DERIVED only: sum(a,b,…), a+b, a-b, a*b, a/b over other keys and numeric literals." },
+        "derivedBy": { "type": "string", "enum": ["loader", "engine"], "description": "DERIVED only. 'engine' entries are computed by the plan engine and cross-checked by tests, not by the loader." },
+        "note": { "type": "string" },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["value", "asOf", "supersededOn"],
+            "additionalProperties": false,
+            "properties": {
+              "value": {},
+              "asOf": { "type": "string" },
+              "supersededOn": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+              "why": { "type": "string" }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "DERIVED" } } },
+          "then": { "required": ["formula"], "not": { "required": ["value"] } },
+          "else": { "required": ["value", "source", "asOf"] }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["FACT", "CHECK", "GUESS", "DECISION"] } } },
+          "then": { "required": ["reviewBy"] }
+        }
+      ]
+    }
+  }
+}

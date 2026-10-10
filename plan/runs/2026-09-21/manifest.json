@@ -1,0 +1,59 @@
+{
+  "writtenAt": "2026-09-21T07:48:12.945Z",
+  "engineVersion": "2026-09-21.phase4",
+  "gitSha": "8daf86a",
+  "node": "v24.11.1",
+  "files": {
+    "assumptions.md": {
+      "sha256": "59d971e7df49e3ab383b59afffa2b3ba7df4c05c067b815be716aae5e43b6ca2",
+      "bytes": 13776
+    },
+    "avc-recipe.md": {
+      "sha256": "ea61d874d4b237f540ff50c60f4c4cff910a875ae89f5b229a5d81e061954b41",
+      "bytes": 444
+    },
+    "diff.md": {
+      "sha256": "1cc743b3038bbafc5d572d77a1d8b1426ed8b0b483a9ce2b37925089d2864f0d",
+      "bytes": 1348
+    },
+    "emissions.json": {
+      "sha256": "4348b03b620128d44964e37d0dd7986d9611cbceace1213dab392a4ac9f5159b",
+      "bytes": 173267
+    },
+    "inputs.json": {
+      "sha256": "f3904cc0cbf21cb58d4f8b32631df98c8ea3dcbd636b882a86a93d20bbff8383",
+      "bytes": 20361
+    },
+    "ledger.csv": {
+      "sha256": "10b73b4ae2d0675f7d7606fe8271c6fd21d751e0a604b11d37ea035e7e0e0133",
+      "bytes": 5900
+    },
+    "ledger.html": {
+      "sha256": "ac6c32c9c24d61d96a42be7e652374bdbf4a94176e37eb65c54be053edc13dd2",
+      "bytes": 81341
+    },
+    "order-sheet-isa.csv": {
+      "sha256": "619415fa6d6da4bf07e4e242199b05dc127fac7ce8218ff734548f4fa4aaf7dd",
+      "bytes": 789
+    },
+    "order-sheet-sipp.csv": {
+      "sha256": "1faa973b244eb66beac3be01490e2087283d5b42548da1d1b7bf3094b2074cfb",
+      "bytes": 666
+    },
+    "outputs.json": {
+      "sha256": "f7e38d60857d8936646588c740ad54b90676dd649e1e75f42ba7754fd47209c7",
+      "bytes": 76022
+    },
+    "summary.html": {
+      "sha256": "e2af81a92821d66495c01bceb9ef9010e3791f3b13fe79061d64da94c2e92668",
+      "bytes": 15052
+    },
+    "summary.json": {
+      "sha256": "64ec8082a541039d51c2ff1222b6f278dc24b0058b630beb437963adb9bfcc69",
+      "bytes": 336
+    }
+  },
+  "runId": "2026-09-21",
+  "verdict": "RED",
+  "prevId": null
+}

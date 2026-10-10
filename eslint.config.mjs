@@ -79,6 +79,20 @@ export default [
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
   },
+  // Node.js environment for the plan engine, inputs and tools (plain ES modules + TS)
+  {
+    files: ["plan/**/*.mjs", "plan/**/*.ts"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+    },
+  },
   // Node.js environment for config files
   {
     files: ["*.config.ts", "vitest.config.ts"],
@@ -114,6 +128,6 @@ export default [
     },
   },
   {
-    ignores: ["node_modules/**", ".next/**", "*.config.js", "*.config.mjs"],
+    ignores: ["node_modules/**", ".next/**", "*.config.js", "*.config.mjs", "plan/runs/**", "plan/archive/**"],
   },
 ];

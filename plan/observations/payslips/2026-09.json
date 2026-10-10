@@ -1,0 +1,15 @@
+{
+  "taxYear": "2026/27",
+  "taxMonth": 6,
+  "payDate": "2026-09-30",
+  "basicMonthly": 6153.15,
+  "taxablePayMonthly": 6528.76,
+  "ytdTaxable": 40150.2,
+  "netMonthly": 2874.04,
+  "avcPct": 47,
+  "bonusExpected": 3691.89,
+  "bonusSacrificed": true,
+  "otherTaxableIncome": 0,
+  "extraAvcAlreadyTaken": 2891.98,
+  "notes": "Tax month 06, first payslip with the extra AVC: Pension EE 51.5% (4.5% + 47% extra), SS Pension 3,168.87. Actual YTD taxable 37,258.22 (+ 2,891.98 extra AVC = 40,150.20 do-nothing basis). Net 2,874.04 reconciles: tax 453.67 (cumulative; relief still 40%), NI 198.24. Pension ER % now 12.00 (was 11%). bonusSacrificed assumed per the 47% choice — CONFIRM the February bonus sacrifice is elected."
+}

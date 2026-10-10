@@ -1,0 +1,20 @@
+{
+  "runId": "2026-10-01",
+  "acceptedOn": "2026-10-04T16:44:19.944Z",
+  "by": "Chris",
+  "note": "",
+  "verdict": "RED",
+  "headline": {
+    "atRetirement": 2276.2,
+    "atLastRung": 2134.2,
+    "atEnd": 1740.6,
+    "firstCashNegative": null,
+    "preRetirementDraw": 0,
+    "iht": 456,
+    "netToHeirs": 1284.6
+  },
+  "avcPct": 46,
+  "potsTotal": 1631976,
+  "ladderPerYear": 104401.77842715355,
+  "sustainableSpend": 97722.59113657752
+}

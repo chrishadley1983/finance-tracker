@@ -1,0 +1,6 @@
+epic,gilt,maturity,dirty,realYieldPct,faceToOrder,estCost,realAmount,coversYears,notes
+T41,"0 1/8% Index-linked Treasury Gilt 2041",10-Aug-2041,110.37,2.19,70,940,78,295,105,961,"2041",""
+T42A,"0 5/8% Index-linked Treasury Gilt 2042",22-Nov-2042,154.19,2.25,80,530,124,165,158,942,"2042 2043","no 2043 linker — half via 2042"
+T44,"0 1/8% Index-linked Treasury Gilt 2044",22-Mar-2044,118.25,2.33,92,045,108,843,158,942,"2043 2044","no 2043 linker — half via 2044"
+TR45,"0 5/8% Index-linked Treasury Gilt 2045",22-Mar-2045,85.57,2.36,91,821,78,570,105,961,"2045",""
+TOTAL,,,,,335,336,389,874,529,806,,"redemption per year 105,961; prices 2026-09-21T09:18:18.085Z"

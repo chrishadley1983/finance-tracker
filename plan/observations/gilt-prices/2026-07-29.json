@@ -1,0 +1,19 @@
+{
+  "asOf": "2026-07-29T13:00:00Z",
+  "source": "dividenddata.co.uk index-linked gilt table (LSE ~15-min delay)",
+  "note": "Static fallback used by the /plan cockpit when the live fetch fails with no cache (criterion E1) and by the ladder unit tests. Prices are per £100 nominal; clean is the real price, dirty includes the index ratio and accrued.",
+  "gilts": [
+    { "epic": "T33", "name": "0 3/4% Index-linked Treasury Gilt 2033", "coupon": "0.75%", "maturity": "22-Nov-2033", "matYear": 2033, "clean": 94.86, "dirty": 105.966, "realYield": 1.494 },
+    { "epic": "TRTQ", "name": "0 3/4% Index-linked Treasury Gilt 2034", "coupon": "0.75%", "maturity": "22-Mar-2034", "matYear": 2034, "clean": 93.81, "dirty": 168.198, "realYield": 1.613 },
+    { "epic": "TR35", "name": "1 1/8% Index-linked Treasury Gilt 2035", "coupon": "1.125%", "maturity": "22-Sep-2035", "matYear": 2035, "clean": 94.52, "dirty": 100.83, "realYield": 1.77 },
+    { "epic": "TG36", "name": "0 1/8% Index-linked Treasury Gilt 2036", "coupon": "0.125%", "maturity": "22-Nov-2036", "matYear": 2036, "clean": 83.49, "dirty": 133.33, "realYield": 1.9 },
+    { "epic": "TR37", "name": "1 1/8% Index-linked Treasury Gilt 2037", "coupon": "1.125%", "maturity": "22-Nov-2037", "matYear": 2037, "clean": 91.17, "dirty": 187.62, "realYield": 2.0 },
+    { "epic": "T38", "name": "1 3/4% Index-linked Treasury Gilt 2038", "coupon": "1.75%", "maturity": "22-Sep-2038", "matYear": 2038, "clean": 96.47, "dirty": 101.39, "realYield": 2.08 },
+    { "epic": "TG39", "name": "0 1/8% Index-linked Treasury Gilt 2039", "coupon": "0.125%", "maturity": "22-Mar-2039", "matYear": 2039, "clean": 77.4, "dirty": 108.36, "realYield": 2.18 },
+    { "epic": "TR40", "name": "0 5/8% Index-linked Treasury Gilt 2040", "coupon": "0.625%", "maturity": "22-Mar-2040", "matYear": 2040, "clean": 81.15, "dirty": 156.06, "realYield": 2.23 },
+    { "epic": "T41", "name": "0 1/8% Index-linked Treasury Gilt 2041", "coupon": "0.125%", "maturity": "10-Aug-2041", "matYear": 2041, "clean": 72.8, "dirty": 108.02, "realYield": 2.27 },
+    { "epic": "T42A", "name": "0 5/8% Index-linked Treasury Gilt 2042", "coupon": "0.625%", "maturity": "22-Nov-2042", "matYear": 2042, "clean": 76.9, "dirty": 150.49, "realYield": 2.34 },
+    { "epic": "T44", "name": "0 1/8% Index-linked Treasury Gilt 2044", "coupon": "0.125%", "maturity": "22-Mar-2044", "matYear": 2044, "clean": 65.62, "dirty": 114.83, "realYield": 2.44 },
+    { "epic": "TR45", "name": "0 5/8% Index-linked Treasury Gilt 2045", "coupon": "0.625%", "maturity": "22-Mar-2045", "matYear": 2045, "clean": 72.76, "dirty": 83.24, "realYield": 2.46 }
+  ]
+}

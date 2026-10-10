@@ -1,0 +1,22 @@
+{
+  "asOf": "2026-09-21",
+  "source": "dividenddata.co.uk real yields captured 2026-09-21T07:31Z (plan/observations/gilt-prices/2026-09-21.json)",
+  "note": "One row per ladder rung. w: isa = 2035–40 rungs held in the two II ISAs; sipp = 2041–45 in Chris's II SIPP; ext = the optional 2046–50 extension used by the ratchet scenario (would need the Accenture L&G pot transferred into a SIPP to hold individual gilts). mult 1.5 = the gilt also carries half of the 2043 target (no 2043 linker). cpn is the annual coupon rate; yld the real yield to maturity.",
+  "rungs": [
+    { "y": 2035, "w": "isa", "epic": "TR35", "cpn": 0.01125, "yld": 0.01769, "mult": 1 },
+    { "y": 2036, "w": "isa", "epic": "TG36", "cpn": 0.00125, "yld": 0.01894, "mult": 1 },
+    { "y": 2037, "w": "isa", "epic": "TR37", "cpn": 0.01125, "yld": 0.0198, "mult": 1 },
+    { "y": 2038, "w": "isa", "epic": "T38", "cpn": 0.0175, "yld": 0.02051, "mult": 1 },
+    { "y": 2039, "w": "isa", "epic": "TG39", "cpn": 0.00125, "yld": 0.02125, "mult": 1 },
+    { "y": 2040, "w": "isa", "epic": "TR40", "cpn": 0.00625, "yld": 0.02156, "mult": 1 },
+    { "y": 2041, "w": "sipp", "epic": "T41", "cpn": 0.00125, "yld": 0.0219, "mult": 1 },
+    { "y": 2042, "w": "sipp", "epic": "T42A", "cpn": 0.00625, "yld": 0.02246, "mult": 1.5 },
+    { "y": 2044, "w": "sipp", "epic": "T44", "cpn": 0.00125, "yld": 0.02328, "mult": 1.5 },
+    { "y": 2045, "w": "sipp", "epic": "TR45", "cpn": 0.00625, "yld": 0.02357, "mult": 1 },
+    { "y": 2046, "w": "ext", "epic": "TR46", "cpn": 0.00125, "yld": 0.02375, "mult": 1 },
+    { "y": 2047, "w": "ext", "epic": "T47", "cpn": 0.0075, "yld": 0.02355, "mult": 1 },
+    { "y": 2048, "w": "ext", "epic": "TG48", "cpn": 0.00125, "yld": 0.0238, "mult": 1 },
+    { "y": 2049, "w": "ext", "epic": "TR49", "cpn": 0.01875, "yld": 0.02359, "mult": 1 },
+    { "y": 2050, "w": "ext", "epic": "TR50", "cpn": 0.005, "yld": 0.02384, "mult": 1 }
+  ]
+}

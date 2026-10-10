@@ -104,6 +104,7 @@ export const NAV_SECTIONS: NavSection[] = [
     short: 'Wealth',
     items: [
       { href: '/wealth', label: 'Net worth', go: 'w' },
+      { href: '/plan', label: 'Plan', go: 'l' },
       { href: '/fire', label: 'FIRE', go: 'f' },
       { href: '/planning', label: 'Notes', go: 'n' },
     ],

@@ -1,0 +1,53 @@
+{
+  "asOf": "2026-10-01",
+  "source": "ii contract notes, dealt 29 Sep 2026, settled 1 Oct 2026 (units = £ nominal); see plan/decisions.md 29 Sep 2026; equities: Accenture shares, 14 (Chris, 1 Oct 2026: £1,935.27)",
+  "note": "Index-linked gilts held, by finance.accounts name. ii shows these at the clean price with no index ratio, so its totals understate them; npm run plan:gilt-value values them at units × the live dirty price. Add a new file (dated the trade) whenever gilts are bought, sold or mature. Equities are valued by npm run plan:shares-value at the latest price (Yahoo Finance) converted at the latest FX rate.",
+  "accounts": {
+    "CH ISA": [
+      {
+        "epic": "TR35",
+        "units": 93013.77
+      },
+      {
+        "epic": "TG36",
+        "units": 62205.87
+      },
+      {
+        "epic": "TR37",
+        "units": 48128.01
+      },
+      {
+        "epic": "T38",
+        "units": 10983.23
+      }
+    ],
+    "Chris II SIPP Pension": [
+      {
+        "epic": "T41",
+        "units": 72944.72
+      },
+      {
+        "epic": "T42A",
+        "units": 82820.02
+      },
+      {
+        "epic": "T44",
+        "units": 94720.1
+      },
+      {
+        "epic": "TR45",
+        "units": 94685.42
+      }
+    ]
+  },
+  "equities": {
+    "Accenture Shares": [
+      {
+        "symbol": "ACN",
+        "units": 14,
+        "currency": "USD",
+        "fxSymbol": "GBPUSD=X"
+      }
+    ]
+  }
+}

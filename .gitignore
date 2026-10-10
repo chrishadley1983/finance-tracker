@@ -90,5 +90,12 @@ summary_test.json
 bank-sync.log
 .env.tlcheck.local
 
+# scratch (recategorisation backups etc.)
+/tmp/
+
+# plan job logs
+/plan-run.log
+/plan-check.log
+
 # Agent worktrees
 .claude/worktrees/

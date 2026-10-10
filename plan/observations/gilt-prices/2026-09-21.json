@@ -1,0 +1,326 @@
+{
+  "asOf": "2026-09-21T09:18:18.085Z",
+  "source": "https://www.dividenddata.co.uk/index-linked-gilts-prices-yields.py (LSE ~15-min delay)",
+  "gilts": [
+    {
+      "epic": "T27",
+      "name": "1 1/4% Index-linked Treasury Gilt 2027",
+      "coupon": "1.25%",
+      "maturity": "22-Nov-2027",
+      "matYear": 2027,
+      "clean": 101.71,
+      "dirty": 220.087,
+      "realYield": -0.211
+    },
+    {
+      "epic": "T28",
+      "name": "0 1/8% Index-linked Treasury Gilt 2028",
+      "coupon": "0.125%",
+      "maturity": "10-Aug-2028",
+      "matYear": 2028,
+      "clean": 99.7,
+      "dirty": 149.351,
+      "realYield": 0.285
+    },
+    {
+      "epic": "T29",
+      "name": "0 1/8% Index-linked Treasury Gilt 2029",
+      "coupon": "0.125%",
+      "maturity": "22-Mar-2029",
+      "matYear": 2029,
+      "clean": 98.31,
+      "dirty": 173.29,
+      "realYield": 0.808
+    },
+    {
+      "epic": "TR31",
+      "name": "0 1/8% Index-linked Treasury Gilt 2031",
+      "coupon": "0.125%",
+      "maturity": "10-Aug-2031",
+      "matYear": 2031,
+      "clean": 95.72,
+      "dirty": 136.371,
+      "realYield": 1.025
+    },
+    {
+      "epic": "T32",
+      "name": "1 1/4% Index-linked Treasury Gilt 2032",
+      "coupon": "1.25%",
+      "maturity": "22-Nov-2032",
+      "matYear": 2032,
+      "clean": 99.71,
+      "dirty": 192.856,
+      "realYield": 1.299
+    },
+    {
+      "epic": "T33",
+      "name": "0 3/4% Index-linked Treasury Gilt 2033",
+      "coupon": "0.75%",
+      "maturity": "22-Nov-2033",
+      "matYear": 2033,
+      "clean": 95.03,
+      "dirty": 107.052,
+      "realYield": 1.483
+    },
+    {
+      "epic": "TRTQ",
+      "name": "0 3/4% Index-linked Treasury Gilt 2034",
+      "coupon": "0.75%",
+      "maturity": "22-Mar-2034",
+      "matYear": 2034,
+      "clean": 93.91,
+      "dirty": 169.799,
+      "realYield": 1.615
+    },
+    {
+      "epic": "TR35",
+      "name": "1 1/8% Index-linked Treasury Gilt 2035",
+      "coupon": "1.125%",
+      "maturity": "22-Sep-2035",
+      "matYear": 2035,
+      "clean": 94.66,
+      "dirty": 101.882,
+      "realYield": 1.769
+    },
+    {
+      "epic": "TG36",
+      "name": "0 1/8% Index-linked Treasury Gilt 2036",
+      "coupon": "0.125%",
+      "maturity": "22-Nov-2036",
+      "matYear": 2036,
+      "clean": 83.71,
+      "dirty": 134.711,
+      "realYield": 1.894
+    },
+    {
+      "epic": "TR37",
+      "name": "1 1/8% Index-linked Treasury Gilt 2037",
+      "coupon": "1.125%",
+      "maturity": "22-Nov-2037",
+      "matYear": 2037,
+      "clean": 91.47,
+      "dirty": 189.929,
+      "realYield": 1.98
+    },
+    {
+      "epic": "T38",
+      "name": "1 3/4% Index-linked Treasury Gilt 2038",
+      "coupon": "1.75%",
+      "maturity": "22-Sep-2038",
+      "matYear": 2038,
+      "clean": 96.81,
+      "dirty": 102.749,
+      "realYield": 2.051
+    },
+    {
+      "epic": "TG39",
+      "name": "0 1/8% Index-linked Treasury Gilt 2039",
+      "coupon": "0.125%",
+      "maturity": "22-Mar-2039",
+      "matYear": 2039,
+      "clean": 78.14,
+      "dirty": 110.225,
+      "realYield": 2.125
+    },
+    {
+      "epic": "TR40",
+      "name": "0 5/8% Index-linked Treasury Gilt 2040",
+      "coupon": "0.625%",
+      "maturity": "22-Mar-2040",
+      "matYear": 2040,
+      "clean": 82.15,
+      "dirty": 159.281,
+      "realYield": 2.156
+    },
+    {
+      "epic": "T41",
+      "name": "0 1/8% Index-linked Treasury Gilt 2041",
+      "coupon": "0.125%",
+      "maturity": "10-Aug-2041",
+      "matYear": 2041,
+      "clean": 73.89,
+      "dirty": 110.368,
+      "realYield": 2.19
+    },
+    {
+      "epic": "T42A",
+      "name": "0 5/8% Index-linked Treasury Gilt 2042",
+      "coupon": "0.625%",
+      "maturity": "22-Nov-2042",
+      "matYear": 2042,
+      "clean": 78.12,
+      "dirty": 154.186,
+      "realYield": 2.246
+    },
+    {
+      "epic": "T44",
+      "name": "0 1/8% Index-linked Treasury Gilt 2044",
+      "coupon": "0.125%",
+      "maturity": "22-Mar-2044",
+      "matYear": 2044,
+      "clean": 68.48,
+      "dirty": 118.25,
+      "realYield": 2.328
+    },
+    {
+      "epic": "TR45",
+      "name": "0 5/8% Index-linked Treasury Gilt 2045",
+      "coupon": "0.625%",
+      "maturity": "22-Mar-2045",
+      "matYear": 2045,
+      "clean": 74.15,
+      "dirty": 85.569,
+      "realYield": 2.357
+    },
+    {
+      "epic": "TR46",
+      "name": "0 1/8% Index-linked Treasury Gilt 2046",
+      "coupon": "0.125%",
+      "maturity": "22-Mar-2046",
+      "matYear": 2046,
+      "clean": 65.04,
+      "dirty": 105.62,
+      "realYield": 2.375
+    },
+    {
+      "epic": "T47",
+      "name": "0 3/4% Index-linked Treasury Gilt 2047",
+      "coupon": "0.75%",
+      "maturity": "22-Nov-2047",
+      "matYear": 2047,
+      "clean": 73.37,
+      "dirty": 148.195,
+      "realYield": 2.355
+    },
+    {
+      "epic": "TG48",
+      "name": "0 1/8% Index-linked Treasury Gilt 2048",
+      "coupon": "0.125%",
+      "maturity": "10-Aug-2048",
+      "matYear": 2048,
+      "clean": 61.7,
+      "dirty": 93.928,
+      "realYield": 2.38
+    },
+    {
+      "epic": "TR49",
+      "name": "1 7/8% Index-linked Treasury Gilt 2049",
+      "coupon": "1.875%",
+      "maturity": "22-Sep-2049",
+      "matYear": 2049,
+      "clean": 91.44,
+      "dirty": 98.565,
+      "realYield": 2.359
+    },
+    {
+      "epic": "TR50",
+      "name": "0 1/2% Index-linked Treasury Gilt 2050",
+      "coupon": "0.5%",
+      "maturity": "22-Mar-2050",
+      "matYear": 2050,
+      "clean": 66.25,
+      "dirty": 130.329,
+      "realYield": 2.384
+    },
+    {
+      "epic": "TG51",
+      "name": "0 1/8% Index-linked Treasury Gilt 2051",
+      "coupon": "0.125%",
+      "maturity": "22-Mar-2051",
+      "matYear": 2051,
+      "clean": 58.26,
+      "dirty": 82.936,
+      "realYield": 2.384
+    },
+    {
+      "epic": "TG52",
+      "name": "0 1/4% Index-linked Treasury Gilt 2052",
+      "coupon": "0.25%",
+      "maturity": "22-Mar-2052",
+      "matYear": 2052,
+      "clean": 59.4,
+      "dirty": 102.85,
+      "realYield": 2.384
+    },
+    {
+      "epic": "TG54",
+      "name": "1 1/4% Index-linked Treasury Gilt 2054",
+      "coupon": "1.25%",
+      "maturity": "22-Nov-2054",
+      "matYear": 2054,
+      "clean": 77.38,
+      "dirty": 85.942,
+      "realYield": 2.353
+    },
+    {
+      "epic": "TR8F",
+      "name": "1 1/4% Index-linked Treasury Gilt 2055",
+      "coupon": "1.25%",
+      "maturity": "22-Nov-2055",
+      "matYear": 2055,
+      "clean": 77.14,
+      "dirty": 168.76,
+      "realYield": 2.335
+    },
+    {
+      "epic": "TR56",
+      "name": "0 1/8% Index-Linked Treasury Gilt 2056",
+      "coupon": "0.125%",
+      "maturity": "22-Nov-2056",
+      "matYear": 2056,
+      "clean": 53.09,
+      "dirty": 83.89,
+      "realYield": 2.286
+    },
+    {
+      "epic": "T58",
+      "name": "0 1/8% Index-linked Treasury Gilt 2058",
+      "coupon": "0.125%",
+      "maturity": "22-Mar-2058",
+      "matYear": 2058,
+      "clean": 52.66,
+      "dirty": 86.171,
+      "realYield": 2.223
+    },
+    {
+      "epic": "T62",
+      "name": "0 3/8% Index-linked Treasury Gilt 2062",
+      "coupon": "0.375%",
+      "maturity": "22-Mar-2062",
+      "matYear": 2062,
+      "clean": 56.17,
+      "dirty": 99.945,
+      "realYield": 2.145
+    },
+    {
+      "epic": "TR65",
+      "name": "0 1/8% Index-linked Treasury Gilt 2065",
+      "coupon": "0.125%",
+      "maturity": "22-Nov-2065",
+      "matYear": 2065,
+      "clean": 48.24,
+      "dirty": 77.535,
+      "realYield": 2.055
+    },
+    {
+      "epic": "T68",
+      "name": "0 1/8% Index-linked Treasury Gilt 2068",
+      "coupon": "0.125%",
+      "maturity": "22-Mar-2068",
+      "matYear": 2068,
+      "clean": 47.44,
+      "dirty": 79.563,
+      "realYield": 1.992
+    },
+    {
+      "epic": "TG73",
+      "name": "0 1/8% Index-linked Treasury Gilt 2073",
+      "coupon": "0.125%",
+      "maturity": "22-Mar-2073",
+      "matYear": 2073,
+      "clean": 49.8,
+      "dirty": 67.637,
+      "realYield": 1.687
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "writtenAt": "2026-09-23T20:33:26.947Z",
+  "engineVersion": "2026-09-23.real-terms",
+  "gitSha": "fe89694",
+  "node": "v24.11.1",
+  "files": {
+    "assumptions.md": {
+      "sha256": "9032c9f317817e06e846071eeea7ad8ea5f27e009bf1d296debfdb01e68ce4cf",
+      "bytes": 16545
+    },
+    "avc-recipe.md": {
+      "sha256": "d2ed0e4506576e769c8c5121bd374d1db3d69f25244dd657b38e1be09e3a5802",
+      "bytes": 444
+    },
+    "diff.md": {
+      "sha256": "ad2b909260980c371511a218c88a62bd3ddc895163e7453a1e9b6b8d01c41e91",
+      "bytes": 2298
+    },
+    "emissions.json": {
+      "sha256": "8120050229b0666df6df3e52a2738119cb53cd1ca80194396b1fe863e4ca784c",
+      "bytes": 207041
+    },
+    "execution.html": {
+      "sha256": "f81cf47fed44ac5066ac937d729f51f2c18fb56d0a8bd9431ef51314a0575bba",
+      "bytes": 18045
+    },
+    "inputs.json": {
+      "sha256": "f05362e3a1c11fecba85bc8fc6620e08140bf5433e61e3557c576f434012cf2e",
+      "bytes": 81009
+    },
+    "ledger.csv": {
+      "sha256": "764304925843f310a649930415548014df68742d94f4ef9da6719dbf7d127239",
+      "bytes": 6152
+    },
+    "ledger.html": {
+      "sha256": "e31e6e5ab6179be5dad04c24b0e663cde335786b836ffab24bebb628a9f16c38",
+      "bytes": 99459
+    },
+    "order-sheet-isa.csv": {
+      "sha256": "25340fb4d4612c3b510cb548c9983e273d4aa74a7caf0e58cfa48bf9be85b6ac",
+      "bytes": 789
+    },
+    "order-sheet-sipp.csv": {
+      "sha256": "5105b1b052947aa1b42eeb148559a75f8ae44ee88b96f15be80bc140d8e8f54e",
+      "bytes": 666
+    },
+    "outputs.json": {
+      "sha256": "60f123295bb03176ba179455e5c4ba62d4c2cae02a05b197a5d7bd1acaa08cea",
+      "bytes": 103709
+    },
+    "plan.xlsx": {
+      "sha256": "67e858fe17d5726ace4d45ff928599921a01fbecc58c72da0318f9160d9feaf0",
+      "bytes": 132343
+    },
+    "summary.html": {
+      "sha256": "684d89cc03a75b23b05f7d37d3b9d6c4ee97cd0a96ebf649323d84d36f5f349e",
+      "bytes": 27450
+    },
+    "summary.json": {
+      "sha256": "79ac0f20eb71b0a84be84e1c748b426a3864a390b8fc1120a9bbe10be37a6ab4",
+      "bytes": 422
+    },
+    "summary.pdf": {
+      "sha256": "4fa92aaf28af298a8f62cc7b64e031a51f010c6270990fd0f45e185aea0d2792",
+      "bytes": 215386
+    }
+  },
+  "runId": "2026-09-23",
+  "verdict": "RED",
+  "prevId": "2026-09-21-phase7"
+}

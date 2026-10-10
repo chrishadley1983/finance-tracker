@@ -1,0 +1,11 @@
+{
+  "note": "Tolerances for comparing a new run with the last accepted run (plan/ARCHITECTURE.md §4). Levels: OK, AMBER, RED. Values are fractions unless a key ends in Abs (pounds) or Days.",
+  "pots": { "amberRel": 0.03, "amberAbs": 15000, "redRel": 0.10 },
+  "ledgerTotals": { "amberRel": 0.02, "redRel": 0.05 },
+  "ladderRedemption": { "amberRel": 0.02, "redRel": 0.05 },
+  "ladderCostVsBudgetRel": 0.005,
+  "sustainableSpend": { "amberAbs": 1000, "redAbs": 3000 },
+  "avcPct": { "anyChangeIsRed": true },
+  "acceptedAgeDays": { "amber": 80, "red": 100 },
+  "reviewByDaysOver": { "amber": 0, "red": 90 }
+}

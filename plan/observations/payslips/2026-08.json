@@ -1,0 +1,15 @@
+{
+  "taxYear": "2026/27",
+  "taxMonth": 5,
+  "payDate": "2026-08-28",
+  "basicMonthly": 6153.15,
+  "taxablePayMonthly": 6528.76,
+  "ytdTaxable": 33621.44,
+  "netMonthly": 4511.6,
+  "avcPct": 0,
+  "bonusExpected": 3691.89,
+  "bonusSacrificed": false,
+  "otherTaxableIncome": 0,
+  "extraAvcAlreadyTaken": 0,
+  "notes": "Tax month 05. basic × 0.955 + car 541.67 + medical 110.83 = taxable 6,528.76 exactly. YTD taxable is £977.64 above 5 × monthly — an extra taxable item (arrears or one-off), absorbed by the YTD method. Net reconciles to the PAYE model within 12p (code 1117L). bonusExpected = 5% × £73,837.80 (GUESS, true up in January)."
+}

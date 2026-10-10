@@ -1,0 +1,17 @@
+{
+  "runId": "2026-09-21-phase7",
+  "today": "2026-09-21",
+  "verdict": "RED",
+  "prevId": "2026-09-21",
+  "headline": {
+    "atRetirement": 2284.6,
+    "atLastRung": 2203,
+    "atEnd": 2214.5,
+    "firstCashNegative": null,
+    "preRetirementDraw": 0
+  },
+  "avcPct": 55,
+  "ladderPerYear": 101621.44645092079,
+  "sustainableSpend": 97228.32009032821,
+  "potsTotal": 1626749
+}

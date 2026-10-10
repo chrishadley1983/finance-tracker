@@ -1,0 +1,19 @@
+{
+  "runId": "2026-10-01",
+  "today": "2026-10-01",
+  "verdict": "RED",
+  "prevId": "2026-09-23",
+  "headline": {
+    "atRetirement": 2276.2,
+    "atLastRung": 2134.2,
+    "atEnd": 1740.6,
+    "firstCashNegative": null,
+    "preRetirementDraw": 0,
+    "iht": 456,
+    "netToHeirs": 1284.6
+  },
+  "avcPct": 46,
+  "ladderPerYear": 104401.77842715355,
+  "sustainableSpend": 97722.59113657752,
+  "potsTotal": 1631976
+}
