@@ -5,6 +5,9 @@ import { buildValuer, previousMonthEnd } from '@/lib/wealth/net-worth';
 import { ukToday } from '@/plan/inputs/uk-date.mjs';
 import { loadBalanceData } from '@/lib/wealth/load';
 
+// Always per-request: live balances (a static build-time response would freeze net worth).
+export const dynamic = 'force-dynamic';
+
 // =============================================================================
 // GET - Current net worth summary
 // =============================================================================

@@ -3,6 +3,9 @@ import type { NetWorthHistory } from '@/lib/types/fire';
 import { netWorthHistory } from '@/lib/wealth/net-worth';
 import { loadBalanceData, loadNetWorthAccounts } from '@/lib/wealth/load';
 
+// Always per-request: live balances (a static build-time response would freeze net worth).
+export const dynamic = 'force-dynamic';
+
 // =============================================================================
 // GET - Net worth history over time
 // =============================================================================
