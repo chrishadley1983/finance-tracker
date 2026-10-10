@@ -161,6 +161,21 @@ describe('ERN Monte Carlo Engine', () => {
       expect(r.survivalRate).toBe(0);
     });
 
+    it('affordability is checked month by month, not a year ahead', () => {
+      // Six months from 57 with seven months of spending in the ISA and a large SIPP: every month can be
+      // paid. The old year-ahead check failed the path at month 0 because the ISA held < a year's spend.
+      const r = runMonteCarlo({
+        ...baseConfig,
+        currentAge: 56.5,
+        horizonMonths: 30 * 12,
+        pensionStartMonth: Math.round((67 - 56.5) * 12),
+        wrapperBalances: { isa: (50_000 * 7) / 12, sipp: 1_500_000, gia: 0, cash: 0 },
+        statePensionAnnual: 23_000,
+        statePensionStartAge: 67,
+      });
+      expect(r.survivalRate).toBeGreaterThan(90);
+    });
+
     it('takes the State Pension off spending once, not twice', () => {
       // Spend exactly equal to the pension: after 67 nothing should be drawn in either mode; before 67
       // both draw the full spend. A double offset made no difference here, so pair it with the case

@@ -174,7 +174,7 @@ export function runMonteCarlo(config: McConfig): McResults {
             canAccessSipp,
           });
 
-          lsaUsed += result.fromSippTaxFree;
+          lsaUsed += result.fromSippTaxFree / 12; // the optimiser plans a year; one month is drawn
 
           // Spending the accessible pots cannot fund (e.g. ISA/GIA gone before the SIPP unlocks at 57)
           // is a failed plan, not a saving: the household can't pay its bills. Dropping the unmet part
