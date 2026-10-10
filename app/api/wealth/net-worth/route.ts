@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { ACCOUNT_TYPE_LABELS, type NetWorthSummary } from '@/lib/types/fire';
+import { buildValuer, previousMonthEnd } from '@/lib/wealth/net-worth';
+import { ukToday } from '@/plan/inputs/uk-date.mjs';
+import { loadBalanceData } from '@/lib/wealth/load';
+
+// Always per-request: live balances (a static build-time response would freeze net worth).
+export const dynamic = 'force-dynamic';
 
 // =============================================================================
 // GET - Current net worth summary
@@ -8,13 +14,14 @@ import { ACCOUNT_TYPE_LABELS, type NetWorthSummary } from '@/lib/types/fire';
 
 export async function GET() {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = ukToday();
 
-    // Get all active accounts
+    // Active accounts that count towards net worth (include_in_net_worth, as the monthly report does)
     const { data: accounts, error: accountsError } = await supabaseAdmin
       .from('accounts')
       .select('id, name, type, is_active')
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .eq('include_in_net_worth', true);
 
     if (accountsError) {
       console.error('Error fetching accounts:', accountsError);
@@ -97,36 +104,32 @@ export async function GET() {
 
     const total = byAccount.reduce((sum, a) => sum + a.balance, 0);
 
-    // Get previous month total for comparison
-    const lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
-    const lastMonthStr = lastMonth.toISOString().split('T')[0];
-
-    // Get previous wealth snapshots for all accounts
-    let previousTotal = 0;
-    if (accountIds.length > 0) {
-      const { data: prevSnapshots } = await supabaseAdmin
-        .from('wealth_snapshots')
-        .select('account_id, balance')
-        .in('account_id', accountIds)
-        .lte('date', lastMonthStr)
-        .order('date', { ascending: false });
-
-      const prevSnapMap = new Map<string, number>();
-      for (const s of prevSnapshots || []) {
-        if (!prevSnapMap.has(s.account_id)) {
-          prevSnapMap.set(s.account_id, Number(s.balance));
-        }
+    // "Since last month": last month-end valued the same way as today (snapshot + later transactions
+    // for current/credit accounts), over the accounts that existed then. Comparing today's
+    // transaction-adjusted total with raw old snapshots counted months of movement as one month's.
+    // Change is over the accounts valued at both dates, so a newly added account's balance is not a "gain".
+    // A failure here degrades to "no comparison" rather than failing the headline.
+    let previousTotal: number | null = null;
+    let change: number | null = null;
+    try {
+      const prevEnd = previousMonthEnd(today);
+      const { snapshots, transactions } = await loadBalanceData(accounts, { upTo: prevEnd });
+      const valuer = buildValuer(snapshots, transactions);
+      for (const a of accounts) {
+        const prev = valuer.balanceAt(a, prevEnd);
+        if (prev === null) continue;
+        previousTotal = (previousTotal ?? 0) + prev;
+        change = (change ?? 0) + ((snapshotBalances.get(a.id) || 0) - prev);
       }
-      previousTotal = Array.from(prevSnapMap.values()).reduce((a, b) => a + b, 0);
+    } catch (e) {
+      console.error('Net worth: previous month-end total unavailable:', e);
     }
-    const change = previousTotal > 0 ? total - previousTotal : null;
-    const changePercent = previousTotal > 0 ? ((total - previousTotal) / previousTotal) * 100 : null;
+    const changePercent = previousTotal && change !== null ? (change / Math.abs(previousTotal)) * 100 : null;
 
     const result: NetWorthSummary = {
       date: today,
       total,
-      previousTotal: previousTotal > 0 ? previousTotal : null,
+      previousTotal,
       change,
       changePercent,
       byType,
