@@ -132,3 +132,50 @@ export function planImport<T extends CountableTx>(
 export function importHash(date: string, amount: number, description: string): string {
   return createHash('sha256').update(tupleKey(date, amount, description)).digest('hex');
 }
+
+/**
+ * Second dedup pass for CSV imports: match rows the hash pass would insert against rows the
+ * bank feed already synced. Feed rows carry the bank's own wording and can be dated 1–3 days
+ * from the statement's booking date, so their hash never matches the CSV's. Without this pass
+ * an import over synced months inserts nearly every row again. Mirrors the bank sync's pass 2
+ * (lib/bank-sync/reconcile.ts): same amount to the penny, nearest date within ±toleranceDays,
+ * each feed row consumed at most once.
+ */
+export function matchAgainstBankFeed<T extends { date: string; amount: number }>(
+  candidates: T[],
+  feedRows: Array<{ date: string; amount: number }>,
+  toleranceDays = 3,
+): { toInsert: T[]; matchedToFeed: T[] } {
+  const dayMs = 86_400_000;
+  const toDay = (d: string) => Math.round(new Date(`${d}T00:00:00Z`).getTime() / dayMs);
+  const pence = (n: number) => Math.round(n * 100);
+  const available = new Map<number, number[]>(); // amount in pence → days of feed rows still unmatched
+  for (const r of feedRows) {
+    const k = pence(r.amount);
+    if (!available.has(k)) available.set(k, []);
+    available.get(k)!.push(toDay(r.date));
+  }
+  const matched = new Set<T>();
+  // Match in date order (nearest-first pairing is stable), but return rows in their input order.
+  for (const tx of [...candidates].sort((a, b) => a.date.localeCompare(b.date))) {
+    const days = available.get(pence(tx.amount)) ?? [];
+    const d = toDay(tx.date);
+    let best = -1;
+    let bestDiff = Infinity;
+    days.forEach((day, i) => {
+      const diff = Math.abs(day - d);
+      if (diff <= toleranceDays && diff < bestDiff) {
+        best = i;
+        bestDiff = diff;
+      }
+    });
+    if (best >= 0) {
+      days.splice(best, 1);
+      matched.add(tx);
+    }
+  }
+  return {
+    toInsert: candidates.filter((tx) => !matched.has(tx)),
+    matchedToFeed: candidates.filter((tx) => matched.has(tx)),
+  };
+}

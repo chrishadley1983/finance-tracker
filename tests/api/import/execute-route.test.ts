@@ -96,4 +96,32 @@ describe('POST /api/import/execute', () => {
     expect(second).toMatchObject({ imported: 0, skipped: 450 });
     expect(db.current!.tables.transactions).toHaveLength(450);
   });
+
+  it('dedups a re-import of more than 1,000 rows (the existing-row read is paged)', async () => {
+    db.current = createFakeSupabase(
+      { import_sessions: [{ id: SESSION, status: 'pending' }], accounts: [{ id: ACCOUNT }], transactions: [], imported_transaction_hashes: [] },
+      {},
+      { maxRows: 1000 }, // behave like Supabase: an unpaged read silently stops at 1,000 rows
+    );
+    const rows = Array.from({ length: 1200 }, (_, i) => ({ ...row(i + 1), description: `SHOP ${i + 1}` }));
+    await POST(req(rows));
+    expect(db.current!.tables.transactions).toHaveLength(1200);
+    db.current!.tables.import_sessions[0].status = 'pending';
+    const second = await (await POST(req(rows))).json();
+    expect(second).toMatchObject({ imported: 0, skipped: 1200 });
+    expect(db.current!.tables.transactions).toHaveLength(1200);
+  });
+
+  it('skips CSV rows the bank feed already synced under its own wording and date', async () => {
+    db.current!.tables.transactions.push(
+      { id: u(100), account_id: ACCOUNT, date: '2026-09-05', amount: -11, description: 'CARD PAYMENT TO SHOP ONE', hsbc_transaction_id: 'tl-1' },
+      { id: u(101), account_id: ACCOUNT, date: '2026-09-09', amount: -99, description: 'UNRELATED', hsbc_transaction_id: 'tl-2' },
+    );
+    // row(1): 2026-09-02, -11 → feed row 3 days later with the same amount: already held
+    // row(2): 2026-09-03, -12 → no feed row with that amount: inserted
+    const res = await (await POST(req([row(1), row(2)]))).json();
+    expect(res).toMatchObject({ imported: 1, skipped: 1 });
+    const descs = db.current!.tables.transactions.map((t) => t.description).sort();
+    expect(descs).toEqual(['CARD PAYMENT TO SHOP ONE', 'SHOP 2', 'UNRELATED']);
+  });
 });
