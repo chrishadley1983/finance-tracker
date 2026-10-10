@@ -65,4 +65,25 @@ describe('syncAccount dedup over more than 1,000 existing rows', () => {
     expect(res.imported).toBe(0);
     expect(db.current.tables.transactions).toHaveLength(n);
   });
+
+  it('the ±3-day margin matches CSV rows but never lets an older bank row absorb a new transaction', async () => {
+    db.current = createFakeSupabase({
+      accounts: [{ id: ACC, name: 'HSBC Joint', type: 'current', truelayer_account_id: 'tl-acc', truelayer_connection_id: CONN, sync_enabled: true, last_sync_at: null }],
+      truelayer_connections: [{ id: CONN, status: 'active', access_token: 'tok', refresh_token: 'r', token_expires_at: '2099-01-01T00:00:00Z' }],
+      transactions: [
+        // bank row from an earlier sync, 2 days before the window: a different £3.20 coffee
+        { id: 'a1', account_id: ACC, date: '2026-09-08', amount: -3.2, description: 'COFFEE', hsbc_transaction_id: 'tl-old' },
+        // CSV row booked 2 days before the window: the same transaction the feed now reports on the 11th
+        { id: 'a2', account_id: ACC, date: '2026-09-08', amount: -45, description: 'TESCO (csv)', hsbc_transaction_id: null },
+      ],
+    });
+    feed.rows = [
+      { timestamp: '2026-09-10T08:00:00Z', amount: 3.2, transaction_type: 'DEBIT', description: 'COFFEE', transaction_id: 'n1', meta: { provider_transaction_id: 'tl-new' } },
+      { timestamp: '2026-09-11T08:00:00Z', amount: 45, transaction_type: 'DEBIT', description: 'TESCO STORES', transaction_id: 'n2', meta: { provider_transaction_id: 'tl-tesco' } },
+    ];
+    const res = await syncAccount(ACC, { dateFrom: '2026-09-10', dateTo: '2026-09-30', now: new Date('2026-09-30T12:00:00Z') });
+    expect(res.imported).toBe(1); // the new coffee only; Tesco matched the CSV row in the margin
+    const refs = db.current.tables.transactions.map((t) => t.hsbc_transaction_id).sort();
+    expect(refs).toEqual([null, 'tl-new', 'tl-old']);
+  });
 });

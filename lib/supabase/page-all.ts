@@ -15,6 +15,8 @@ export async function pageAll<T>(
     const { data, error } = await build(from, from + pageSize - 1);
     if (error) throw new Error(error.message);
     out.push(...(data ?? []));
-    if (!data || data.length < pageSize) return out;
+    // Stop on an empty page, not a short one: if the server's max-rows is below pageSize every page is
+    // "short", and treating that as the end would silently truncate. Costs one extra empty request.
+    if (!data || data.length === 0) return out;
   }
 }

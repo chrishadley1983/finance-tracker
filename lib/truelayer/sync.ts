@@ -139,9 +139,9 @@ export async function syncAccount(
     if (t.date < minDate) minDate = t.date;
     if (t.date > maxDate) maxDate = t.date;
   }
-  // Widen by the reconcile's date tolerance so a row just outside the window can still match
-  // (pass 2 matches amount within ±tolerance days), and page past Supabase's 1,000-row cap:
-  // a truncated read makes planReconcile treat unseen rows as missing and insert duplicates.
+  // Widen by the reconcile's date tolerance so a CSV row just outside the window can still match
+  // (pass 2 matches amount within ±tolerance days), and page past Supabase's 1,000-row cap: a truncated
+  // read makes planReconcile treat unseen rows as missing (unique-ref errors, or duplicates of CSV rows).
   const tolerance = opts.dateToleranceDays ?? 3;
   const shift = (d: string, days: number) => isoDate(new Date(new Date(`${d}T00:00:00Z`).getTime() + days * 86_400_000));
   let existingRows: Array<{ id: string; date: string; amount: number; hsbc_transaction_id: string | null }>;
@@ -159,7 +159,11 @@ export async function syncAccount(
   } catch (e) {
     throw new TrueLayerError(`Failed to read transactions: ${e instanceof Error ? e.message : String(e)}`, 500, 'DB');
   }
-  const existing: ExistingDbRow[] = existingRows.map((r) => ({
+  // The ±tolerance margin exists for CSV/manual rows whose booking date sits just outside the window.
+  // Bank-referenced rows in the margin belong to transactions outside this fetch: offering them to the
+  // amount/date pass could absorb a genuinely new same-amount transaction, so keep them out.
+  const inMargin = (d: string) => d < minDate || d > maxDate;
+  const existing: ExistingDbRow[] = existingRows.filter((r) => !(inMargin(r.date) && r.hsbc_transaction_id)).map((r) => ({
     id: r.id,
     date: r.date,
     amount: Number(r.amount),

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { executeImportRequestSchema } from '@/lib/validations/import';
 import { deleteSessionData } from '@/lib/import';
-import { planImportWithKeys, importHash, matchAgainstBankFeed } from '@/lib/import/dedup';
+import { planImportWithKeys, importHash } from '@/lib/import/dedup';
 import { pageAll } from '@/lib/supabase/page-all';
 import { importCategoryFields } from '@/lib/import/category-fields';
 import { ZodError } from 'zod';
@@ -22,11 +22,6 @@ interface VerificationMismatch {
 }
 
 const hashFor = importHash;
-
-/** Bank-feed rows can be dated up to this many days from the statement's booking date. */
-const FEED_TOLERANCE_DAYS = 3;
-const shiftDays = (d: string, days: number) =>
-  new Date(new Date(`${d}T00:00:00Z`).getTime() + days * 86_400_000).toISOString().slice(0, 10);
 
 /**
  * Populate `into` with transactionId → original import hash for the given
@@ -106,37 +101,35 @@ export async function POST(request: NextRequest) {
     // the user renamed (e.g. "BCA Remarketing..." → "Car Purchase") still
     // matches its CSV counterpart because the stored hash reflects the
     // description at import time, not the current one.
-    // Paged: Supabase caps a response at 1,000 rows, and a truncated read makes every unseen
-    // row look missing, so a large re-import would insert duplicates. Widened by the feed
-    // tolerance so the bank-feed pass (4b) can see feed rows just outside the CSV's range.
-    let existingRows: Array<{ id: string; date: string; amount: number; description: string; bankRef: string | null }> = [];
+    let existingRows: Array<{ id: string; date: string; amount: number; description: string }> = [];
     const existingHashById = new Map<string, string>();
     if (skipDuplicates && minDate && maxDate) {
+      // Paged: Supabase caps a response at 1,000 rows, and a truncated read makes every unseen row
+      // look missing, so a re-import of a large statement would insert duplicates.
+      let data: Array<{ id: string; date: string; amount: number; description: string }>;
       try {
-        const data = await pageAll<{ id: string; date: string; amount: number; description: string; hsbc_transaction_id: string | null }>(
-          (from, to) =>
-            supabaseAdmin
-              .from('transactions')
-              .select('id, date, amount, description, hsbc_transaction_id')
-              .eq('account_id', accountId)
-              .gte('date', shiftDays(minDate, -FEED_TOLERANCE_DAYS))
-              .lte('date', shiftDays(maxDate, FEED_TOLERANCE_DAYS))
-              .order('id')
-              .range(from, to),
+        data = await pageAll((from, to) =>
+          supabaseAdmin
+            .from('transactions')
+            .select('id, date, amount, description')
+            .eq('account_id', accountId)
+            .gte('date', minDate)
+            .lte('date', maxDate)
+            .order('id')
+            .range(from, to),
         );
-        existingRows = data.map((r) => ({
-          id: r.id,
-          date: r.date,
-          amount: Number(r.amount),
-          description: r.description,
-          bankRef: r.hsbc_transaction_id,
-        }));
       } catch (e) {
         return NextResponse.json(
           { error: `Failed to fetch existing rows: ${e instanceof Error ? e.message : String(e)}` },
           { status: 500 },
         );
       }
+      existingRows = data.map((r) => ({
+        id: r.id,
+        date: r.date,
+        amount: Number(r.amount),
+        description: r.description,
+      }));
       await loadOriginalHashes(existingRows.map((r) => r.id), existingHashById);
     }
 
@@ -150,40 +143,9 @@ export async function POST(request: NextRequest) {
 
     // 4. Plan: for each key, DB count must end up equal to CSV count.
     // Insert only the surplus.
-    // The hash pass compares against rows inside the CSV's own range only.
-    const inRange = existingRows.filter((r) => r.date >= minDate! && r.date <= maxDate!);
-    const hashPlan = skipDuplicates
-      ? planImportWithKeys(afterExplicitSkip, incomingKeyOf, inRange.map(dbKeyOf))
+    const { toInsert, toSkip } = skipDuplicates
+      ? planImportWithKeys(afterExplicitSkip, incomingKeyOf, existingRows.map(dbKeyOf))
       : { toInsert: afterExplicitSkip, toSkip: [] as typeof afterExplicitSkip };
-
-    // 4b. Bank-feed pass: rows the hash pass would insert, matched on amount within ±3 days
-    // against bank-synced rows that the hash pass has not already accounted for.
-    let toInsert = hashPlan.toInsert;
-    let feedMatched: typeof afterExplicitSkip = [];
-    if (skipDuplicates) {
-      const csvCountByKey = new Map<string, number>();
-      for (const tx of afterExplicitSkip) {
-        const k = incomingKeyOf(tx);
-        csvCountByKey.set(k, (csvCountByKey.get(k) ?? 0) + 1);
-      }
-      const consumed = new Map<string, number>();
-      const unclaimedFeed = existingRows.filter((r) => {
-        if (!r.bankRef) return false;
-        if (r.date < minDate! || r.date > maxDate!) return true; // outside the CSV range: never hash-matched
-        const k = dbKeyOf(r);
-        const used = consumed.get(k) ?? 0;
-        if (used < (csvCountByKey.get(k) ?? 0)) {
-          consumed.set(k, used + 1);
-          return false; // already matched by hash
-        }
-        return true;
-      });
-      const feedPlan = matchAgainstBankFeed(hashPlan.toInsert, unclaimedFeed, FEED_TOLERANCE_DAYS);
-      toInsert = feedPlan.toInsert;
-      feedMatched = feedPlan.matchedToFeed;
-    }
-    const toSkip = [...hashPlan.toSkip, ...feedMatched];
-    const feedMatchedSet = new Set<(typeof afterExplicitSkip)[number]>(feedMatched);
 
     const errors: ImportError[] = [];
     let imported = 0;
@@ -262,7 +224,6 @@ export async function POST(request: NextRequest) {
     // Build CSV-side counts once, keyed the same way as dedup (hash space).
     const csvByKey = new Map<string, typeof afterExplicitSkip>();
     for (const tx of afterExplicitSkip) {
-      if (feedMatchedSet.has(tx)) continue; // held by a bank-feed row under a different hash
       const k = incomingKeyOf(tx);
       if (!csvByKey.has(k)) csvByKey.set(k, []);
       csvByKey.get(k)!.push(tx);
