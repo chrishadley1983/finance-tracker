@@ -10,6 +10,7 @@
  * barrel deliberately excludes it; only API routes + the local script import it).
  */
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { pageAll } from '@/lib/supabase/page-all';
 import {
   categoriseMultiple,
   toTransactionCategoryFields,
@@ -73,24 +74,70 @@ async function getValidAccessToken(connectionId: string): Promise<string> {
   if (!conn.refresh_token) {
     throw new TrueLayerError('Consent expired — please reconnect the account', 401, 'RECONSENT');
   }
+  let tokens: Awaited<ReturnType<typeof refreshAccessToken>>;
   try {
-    const tokens = await refreshAccessToken(conn.refresh_token);
-    const newExp = new Date(now + tokens.expires_in * 1000).toISOString();
-    await supabaseAdmin
-      .from('truelayer_connections')
-      .update({
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token ?? conn.refresh_token,
-        token_expires_at: newExp,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', connectionId);
-    return tokens.access_token;
-  } catch {
-    // Refresh tokens expire (~90 days) — mark the connection so the UI prompts re-consent.
-    await supabaseAdmin.from('truelayer_connections').update({ status: 'expired' }).eq('id', connectionId);
-    throw new TrueLayerError('Consent expired — please reconnect the account', 401, 'RECONSENT');
+    tokens = await refreshAccessToken(conn.refresh_token);
+  } catch (e) {
+    if (isRefreshRejected(e)) {
+      // A concurrent sync may have refreshed first: TrueLayer rotates refresh tokens, so our copy is now
+      // dead even though the connection is healthy. Re-read before declaring the consent lost.
+      const { data: latest } = await supabaseAdmin
+        .from('truelayer_connections')
+        .select('access_token, refresh_token, token_expires_at')
+        .eq('id', connectionId)
+        .single();
+      const latestExp = latest?.token_expires_at ? new Date(latest.token_expires_at).getTime() : 0;
+      if (latest?.access_token && latest.refresh_token !== conn.refresh_token && latestExp - 60_000 > Date.now()) {
+        return latest.access_token;
+      }
+      // The refresh token itself is dead (consent lapsed, ~90 days) — mark the connection so the UI
+      // prompts re-consent.
+      await supabaseAdmin.from('truelayer_connections').update({ status: 'expired' }).eq('id', connectionId);
+      throw new TrueLayerError('Consent expired — please reconnect the account', 401, 'RECONSENT');
+    }
+    // Anything else (network, TrueLayer 5xx, 429, missing config) is not a consent problem: leave the
+    // connection active so the next run retries. Marking it expired here used to force a manual bank
+    // re-consent after a single transient failure.
+    const detail = e instanceof Error ? e.message : String(e);
+    throw new TrueLayerError(`Token refresh failed (temporary, will retry): ${detail}`, 503, 'REFRESH_TEMPORARY');
   }
+  // TrueLayer rotates refresh tokens: losing the new one leaves a dead token stored, so a failed save
+  // must fail loudly rather than surface weeks later as an "expired" connection.
+  const newExp = new Date(now + tokens.expires_in * 1000).toISOString();
+  let saveErr: string | null = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const { error: err } = await supabaseAdmin
+        .from('truelayer_connections')
+        .update({
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token ?? conn.refresh_token,
+          token_expires_at: newExp,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', connectionId);
+      saveErr = err ? err.message : null;
+    } catch (e) {
+      saveErr = e instanceof Error ? e.message : String(e);
+    }
+    if (!saveErr) return tokens.access_token;
+  }
+  throw new TrueLayerError(
+    `Refreshed token could not be saved (${saveErr}) — the stored refresh token is now stale, so this connection will need re-consent`,
+    500,
+    'TOKEN_SAVE',
+  );
+}
+
+/**
+ * True when TrueLayer rejected the refresh request for a reason a retry won't fix: any 4xx from the
+ * token endpoint except timeouts (408), rate limits (429) and a bad client credential (invalid_client:
+ * our config, not the user's consent — expiring every connection for it would be wrong).
+ */
+export function isRefreshRejected(e: unknown): boolean {
+  if (!(e instanceof TrueLayerError) || e.code !== 'TOKEN') return false;
+  if (e.status < 400 || e.status >= 500 || e.status === 408 || e.status === 429) return false;
+  return !/invalid_client/i.test(String(e.body ?? ''));
 }
 
 /** Sync a single linked account. */
@@ -138,14 +185,31 @@ export async function syncAccount(
     if (t.date < minDate) minDate = t.date;
     if (t.date > maxDate) maxDate = t.date;
   }
-  const { data: existingRows, error: exErr } = await supabaseAdmin
-    .from('transactions')
-    .select('id, date, amount, hsbc_transaction_id')
-    .eq('account_id', financeAccountId)
-    .gte('date', minDate)
-    .lte('date', maxDate);
-  if (exErr) throw new TrueLayerError(`Failed to read transactions: ${exErr.message}`, 500, 'DB');
-  const existing: ExistingDbRow[] = (existingRows ?? []).map((r) => ({
+  // Widen by the reconcile's date tolerance so a CSV row just outside the window can still match
+  // (pass 2 matches amount within ±tolerance days), and page past Supabase's 1,000-row cap: a truncated
+  // read makes planReconcile treat unseen rows as missing (unique-ref errors, or duplicates of CSV rows).
+  const tolerance = opts.dateToleranceDays ?? 3;
+  const shift = (d: string, days: number) => isoDate(new Date(new Date(`${d}T00:00:00Z`).getTime() + days * 86_400_000));
+  let existingRows: Array<{ id: string; date: string; amount: number; hsbc_transaction_id: string | null }>;
+  try {
+    existingRows = await pageAll((from, to) =>
+      supabaseAdmin
+        .from('transactions')
+        .select('id, date, amount, hsbc_transaction_id')
+        .eq('account_id', financeAccountId)
+        .gte('date', shift(minDate, -tolerance))
+        .lte('date', shift(maxDate, tolerance))
+        .order('id')
+        .range(from, to),
+    );
+  } catch (e) {
+    throw new TrueLayerError(`Failed to read transactions: ${e instanceof Error ? e.message : String(e)}`, 500, 'DB');
+  }
+  // The ±tolerance margin exists for CSV/manual rows whose booking date sits just outside the window.
+  // Bank-referenced rows in the margin belong to transactions outside this fetch: offering them to the
+  // amount/date pass could absorb a genuinely new same-amount transaction, so keep them out.
+  const inMargin = (d: string) => d < minDate || d > maxDate;
+  const existing: ExistingDbRow[] = existingRows.filter((r) => !(inMargin(r.date) && r.hsbc_transaction_id)).map((r) => ({
     id: r.id,
     date: r.date,
     amount: Number(r.amount),
