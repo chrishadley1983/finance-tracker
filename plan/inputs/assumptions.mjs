@@ -166,8 +166,8 @@ export function buildAssumptions(file) {
 
 /** Node-only convenience: read and build from disk. */
 export async function readAssumptionsFile(/** @type {string=} */ path) {
-  const fs = await import('node:fs');
-  const url = await import('node:url');
+  const fs = await import(/* webpackIgnore: true */ 'node:fs');
+  const url = await import(/* webpackIgnore: true */ 'node:url');
   const p = path ?? url.fileURLToPath(new URL('../assumptions.json', import.meta.url));
   return buildAssumptions(JSON.parse(fs.readFileSync(p, 'utf8')));
 }
