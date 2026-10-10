@@ -1,264 +1,159 @@
+/**
+ * GET /api/wealth/net-worth and /api/wealth/history against an in-memory DB.
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GET } from '@/app/api/wealth/net-worth/route';
+import { NextRequest } from 'next/server';
+import { createFakeSupabase } from '../../helpers/fake-supabase';
 
-// Track table call counts and mock responses
-let tableCallCount: Record<string, number> = {};
-let mockResponses: Record<string, { data: unknown; error: unknown }[]> = {};
-let rpcResponses: Record<string, { data: unknown; error: unknown }> = {};
-
-function resetMockState() {
-  tableCallCount = {};
-  mockResponses = {};
-  rpcResponses = {};
-}
-
-function setMockResponse(table: string, responses: { data: unknown; error: unknown }[]) {
-  mockResponses[table] = responses;
-  tableCallCount[table] = 0;
-}
-
-function setRpcResponse(fnName: string, response: { data: unknown; error: unknown }) {
-  rpcResponses[fnName] = response;
-}
-
+const db = vi.hoisted(() => ({ current: null as ReturnType<typeof createFakeSupabase> | null }));
 vi.mock('@/lib/supabase/server', () => ({
-  supabaseAdmin: {
-    from: (table: string) => {
-      const getNextResponse = () => {
-        const responses = mockResponses[table] || [{ data: null, error: null }];
-        const idx = tableCallCount[table] || 0;
-        tableCallCount[table] = idx + 1;
-        return responses[idx] || responses[responses.length - 1];
-      };
-
-      const chainMock: Record<string, unknown> = {};
-      chainMock.select = () => chainMock;
-      chainMock.in = () => chainMock;
-      chainMock.lte = () => chainMock;
-      chainMock.order = () => Promise.resolve(getNextResponse());
-      chainMock.eq = (_col: string, _val: unknown) => {
-        if (table === 'accounts') {
-          return Promise.resolve(getNextResponse());
-        }
-        return chainMock;
-      };
-
-      return chainMock;
-    },
-    rpc: (fnName: string) => {
-      const response = rpcResponses[fnName] || { data: null, error: null };
-      return Promise.resolve(response);
-    },
+  get supabaseAdmin() {
+    return db.current!.client;
   },
 }));
 
-describe('Net Worth API', () => {
+import { GET as netWorth } from '@/app/api/wealth/net-worth/route';
+import { GET as history } from '@/app/api/wealth/history/route';
+
+type Row = Record<string, unknown>;
+const acct = (id: string, type: string, extra: Row = {}) => ({ id, name: `Acc ${id}`, type, is_active: true, include_in_net_worth: true, ...extra });
+
+/** Balance RPC: the live rule — newest snapshot plus transactions dated on or after it (t.date >= snapshot_date). */
+function seed(accounts: Row[], snapshots: Row[] = [], transactions: Row[] = []) {
+  db.current = createFakeSupabase(
+    {
+      accounts,
+      wealth_snapshots: snapshots.map((s, i) => ({ id: `s${i}`, ...s })),
+      investment_valuations: [],
+      transactions: transactions.map((t, i) => ({ id: `t${i}`, ...t })),
+    },
+    {
+      get_account_balances_with_snapshots: (args) =>
+        (args.account_ids as string[]).map((id) => {
+          const snaps = db.current!.tables.wealth_snapshots.filter((s) => s.account_id === id).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+          const last = snaps[snaps.length - 1];
+          const base = last ? Number(last.balance) : 0;
+          const txSum = db.current!.tables.transactions
+            .filter((t) => t.account_id === id && (!last || String(t.date) >= String(last.date)))
+            .reduce((s, t) => s + Number(t.amount), 0);
+          return { account_id: id, snapshot_date: last?.date ?? null, snapshot_balance: base, transactions_sum: txSum, current_balance: base + txSum };
+        }),
+    },
+  );
+}
+
+describe('GET /api/wealth/net-worth', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    resetMockState();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-10T12:00:00Z'));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it('returns an empty summary when there are no accounts', async () => {
+    seed([]);
+    const body = await (await netWorth()).json();
+    expect(body).toMatchObject({ total: 0, previousTotal: null, change: null, byType: [], byAccount: [] });
   });
 
-  afterEach(() => {
-    // vi.restoreAllMocks(); - removed to preserve module mocks
+  it('totals balances by account and by type', async () => {
+    seed([acct('p', 'pension'), acct('i', 'isa')], [
+      { account_id: 'p', date: '2026-10-01', balance: 300 },
+      { account_id: 'i', date: '2026-10-01', balance: 100 },
+    ]);
+    const body = await (await netWorth()).json();
+    expect(body.total).toBe(400);
+    expect(body.byType.map((t: Row) => [t.type, t.total])).toEqual([['pension', 300], ['isa', 100]]);
+    expect(body.byAccount.map((a: Row) => a.accountId)).toEqual(['p', 'i']);
   });
 
-  describe('GET /api/wealth/net-worth', () => {
-    it('returns correct response shape', async () => {
-      setMockResponse('accounts', [{
-        data: [
-          { id: 'acc-1', name: 'Current Account', type: 'current', is_active: true },
-          { id: 'acc-2', name: 'ISA', type: 'investment', is_active: true },
-        ],
-        error: null,
-      }]);
+  it('leaves out accounts marked include_in_net_worth = false', async () => {
+    seed([acct('p', 'pension'), acct('kid', 'isa', { include_in_net_worth: false })], [
+      { account_id: 'p', date: '2026-10-01', balance: 300 },
+      { account_id: 'kid', date: '2026-10-01', balance: 5_000 },
+    ]);
+    const body = await (await netWorth()).json();
+    expect(body.total).toBe(300);
+    expect(body.byAccount.map((a: Row) => a.accountId)).toEqual(['p']);
+  });
 
-      setRpcResponse('get_account_balances_with_snapshots', {
-        data: [
-          { account_id: 'acc-1', snapshot_date: '2026-01-01', snapshot_balance: 5000, transactions_sum: 0, current_balance: 5000 },
-        ],
-        error: null,
-      });
+  it('"since last month" values last month-end the same way as today (snapshot + transactions)', async () => {
+    seed(
+      [acct('c', 'current')],
+      [{ account_id: 'c', date: '2026-02-01', balance: 2_000 }], // seeded in February only
+      [
+        { account_id: 'c', date: '2026-05-01', amount: 9_000 }, // months of movement before September
+        { account_id: 'c', date: '2026-10-05', amount: 1_000 }, // this month's movement
+      ],
+    );
+    const body = await (await netWorth()).json();
+    expect(body.total).toBe(12_000);
+    expect(body.previousTotal).toBe(11_000); // 30 Sep: 2,000 + 9,000 (the old code compared with the raw 2,000)
+    expect(body.change).toBe(1_000);
+  });
 
-      // Previous month snapshots
-      setMockResponse('wealth_snapshots', [
-        { data: [], error: null },
-      ]);
+  it('a newly added account is not counted as a gain since last month', async () => {
+    seed([acct('p', 'pension'), acct('new', 'isa')], [
+      { account_id: 'p', date: '2026-09-01', balance: 300 },
+      { account_id: 'p', date: '2026-10-01', balance: 310 },
+      { account_id: 'new', date: '2026-10-01', balance: 20_000 }, // opened this month
+    ]);
+    const body = await (await netWorth()).json();
+    expect(body.total).toBe(20_310);
+    expect(body.change).toBe(10);
+  });
 
-      const response = await GET();
-      const data = await response.json();
+  it('reports a change against a zero or negative previous total', async () => {
+    seed([acct('cc', 'credit')], [{ account_id: 'cc', date: '2026-08-01', balance: -500 }], [
+      { account_id: 'cc', date: '2026-10-02', amount: 200 },
+    ]);
+    const body = await (await netWorth()).json();
+    expect(body.previousTotal).toBe(-500);
+    expect(body.change).toBe(200);
+  });
+});
 
-      expect(response.status).toBe(200);
-      expect(data).toHaveProperty('date');
-      expect(data).toHaveProperty('total');
-      expect(data).toHaveProperty('previousTotal');
-      expect(data).toHaveProperty('change');
-      expect(data).toHaveProperty('changePercent');
-      expect(data).toHaveProperty('byType');
-      expect(data).toHaveProperty('byAccount');
-    });
+describe('GET /api/wealth/history', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-10T12:00:00Z'));
+  });
+  afterEach(() => vi.useRealTimers());
 
-    it('returns empty result when no accounts', async () => {
-      setMockResponse('accounts', [{ data: [], error: null }]);
+  const req = (period = 'all') => new NextRequest(`http://localhost/api/wealth/history?period=${period}`);
 
-      const response = await GET();
-      const data = await response.json();
+  it('carries each account forward, includes investment snapshots, and skips excluded accounts', async () => {
+    seed(
+      [acct('a', 'pension'), acct('b', 'pension'), acct('g', 'investment'), acct('kid', 'isa', { include_in_net_worth: false })],
+      [
+        { account_id: 'a', date: '2026-08-01', balance: 200 },
+        { account_id: 'b', date: '2026-08-01', balance: 100 },
+        { account_id: 'g', date: '2026-08-01', balance: 50 },
+        { account_id: 'kid', date: '2026-08-01', balance: 9_999 },
+        { account_id: 'a', date: '2026-09-01', balance: 210 },
+      ],
+    );
+    const body = await (await history(req())).json();
+    expect(body.snapshots.map((p: Row) => [p.date, p.total])).toEqual([
+      ['2026-08-01', 350],
+      ['2026-09-01', 360],
+      ['2026-10-01', 360],
+    ]);
+  });
 
-      expect(response.status).toBe(200);
-      expect(data.total).toBe(0);
-      expect(data.byType).toEqual([]);
-      expect(data.byAccount).toEqual([]);
-    });
+  it("the latest point equals the headline, including a transaction on the snapshot's own date", async () => {
+    seed([acct('c', 'current')], [{ account_id: 'c', date: '2026-10-01', balance: 1_000 }], [
+      { account_id: 'c', date: '2026-10-01', amount: 50 },
+      { account_id: 'c', date: '2026-10-04', amount: -20 },
+    ]);
+    const headline = (await (await netWorth()).json()).total;
+    const latest = (await (await history(req())).json()).snapshots.at(-1).total;
+    expect(headline).toBe(1_030);
+    expect(latest).toBe(headline);
+  });
 
-    it('returns 500 on accounts query error', async () => {
-      setMockResponse('accounts', [{
-        data: null,
-        error: { message: 'Database error' },
-      }]);
-
-      const response = await GET();
-      const data = await response.json();
-
-      expect(response.status).toBe(500);
-      expect(data.error).toBe('Failed to fetch accounts');
-    });
-
-    it('handles accounts with balance from snapshots', async () => {
-      setMockResponse('accounts', [{
-        data: [
-          { id: 'acc-1', name: 'ISA', type: 'investment', is_active: true },
-        ],
-        error: null,
-      }]);
-
-      setRpcResponse('get_account_balances_with_snapshots', {
-        data: [
-          { account_id: 'acc-1', snapshot_date: '2026-01-01', snapshot_balance: 100000, transactions_sum: 0, current_balance: 100000 },
-        ],
-        error: null,
-      });
-
-      setMockResponse('wealth_snapshots', [
-        { data: [], error: null },
-      ]);
-
-      const response = await GET();
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.total).toBe(100000);
-    });
-
-    it('handles accounts with no balances returning zero', async () => {
-      setMockResponse('accounts', [{
-        data: [
-          { id: 'acc-1', name: 'Empty ISA', type: 'investment', is_active: true },
-        ],
-        error: null,
-      }]);
-
-      setRpcResponse('get_account_balances_with_snapshots', {
-        data: [],
-        error: null,
-      });
-
-      setMockResponse('wealth_snapshots', [
-        { data: [], error: null },
-      ]);
-
-      const response = await GET();
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.byAccount.length).toBe(1);
-      expect(data.byAccount[0].balance).toBe(0);
-    });
-
-    it('includes byType breakdown', async () => {
-      setMockResponse('accounts', [{
-        data: [
-          { id: 'acc-1', name: 'ISA', type: 'investment', is_active: true },
-        ],
-        error: null,
-      }]);
-
-      setRpcResponse('get_account_balances_with_snapshots', {
-        data: [
-          { account_id: 'acc-1', snapshot_date: '2026-01-01', snapshot_balance: 50000, transactions_sum: 0, current_balance: 50000 },
-        ],
-        error: null,
-      });
-
-      setMockResponse('wealth_snapshots', [
-        { data: [], error: null },
-      ]);
-
-      const response = await GET();
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.byType.length).toBe(1);
-      expect(data.byType[0].type).toBe('investment');
-      expect(data.byType[0]).toHaveProperty('label');
-      expect(data.byType[0]).toHaveProperty('total');
-    });
-
-    it('includes byAccount breakdown', async () => {
-      setMockResponse('accounts', [{
-        data: [
-          { id: 'acc-1', name: 'My ISA', type: 'investment', is_active: true },
-        ],
-        error: null,
-      }]);
-
-      setRpcResponse('get_account_balances_with_snapshots', {
-        data: [
-          { account_id: 'acc-1', snapshot_date: '2026-01-01', snapshot_balance: 75000, transactions_sum: 0, current_balance: 75000 },
-        ],
-        error: null,
-      });
-
-      setMockResponse('wealth_snapshots', [
-        { data: [], error: null },
-      ]);
-
-      const response = await GET();
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.byAccount.length).toBe(1);
-      expect(data.byAccount[0].accountId).toBe('acc-1');
-      expect(data.byAccount[0].accountName).toBe('My ISA');
-      expect(data.byAccount[0].balance).toBe(75000);
-    });
-
-    it('calculates change when previous data exists', async () => {
-      setMockResponse('accounts', [{
-        data: [
-          { id: 'acc-1', name: 'ISA', type: 'investment', is_active: true },
-        ],
-        error: null,
-      }]);
-
-      setRpcResponse('get_account_balances_with_snapshots', {
-        data: [
-          { account_id: 'acc-1', snapshot_date: '2026-01-01', snapshot_balance: 110000, transactions_sum: 0, current_balance: 110000 },
-        ],
-        error: null,
-      });
-
-      // Previous month snapshots
-      setMockResponse('wealth_snapshots', [
-        { data: [{ account_id: 'acc-1', balance: 100000 }], error: null },
-      ]);
-
-      const response = await GET();
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.total).toBe(110000);
-      expect(data.previousTotal).toBe(100000);
-      expect(data.change).toBe(10000);
-      expect(data.changePercent).toBeCloseTo(10, 0);
-    });
+  it('a period still uses earlier snapshots as starting balances', async () => {
+    seed([acct('a', 'pension')], [{ account_id: 'a', date: '2023-01-01', balance: 100 }]);
+    const body = await (await history(req('1y'))).json();
+    expect(body.snapshots).toEqual([{ date: '2026-10-01', total: 100, byType: { pension: 100 } }]);
   });
 });
