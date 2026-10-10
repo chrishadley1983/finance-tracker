@@ -83,9 +83,11 @@ describe('UK Drawdown Optimiser', () => {
       };
       const result = computeOptimalDrawdown(config);
 
-      // Gap = 38500, ISA covers 10000, SIPP covers 28500
+      // Gap = 38500, ISA covers 10000; the SIPP covers the other 28500 AND the tax on itself:
+      // x = 28500 + 0.2 × (11500 + x − 12570)  →  x = 35357.50
       expect(result.fromIsa).toBe(10_000);
-      expect(result.fromSipp).toBe(28_500);
+      expect(result.fromSipp).toBeCloseTo(35_357.5, -0);
+      expect(result.netIncome).toBeCloseTo(50_000, -0); // spend fully met after tax
     });
 
     it('SIPP drawdown is taxed when state pension fills PA', () => {
@@ -95,9 +97,34 @@ describe('UK Drawdown Optimiser', () => {
       };
       const result = computeOptimalDrawdown(config);
 
-      // Total taxable = 11500 (pension) + 28500 (SIPP) = 40000
-      // Tax = (40000 - 12570) × 0.20 = 27430 × 0.20 = 5486
-      expect(result.incomeTax).toBe(5_486);
+      // Total taxable = 11500 (pension) + 35357.50 (grossed-up SIPP) = 46857.50
+      // Tax = (46857.50 − 12570) × 0.20 = 6857.50 — and the pots pay it
+      expect(result.incomeTax).toBeCloseTo(6_857.5, -0);
+    });
+  });
+
+  describe('computeOptimalDrawdown — between 57 and State Pension age', () => {
+    it('funds the whole spend from the SIPP once the ISA is gone, tax included', () => {
+      const r = computeOptimalDrawdown({
+        annualSpend: 50_000,
+        balances: { isa: 0, sipp: 780_000, gia: 0, cash: 0 },
+        statePensionAnnual: 11_500,
+        receivingStatePension: false,
+        canAccessSipp: true,
+      });
+      // Used to stop at the £12,570 personal allowance and leave £37k unfunded
+      expect(r.netIncome).toBeCloseTo(50_000, -0);
+      expect(r.fromSipp).toBeGreaterThan(50_000);
+    });
+
+    it('pots pay nothing when the State Pension covers spend and its own tax', () => {
+      const r = computeOptimalDrawdown({
+        annualSpend: 15_000,
+        balances: { isa: 100_000, sipp: 0, gia: 0, cash: 0 },
+        statePensionAnnual: 23_000,
+        receivingStatePension: true,
+      });
+      expect(r.fromIsa).toBe(0);
     });
   });
 
@@ -111,7 +138,9 @@ describe('UK Drawdown Optimiser', () => {
       };
       const result = computeOptimalDrawdown(config);
 
-      expect(result.fromGia).toBe(38_500);
+      // 38500 gap plus the CGT on the GIA sale, so the spend is met after tax
+      expect(result.fromGia).toBeGreaterThan(38_500);
+      expect(result.fromGia - result.cgt).toBeCloseTo(38_500, -0);
       expect(result.fromCash).toBe(0);
     });
 
