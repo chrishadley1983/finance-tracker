@@ -45,18 +45,18 @@ function taxQuarter(iso: string) {
   const byQ = new Map<string, { q: ReturnType<typeof taxQuarter>; total: number; byPayer: Map<string, number>; lines: typeof side }>();
   for (const t of side) {
     const q = taxQuarter(t.date);
-    const e = byQ.get(q.label) ?? { q, total: 0, byPayer: new Map(), lines: [] };
+    const e = byQ.get(q.label) ?? { q, total: 0, byPayer: new Map(), lines: [] as typeof side };
     const payer = /MICRO1|DEEL/i.test(t.description) ? 'Micro1 (via Deel)' : /PROLIFIC/i.test(t.description) ? 'Prolific' : /MERCOR/i.test(t.description) ? 'Mercor' : /RESPONDENT/i.test(t.description) ? 'Respondent' : /USER INTERVIEWS/i.test(t.description) ? 'User Interviews' : /PEOPLE FOR RESEARC/i.test(t.description) ? 'People for Research' : t.description;
     e.total += t.amount; e.byPayer.set(payer, (e.byPayer.get(payer) ?? 0) + t.amount); e.lines.push(t);
     byQ.set(q.label, e);
   }
   if (!byQ.size) { console.log(`no side-income receipts since ${from}`); return; }
   const gbp = (n: number) => '£' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  for (const [label, e] of [...byQ.entries()].sort()) {
+  for (const [label, e] of Array.from(byQ.entries()).sort()) {
     console.log(`\n${label}  (${e.q.start} → ${e.q.end}; MTD update due ${e.q.due})  total ${gbp(e.total)}`);
-    for (const [p, v] of [...e.byPayer.entries()].sort((a, b) => b[1] - a[1])) console.log(`  ${p.padEnd(22)} ${gbp(v).padStart(12)}`);
+    for (const [p, v] of Array.from(e.byPayer.entries()).sort((a, b) => b[1] - a[1])) console.log(`  ${p.padEnd(22)} ${gbp(v).padStart(12)}`);
     for (const t of e.lines) console.log(`    ${t.date}  ${gbp(t.amount).padStart(11)}  ${t.description}  [${t.accounts?.name ?? ''}]`);
   }
-  const ty = [...byQ.values()].reduce((s, e) => s + e.total, 0);
+  const ty = Array.from(byQ.values()).reduce((s, e) => s + e.total, 0);
   console.log(`\nall quarters shown: ${gbp(ty)} gross (${side.length} receipts). Tax set-aside at 30%: ${gbp(ty * 0.3)}.`);
 })().catch((e) => { console.error(e); process.exitCode = 1; });

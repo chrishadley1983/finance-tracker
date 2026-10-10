@@ -27,6 +27,11 @@ vi.mock('recharts', async (importOriginal) => {
   };
 });
 
+// The page's content is under test, not the app shell: main's AppLayout fetches /api/nav-summary and
+// /api/nav-pins, which would hit this file's fetch mock and count against the "no network calls" checks.
+vi.mock('@/components/layout', () => ({
+  AppLayout: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 import PlanPage from '@/app/plan/page';
 
 const okJson = (body: unknown) =>
