@@ -27,13 +27,14 @@ import { writeManifest } from '../plan/inputs/manifest.mjs';
 import { notifyDiscord, notifyEmail } from '../plan/inputs/notify.mjs';
 import { writeWorkbook } from '../plan/render/xlsx.mjs';
 import { htmlToPdf } from '../plan/render/pdf.mjs';
+import { ukToday } from '../plan/inputs/uk-date.mjs';
 
 loadEnvConfig(process.cwd(), true);
 const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const opt = (name: string) => { const i = args.indexOf('--' + name); return i >= 0 ? args[i + 1] : undefined; };
 const runsDir = path.resolve(root, opt('dir') ?? 'plan/runs');
-const today = opt('today') ?? new Date().toISOString().slice(0, 10);
+const today = opt('today') ?? ukToday();
 const runId = today + (opt('tag') ? '-' + opt('tag') : '');
 const log = (m: string) => console.log(m);
 
@@ -66,6 +67,11 @@ export async function main() {
   let dir: string | null = null;
   if (!args.includes('--check-only')) {
     dir = path.join(runsDir, runId);
+    // An accepted run is a hash-locked record: rewriting its files and re-signing the manifest would
+    // silently replace the numbers that latest-accepted.json points at. Use --tag for a second run.
+    if (fs.existsSync(path.join(dir, 'ACCEPTED.json')) && !args.includes('--force')) {
+      throw new Error(`plan/runs/${runId} is an accepted run — refusing to overwrite it. Re-run with --tag <name> (or --force to overwrite deliberately).`);
+    }
     fs.mkdirSync(dir, { recursive: true });
     const docs = renderAll(outputs, inputs, { generatedAt: today, assumptionsFile, drift, runId });
     fs.writeFileSync(path.join(dir, 'inputs.json'), JSON.stringify(inputs, null, 1));

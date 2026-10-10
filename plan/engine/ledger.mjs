@@ -230,7 +230,9 @@ export function runLedger(a, yields, opts = {}) {
             short -= taxable + tfc - dTax;
           }
         }
-        if (short > 1e-9) p.cash -= short; // everything exhausted: shows as negative cash
+        // short < 0: the last taxed draw overshot — it is sized as if fully taxable, but UFPLS pays 25% tax-free,
+        // so it nets more than asked. That money left the pension; keep it as cash rather than dropping it.
+        p.cash -= short; // short > 0: everything exhausted, shows as negative cash
       } else {
         r.surplus = net;
         const toIsa = year <= LAST_ISA_RUNG ? net : Math.min(net, ISA_CAP); p.isaEqNew += toIsa; p.gia += net - toIsa;
