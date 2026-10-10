@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { executeImportRequestSchema } from '@/lib/validations/import';
 import { deleteSessionData } from '@/lib/import';
 import { planImportWithKeys, importHash } from '@/lib/import/dedup';
+import { pageAll } from '@/lib/supabase/page-all';
 import { importCategoryFields } from '@/lib/import/category-fields';
 import { ZodError } from 'zod';
 
@@ -103,16 +104,27 @@ export async function POST(request: NextRequest) {
     let existingRows: Array<{ id: string; date: string; amount: number; description: string }> = [];
     const existingHashById = new Map<string, string>();
     if (skipDuplicates && minDate && maxDate) {
-      const { data, error: existingErr } = await supabaseAdmin
-        .from('transactions')
-        .select('id, date, amount, description')
-        .eq('account_id', accountId)
-        .gte('date', minDate)
-        .lte('date', maxDate);
-      if (existingErr) {
-        return NextResponse.json({ error: `Failed to fetch existing rows: ${existingErr.message}` }, { status: 500 });
+      // Paged: Supabase caps a response at 1,000 rows, and a truncated read makes every unseen row
+      // look missing, so a re-import of a large statement would insert duplicates.
+      let data: Array<{ id: string; date: string; amount: number; description: string }>;
+      try {
+        data = await pageAll((from, to) =>
+          supabaseAdmin
+            .from('transactions')
+            .select('id, date, amount, description')
+            .eq('account_id', accountId)
+            .gte('date', minDate)
+            .lte('date', maxDate)
+            .order('id')
+            .range(from, to),
+        );
+      } catch (e) {
+        return NextResponse.json(
+          { error: `Failed to fetch existing rows: ${e instanceof Error ? e.message : String(e)}` },
+          { status: 500 },
+        );
       }
-      existingRows = (data || []).map((r) => ({
+      existingRows = data.map((r) => ({
         id: r.id,
         date: r.date,
         amount: Number(r.amount),
@@ -218,12 +230,19 @@ export async function POST(request: NextRequest) {
     }
 
     if (minDate && maxDate) {
-      const { data: afterRows } = await supabaseAdmin
-        .from('transactions')
-        .select('id, date, amount, description')
-        .eq('account_id', accountId)
-        .gte('date', minDate)
-        .lte('date', maxDate);
+      const afterRows = await pageAll<{ id: string; date: string; amount: number; description: string }>((from, to) =>
+        supabaseAdmin
+          .from('transactions')
+          .select('id, date, amount, description')
+          .eq('account_id', accountId)
+          .gte('date', minDate)
+          .lte('date', maxDate)
+          .order('id')
+          .range(from, to),
+      ).catch((e: unknown) => {
+        console.warn(`Post-import verification read failed: ${e instanceof Error ? e.message : String(e)}`);
+        return null;
+      });
       dbRowsInRange = afterRows?.length ?? 0;
 
       const afterHashById = new Map<string, string>();
