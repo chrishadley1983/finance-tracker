@@ -134,24 +134,38 @@ export function runMonteCarlo(config: McConfig): McResults {
           w = applyPensionOffset(w, statePensionMonthly, drawdownMonth, pensionStartMonth - retirementMonth);
         }
 
-        // Guardrail: cut spending if portfolio drops
+        const retirementAge = (config.currentAge ?? 42) + retirementMonth / 12;
+        const ageNow = retirementAge + drawdownMonth / 12;
+        const receivingStatePension = ageNow >= spaAge;
+
+        // Guardrail: cut spending if portfolio drops. In tax-aware mode w is gross of the pension, so
+        // cut only the part the pots fund — the same cut simple mode makes on its net-of-pension w.
         if (guardrailEnabled) {
-          w = applyGuardrail(w, p, peak);
+          if (wrappers) {
+            const pensionPart = receivingStatePension ? Math.min(w, spaAnnual / 12) : 0;
+            w = pensionPart + applyGuardrail(w - pensionPart, p, peak);
+          } else {
+            w = applyGuardrail(w, p, peak);
+          }
         }
 
         peak = Math.max(peak, p);
 
         if (wrappers) {
           // TAX-AWARE DRAWDOWN: use optimal wrapper draw order
-          const retirementAge = (config.currentAge ?? 42) + retirementMonth / 12;
-          const ageNow = retirementAge + drawdownMonth / 12;
-          const receivingStatePension = ageNow >= spaAge;
           const canAccessSipp = ageNow >= 57;
           const annualW = w * 12; // Annualise for tax calc
 
+          // Balances ×12 so the annualised plan asks "can THIS month be paid" (only 1/12 is drawn now);
+          // with real balances a path failed a full year before the pots actually ran dry.
           const result = computeOptimalDrawdown({
             annualSpend: annualW,
-            balances: wrappers,
+            balances: {
+              isa: wrappers.isa * 12,
+              sipp: wrappers.sipp * 12,
+              gia: wrappers.gia * 12,
+              cash: wrappers.cash * 12,
+            },
             statePensionAnnual: spaAnnual,
             receivingStatePension,
             lsaUsed,

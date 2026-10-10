@@ -103,6 +103,31 @@ describe('UK Drawdown Optimiser', () => {
     });
   });
 
+  describe('computeOptimalDrawdown — between 57 and State Pension age', () => {
+    it('funds the whole spend from the SIPP once the ISA is gone, tax included', () => {
+      const r = computeOptimalDrawdown({
+        annualSpend: 50_000,
+        balances: { isa: 0, sipp: 780_000, gia: 0, cash: 0 },
+        statePensionAnnual: 11_500,
+        receivingStatePension: false,
+        canAccessSipp: true,
+      });
+      // Used to stop at the £12,570 personal allowance and leave £37k unfunded
+      expect(r.netIncome).toBeCloseTo(50_000, -0);
+      expect(r.fromSipp).toBeGreaterThan(50_000);
+    });
+
+    it('pots pay nothing when the State Pension covers spend and its own tax', () => {
+      const r = computeOptimalDrawdown({
+        annualSpend: 15_000,
+        balances: { isa: 100_000, sipp: 0, gia: 0, cash: 0 },
+        statePensionAnnual: 23_000,
+        receivingStatePension: true,
+      });
+      expect(r.fromIsa).toBe(0);
+    });
+  });
+
   describe('computeOptimalDrawdown — GIA and cash fallback', () => {
     it('uses GIA when ISA and SIPP exhausted', () => {
       const config: DrawdownConfig = {
