@@ -127,27 +127,45 @@ export function runMonteCarlo(config: McConfig): McResults {
           w = Math.max(0, w - partialEarningsMonthly);
         }
 
-        // Pension offset: reduce withdrawal after pension starts
-        w = applyPensionOffset(w, statePensionMonthly, drawdownMonth, pensionStartMonth - retirementMonth);
+        // Pension offset: reduce withdrawal after pension starts. Simple mode only — the tax-aware
+        // optimiser subtracts the State Pension itself (it needs the gross spend to tax the pension
+        // correctly); offsetting here as well took the pension off spending twice.
+        if (!wrappers) {
+          w = applyPensionOffset(w, statePensionMonthly, drawdownMonth, pensionStartMonth - retirementMonth);
+        }
 
-        // Guardrail: cut spending if portfolio drops
+        const retirementAge = (config.currentAge ?? 42) + retirementMonth / 12;
+        const ageNow = retirementAge + drawdownMonth / 12;
+        const receivingStatePension = ageNow >= spaAge;
+
+        // Guardrail: cut spending if portfolio drops. In tax-aware mode w is gross of the pension, so
+        // cut only the part the pots fund — the same cut simple mode makes on its net-of-pension w.
         if (guardrailEnabled) {
-          w = applyGuardrail(w, p, peak);
+          if (wrappers) {
+            const pensionPart = receivingStatePension ? Math.min(w, spaAnnual / 12) : 0;
+            w = pensionPart + applyGuardrail(w - pensionPart, p, peak);
+          } else {
+            w = applyGuardrail(w, p, peak);
+          }
         }
 
         peak = Math.max(peak, p);
 
         if (wrappers) {
           // TAX-AWARE DRAWDOWN: use optimal wrapper draw order
-          const retirementAge = (config.currentAge ?? 42) + retirementMonth / 12;
-          const ageNow = retirementAge + drawdownMonth / 12;
-          const receivingStatePension = ageNow >= spaAge;
           const canAccessSipp = ageNow >= 57;
           const annualW = w * 12; // Annualise for tax calc
 
+          // Balances ×12 so the annualised plan asks "can THIS month be paid" (only 1/12 is drawn now);
+          // with real balances a path failed a full year before the pots actually ran dry.
           const result = computeOptimalDrawdown({
             annualSpend: annualW,
-            balances: wrappers,
+            balances: {
+              isa: wrappers.isa * 12,
+              sipp: wrappers.sipp * 12,
+              gia: wrappers.gia * 12,
+              cash: wrappers.cash * 12,
+            },
             statePensionAnnual: spaAnnual,
             receivingStatePension,
             lsaUsed,
@@ -156,20 +174,26 @@ export function runMonteCarlo(config: McConfig): McResults {
             canAccessSipp,
           });
 
-          lsaUsed += result.fromSippTaxFree;
+          lsaUsed += result.fromSippTaxFree / 12; // the optimiser plans a year; one month is drawn
 
-          // Monthly gross draw = net spending + tax / 12
-          const grossMonthly = (result.fromIsa + result.fromSipp + result.fromGia + result.fromCash) / 12;
-
-          // Update wrapper balances (apply monthly return to remaining)
-          wrappers = {
-            isa: Math.max(0, (wrappers.isa - result.fromIsa / 12) * (1 + r)),
-            sipp: Math.max(0, (wrappers.sipp - result.fromSipp / 12) * (1 + r)),
-            gia: Math.max(0, (wrappers.gia - result.fromGia / 12) * (1 + r)),
-            cash: Math.max(0, wrappers.cash - result.fromCash / 12),
-          };
-
-          p = Math.max(0, wrappers.isa + wrappers.sipp + wrappers.gia + wrappers.cash);
+          // Spending the accessible pots cannot fund (e.g. ISA/GIA gone before the SIPP unlocks at 57)
+          // is a failed plan, not a saving: the household can't pay its bills. Dropping the unmet part
+          // let the untouched SIPP grow and count the path as "survived".
+          const unmet = annualW - result.netIncome;
+          if (unmet > 1) {
+            wrappers = { isa: 0, sipp: 0, gia: 0, cash: 0 };
+            p = 0;
+          } else {
+            // Update wrapper balances (apply monthly return to remaining). The optimiser's draws
+            // already include the tax, so the pots pay it.
+            wrappers = {
+              isa: Math.max(0, (wrappers.isa - result.fromIsa / 12) * (1 + r)),
+              sipp: Math.max(0, (wrappers.sipp - result.fromSipp / 12) * (1 + r)),
+              gia: Math.max(0, (wrappers.gia - result.fromGia / 12) * (1 + r)),
+              cash: Math.max(0, wrappers.cash - result.fromCash / 12),
+            };
+            p = Math.max(0, wrappers.isa + wrappers.sipp + wrappers.gia + wrappers.cash);
+          }
         } else {
           // SIMPLE DRAWDOWN: no tax modelling (backward-compatible)
           p = Math.max(0, (p - w) * (1 + r));

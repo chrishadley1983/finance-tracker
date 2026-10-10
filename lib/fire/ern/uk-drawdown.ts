@@ -114,13 +114,29 @@ export function computeOptimalDrawdown(config: DrawdownConfig): DrawdownResult {
   const statePensionNet = receivingStatePension ? statePensionAnnual : 0;
   const spendingGap = Math.max(0, annualSpend - statePensionNet);
 
+  // The pots must pay the tax too: draw for gap + tax, re-estimating the tax until it settles.
+  // (Drawing only the pre-tax gap left the household short by the whole tax bill every year.)
+  // Converges because the marginal rate is below 100%; when the pots run out the draws (and so the
+  // tax) stop growing and it settles with netIncome below annualSpend — an honest shortfall.
+  // Target = spend + tax − pension (not the pension-clamped gap + tax): when the pension alone covers
+  // spend and its own tax, the pots pay nothing.
+  let draw = allocate(spendingGap);
+  for (let i = 0; i < 20; i++) {
+    const next = allocate(Math.max(0, annualSpend - statePensionNet + draw.totalTax));
+    const settled = Math.abs(next.totalTax - draw.totalTax) < 0.5;
+    draw = next;
+    if (settled) break;
+  }
+  return draw;
+
+  function allocate(target: number): DrawdownResult {
   let fromIsa = 0;
   let fromSipp = 0;
   let fromSippTaxFree = 0;
   let fromSippTaxable = 0;
   let fromGia = 0;
   let fromCash = 0;
-  let remaining = spendingGap;
+  let remaining = target;
 
   // SIPP is inaccessible before minimum pension age (57 in UK)
   const effectiveSipp = canAccessSipp ? balances.sipp : 0;
@@ -151,6 +167,24 @@ export function computeOptimalDrawdown(config: DrawdownConfig): DrawdownResult {
     if (remaining > 0) {
       fromIsa = Math.min(remaining, balances.isa);
       remaining -= fromIsa;
+    }
+
+    // ISA gone: more SIPP, taxed (as after pension age). Without this the SIPP was capped at the
+    // personal allowance until State Pension age, however much it held.
+    if (remaining > 0) {
+      const topUp = Math.min(remaining, effectiveSipp - fromSipp);
+      if (topUp > 0) {
+        if (useUFPLS) {
+          const lsaRemaining = Math.max(0, LUMP_SUM_ALLOWANCE - lsaUsed - fromSippTaxFree);
+          const taxFree = Math.min(topUp * TFLS_FRACTION, lsaRemaining);
+          fromSippTaxFree += taxFree;
+          fromSippTaxable += topUp - taxFree;
+        } else {
+          fromSippTaxable += topUp;
+        }
+        fromSipp += topUp;
+        remaining -= topUp;
+      }
     }
   } else {
     // POST-PENSION STRATEGY: ISA first, then SIPP
@@ -218,6 +252,7 @@ export function computeOptimalDrawdown(config: DrawdownConfig): DrawdownResult {
       cash: balances.cash - fromCash,
     },
   };
+  }
 }
 
 // =============================================================================
