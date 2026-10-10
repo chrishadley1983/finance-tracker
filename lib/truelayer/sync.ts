@@ -73,24 +73,45 @@ async function getValidAccessToken(connectionId: string): Promise<string> {
   if (!conn.refresh_token) {
     throw new TrueLayerError('Consent expired — please reconnect the account', 401, 'RECONSENT');
   }
+  let tokens: Awaited<ReturnType<typeof refreshAccessToken>>;
   try {
-    const tokens = await refreshAccessToken(conn.refresh_token);
-    const newExp = new Date(now + tokens.expires_in * 1000).toISOString();
-    await supabaseAdmin
-      .from('truelayer_connections')
-      .update({
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token ?? conn.refresh_token,
-        token_expires_at: newExp,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', connectionId);
-    return tokens.access_token;
-  } catch {
-    // Refresh tokens expire (~90 days) — mark the connection so the UI prompts re-consent.
-    await supabaseAdmin.from('truelayer_connections').update({ status: 'expired' }).eq('id', connectionId);
-    throw new TrueLayerError('Consent expired — please reconnect the account', 401, 'RECONSENT');
+    tokens = await refreshAccessToken(conn.refresh_token);
+  } catch (e) {
+    if (isRefreshRejected(e)) {
+      // The refresh token itself is dead (consent lapsed, ~90 days) — mark the connection so the UI
+      // prompts re-consent.
+      await supabaseAdmin.from('truelayer_connections').update({ status: 'expired' }).eq('id', connectionId);
+      throw new TrueLayerError('Consent expired — please reconnect the account', 401, 'RECONSENT');
+    }
+    // Anything else (network, TrueLayer 5xx, 429, missing config) is not a consent problem: leave the
+    // connection active so the next run retries. Marking it expired here used to force a manual bank
+    // re-consent after a single transient failure.
+    const detail = e instanceof Error ? e.message : String(e);
+    throw new TrueLayerError(`Token refresh failed (temporary, will retry): ${detail}`, 503, 'REFRESH_TEMPORARY');
   }
+  // TrueLayer rotates refresh tokens: losing the new one leaves a dead token stored, so a failed save
+  // must fail loudly rather than surface weeks later as an "expired" connection.
+  const newExp = new Date(now + tokens.expires_in * 1000).toISOString();
+  const { error: saveErr } = await supabaseAdmin
+    .from('truelayer_connections')
+    .update({
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token ?? conn.refresh_token,
+      token_expires_at: newExp,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', connectionId);
+  if (saveErr) {
+    throw new TrueLayerError(`Refreshed token could not be saved: ${saveErr.message}`, 500, 'TOKEN_SAVE');
+  }
+  return tokens.access_token;
+}
+
+/** True only when TrueLayer rejected the refresh token itself (OAuth `invalid_grant`, or 401). */
+export function isRefreshRejected(e: unknown): boolean {
+  if (!(e instanceof TrueLayerError) || e.code !== 'TOKEN') return false;
+  if (e.status === 401) return true;
+  return e.status === 400 && /invalid_grant/i.test(String(e.body ?? ''));
 }
 
 /** Sync a single linked account. */
