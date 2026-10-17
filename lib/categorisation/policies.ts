@@ -38,6 +38,13 @@ export const RETIRED_POLICY_KEYS = [
 const JOINT = 'HSBC Joint Current Account';
 const HB_PAYOUT = 'Hadley Bricks money landing in the joint account is Chris Income (decided 2026-09-19)';
 const EV_ASK = 'EV charging can be Work or Social Travel — always ask Chris';
+// Self-employed tax (HB profit + Micro1/Deel are paid gross). Chris, 2026-10-17:
+// each transfer into the tax pot is filed as Tax set-aside (an expense), so the
+// tax comes off in the month the income lands; the HMRC payment out of the pot
+// is then not counted again. The pot (HSBC 40-19-23 91248553) is not a tracked
+// account, so payments from it never reach finance.transactions.
+const TAX_POT = '401923 91248553';
+const TAX_SET_ASIDE = 'Tax set-aside';
 
 export const POLICIES: PolicyDefinition[] = [
   // Hadley Bricks money paid into the personal joint account
@@ -63,6 +70,15 @@ export const POLICIES: PolicyDefinition[] = [
   { key: 'se-tonbridge-under-20', pattern: 'se tonbridge sst', categoryName: 'Social Travel', amountSign: 'debit', amountMax: 19.99, note: 'Rail fare under £20 = Social Travel' },
   { key: 'se-tonbridge-weekday-20-plus', pattern: 'se tonbridge sst', categoryName: 'Work Travel', amountSign: 'debit', amountMin: 20, daysOfWeek: [1, 2, 3, 4, 5], note: 'Weekday rail fare £20+ = Work Travel' },
   { key: 'se-tonbridge-other', pattern: 'se tonbridge sst', categoryName: 'Social Travel', note: 'Other SE Tonbridge rows (e.g. refunds) = Social Travel' },
+
+  // Tax set-aside (Chris, 2026-10-17). The pot pattern contains digits, so it is
+  // matched against the lightly-normalised description (digits kept).
+  { key: 'tax-pot-in', pattern: TAX_POT, categoryName: TAX_SET_ASIDE, accountName: JOINT, amountSign: 'debit', note: 'Joint → tax pot transfer = Tax set-aside (tax on gross HB/Micro1 income)' },
+  { key: 'tax-pot-out', pattern: TAX_POT, categoryName: 'Transfers', accountName: JOINT, amountSign: 'credit', note: 'Money back from the tax pot = Transfers (the set-aside was already counted)' },
+  // HMRC Self Assessment paid from a tracked (non-pot) account is real tax that
+  // was not set aside first. CHILD BENEFIT never matches ("hmrc child benefit").
+  { key: 'hmrc-self-assessment', pattern: 'hmrc self as', categoryName: TAX_SET_ASIDE, amountSign: 'debit', note: 'HMRC Self Assessment paid from a tracked account = Tax set-aside' },
+  { key: 'hmrc-self-assessment-long', pattern: 'hmrc self assessment', categoryName: TAX_SET_ASIDE, amountSign: 'debit', note: 'HMRC Self Assessment paid from a tracked account = Tax set-aside' },
 
   // EV charging — always ask
   ...['gridserve', 'instavolt', 'applegreen electri', 'applegreen electric', 'totalenergies charging', 'pod point', 'ionity', 'bp pulse', 'recharge', 'robo charge', 'tesla supercharger'].map(

@@ -399,3 +399,12 @@ matures 2 Nov 2026 (£23,618.64); worth £22,344.98 on 1 Oct. Chris plans to mov
   Zopa £20,454 · current account £5,000, which is not in net worth elsewhere · Unbolted £1,725). The plan's
   `pots.cashBuffer` (CHECK £66k) is now measured at ~£49.5k cash with crypto ~£74.2k — update with the October
   pots once Abby's figures are in.
+
+## 17 Oct 2026 — Tax set-aside category for tax on gross side income (decision, Chris)
+
+HB profit and Micro1/Deel income land gross. A new expense category **Tax set-aside** (Bills and utilities, counted in
+totals) takes each joint → tax-pot transfer (HSBC 40-19-23 91248553), so the 26% comes off in the month the income
+lands and the monthly net / savings rate are true; HMRC Self Assessment paid from a tracked account is filed there too,
+and money back from the pot is Transfers (the pot itself is not a tracked account, so HMRC paid from it never appears).
+`spend.excludedCategories` gains `Tax set-aside` so the run-rate stays household spend only. Not yet done: the plan
+engine still treats `chrisSideIncome` / HB drawings as gross — a follow-up.

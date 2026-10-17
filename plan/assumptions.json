@@ -745,15 +745,29 @@
         "Home improvement",
         "Extension",
         "Lego Out",
-        "Work Travel"
+        "Work Travel",
+        "Tax set-aside"
       ],
       "status": "DECISION",
-      "source": "plan/decisions.md — categories excluded from the run-rate (one-offs, business, reimbursed); cockpit definition",
-      "asOf": "2026-07-30",
+      "source": "plan/decisions.md 2026-10-17 — Tax set-aside is income tax on gross side income, not household spend; kept out of the run-rate",
+      "asOf": "2026-10-17",
       "reviewBy": "2027-01-31",
       "cadence": "quarterly",
       "triggers": [
         "quarterly"
+      ],
+      "history": [
+        {
+          "value": [
+            "Home improvement",
+            "Extension",
+            "Lego Out",
+            "Work Travel"
+          ],
+          "asOf": "2026-07-30",
+          "supersededOn": "2026-10-17",
+          "why": "new Tax set-aside category (Chris, 2026-10-17)"
+        }
       ]
     },
     "spend.nineYearSavingsDrawBudget": {
