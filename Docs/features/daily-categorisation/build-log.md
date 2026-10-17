@@ -131,3 +131,11 @@ Both are under 45s. `ai_usage_tracking` gained a 2026-10-01 row, the first since
 - **Retiring policies:** `policies:sync` deletes rows for `RETIRED_POLICY_KEYS` (`se-tonbridge-commute-1920/4070`).
 - **No retro-categorisation of settled history** (Chris). Only `recategorise-pending` runs.
 - **Tests:** 1,434/1,434 pass.
+
+## Tax set-aside (2026-10-17, Chris)
+
+- **New category** `Tax set-aside` (Bills and utilities; `is_income=false`, `exclude_from_totals=false`, so savings rate / budgets / reports count it as an outflow). `supabase/migrations/012_tax_set_aside_category.sql`, applied with `supabase db query --linked` before `policies:sync`.
+- **Policies:** `tax-pot-in` (joint debit to `401923 91248553` → Tax set-aside), `tax-pot-out` (joint credit from it → Transfers), `hmrc-self-assessment` / `-long` (debit `hmrc self as` / `hmrc self assessment` → Tax set-aside; Child Benefit never matches).
+- The pot pattern contains digits, so it matches against the lightly-normalised description (the merchant normaliser would reduce it to the generic `internet transfer`). Tests cover the real descriptors, a different account number, the card account and Child Benefit.
+- **Re-file** (Chris approved): `scripts/refile-tax-set-aside.ts` (dry run, `--apply` to write) re-files only rows these policies apply to: the 6 Oct 2026 £600 pot transfer (Transfers → Tax set-aside), the 13 Apr 2025 £200.86 HMRC SA payment (Service fees → Tax set-aside), and the 17 Oct 2026 £2,000 pot transfer once synced.
+- Plan: `spend.excludedCategories` gains `Tax set-aside` (run-rate = household spend). The engine still treats side income as gross — follow-up.

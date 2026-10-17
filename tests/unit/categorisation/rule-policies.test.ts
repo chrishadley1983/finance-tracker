@@ -236,6 +236,35 @@ describe("Chris's seeded policies (A4)", () => {
     expect(conditionsMatch(work, { description: 'x', amount: -19.2, date: WEEKDAY })).toBe(false);
   });
 
+  // Tax set-aside (Chris, 2026-10-17)
+  it('a joint → tax pot transfer is Tax set-aside (pattern has digits; the normaliser drops them)', () => {
+    const m = decide('401923 91248553 INTERNET TRANSFER', -600, JOINT, '2026-10-06');
+    expect(m?.categoryName).toBe('Tax set-aside');
+    expect(m?.action).toBe('categorise');
+  });
+
+  it('money back from the tax pot is Transfers, not a second set-aside', () => {
+    expect(decide('401923 91248553 INTERNET TRANSFER', 600)?.categoryName).toBe('Transfers');
+  });
+
+  it('only the tax pot account counts — another internet transfer does not', () => {
+    expect(decide('401923 91248554 INTERNET TRANSFER', -600)).toBeNull();
+    expect(decide('309634 12345678 INTERNET TRANSFER', -600)).toBeNull();
+    expect(decide('401923 91248553 INTERNET TRANSFER', -600, CARD)).toBeNull(); // joint only
+  });
+
+  it.each([
+    ['HMRC SELF AS SHIP 2932993074K', -200.86],
+    ['HMRC SELF ASSESSMENT 2932993074K', -1500],
+  ])('HMRC Self Assessment from a tracked account → Tax set-aside: %s', (description, amount) => {
+    expect(decide(description, amount)?.categoryName).toBe('Tax set-aside');
+  });
+
+  it('HMRC Child Benefit is never Tax set-aside', () => {
+    expect(decide('HMRC CHILD BENEFIT', 179.8)?.categoryName).not.toBe('Tax set-aside');
+    expect(decide('HMRC CHILD BENEFIT', -179.8)?.categoryName).not.toBe('Tax set-aside');
+  });
+
   it('the retired £19.20/£40.70 policies are gone from POLICIES and listed as retired', () => {
     expect(POLICIES.map((p) => p.key)).not.toContain('se-tonbridge-commute-1920');
     expect(RETIRED_POLICY_KEYS).toEqual(expect.arrayContaining(['se-tonbridge-commute-1920', 'se-tonbridge-commute-4070']));
