@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mapTrueLayerTransaction } from '@/lib/truelayer/reconcile-map';
-import { convertForeignToGbp } from '@/lib/truelayer/sync';
+import { convertForeignToGbp } from '@/lib/truelayer/fx-convert';
 import { FxRateError, toGbp, unitsPerGbp, clearFxCache } from '@/lib/fx/gbp-rate';
 import type { TrueLayerTransaction } from '@/lib/truelayer/types';
 
