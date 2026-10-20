@@ -71,3 +71,49 @@ describe('foreign-currency conversion', () => {
     await expect(unitsPerGbp('ZAR', '2026-10-01', bad)).rejects.toBeInstanceOf(FxRateError);
   });
 });
+
+describe('fx hold-back + time series', () => {
+  it('reports the earliest held-back date', async () => {
+    const rows = [
+      mapTrueLayerTransaction(tx({ timestamp: '2026-10-19T10:00:00Z', amount: -10, currency: 'ZAR' }))!,
+      mapTrueLayerTransaction(tx({ timestamp: '2026-10-17T10:00:00Z', amount: -20, currency: 'AED' }))!,
+      mapTrueLayerTransaction(tx({ timestamp: '2026-10-18T10:00:00Z', amount: -30, currency: 'AED' }))!,
+    ];
+    const { rows: out, pending, earliestHeld } = await convertForeignToGbp(rows, async (c) => {
+      if (c === 'AED') throw new FxRateError('no rate');
+      return 20;
+    });
+    expect(out).toHaveLength(1);
+    expect(pending).toBe(2);
+    expect(earliestHeld).toBe('2026-10-17');
+  });
+
+  it('prefetchRates carries the last business-day rate over a weekend', async () => {
+    clearFxCache();
+    const { prefetchRates } = await import('@/lib/fx/gbp-rate');
+    let urls: string[] = [];
+    const fake = (async (url: string) => {
+      urls.push(url);
+      return {
+        ok: true,
+        json: async () => ({ rates: { '2026-10-16': { ZAR: 21.915 }, '2026-10-19': { ZAR: 21.907 } } }),
+      } as Response;
+    }) as unknown as typeof fetch;
+    await prefetchRates('ZAR', '2026-10-17', '2026-10-19', fake);
+    expect(urls[0]).toContain('..');
+    const never = (async () => {
+      throw new Error('should be cached');
+    }) as unknown as typeof fetch;
+    expect(await unitsPerGbp('ZAR', '2026-10-17', never)).toBe(21.915); // Saturday -> Friday's rate
+    expect(await unitsPerGbp('ZAR', '2026-10-18', never)).toBe(21.915);
+    expect(await unitsPerGbp('ZAR', '2026-10-19', never)).toBe(21.907);
+  });
+
+  it('a timed-out/failed fetch becomes FxRateError (held back, not thrown)', async () => {
+    clearFxCache();
+    const boom = (async () => {
+      throw new Error('The operation was aborted due to timeout');
+    }) as unknown as typeof fetch;
+    await expect(unitsPerGbp('ZAR', '2026-09-01', boom)).rejects.toBeInstanceOf(FxRateError);
+  });
+});

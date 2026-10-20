@@ -180,7 +180,10 @@ export async function syncAccount(
   const mappedRaw: MappedBankTransaction[] = raw
     .map(mapTrueLayerTransaction)
     .filter((t): t is MappedBankTransaction => t !== null);
-  const { rows: mapped, pending: fxPending } = await convertForeignToGbp(mappedRaw);
+  const { rows: mapped, pending: fxPending, earliestHeld } = await convertForeignToGbp(mappedRaw);
+  if (fxPending > 0) {
+    console.warn(`[truelayer] ${account.name}: ${fxPending} foreign-currency row(s) held back (no GBP rate); earliest ${earliestHeld}`);
+  }
 
   // 2. Existing DB rows over the span.
   let minDate = dateFrom;
@@ -271,8 +274,12 @@ export async function syncAccount(
     }
   }
 
-  // 6. Watermark.
-  await supabaseAdmin.from('accounts').update({ last_sync_at: now.toISOString() }).eq('id', financeAccountId);
+  // 6. Watermark. If foreign rows were held back for want of a rate, don't move it past them: the next
+  // sync starts RESYNC_OVERLAP_DAYS before the watermark, so pinning it at the earliest held date keeps
+  // those rows inside the next fetch window until they convert.
+  const heldAt = earliestHeld ? new Date(`${earliestHeld}T00:00:00Z`) : null;
+  const watermark = heldAt && heldAt < now ? heldAt : now;
+  await supabaseAdmin.from('accounts').update({ last_sync_at: watermark.toISOString() }).eq('id', financeAccountId);
 
   // 7. Balance (informational).
   let balance: SyncAccountResult['balance'] = null;
