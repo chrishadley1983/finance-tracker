@@ -34,6 +34,10 @@ export interface MappedBankTransaction {
   description: string;
   entryReference?: string;
   status: string; // BOOK | PDNG
+  /** ISO currency the bank reported (absent = GBP). Non-GBP rows are converted before reconcile. */
+  currency?: string;
+  /** Original signed amount in `currency`, kept when `amount` has been converted to GBP. */
+  originalAmount?: number;
 }
 
 export interface ExistingDbRow {

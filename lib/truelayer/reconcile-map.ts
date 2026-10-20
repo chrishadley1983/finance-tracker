@@ -21,5 +21,7 @@ export function mapTrueLayerTransaction(tx: TrueLayerTransaction): MappedBankTra
     // provider_transaction_id is the most stable id; fall back to transaction_id.
     entryReference: tx.meta?.provider_transaction_id || tx.transaction_id || undefined,
     status: 'BOOK',
+    // Amount is still in the bank's currency here; syncAccount converts non-GBP rows to GBP.
+    currency: (tx.currency || 'GBP').toUpperCase(),
   };
 }

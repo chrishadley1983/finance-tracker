@@ -26,6 +26,7 @@ import { getAccountBalance, getCardBalance } from './accounts';
 import { getAccountTransactions, getCardTransactions } from './transactions';
 import { mapTrueLayerTransaction } from './reconcile-map';
 import { TrueLayerError } from './types';
+import { FxRateError, toGbp, unitsPerGbp } from '@/lib/fx/gbp-rate';
 
 const DEFAULT_LOOKBACK_DAYS = 730;
 const RESYNC_OVERLAP_DAYS = 7;
@@ -42,6 +43,8 @@ export interface SyncAccountResult {
   fetched: number;
   dateRange: { from: string; to: string };
   balance: { available: number; current: number; currency: string } | null;
+  /** Foreign-currency rows held back because no GBP rate was available (retried next sync). */
+  fxPending?: number;
   error?: string;
 }
 
@@ -174,9 +177,10 @@ export async function syncAccount(
   const raw = isCard
     ? await getCardTransactions(accessToken, account.truelayer_account_id, dateFrom, dateTo)
     : await getAccountTransactions(accessToken, account.truelayer_account_id, dateFrom, dateTo);
-  const mapped: MappedBankTransaction[] = raw
+  const mappedRaw: MappedBankTransaction[] = raw
     .map(mapTrueLayerTransaction)
     .filter((t): t is MappedBankTransaction => t !== null);
+  const { rows: mapped, pending: fxPending } = await convertForeignToGbp(mappedRaw);
 
   // 2. Existing DB rows over the span.
   let minDate = dateFrom;
@@ -241,6 +245,9 @@ export async function syncAccount(
       amount: t.amount,
       description: t.description,
       hsbc_transaction_id: t.entryReference ?? null,
+      ...(t.originalAmount !== undefined && t.currency && t.currency !== 'GBP'
+        ? { original_amount: t.originalAmount, original_currency: t.currency }
+        : {}),
       // Category, sources, confidence and the review flag come from the engine
       // (low confidence, ask-policies and new-merchant AI guesses are flagged).
       ...(categorised[i]
@@ -286,7 +293,36 @@ export async function syncAccount(
     fetched: mapped.length,
     dateRange: { from: dateFrom, to: dateTo },
     balance,
+    ...(fxPending > 0 ? { fxPending } : {}),
   };
+}
+
+/**
+ * The ledger is GBP-only. Convert non-GBP rows (Global Money wallets) to GBP at the ECB rate for the
+ * transaction date, keeping the original amount. Rows whose rate can't be fetched are held back (not
+ * inserted, so the next sync retries them) rather than stored with a foreign amount posing as pounds.
+ */
+export async function convertForeignToGbp(
+  rows: MappedBankTransaction[],
+  rateFn: (currency: string, date: string) => Promise<number> = (c, d) => unitsPerGbp(c, d),
+): Promise<{ rows: MappedBankTransaction[]; pending: number }> {
+  const out: MappedBankTransaction[] = [];
+  let pending = 0;
+  for (const t of rows) {
+    const ccy = (t.currency || 'GBP').toUpperCase();
+    if (ccy === 'GBP') {
+      out.push(t);
+      continue;
+    }
+    try {
+      const rate = await rateFn(ccy, t.date);
+      out.push({ ...t, currency: ccy, originalAmount: t.amount, amount: toGbp(t.amount, rate) });
+    } catch (e) {
+      if (!(e instanceof FxRateError)) throw e;
+      pending++;
+    }
+  }
+  return { rows: out, pending };
 }
 
 /** Sync every account with sync_enabled + a linked TrueLayer account. */
